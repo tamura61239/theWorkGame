@@ -43,7 +43,7 @@ private:
 class MulltiRenderTargetFunction
 {
 public:
-	MulltiRenderTargetFunction(){}
+	MulltiRenderTargetFunction():viewportsNumber(0){}
 	void SetFrameBuffer(std::shared_ptr<FrameBuffer>frameBuffer)
 	{
 		frameBuffers.push_back(frameBuffer);

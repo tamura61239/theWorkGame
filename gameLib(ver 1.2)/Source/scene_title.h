@@ -4,7 +4,6 @@
 #include <mutex>
 #include<memory>
 #include"sprite.h"
-#include"bloom_test01.h"
 
 class SceneTitle :public Scene
 {
@@ -37,5 +36,4 @@ private:
 	}
 private:
 	std::unique_ptr<Sprite>test;
-	std::unique_ptr<BlommTest01>testBloom;
 };

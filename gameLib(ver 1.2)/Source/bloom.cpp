@@ -3,15 +3,15 @@
 #include"misc.h"
 #include"vector.h"
 
-Bloom::Bloom(ID3D11Device* device, float screenWidth, float screenHight)
+BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHight)
 {
 	unsigned int wight = static_cast<unsigned int>(screenWidth);
 	unsigned int hight = static_cast<unsigned int>(screenHight);
 	for (int i = 0;i < 5;i++)
 	{
-		mFrameBuffer.emplace_back(std::make_unique<FrameBuffer>(device, static_cast<int>(wight >> i), static_cast<float>(hight >> i), true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R24G8_TYPELESS));
+		mFrameBuffer.push_back(std::make_unique<FrameBuffer>(device, static_cast<int>(wight >> i), static_cast<float>(hight >> i), true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R24G8_TYPELESS));
 	}
-	mFrameBuffer.emplace_back(std::make_unique<FrameBuffer>(device, screenWidth, screenHight, true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R24G8_TYPELESS));
+	mFrameBuffer.push_back(std::make_unique<FrameBuffer>(device, screenWidth, screenHight, true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R24G8_TYPELESS));
 
 	HRESULT hr;
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
@@ -90,7 +90,7 @@ Bloom::Bloom(ID3D11Device* device, float screenWidth, float screenHight)
 
 }
 
-void Bloom::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView* colorSrv, bool render)
+void BloomRender::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView* colorSrv, bool render)
 {
 
 	mFrameBuffer[0]->Clear(context);

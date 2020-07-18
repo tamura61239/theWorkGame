@@ -2,10 +2,10 @@
 #include"framebuffer.h"
 #include<vector>
 
-class Bloom
+class BloomRender
 {
 public:
-	Bloom(ID3D11Device* device, float screenWidth, float screenHight);
+	BloomRender(ID3D11Device* device, float screenWidth, float screenHight);
 	void Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView* colorSrv, bool render);
 private:
 	std::vector<std::unique_ptr<FrameBuffer>>mFrameBuffer;

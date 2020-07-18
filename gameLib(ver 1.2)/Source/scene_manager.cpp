@@ -3,7 +3,6 @@
 #include"scene_game.h"
 #include"scene_over.h"
 #include"scene_clear.h"
-#include"scene_shader_test.h"
 #include"key_board.h"
 
 
@@ -38,9 +37,6 @@ Scene* SceneManager::SceneSelect(const int sceneNum)
 		break;
 	case SCENETYPE::CLEAR:
 		return new SceneClear(mDevice);
-		break;
-	case SCENETYPE::SHADERTEST:
-		return new SceneShaderTest(mDevice);
 		break;
 	}
 	return nullptr;

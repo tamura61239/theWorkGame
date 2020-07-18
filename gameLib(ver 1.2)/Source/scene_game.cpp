@@ -34,7 +34,7 @@ SceneGame::SceneGame(ID3D11Device* device)
 			std::vector<TextureMapData>datas;
 			//knight
 			shadowMap = std::make_unique<FrameBuffer>(device, 1024 * 5, 1024 * 5, false/*enable_msaa*/, 1, DXGI_FORMAT_UNKNOWN/*not needed*/, DXGI_FORMAT_R32_TYPELESS);
-			frameBuffer[0] = std::make_unique<FrameBuffer>(device, 1920, 1080, true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R24G8_TYPELESS);
+			frameBuffer[0] = std::make_unique<FrameBuffer>(device, 1920, 1080, true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
 			frameBuffer[1] = std::make_unique<FrameBuffer>(device, 1920, 1080, false/*enable_msaa*/, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_UNKNOWN);
 			meshRender = std::make_unique<MeshRender>(device);
 			renderEffects = std::make_unique<RenderEffects>(device);
@@ -43,8 +43,7 @@ SceneGame::SceneGame(ID3D11Device* device)
 			player = std::make_unique<Player>(std::make_shared<Character>(resource));
 
 			modelRenderer = std::make_unique<ModelRenderer>(device);
-			bloom = std::make_unique<Bloom>(device, 1920, 1080);
-			testGpuParticle = std::make_unique<GpuParticleTest>(device);
+			bloom = std::make_unique<BloomRender>(device, 1920, 1080);
 		}, device);
 	test = std::make_unique<Sprite>(device, L"Data/image/ゲームテスト.png");
 	nowLoading = std::make_unique<Sprite>(device, L"Data/image/wp-thumb.jpg");
@@ -130,7 +129,6 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 
 		return;
 	}
-	testGpuParticle->Update(context);
 	/**********************シャドウマップテクスチャの作成************************/
 	shadowMap->Clear(context);
 	shadowMap->Activate(context);

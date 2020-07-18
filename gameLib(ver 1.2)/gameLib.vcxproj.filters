@@ -147,9 +147,6 @@
     <ClCompile Include="Source\scene_title.cpp">
       <Filter>ソース ファイル\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="Source\bloom_test01.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="Source\light.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
@@ -170,12 +167,6 @@
     </ClCompile>
     <ClCompile Include="Source\character.cpp">
       <Filter>gameLib\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\gpu_particle_test.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\scene_shader_test.cpp">
-      <Filter>ソース ファイル\Scene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -308,9 +299,6 @@
     <ClInclude Include="Source\scene_title.h">
       <Filter>ヘッダー ファイル\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="Source\bloom_test01.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="Source\light.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
@@ -337,12 +325,6 @@
     </ClInclude>
     <ClInclude Include="Source\character.h">
       <Filter>gameLib\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\gpu_particle_test.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\scene_shader_test.h">
-      <Filter>ヘッダー ファイル\Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
