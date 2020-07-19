@@ -37,9 +37,6 @@
     <Filter Include="シェーダー">
       <UniqueIdentifier>{8c8ac49e-6b74-4bf0-b0ea-4aade901f9f0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="gameLib\Shaders\Shader課題">
-      <UniqueIdentifier>{16834f79-06a1-4366-8778-cf6a869adc2e}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="External_Libraries\imgui\imgui.cpp">
@@ -167,6 +164,12 @@
     </ClCompile>
     <ClCompile Include="Source\character.cpp">
       <Filter>gameLib\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\player_character.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\player_ai.cpp">
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -326,6 +329,12 @@
     <ClInclude Include="Source\character.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Source\player_character.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\player_ai.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\board.hlsli">
@@ -366,9 +375,6 @@
     </None>
     <None Include="Source\gpu_particle_test_render.hlsli">
       <Filter>シェーダー</Filter>
-    </None>
-    <None Include="Source\static_mesh_multi.hlsli">
-      <Filter>gameLib\Shaders\Shader課題</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -447,11 +453,8 @@
     <FxCompile Include="Source\gpu_particle_test_render_ps.hlsl">
       <Filter>シェーダー</Filter>
     </FxCompile>
-    <FxCompile Include="Source\static_mesh_multi_vs.hlsl">
-      <Filter>gameLib\Shaders\Shader課題</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\static_mesh_multi_ps.hlsl">
-      <Filter>gameLib\Shaders\Shader課題</Filter>
+    <FxCompile Include="Source\bloomStart_ps.hlsl">
+      <Filter>gameLib\Shaders</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

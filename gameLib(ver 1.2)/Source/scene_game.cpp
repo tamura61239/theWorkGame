@@ -79,6 +79,7 @@ void SceneGame::Update(float elapsed_time)
 	pLight.SetLightDirection(light);
 #endif
 	player->Update(elapsed_time);
+	bloom->ImGuiUpdate();
 	VECTOR3F position, normal;
 	float l;
 	if (staticObjs[1]->RayPick(player->GetCharacter()->GetPosition() + VECTOR3F(0, 10, 0), player->GetCharacter()->GetPosition(), &position, &normal, &l) != -1)

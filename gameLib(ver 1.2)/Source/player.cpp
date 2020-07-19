@@ -15,36 +15,12 @@ Player::Player(std::shared_ptr<Character> character)
 	mCharacter->GetModel()->PlayAnimation(0, true);
 	mCharacter->SetScale(VECTOR3F(0.1f, 0.1f, 0.1f));
 	mCharacter->SetPosition(VECTOR3F(0, 0, 30));
-	VECTOR3F eye = pCamera.GetCamera()->GetEye();
-	float angle = 0;
-	DirectX::XMStoreFloat(&angle, DirectX::XMVector3Dot(DirectX::XMLoadFloat3(&VECTOR3F(0, 0, 1)), DirectX::XMVector3Normalize(DirectX::XMLoadFloat3(&eye))));
-	angle = acosf(angle);
-	eye = pCamera.GetCamera()->GetFront()*100;
-	//eye.y = 20;
-	//pCamera.GetCamera()->SetEye(eye);
-	//pCamera.GetCamera()->SetFocus(mCharacter->GetPosition());
 }
 
 void Player::Update(float elapsd_time)
 {
 	VECTOR3F position = mCharacter->GetPosition();
 	position.y -= 0.1f;
-	if (pKeyBoad.PressedState(KeyLabel::A))
-	{
-		position.x++;
-	}
-	if (pKeyBoad.PressedState(KeyLabel::D))
-	{
-		position.x--;
-	}
-	if (pKeyBoad.PressedState(KeyLabel::W))
-	{
-		position.z++;
-	}
-	if (pKeyBoad.PressedState(KeyLabel::S))
-	{
-		position.z--;
-	}
 
 	mCharacter->SetPosition(position);
 }

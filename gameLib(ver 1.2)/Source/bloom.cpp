@@ -2,16 +2,19 @@
 #include"shader.h"
 #include"misc.h"
 #include"vector.h"
+#ifdef USE_IMGUI
+#include<imgui.h>
+#endif
 
-BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHight)
+BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHight) :count(3)
 {
 	unsigned int wight = static_cast<unsigned int>(screenWidth);
 	unsigned int hight = static_cast<unsigned int>(screenHight);
 	for (int i = 0;i < 5;i++)
 	{
-		mFrameBuffer.push_back(std::make_unique<FrameBuffer>(device, static_cast<int>(wight >> i), static_cast<float>(hight >> i), true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R24G8_TYPELESS));
+		mFrameBuffer.emplace_back(std::make_unique<FrameBuffer>(device, static_cast<int>(wight >> i), static_cast<float>(hight >> i), true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R24G8_TYPELESS));
 	}
-	mFrameBuffer.push_back(std::make_unique<FrameBuffer>(device, screenWidth, screenHight, true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R24G8_TYPELESS));
+	mFrameBuffer.emplace_back(std::make_unique<FrameBuffer>(device, screenWidth, screenHight, true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R24G8_TYPELESS));
 
 	HRESULT hr;
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
@@ -23,11 +26,15 @@ BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHi
 	hr = create_vs_from_cso(device, "Data/shader/bloom_vs.cso", mVSShader.GetAddressOf(), input.GetAddressOf(), inputElementDesc, ARRAYSIZE(inputElementDesc));
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-	hr = create_ps_from_cso(device, "Data/shader/bloom_ps.cso", mPSShader[0].GetAddressOf());
+	hr = create_ps_from_cso(device, "Data/shader/bloomStart_ps.cso", mPSShader[0].GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-	hr = create_ps_from_cso(device, "Data/shader/combined_bloom.cso", mPSShader[1].GetAddressOf());
+	hr = create_ps_from_cso(device, "Data/shader/bloom_ps.cso", mPSShader[1].GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+	hr = create_ps_from_cso(device, "Data/shader/combined_bloom.cso", mPSShader[2].GetAddressOf());
+	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
 
 	//SamplerState‚Ì¶¬
 	{
@@ -87,31 +94,71 @@ BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHi
 		hr = device->CreateRasterizerState(&rasterizerDesc, mRasterizeState.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
+	{
+		CD3D11_BUFFER_DESC desc;
+		ZeroMemory(&desc, sizeof(desc));
+		desc.Usage = D3D11_USAGE_DEFAULT;
+		desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		desc.CPUAccessFlags = 0;
+		desc.MiscFlags = 0;
+		desc.ByteWidth = sizeof(CbScene);
+		desc.StructureByteStride = 0;
+		hr = device->CreateBuffer(&desc, nullptr, mCBbuffer.GetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	}
+	mCbuffer.threshold = 0;
+	mCbuffer.widthBlur = 0;
+	mCbuffer.hightBlur = 0;
+	mCbuffer.blurCount = 0;
+}
 
+void BloomRender::ImGuiUpdate()
+{
+#ifdef USE_IMGUI
+	ImGui::Begin("bloom");
+	ImGui::SliderInt("filter count", &count, 0, 4);
+	ImGui::SliderFloat("threshold", &mCbuffer.threshold, 0, 3);
+	ImGui::SliderFloat("widthBlur", &mCbuffer.widthBlur, 0, 10);
+	ImGui::SliderFloat("hightBlur", &mCbuffer.hightBlur, 0, 10);
+	int blurCount = static_cast<int>(mCbuffer.blurCount);
+	if (ImGui::SliderInt("blurCount", &blurCount, 0, 3))
+	{
+		mCbuffer.blurCount = static_cast<float>(blurCount);
+	}
+
+	ImGui::End();
+#endif
 }
 
 void BloomRender::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView* colorSrv, bool render)
 {
 
 	mFrameBuffer[0]->Clear(context);
-	mFrameBuffer[0]->Activate(context);
-	context->VSSetShader(mVSShader.Get(), 0, 0);
-	context->PSSetShader(mPSShader[0].Get(), 0, 0);
-	context->PSSetShaderResources(0, 1, &colorSrv);
-	context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
-	context->RSSetState(mRasterizeState.Get());
-	context->IASetInputLayout(nullptr);
-	context->IASetVertexBuffers(0, 0, 0, 0, 0);
-	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	context->Draw(4, 0);
-	mFrameBuffer[0]->Deactivate(context);
+	if (count >= 0)
+	{
+		mFrameBuffer[0]->Activate(context);
+		context->PSSetConstantBuffers(0, 1, mCBbuffer.GetAddressOf());
+		context->VSSetConstantBuffers(0, 1, mCBbuffer.GetAddressOf());
+		context->UpdateSubresource(mCBbuffer.Get(), 0, 0, &mCbuffer, 0, 0);
+		context->VSSetShader(mVSShader.Get(), 0, 0);
+		context->PSSetShader(mPSShader[0].Get(), 0, 0);
+		context->PSSetShaderResources(0, 1, &colorSrv);
+		context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
+		context->RSSetState(mRasterizeState.Get());
+		context->IASetInputLayout(nullptr);
+		context->IASetVertexBuffers(0, 0, 0, 0, 0);
+		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+		context->Draw(4, 0);
+		mFrameBuffer[0]->Deactivate(context);
+	}
 
 	for (int i = 1;i < 5;i++)
 	{
 		mFrameBuffer[i]->Clear(context);
+		if (count < i)continue;
 		mFrameBuffer[i]->Activate(context);
 		context->VSSetShader(mVSShader.Get(), 0, 0);
-		context->PSSetShader(mPSShader[0].Get(), 0, 0);
+		context->PSSetShader(mPSShader[1].Get(), 0, 0);
 		context->PSSetShaderResources(0, 1, mFrameBuffer[i - 1]->GetRenderTargetShaderResourceView().GetAddressOf());
 		context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
 		context->RSSetState(mRasterizeState.Get());
@@ -126,7 +173,7 @@ void BloomRender::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView*
 		mFrameBuffer[5]->Clear(context);
 		mFrameBuffer[5]->Activate(context);
 		context->VSSetShader(mVSShader.Get(), 0, 0);
-		context->PSSetShader(mPSShader[1].Get(), 0, 0);
+		context->PSSetShader(mPSShader[2].Get(), 0, 0);
 		for (int i = 0;i < 5;i++)
 		{
 			context->PSSetShaderResources(i, 1, mFrameBuffer[i]->GetRenderTargetShaderResourceView().GetAddressOf());
@@ -141,10 +188,11 @@ void BloomRender::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView*
 		return;
 	}
 	context->VSSetShader(mVSShader.Get(), 0, 0);
-	context->PSSetShader(mPSShader[1].Get(), 0, 0);
+	context->PSSetShader(mPSShader[2].Get(), 0, 0);
+	context->PSSetShaderResources(0, 1, &colorSrv);
 	for (int i = 0;i < 5;i++)
 	{
-		context->PSSetShaderResources(i, 1, mFrameBuffer[i]->GetRenderTargetShaderResourceView().GetAddressOf());
+		context->PSSetShaderResources(i + 1, 1, mFrameBuffer[i]->GetRenderTargetShaderResourceView().GetAddressOf());
 	}
 	context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
 	context->RSSetState(mRasterizeState.Get());
