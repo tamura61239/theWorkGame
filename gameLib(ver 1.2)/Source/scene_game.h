@@ -10,7 +10,8 @@
 #include"model.h"
 #include"model_renderer.h"
 #include"bloom.h"
-#include"player.h"
+#include"player_ai.h"
+#include"stage_manager.h"
 
 class SceneGame :public Scene
 {
@@ -52,7 +53,8 @@ private:
 	std::unique_ptr<FrameBuffer>shadowMap;
 	std::unique_ptr<FrameBuffer>frameBuffer[2];
 	std::unique_ptr<RenderEffects>renderEffects;
-	std::unique_ptr<Player>player;
+	std::unique_ptr<PlayerAI>player;
 	std::unique_ptr<ModelRenderer>modelRenderer;
 	std::unique_ptr<BloomRender>bloom;
+	std::unique_ptr<StageManager>mSManager;
 };

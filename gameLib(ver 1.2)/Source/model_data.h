@@ -169,5 +169,5 @@ struct ModelData
 			animations
 		);
 	}
-	ModelData(const char* filename,const bool textureFlag, int filetype = 0);
+	ModelData(const char* filename,const bool textureFlag=false, int filetype = 0);
 };

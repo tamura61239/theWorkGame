@@ -1,8 +1,12 @@
 #include "player_character.h"
 
 PlayerCharacter::PlayerCharacter(std::shared_ptr<ModelResource> resouce):Character(resouce),mVelocity(0,0,0),mAccel(0,0,0),mExist(true)
-,mMoveState(MOVESTATE::MOVE),mChangState(false), mMaxSpeed(0)
+,mMoveState(MOVESTATE::MOVE),mChangState(false), mMaxSpeed(0),mMinSpeed(0)
 {
+	mModel->PlayAnimation(0, true);
+#ifdef USE_IMGUI
+	mMoveState = MOVESTATE::EDITOR;
+#endif
 }
 
 void PlayerCharacter::Move(float elapsd_time)
@@ -21,7 +25,7 @@ void PlayerCharacter::Move(float elapsd_time)
 		}
 		else
 		{
-			mVelocity -= v * speed;
+			mVelocity -= v * mMinSpeed;
 		}
 	}
 	else

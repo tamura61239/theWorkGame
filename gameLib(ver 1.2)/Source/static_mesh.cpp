@@ -46,6 +46,7 @@ StaticMesh::StaticMesh(ID3D11Device* device, const char* fileName, SHADER_TYPE s
 		cereal::BinaryOutputArchive o_archive(ofs);
 		o_archive(*this);
 	}
+	SetMinAndMaxPosition();
 	CreateBuffers(device);
 	CreateShaderResourceView(device,shaderType);
 	CreateShader(device, shaderType);
@@ -66,6 +67,25 @@ void StaticMesh::SetShaderResouceView(ID3D11DeviceContext* context, Subset& subs
 		context->PSSetShaderResources(1, 1, subset.normal.mShaderResourceView.GetAddressOf());
 		context->PSSetShaderResources(2, 1, subset.bump.mShaderResourceView.GetAddressOf());
 		break;
+	}
+}
+
+void StaticMesh::SetMinAndMaxPosition()
+{
+	minPosition = maxPosition = VECTOR3F(0, 0, 0);
+	for (auto& mesh : meshes)
+	{
+		for (auto& vertex : mesh.vertices)
+		{
+			minPosition.x = minPosition.x < vertex.position.x ? minPosition.x : vertex.position.x;
+			minPosition.y = minPosition.y < vertex.position.y ? minPosition.y : vertex.position.y;
+			minPosition.z = minPosition.z < vertex.position.z ? minPosition.z : vertex.position.z;
+
+			maxPosition.x = maxPosition.x > vertex.position.x ? maxPosition.x : vertex.position.x;
+			maxPosition.y = maxPosition.y > vertex.position.y ? maxPosition.y : vertex.position.y;
+			maxPosition.z = maxPosition.z > vertex.position.z ? maxPosition.z : vertex.position.z;
+
+		}
 	}
 }
 

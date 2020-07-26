@@ -39,7 +39,7 @@ public:
 	void SetLightColor(const VECTOR4F& lightColor) { mLightColor = lightColor; }
 	void SetAmbientColor(const VECTOR4F& ambientColor) { mAmbientColor = ambientColor; }
 	void SetPointLight(int index, VECTOR3F position, VECTOR3F color, float range);
-	void SetSpotLight(int index, VECTOR3F position, VECTOR3F color, VECTOR3F dir, float range, float near, float far);
+	void SetSpotLight(int index, VECTOR3F position, VECTOR3F color, VECTOR3F dir, float range, float nearArea, float farArea);
 	void ConstanceLightBufferSetShader(ID3D11DeviceContext* context);
 	//getter
 	const VECTOR4F& GetLightDirection() { return mLightDirection; }

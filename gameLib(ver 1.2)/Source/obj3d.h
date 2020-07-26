@@ -4,7 +4,7 @@
 class Obj3D
 {
 public:
-	Obj3D():mPosition(0,0,0), mAngle(0,0,0), mScale(1,1,1), mWorld(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0){}
+	Obj3D():mPosition(0,0,0), mAngle(0,0,0), mScale(1,1,1),mColor(1,1,1,1), mWorld(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0){}
 	void CalculateTransform()
 	{
 		DirectX::XMMATRIX W, s, r, t;
@@ -19,17 +19,20 @@ public:
 		DirectX::XMStoreFloat4x4(&mWorld, W);
 	}
 	//setter
-	void SetPosition(const VECTOR3F position) { mPosition = position; }
-	void SetAngle(const VECTOR3F angle) { mAngle = angle; }
-	void SetScale(const VECTOR3F scale) { mScale = scale; }
+	void SetPosition(const VECTOR3F&position) { mPosition = position; }
+	void SetAngle(const VECTOR3F&angle) { mAngle = angle; }
+	void SetScale(const VECTOR3F&scale) { mScale = scale; }
+	void SetColor(const VECTOR4F& color) { mColor = color; }
 	//getter
 	const VECTOR3F& GetPosition() { return mPosition; }
 	const VECTOR3F& GetAngle() { return mAngle; }
 	const VECTOR3F& GetScale() { return mScale; }
+	const VECTOR4F& GetColor() { return mColor; }
 	const FLOAT4X4& GetWorld() { return mWorld; }
 protected:
 	VECTOR3F mPosition;
 	VECTOR3F mAngle;
 	VECTOR3F mScale;
+	VECTOR4F mColor;
 	FLOAT4X4 mWorld;
 };

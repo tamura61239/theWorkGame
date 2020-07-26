@@ -33,6 +33,8 @@ public:
 	VECTOR2& operator=(const VECTOR2& v) { x = v.x; y = v.y; return *this; }
 	VECTOR2& operator+=(const VECTOR2& v) { x += v.x; y += v.y; return *this; }
 	VECTOR2& operator-=(const VECTOR2& v) { x -= v.x; y -= v.y; return *this; }
+	VECTOR2& operator*=(const VECTOR2& v) { x *= v.x; y *= v.y; return *this; }
+	VECTOR2& operator/=(const VECTOR2& v) { x /= v.x; y /= v.y; return *this; }
 	VECTOR2& operator*=(const int f) { x *= f; y *= f; return *this; }
 	VECTOR2& operator/=(const int f) { x /= f; y *= f; return *this; }
 
@@ -41,6 +43,8 @@ public:
 
 	VECTOR2 operator+(const VECTOR2& v) const { return VECTOR2(x + v.x, y + v.y); }
 	VECTOR2 operator-(const VECTOR2& v) const { return VECTOR2(x - v.x, y - v.y); }
+	VECTOR2 operator*(const VECTOR2& v) const { return VECTOR2(x * v.x, y * v.y); }
+	VECTOR2 operator/(const VECTOR2& v) const { return VECTOR2(x / v.x, y / v.y); }
 	VECTOR2 operator*(const int f) const { return VECTOR2(x * f, y * f); }
 	VECTOR2 operator/(const int f) const { return VECTOR2(x / f, y / f); }
 
@@ -60,6 +64,8 @@ public:
 	UVECTOR2& operator=(const UVECTOR2& v) { x = v.x; y = v.y; return *this; }
 	UVECTOR2& operator+=(const UVECTOR2& v) { x += v.x; y += v.y; return *this; }
 	UVECTOR2& operator-=(const UVECTOR2& v) { x -= v.x; y -= v.y; return *this; }
+	UVECTOR2& operator*=(const UVECTOR2& v) { x *= v.x; y *= v.y; return *this; }
+	UVECTOR2& operator/=(const UVECTOR2& v) { x /= v.x; y /= v.y; return *this; }
 	UVECTOR2& operator*=(const int f) { x *= f; y *= f; return *this; }
 	UVECTOR2& operator/=(const int f) { x /= f; y /= f; return *this; }
 
@@ -68,6 +74,8 @@ public:
 
 	UVECTOR2 operator+(const UVECTOR2& v) const { return UVECTOR2(x + v.x, y + v.y); }
 	UVECTOR2 operator-(const UVECTOR2& v) const { return UVECTOR2(x - v.x, y - v.y); }
+	UVECTOR2 operator*(const UVECTOR2& v) const { return UVECTOR2(x * v.x, y * v.y); }
+	UVECTOR2 operator/(const UVECTOR2& v) const { return UVECTOR2(x / v.x, y / v.y); }
 	UVECTOR2 operator*(const int f) const { return UVECTOR2(x * f, y * f); }
 	UVECTOR2 operator/(const int f) const { return UVECTOR2(x / f, y / f); }
 
@@ -86,6 +94,8 @@ public:
 	VECTOR2F& operator=(const VECTOR2F& v) { x = v.x; y = v.y; return *this; }
 	VECTOR2F& operator+=(const VECTOR2F& v) { x += v.x; y += v.y; return *this; }
 	VECTOR2F& operator-=(const VECTOR2F& v) { x -= v.x; y -= v.y; return *this; }
+	VECTOR2F& operator*=(const VECTOR2F& v) { x *= v.x; y *= v.y; return *this; }
+	VECTOR2F& operator/=(const VECTOR2F& v) { x /= v.x; y /= v.y; return *this; }
 	VECTOR2F& operator*=(const float f) { x *= f; y *= f; return *this; }
 	VECTOR2F& operator/=(const float f) { x /= f; y /= f; return *this; }
 
@@ -94,6 +104,8 @@ public:
 
 	VECTOR2F operator+(const VECTOR2F& v) const { return VECTOR2F(x + v.x, y + v.y); }
 	VECTOR2F operator-(const VECTOR2F& v) const { return VECTOR2F(x - v.x, y - v.y); }
+	VECTOR2F operator*(const VECTOR2F& v) const { return VECTOR2F(x * v.x, y * v.y); }
+	VECTOR2F operator/(const VECTOR2F& v) const { return VECTOR2F(x / v.x, y / v.y); }
 	VECTOR2F operator*(const float f) const { return VECTOR2F(x * f, y * f); }
 	VECTOR2F operator/(const float f) const { return VECTOR2F(x / f, y / f); }
 
@@ -120,6 +132,8 @@ public:
 	VECTOR3& operator=(const VECTOR3& v) { x = v.x; y = v.y; z = v.z; return *this; }
 	VECTOR3& operator+=(const VECTOR3& v) { x += v.x; y += v.y; z += v.z; return *this; }
 	VECTOR3& operator-=(const VECTOR3& v) { x -= v.x; y -= v.y; z -= v.z; return *this; }
+	VECTOR3& operator*=(const VECTOR3& v) { x *= v.x; y *= v.y; z *= v.z; return *this; }
+	VECTOR3& operator/=(const VECTOR3& v) { x /= v.x; y /= v.y; z /= v.z; return *this; }
 	VECTOR3& operator*=(const int f) { x *= f; y *= f; z *= f; return *this; }
 	VECTOR3& operator/=(const int f) { x /= f; y /= f; z /= f; return *this; }
 
@@ -128,6 +142,8 @@ public:
 
 	VECTOR3 operator+(const VECTOR3& v) const { return VECTOR3(x + v.x, y + v.y, z + v.z); }
 	VECTOR3 operator-(const VECTOR3& v) const { return VECTOR3(x - v.x, y - v.y, z - v.z); }
+	VECTOR3 operator*(const VECTOR3& v) const { return VECTOR3(x * v.x, y * v.y, z * v.z); }
+	VECTOR3 operator/(const VECTOR3& v) const { return VECTOR3(x / v.x, y / v.y, z / v.z); }
 	VECTOR3 operator*(const int f) const { return VECTOR3(x * f, y * f, z * f); }
 	VECTOR3 operator/(const int f) const { return VECTOR3(x / f, y / f, z / f); }
 
@@ -147,6 +163,8 @@ public:
 	UVECTOR3& operator=(const UVECTOR3& v) { x = v.x; y = v.y; z = v.z; return *this; }
 	UVECTOR3& operator+=(const UVECTOR3& v) { x += v.x; y += v.y; z += v.z; return *this; }
 	UVECTOR3& operator-=(const UVECTOR3& v) { x -= v.x; y -= v.y; z -= v.z; return *this; }
+	UVECTOR3& operator*=(const UVECTOR3& v) { x *= v.x; y *= v.y; z *= v.z; return *this; }
+	UVECTOR3& operator/=(const UVECTOR3& v) { x /= v.x; y /= v.y; z /= v.z; return *this; }
 	UVECTOR3& operator*=(const int f) { x *= f; y *= f; z *= f; return *this; }
 	UVECTOR3& operator/=(const int f) { x /= f; y /= f; z /= f; return *this; }
 
@@ -155,6 +173,8 @@ public:
 
 	UVECTOR3 operator+(const UVECTOR3& v) const { return UVECTOR3(x + v.x, y + v.y, z + v.z); }
 	UVECTOR3 operator-(const UVECTOR3& v) const { return UVECTOR3(x - v.x, y - v.y, z - v.z); }
+	UVECTOR3 operator*(const UVECTOR3& v) const { return UVECTOR3(x * v.x, y * v.y, z * v.z); }
+	UVECTOR3 operator/(const UVECTOR3& v) const { return UVECTOR3(x / v.x, y / v.y, z / v.z); }
 	UVECTOR3 operator*(const int f) const { return UVECTOR3(x * f, y * f, z * f); }
 	UVECTOR3 operator/(const int f) const { return UVECTOR3(x / f, y / f, z / f); }
 
@@ -174,6 +194,8 @@ public:
 	VECTOR3F& operator=(const VECTOR3F& v) { x = v.x; y = v.y; z = v.z; return *this; }
 	VECTOR3F& operator+=(const VECTOR3F& v) { x += v.x; y += v.y; z += v.z; return *this; }
 	VECTOR3F& operator-=(const VECTOR3F& v) { x -= v.x; y -= v.y; z -= v.z; return *this; }
+	VECTOR3F& operator*=(const VECTOR3F& v) { x *= v.x; y *= v.y; z *= v.z; return *this; }
+	VECTOR3F& operator/=(const VECTOR3F& v) { x /= v.x; y /= v.y; z /= v.z; return *this; }
 	VECTOR3F& operator*=(const float f) { x *= f; y *= f; z *= f; return *this; }
 	VECTOR3F& operator/=(const float f) { x /= f; y /= f; z /= f; return *this; }
 
@@ -182,6 +204,8 @@ public:
 
 	VECTOR3F operator+(const VECTOR3F& v) const { return VECTOR3F(x + v.x, y + v.y, z + v.z); }
 	VECTOR3F operator-(const VECTOR3F& v) const { return VECTOR3F(x - v.x, y - v.y, z - v.z); }
+	VECTOR3F operator*(const VECTOR3F& v) const { return VECTOR3F(x * v.x, y * v.y, z * v.z); }
+	VECTOR3F operator/(const VECTOR3F& v) const { return VECTOR3F(x / v.x, y / v.y, z / v.z); }
 	VECTOR3F operator*(const float f) const { return VECTOR3F(x * f, y * f, z * f); }
 	VECTOR3F operator/(const float f) const { return VECTOR3F(x / f, y / f, z / f); }
 
@@ -207,6 +231,8 @@ public:
 	VECTOR4& operator=(const VECTOR4& v) { x = v.x; y = v.y; z = v.z; w = v.w; return *this; }
 	VECTOR4& operator+=(const VECTOR4& v) { x += v.x; y += v.y; z += v.z; w += v.w; return *this; }
 	VECTOR4& operator-=(const VECTOR4& v) { x -= v.x; y -= v.y; z -= v.z; w -= v.w; return *this; }
+	VECTOR4& operator*=(const VECTOR4& v) { x *= v.x; y *= v.y; z *= v.z; w *= v.w; return *this; }
+	VECTOR4& operator/=(const VECTOR4& v) { x /= v.x; y /= v.y; z /= v.z; w /= v.w; return *this; }
 	VECTOR4& operator*=(const int f) { x *= f; y *= f; z *= f; w *= f; return *this; }
 	VECTOR4& operator/=(const int f) { x /= f; y /= f; z /= f; w /= f; return *this; }
 
@@ -215,6 +241,8 @@ public:
 
 	VECTOR4 operator+(const VECTOR4& v) const { return VECTOR4(x + v.x, y + v.y, z + v.z, w + v.w); }
 	VECTOR4 operator-(const VECTOR4& v) const { return VECTOR4(x - v.x, y - v.y, z - v.z, w - v.w); }
+	VECTOR4 operator*(const VECTOR4& v) const { return VECTOR4(x * v.x, y * v.y, z * v.z, w * v.w); }
+	VECTOR4 operator/(const VECTOR4& v) const { return VECTOR4(x / v.x, y / v.y, z / v.z, w / v.w); }
 	VECTOR4 operator*(const int f) const { return VECTOR4(x * f, y * f, z * f, w * f); }
 	VECTOR4 operator/(const int f) const { return VECTOR4(x / f, y / f, z / f, w * f); }
 
@@ -234,6 +262,8 @@ public:
 	UVECTOR4& operator=(const UVECTOR4& v) { x = v.x; y = v.y; z = v.z; w = v.w; return *this; }
 	UVECTOR4& operator+=(const UVECTOR4& v) { x += v.x; y += v.y; z += v.z; w += v.w; return *this; }
 	UVECTOR4& operator-=(const UVECTOR4& v) { x -= v.x; y -= v.y; z -= v.z; w -= v.w; return *this; }
+	UVECTOR4& operator*=(const UVECTOR4& v) { x *= v.x; y *= v.y; z *= v.z; w *= v.w; return *this; }
+	UVECTOR4& operator/=(const UVECTOR4& v) { x /= v.x; y /= v.y; z /= v.z; w /= v.w; return *this; }
 	UVECTOR4& operator*=(const int f) { x *= f; y *= f; z *= f; w *= f; return *this; }
 	UVECTOR4& operator/=(const int f) { x /= f; y /= f; z /= f; w /= f; return *this; }
 
@@ -242,6 +272,8 @@ public:
 
 	UVECTOR4 operator+(const UVECTOR4& v) const { return UVECTOR4(x + v.x, y + v.y, z + v.z, w + v.w); }
 	UVECTOR4 operator-(const UVECTOR4& v) const { return UVECTOR4(x - v.x, y - v.y, z - v.z, w - v.w); }
+	UVECTOR4 operator*(const UVECTOR4& v) const { return UVECTOR4(x * v.x, y * v.y, z * v.z, w * v.w); }
+	UVECTOR4 operator/(const UVECTOR4& v) const { return UVECTOR4(x / v.x, y / v.y, z / v.z, w / v.w); }
 	UVECTOR4 operator*(const int f) const { return UVECTOR4(x * f, y * f, z * f, w * f); }
 	UVECTOR4 operator/(const int f) const { return UVECTOR4(x / f, y / f, z / f, w * f); }
 
@@ -261,6 +293,8 @@ public:
 	VECTOR4F& operator=(const VECTOR4F& v) { x = v.x; y = v.y; z = v.z; w = v.w; return *this; }
 	VECTOR4F& operator+=(const VECTOR4F& v) { x += v.x; y += v.y; z += v.z; w += v.w; return *this; }
 	VECTOR4F& operator-=(const VECTOR4F& v) { x -= v.x; y -= v.y; z -= v.z; w -= v.w; return *this; }
+	VECTOR4F& operator*=(const VECTOR4F& v) { x *= v.x; y *= v.y; z *= v.z; w *= v.w; return *this; }
+	VECTOR4F& operator/=(const VECTOR4F& v) { x /= v.x; y /= v.y; z /= v.z; w /= v.w; return *this; }
 	VECTOR4F& operator*=(const float f) { x *= f; y *= f; z *= f; w *= f; return *this; }
 	VECTOR4F& operator/=(const float f) { x /= f; y /= f; z /= f; w /= f; return *this; }
 
@@ -269,6 +303,8 @@ public:
 
 	VECTOR4F operator+(const VECTOR4F& v) const { return VECTOR4F(x + v.x, y + v.y, z + v.z, w + v.w); }
 	VECTOR4F operator-(const VECTOR4F& v) const { return VECTOR4F(x - v.x, y - v.y, z - v.z, w - v.w); }
+	VECTOR4F operator*(const VECTOR4F& v) const { return VECTOR4F(x * v.x, y * v.y, z * v.z, w * v.w); }
+	VECTOR4F operator/(const VECTOR4F& v) const { return VECTOR4F(x / v.x, y / v.y, z / v.z, w / v.w); }
 	VECTOR4F operator*(const float f) const { return VECTOR4F(x * f, y * f, z * f, w * f); }
 	VECTOR4F operator/(const float f) const { return VECTOR4F(x / f, y / f, z / f, w / f); }
 

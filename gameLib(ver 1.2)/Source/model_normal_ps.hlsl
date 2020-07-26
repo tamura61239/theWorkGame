@@ -20,7 +20,7 @@ float4 main(VS_OUT pin) : SV_TARGET
 
 	float3 E = normalize(eyePosition.xyz - pin.worldPosition.xyz);
 
-	float3 L = normalize(-lightDirection.xyz);
+	float3 L = normalize(lightDirection.xyz);
 
 	//Ú‹óŠÔ²
 	float3 vx = normalize(pin.vT);
@@ -72,7 +72,7 @@ float4 main(VS_OUT pin) : SV_TARGET
 		LV = normalize(LV);
 		LC = pointLight[i].color.rgb;
 		//ŠgUŒõ‚Ì‰ÁZ
-		LD += Diffuse(N, -LV, LC, Kd) * influence * influence;
+		LD += Diffuse(N, LV, LC, Kd) * influence * influence;
 		//‹¾–ÊŒõ‚Ì‰ÁZ
 		LS += BlinnPhongSpcular(N, -LV, LC, E, Ks, 20) * influence * influence;
 
@@ -90,7 +90,7 @@ float4 main(VS_OUT pin) : SV_TARGET
 		influence = 1.0f;
 		LC = spotLight[i].color.rgb;
 		//ŠgUŒõ‚Ì‰ÁZ
-		LD += Diffuse(N, -LV, LC, Kd) * influence * influence * influence2;
+		LD += Diffuse(N, LV, LC, Kd) * influence * influence * influence2;
 		//‹¾–ÊŒõ‚Ì‰ÁZ
 		LS += BlinnPhongSpcular(N, -LV, LC, E, Ks, 20) * influence * influence * influence2;
 	}

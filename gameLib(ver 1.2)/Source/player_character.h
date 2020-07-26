@@ -13,7 +13,9 @@ public:
 		MOVE,//板の上の移動
 		JUMP,//ジャンプ
 		RAMP,//ジャンプ台
-		LANDING//着地
+		LANDING,//着地
+		EDITOR,//エディターモード
+		MAX
 	};
 	//setter
 	void SetVelocity(const VECTOR3F& velocity) { mVelocity = velocity; }

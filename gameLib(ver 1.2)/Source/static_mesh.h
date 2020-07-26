@@ -29,6 +29,8 @@ public:
 	Microsoft::WRL::ComPtr<ID3D11VertexShader>GetVSShader() { return mVSShader; }
 	Microsoft::WRL::ComPtr<ID3D11PixelShader>GetPSShader() { return mPSShader; }
 	Microsoft::WRL::ComPtr<ID3D11InputLayout>GetInputLayout() { return mInput; }
+	const VECTOR3F& GetMaxPosition() { return maxPosition; }
+	const VECTOR3F& GetMinPosition() { return minPosition; }
 	void ChangeShader(ID3D11Device* device, SHADER_TYPE shaderType, std::vector<TextureMapData>data);
 public:
 	//シリアライズ
@@ -129,6 +131,7 @@ public:
 	void SetShaderResouceView(ID3D11DeviceContext* context, Subset& subset);
 	void CreateShader(ID3D11Device* device, const char* vsShaderName, const char* psShaderName);
 private:
+	void SetMinAndMaxPosition();
 	void CreateMesh(ID3D11Device* device, const char* fileName, bool pathOrganize, int organizeType);
 	void FbxTettureNameLoad(const char* property_name,const char* factor_name, Material& material, const FbxSurfaceMaterial* surfaceMaterial, const char* fileName, bool pathOrganize, int organizeType);
 	void CreateBuffers(ID3D11Device* device);
@@ -139,6 +142,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11PixelShader>mPSShader;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout>mInput;
 	SHADER_TYPE mShaderType;
+	VECTOR3F minPosition;
+	VECTOR3F maxPosition;
 };
 
 class MeshRender

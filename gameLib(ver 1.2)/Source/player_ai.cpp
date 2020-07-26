@@ -17,6 +17,8 @@ void PlayerAI::Load()
 	{
 		fread(&mParameter, sizeof(PlayerParameter), 1, fp);
 		fclose(fp);
+		mCharacter->SetMinSpeed(mParameter.minSpeed);
+		mCharacter->SetMaxSpeed(mParameter.maxSpeed);
 	}
 	else
 	{
@@ -39,9 +41,20 @@ void PlayerAI::ImGuiUpdate()
 #ifdef USE_IMGUI
 	ImGui::Begin("player");
 	float* accel[3] = { &mParameter.accel.x,&mParameter.accel.y ,&mParameter.accel.z };
-	ImGui::SliderFloat3("accel", *accel, -10, 10);
-	ImGui::SliderFloat("maxSpeed", &mParameter.maxSpeed, mParameter.minSpeed, 10);
-	ImGui::SliderFloat("minSpeed", &mParameter.minSpeed, 0, mParameter.maxSpeed);
+	ImGui::SliderFloat3("accel", *accel, -100, 100);
+	if (ImGui::SliderFloat("maxSpeed", &mParameter.maxSpeed, mParameter.minSpeed, 100))
+	{
+		mCharacter->SetMaxSpeed(mParameter.maxSpeed);
+	}
+	if (ImGui::SliderFloat("minSpeed", &mParameter.minSpeed, 0, mParameter.maxSpeed))
+	{
+		mCharacter->SetMinSpeed(mParameter.minSpeed);
+	}
+	if (ImGui::Button("save"))
+	{
+		Save();
+	}
+	ImGui::Text("%f,%f,%f", mCharacter->GetPosition().x, mCharacter->GetPosition().y, mCharacter->GetPosition().z);
 	ImGui::End();
 #endif
 }
@@ -49,6 +62,11 @@ void PlayerAI::ImGuiUpdate()
 void PlayerAI::Update(float elapsd_time)
 {
 	ImGuiUpdate();
-
+	switch (mCharacter->GetMoveState())
+	{
+	case PlayerCharacter::MOVESTATE::MOVE:
+		mCharacter->SetAccel(mParameter.accel);
+		break;
+	}
 	mCharacter->Move(elapsd_time);
 }

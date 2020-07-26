@@ -109,6 +109,7 @@ public:
 
 		return 0;
 	}
+	HWND GetHwnd() { return hwnd; }
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView>GetDepthStencilView() { return mDepthStencilView; }
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView>GetRenderTargetView() { return mRenderTargetView; }
 private:

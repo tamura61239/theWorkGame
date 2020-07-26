@@ -138,7 +138,7 @@ bool Framework::Initialize(HWND hwnd)
 	D3D11_VIEWPORT viewport;
 	UINT num_viewports = 1;
 	mDeviceContext.Get()->RSGetViewports(&num_viewports, &viewport);
-	pCamera.SetDefaultPerspective(30 * (3.14f / 180.f), viewport.Width / viewport.Height, 0.1f, 4000.0f);
+	pCamera.SetDefaultPerspective(30 * (3.14f / 180.f), viewport.Width / viewport.Height, 0.1f, 10000.0f);
 	//camera->SetPerspective(30 * (3.14f / 180.f), viewport.Width / viewport.Height, 0.1f, 1000.0f);
 	//cameraOperation->SetCameraType(CameraOperation::CAMERA_TYPE::DEBUG);
 	pSceneManager.SetDevice(mDevice.Get());

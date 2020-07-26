@@ -187,6 +187,9 @@
     <ClCompile Include="Source\sound_buffer.cpp" />
     <ClCompile Include="Source\sound_manager.cpp" />
     <ClCompile Include="Source\sprite.cpp" />
+    <ClCompile Include="Source\stage_manager.cpp" />
+    <ClCompile Include="Source\stage_obj.cpp" />
+    <ClCompile Include="Source\stage_obj_drag_operation.cpp" />
     <ClCompile Include="Source\static_mesh.cpp" />
     <ClCompile Include="Source\static_obj.cpp" />
     <ClCompile Include="Source\texture.cpp" />
@@ -243,6 +246,9 @@
     <ClInclude Include="Source\sound_buffer.h" />
     <ClInclude Include="Source\sound_manager.h" />
     <ClInclude Include="Source\sprite.h" />
+    <ClInclude Include="Source\stage_manager.h" />
+    <ClInclude Include="Source\stage_obj.h" />
+    <ClInclude Include="Source\stage_obj_drag_operation.h" />
     <ClInclude Include="Source\static_mesh.h" />
     <ClInclude Include="Source\static_obj.h" />
     <ClInclude Include="Source\texture.h" />

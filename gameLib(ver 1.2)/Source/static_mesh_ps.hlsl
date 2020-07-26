@@ -17,7 +17,7 @@ float4 main(VS_OUT pin) : SV_TARGET
 
 	float3 L = normalize(lightDirection.xyz);
 	//ŠÂ‹«Œõ
-	float3 A = ambientColor.rgb/**HemiSphereLight(pin.worldNormal, skyColor, groundColor)*/;
+	float3 A = ambientColor.rgb*HemiSphereLight(pin.worldNormal, skyColor, groundColor);
 	//ŠgŽU”½ŽË
 	float3 C = lightColor.rgb;
 	float3 Kd = float3(1, 1, 1);

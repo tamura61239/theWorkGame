@@ -34,6 +34,7 @@ public:
 	const VECTOR3F& GetRight() { return mRight; }
 	const FLOAT4X4& GetView() { return mView; }
 	const FLOAT4X4& GetProjection() { return mProjection; }
+	const float GetFar() { return mFarZ; }
 private:
 	FLOAT4X4 mView;//ビュー行列
 	FLOAT4X4 mProjection;//プロジェクション行列
