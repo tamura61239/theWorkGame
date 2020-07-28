@@ -52,7 +52,8 @@ int StageObjDragOperation::Update(std::shared_ptr<StageObj> obj, const VECTOR3F&
 		if (aroowNumber > -1)
 		{
 			Move(obj, farMouse, aroowNumber);
-			mArrowObjs[aroowNumber]->SetColor(VECTOR4F(1, 1, 1, 0.2));
+			VECTOR4F color = mArrowObjs[aroowNumber]->GetColor();
+			mArrowObjs[aroowNumber]->SetColor(VECTOR4F(color.x, color.y, color.z, 1));
 		}
 	}
 	mBeforeFar = farMouse;
@@ -114,16 +115,16 @@ void StageObjDragOperation::SetArrow(std::shared_ptr<StageObj>obj)
 	VECTOR3F scale = obj->GetScale();
 	VECTOR3F s[] =
 	{
-		{VECTOR3F(1,scale.z,1)},
-		{VECTOR3F(1,scale.y,1)},
-		{VECTOR3F(1,scale.x,1)},
+		{VECTOR3F(1,0,0)},
+		{VECTOR3F(1,1,0)},
+		{VECTOR3F(0,0,1)},
 	};
 	for (int i = 0;i < 3;i++)
 	{
-		mArrowObjs[i]->SetScale(VECTOR3F(0.1,0.2,0.1)+ mLocalScale[i]/* + mLocalPosition[i] * mDragObjSize * scale*/);
+		mArrowObjs[i]->SetScale(VECTOR3F(0.15,0.3,0.15)+ mLocalScale[i]/* + mLocalPosition[i] * mDragObjSize * scale*/);
 		mArrowObjs[i]->SetPosition(position + mLocalPosition[i] * mArrowSize.y*(mArrowObjs[i]->GetScale().y));
 		mArrowObjs[i]->CalculateTransform();
-		mArrowObjs[i]->SetColor(VECTOR4F(1, 1, 1, 1));
+		mArrowObjs[i]->SetColor(VECTOR4F(s[i].x, s[i].y, s[i].z, 0.5));
 	}
 
 	//for (int i = 0;i < 3;i++)
@@ -134,9 +135,14 @@ void StageObjDragOperation::SetArrow(std::shared_ptr<StageObj>obj)
 	//}
 }
 
-void StageObjDragOperation::Render(ID3D11DeviceContext* context, MeshRender* render)
+void StageObjDragOperation::Render(ID3D11DeviceContext* context, MeshRender* render, const FLOAT4X4& view, const FLOAT4X4& projection)
 {
+	VECTOR3F light;
+	DirectX::XMStoreFloat3(&light, DirectX::XMVector3Normalize(DirectX::XMLoadFloat3(&(pCamera.GetCamera()->GetFocus() - pCamera.GetCamera()->GetEye()))));
+	
+	render->Begin(context, -VECTOR4F(light.x, light.y, light.z, 0), view, projection);
 	render->Render(context, mArrowObjs[0]->GetMesh(), mArrowObjs[0]->GetWorld(),mArrowObjs[0]->GetColor());
 	render->Render(context, mArrowObjs[1]->GetMesh(), mArrowObjs[1]->GetWorld(),mArrowObjs[1]->GetColor());
 	render->Render(context, mArrowObjs[2]->GetMesh(), mArrowObjs[2]->GetWorld(),mArrowObjs[2]->GetColor());
+	render->End(context);
 }

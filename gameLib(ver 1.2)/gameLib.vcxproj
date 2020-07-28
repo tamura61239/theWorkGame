@@ -161,12 +161,14 @@
     <ClCompile Include="Source\camera_manager.cpp" />
     <ClCompile Include="Source\camera_operation.cpp" />
     <ClCompile Include="Source\character.cpp" />
+    <ClCompile Include="Source\collision.cpp" />
     <ClCompile Include="Source\direct_input.cpp" />
     <ClCompile Include="Source\fbx_load.cpp" />
     <ClCompile Include="Source\framebuffer.cpp" />
     <ClCompile Include="Source\framework.cpp" />
     <ClCompile Include="Source\gamepad.cpp" />
     <ClCompile Include="Source\geometric_primitive.cpp" />
+    <ClCompile Include="Source\Judgment.cpp" />
     <ClCompile Include="Source\light.cpp" />
     <ClCompile Include="Source\main.cpp" />
     <ClCompile Include="Source\model.cpp" />
@@ -212,6 +214,7 @@
     <ClInclude Include="Source\camera_manager.h" />
     <ClInclude Include="Source\camera_operation.h" />
     <ClInclude Include="Source\character.h" />
+    <ClInclude Include="Source\collision.h" />
     <ClInclude Include="Source\direct_input.h" />
     <ClInclude Include="Source\fbx_load.h" />
     <ClInclude Include="Source\framebuffer.h" />
@@ -219,6 +222,7 @@
     <ClInclude Include="Source\gamepad.h" />
     <ClInclude Include="Source\geometric_primitive.h" />
     <ClInclude Include="Source\high_resolution_timer.h" />
+    <ClInclude Include="Source\Judgment.h" />
     <ClInclude Include="Source\key_board.h" />
     <ClInclude Include="Source\light.h" />
     <ClInclude Include="Source\logger.h" />

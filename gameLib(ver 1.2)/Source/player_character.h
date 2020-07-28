@@ -14,7 +14,6 @@ public:
 		JUMP,//ジャンプ
 		RAMP,//ジャンプ台
 		LANDING,//着地
-		EDITOR,//エディターモード
 		MAX
 	};
 	//setter
@@ -29,6 +28,7 @@ public:
 	void SetChangState(const bool state) { mChangState = state; }
 	void SetMaxSpeed(const float maxSpeed) { mMaxSpeed = maxSpeed; }
 	void SetMinSpeed(const float minSpeed) { mMinSpeed = minSpeed; }
+	void SetBeforePosition(const VECTOR3F& beforePosition) { mBeforePosition = beforePosition; }
 	//getter
 	const VECTOR3F& GetVelocity() { return mVelocity; }
 	const VECTOR3F& GetAccel() { return mAccel; }
@@ -36,9 +36,11 @@ public:
 	const MOVESTATE&GetMoveState() { return mMoveState; }
 	const bool GetChangState() { return mChangState; }
 	const float GetMaxSpeed() { return mMaxSpeed; }
+	const VECTOR3F& GetBeforePosition() { return mBeforePosition; }
 private:
 	VECTOR3F mVelocity;
 	VECTOR3F mAccel;
+	VECTOR3F mBeforePosition;
 	bool mExist;
 	MOVESTATE mMoveState;
 	bool mChangState;

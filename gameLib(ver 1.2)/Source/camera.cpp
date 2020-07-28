@@ -18,6 +18,7 @@ void Camera::CalculateMatrix()
 	V = DirectX::XMMatrixLookAtLH(eye, focus, up);
 
 	DirectX::XMStoreFloat4x4(&mView, V);
+	mFront = VECTOR3F(mView._31, mView._32, mView._33);
 	//プロジェクション行列作成
 	DirectX::XMMATRIX P;
 

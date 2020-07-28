@@ -10,7 +10,7 @@ public:
 	int isHitArrow(const VECTOR3F& nearMouse, const VECTOR3F& farMouse);
 	void Move(std::shared_ptr<StageObj>obj, const VECTOR3F& farMouse,int arrowNumber);
 	void SetArrow(std::shared_ptr<StageObj>obj);
-	void Render(ID3D11DeviceContext*context,MeshRender* render);
+	void Render(ID3D11DeviceContext*context,MeshRender* render,const FLOAT4X4&view,const FLOAT4X4&projection);
 private:
 	VECTOR3F mBeforeFar;
 	std::shared_ptr<StaticObj>mArrowObjs[3];

@@ -6,6 +6,7 @@
 #include"camera_manager.h"
 #include"gamepad.h"
 #include"light.h"
+#include"Judgment.h"
 #ifdef USE_IMGUI
 #include <imgui.h>
 #include <imgui_impl_dx11.h>
@@ -94,6 +95,8 @@ void SceneGame::Update(float elapsed_time)
 	//ImGui::End();
 #endif
 	player->Update(elapsed_time);
+	Judgment::Judge(player->GetCharacter(), mSManager.get());
+
 	bloom->ImGuiUpdate();
 	//VECTOR3F position, normal;
 	//float l;

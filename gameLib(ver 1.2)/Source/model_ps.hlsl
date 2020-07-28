@@ -5,6 +5,10 @@
 Texture2D diffuseMap : register(t0);
 SamplerState diffuseMapSamplerState : register(s0);
 
+//半球ライトパラメータ 
+static const float3 skyColor = { 0.4,0.4,0.4 };
+static const float3 groundColor = { 0.4,0.4,0.2 };
+
 float4 main(VS_OUT pin) : SV_TARGET
 {
 	float4 color = diffuseMap.Sample(diffuseMapSamplerState,pin.texcoord);
@@ -13,7 +17,7 @@ float4 main(VS_OUT pin) : SV_TARGET
 
 	float3 L = normalize(lightDirection.xyz);
 	//環境光
-	float3 A = ambientColor.rgb/**HemiSphereLight(pin.worldNormal, skyColor, groundColor)*/;
+	float3 A = ambientColor.rgb*HemiSphereLight(pin.worldNormal, skyColor, groundColor);
 	//拡散反射
 	float3 C = lightColor.rgb;
 	float3 Kd = float3(1, 1, 1);

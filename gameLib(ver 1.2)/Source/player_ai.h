@@ -13,9 +13,9 @@ public:
 	void ImGuiUpdate();
 	//XV
 	void Update(float elapsd_time);
-	std::shared_ptr<PlayerCharacter>GetCharacter() { return mCharacter; }
+	PlayerCharacter*GetCharacter() { return mCharacter.get(); }
 private:
-	std::shared_ptr<PlayerCharacter>mCharacter;
+	std::unique_ptr<PlayerCharacter>mCharacter;
 	struct PlayerParameter
 	{
 		VECTOR3F accel;

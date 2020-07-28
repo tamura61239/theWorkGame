@@ -131,13 +131,13 @@ void StageManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, co
 		if (stage->GetStageData().mColorType == 1)continue;
 		mRender->Render(context, stage->GetMesh(), stage->GetWorld(),stage->GetColor());
 	}
-	mDragOperation->Render(context, mRender.get());
 	for (auto& stage : mStageObjs)
 	{
 		if (stage->GetStageData().mColorType == 0)continue;
 		mRender->Render(context, stage->GetMesh(), stage->GetWorld(), stage->GetColor());
 	}
 	mRender->End(context);
+	mDragOperation->Render(context, mRender.get(),view,projection);
 }
 /*******************マウス座標系からワールド座標系に変換**********************/
 void StageManager::ScreeenToWorld(VECTOR3F* worldPosition, const VECTOR3F& screenPosition)
