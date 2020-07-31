@@ -21,6 +21,9 @@ private:
 		VECTOR3F accel;
 		float maxSpeed;
 		float minSpeed;
+		VECTOR3F jump;
+		VECTOR3F ranp;
+		float gravity;
 	};
 	PlayerParameter mParameter;
 };

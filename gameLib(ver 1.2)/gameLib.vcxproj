@@ -192,6 +192,7 @@
     <ClCompile Include="Source\stage_manager.cpp" />
     <ClCompile Include="Source\stage_obj.cpp" />
     <ClCompile Include="Source\stage_obj_drag_operation.cpp" />
+    <ClCompile Include="Source\stage_operation.cpp" />
     <ClCompile Include="Source\static_mesh.cpp" />
     <ClCompile Include="Source\static_obj.cpp" />
     <ClCompile Include="Source\texture.cpp" />
@@ -253,6 +254,7 @@
     <ClInclude Include="Source\stage_manager.h" />
     <ClInclude Include="Source\stage_obj.h" />
     <ClInclude Include="Source\stage_obj_drag_operation.h" />
+    <ClInclude Include="Source\stage_operation.h" />
     <ClInclude Include="Source\static_mesh.h" />
     <ClInclude Include="Source\static_obj.h" />
     <ClInclude Include="Source\texture.h" />

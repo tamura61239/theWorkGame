@@ -45,6 +45,7 @@ SceneGame::SceneGame(ID3D11Device* device)
 			mSManager = std::make_unique<StageManager>(device, 1920, 1080);
 			modelRenderer = std::make_unique<ModelRenderer>(device);
 			bloom = std::make_unique<BloomRender>(device, 1920, 1080);
+			mStageOperation = std::make_unique<StageOperation>();
 		}, device);
 	test = std::make_unique<Sprite>(device, L"Data/image/ゲームテスト.png");
 	nowLoading = std::make_unique<Sprite>(device, L"Data/image/wp-thumb.jpg");
@@ -65,7 +66,6 @@ void SceneGame::Update(float elapsed_time)
 		return;
 	}
 	EndLoading();
-	pCamera.Update(elapsed_time);
 
 #ifdef USE_IMGUI
 	//// スポットライト 
@@ -95,7 +95,10 @@ void SceneGame::Update(float elapsed_time)
 	//ImGui::End();
 #endif
 	player->Update(elapsed_time);
+	mSManager->Update(elapsed_time);
+	mStageOperation->Update(elapsed_time,mSManager.get());
 	Judgment::Judge(player->GetCharacter(), mSManager.get());
+	pCamera.Update(elapsed_time);
 
 	bloom->ImGuiUpdate();
 	//VECTOR3F position, normal;
@@ -105,8 +108,7 @@ void SceneGame::Update(float elapsed_time)
 	//	player->GetCharacter()->SetPosition(position);
 	//}
 	//player->GetCharacter()->CalculateBoonTransform(elapsed_time);
-	mSManager->Update(elapsed_time);
-	if (pKeyBoad.RisingState(KeyLabel::SPACE))
+	if (pKeyBoad.RisingState(KeyLabel::ENTER))
 	{
 		pSceneManager.ChangeScene(SCENETYPE::OVER);
 		pSoundManager.Stop(0);

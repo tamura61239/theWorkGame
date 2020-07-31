@@ -11,6 +11,7 @@ void Judgment::Judge(PlayerCharacter* player, StageManager* manager)
 	for (auto& stage : manager->GetStages())
 	//auto stage = manager->GetStages()[0];
 	{
+		if (stage->GetColor().w < 1)continue;
 		VECTOR3F stageMin = stage->GetPosition() - stage->GetScale();
 		VECTOR3F stageMax = stage->GetPosition() + stage->GetScale();
 		if (Collision::IsHitAABB(playerMin, playerMax, stageMin, stageMax, nullptr))
@@ -18,28 +19,46 @@ void Judgment::Judge(PlayerCharacter* player, StageManager* manager)
 			switch (stage->GetStageData().mObjType)
 			{
 			case 0:
-				if (playerBefore.z + 1.15 * playerScale.z <= stageMin.z && playerPosition.z + 1.15f * playerScale.z >= stageMin.z)//°‚Ì‘O
+				if (Collision::IsHitAABB(playerMin, playerMax, stageMin, stageMax, nullptr))
 				{
-					player->SetPosition(VECTOR3F(playerPosition.x, playerPosition.y, stageMin.z - 1.15f * playerScale.z));
-				}
-				else if (playerBefore.y >= stageMax.y && playerPosition.y <= stageMax.y)//°‚Ìã
-				{
-					if (stageMax.z - playerPosition.z <= stage->GetScale().z * 0.04f)
+					if (playerBefore.z + 1.15 * playerScale.z <= stageMin.z && playerPosition.z + 1.15f * playerScale.z >= stageMin.z)//°‚Ì‘O
 					{
-						player->SetMoveState(PlayerCharacter::MOVESTATE::JUMP);
+						player->SetPosition(VECTOR3F(playerPosition.x, playerPosition.y, stageMin.z - 1.15f * playerScale.z));
 					}
-					else
+					else if (playerBefore.y >= stageMax.y && playerPosition.y <= stageMax.y)//°‚Ìã
 					{
-						player->SetMoveState(PlayerCharacter::MOVESTATE::MOVE);
+						if (stageMax.z - playerPosition.z <= stage->GetScale().z * 0.04f)
+						{
+							player->SetMoveState(PlayerCharacter::MOVESTATE::JUMP);
+						}
+						else
+						{
+							player->SetMoveState(PlayerCharacter::MOVESTATE::MOVE);
+						}
+						player->SetPosition(VECTOR3F(playerPosition.x, stageMax.y, playerPosition.z));
 					}
-					player->SetPosition(VECTOR3F(playerPosition.x, stageMax.y, playerPosition.z));
+					else if (playerBefore.y + 6.6f * playerScale.y < stageMin.y && playerPosition.y + 6.6f * playerScale.y >= stageMin.y)//°‚Ì‰º
+					{
+						player->SetPosition(VECTOR3F(playerPosition.x, stageMin.y - 6.6f * playerScale.y, playerPosition.z));
+						player->SetVelocity(player->GetVelocity() * VECTOR3F(1, 0, 1));
+					}
+					playerPosition = player->GetPosition();
 				}
-				else if (playerBefore.y + 6.6f * playerScale.y < stageMin.y && playerPosition.y + 6.6f * playerScale.y >= stageMin.y)//°‚Ì‰º
+				break;
+			case 1:
+				stageMin.y += stage->GetScale().y;
+				stageMax.y += stage->GetScale().y;
+				if (player->GetMoveState() == PlayerCharacter::MOVESTATE::RAMP)continue;
+				if (player->GetMoveState() == PlayerCharacter::MOVESTATE::LANDING)continue;
+				if (Collision::IsHitAABB(playerMin, playerMax, stageMin, stageMax, nullptr))
 				{
-					player->SetPosition(VECTOR3F(playerPosition.x, stageMin.y - 6.6f * playerScale.y, playerPosition.z));
-					player->SetVelocity(player->GetVelocity() * VECTOR3F(1, 0, 1));
+					//player->SetPosition(playerPosition + VECTOR3F(0, stageMin.y + 3.f, 0));
+					//playerPosition = player->GetPosition();
+					//player->SetVelocity(player->GetVelocity() * VECTOR3F(1, 1, 0.6f));
+
+					player->SetMoveState(PlayerCharacter::MOVESTATE::RAMP);
 				}
-				playerPosition = player->GetPosition();
+
 				break;
 			}
 			//if (stageMax.y > playerMin.y)

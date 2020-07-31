@@ -3,7 +3,7 @@
 #include"camera_manager.h"
 #include"key_board.h"
 /***********************‰Šú‰»*************************/
-StageManager::StageManager(ID3D11Device* device, int width, int height):stageNo(0),mWidth(width), mHeight(height), dragObjNumber(-1)
+StageManager::StageManager(ID3D11Device* device, int width, int height):stageNo(3),mWidth(width), mHeight(height), dragObjNumber(-1)
 {
 	mMeshs.push_back(std::make_shared<StaticMesh>(device, "Data/FBX/000_cube.fbx"));
 	mMeshs.push_back(std::make_shared<StaticMesh>(device, "Data/FBX/jumpstand.fbx"));
@@ -128,12 +128,12 @@ void StageManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, co
 	mRender->Begin(context, light, view, projection);
 	for (auto& stage : mStageObjs)
 	{
-		if (stage->GetStageData().mColorType == 1)continue;
+		if (stage->GetColor().w <1)continue;
 		mRender->Render(context, stage->GetMesh(), stage->GetWorld(),stage->GetColor());
 	}
 	for (auto& stage : mStageObjs)
 	{
-		if (stage->GetStageData().mColorType == 0)continue;
+		if (stage->GetColor().w >= 1)continue;
 		mRender->Render(context, stage->GetMesh(), stage->GetWorld(), stage->GetColor());
 	}
 	mRender->End(context);

@@ -1,4 +1,6 @@
 #include "player_ai.h"
+#include"camera_manager.h"
+
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
@@ -28,6 +30,9 @@ void PlayerAI::Load()
 		mParameter.accel = VECTOR3F(0, 0, 0);
 		mParameter.maxSpeed = 0;
 		mParameter.minSpeed = 0;
+		mParameter.jump = VECTOR3F(0, 120, 0);
+		mParameter.ranp = VECTOR3F(0, 200, 0);
+		mParameter.gravity = -9.8f * 60;
 	}
 }
 
@@ -47,11 +52,11 @@ void PlayerAI::ImGuiUpdate()
 	ImGui::Begin("player");
 	float* accel[3] = { &mParameter.accel.x,&mParameter.accel.y ,&mParameter.accel.z };
 	ImGui::SliderFloat3("accel", *accel, 0, 500);
-	float* j[3] = { &jump.x,&jump.y,&jump.z };
-	ImGui::SliderFloat3("jump", *j, 0, 500);
-	float* r[3] = { &ranp.x,&ranp.y,&ranp.z };
-	ImGui::SliderFloat3("ranp", *r, 0, 500);
-	if (ImGui::SliderFloat("maxSpeed", &mParameter.maxSpeed, mParameter.minSpeed, 500))
+	float* j[3] = { &mParameter.jump.x,&mParameter.jump.y,&mParameter.jump.z };
+	ImGui::SliderFloat3("jump", *j, 0, 1700);
+	float* r[3] = { &mParameter.ranp.x,&mParameter.ranp.y,&mParameter.ranp.z };
+	ImGui::SliderFloat3("ranp", *r, 0, 3500);
+	if (ImGui::SliderFloat("maxSpeed", &mParameter.maxSpeed, mParameter.minSpeed, 1500))
 	{
 		mCharacter->SetMaxSpeed(mParameter.maxSpeed);
 	}
@@ -59,12 +64,24 @@ void PlayerAI::ImGuiUpdate()
 	{
 		mCharacter->SetMinSpeed(mParameter.minSpeed);
 	}
+	ImGui::InputFloat("gravity", &mParameter.gravity);
 	if (ImGui::Button("save"))
 	{
 		Save();
 	}
+	if (ImGui::Button("replay"))
+	{
+		mCharacter->SetPosition(VECTOR3F(0, 10, 0));
+		mCharacter->SetVelocity(VECTOR3F(0, 0, 0));
+		mCharacter->CalculateBoonTransform(0);
+		mCharacter->SetMoveState(PlayerCharacter::MOVESTATE::LANDING);
+		pCamera.GetCamera()->SetEye(mCharacter->GetPosition() + VECTOR3F(600, 250, -600));
+		pCamera.GetCamera()->SetFocus(mCharacter->GetPosition());
+	}
 	ImGui::Checkbox("play", &play);
-	ImGui::Text("%f,%f,%f", mCharacter->GetPosition().x, mCharacter->GetPosition().y, mCharacter->GetPosition().z);
+	ImGui::Text("position:%f,%f,%f", mCharacter->GetPosition().x, mCharacter->GetPosition().y, mCharacter->GetPosition().z);
+	ImGui::Text("velocity:%f,%f,%f", mCharacter->GetVelocity().x, mCharacter->GetVelocity().y, mCharacter->GetVelocity().z);
+	ImGui::Text("state:%d", mCharacter->GetMoveState());
 	ImGui::End();
 #endif
 }
@@ -72,43 +89,90 @@ void PlayerAI::ImGuiUpdate()
 void PlayerAI::Update(float elapsd_time)
 {
 	ImGuiUpdate();
-	static float g = -9.8f*30;
 	if (!play)return;
-	if (mCharacter->GetPosition().y < -300)
+	if (mCharacter->GetPosition().y < -1000)
 	{
 		play = false;
 		mCharacter->SetPosition(VECTOR3F(0, 10, 0));
 		mCharacter->SetVelocity(VECTOR3F(0, 0, 0));
 		mCharacter->CalculateBoonTransform(0);
-		g = -9.8f*30;
+		pCamera.GetCamera()->SetEye(mCharacter->GetPosition() + VECTOR3F(600, 250, -600));
+		pCamera.GetCamera()->SetFocus(mCharacter->GetPosition());
+
 		return;
 	}
 	VECTOR3F position = mCharacter->GetPosition();
 	mCharacter->SetBeforePosition(position);
-	mCharacter->SetChangState(false);
 	VECTOR3F velocity = mCharacter->GetVelocity();
-	
+	VECTOR3F accel = VECTOR3F(0, 0, 0);
+	static float gravity = 0;
+	if (mCharacter->GetChangState())gravity = 0;
 	switch (mCharacter->GetMoveState())
 	{
 	case PlayerCharacter::MOVESTATE::MOVE:
-		g = -9.8f * 30;
-		velocity.y = g*0.03f;
-		velocity += mParameter.accel * elapsd_time;
-		//velocity += VECTOR3F(0, g, 0) * elapsd_time;
-
-		break;
-	case PlayerCharacter::MOVESTATE::LANDING:
-		g = g + g * elapsd_time;
-		velocity += mParameter.accel * elapsd_time;
-		velocity += VECTOR3F(0, g, 0) * elapsd_time;
-
+		accel = mParameter.accel;
+		accel = VECTOR3F(0, -9.8f, 0);
+		velocity.y = 0;
 		break;
 	case PlayerCharacter::MOVESTATE::JUMP:
-		velocity += mParameter.accel * elapsd_time;
-		velocity += jump;
-		mCharacter->SetMoveState(PlayerCharacter::MOVESTATE::LANDING);
+		if (mCharacter->GetChangState())jump = mParameter.jump;
+		accel = mParameter.accel;
+		accel += VECTOR3F(0, gravity, 0);
+		accel += jump;
+		jump.y -= mParameter.jump.y * elapsd_time;
+		gravity += mParameter.gravity * elapsd_time;
+		if (jump.y < 0)mCharacter->SetMoveState(PlayerCharacter::MOVESTATE::LANDING);
+		break;
+	case PlayerCharacter::MOVESTATE::RAMP:
+		if (mCharacter->GetChangState())ranp = mParameter.ranp;
+		accel = mParameter.accel;
+		accel += VECTOR3F(0, gravity, 0);
+		accel += ranp;
+		ranp.y -= mParameter.ranp.y * elapsd_time;
+		gravity += mParameter.gravity * elapsd_time;
+		if (ranp.y < 0)mCharacter->SetMoveState(PlayerCharacter::MOVESTATE::LANDING);
+		break;
+	case PlayerCharacter::MOVESTATE::LANDING:
+		gravity += mParameter.gravity * elapsd_time;
+		accel = mParameter.accel;
+		accel += VECTOR3F(0, gravity, 0);
 		break;
 	}
+	velocity += accel;
+	//switch (mCharacter->GetMoveState())
+	//{
+	//case PlayerCharacter::MOVESTATE::MOVE:
+	//	
+	//	velocity.y = g*0.03f;
+	//	velocity += mParameter.accel * elapsd_time;
+	//	//velocity += VECTOR3F(0, g, 0) * elapsd_time;
+
+	//	break;
+	//case PlayerCharacter::MOVESTATE::LANDING:
+	//	g = g + g * elapsd_time*10;
+	//	velocity += mParameter.accel * elapsd_time;
+	//	velocity += VECTOR3F(0, g, 0) * elapsd_time;
+
+	//	break;
+	//case PlayerCharacter::MOVESTATE::JUMP:
+	//	if (mCharacter->GetChangState())jump = mParameter.jump;
+	//	velocity.y += jump.y*elapsd_time;
+	//	jump.y += g * elapsd_time;
+	//	velocity += mParameter.accel * elapsd_time;
+	//	g = g + g * elapsd_time*10;
+	//	velocity += VECTOR3F(0, g, 0) * elapsd_time;
+	//	break;
+	//case PlayerCharacter::MOVESTATE::RAMP:
+	///*	if (mCharacter->GetChangState())ranp = mParameter.ranp;
+	//	ranp.y*=0.5f;
+	//	g = g + g * elapsd_time;
+	//	velocity += mParameter.accel * elapsd_time;
+	//	velocity += ranp;
+	//	if(ranp.y<=0)*//*mCharacter->SetMoveState(PlayerCharacter::MOVESTATE::LANDING);*/
+	//	velocity = VECTOR3F(0, 0, 0);
+	//	break;
+	//}
+	mCharacter->SetChangState(false);
 	float speed = sqrt(velocity.z * velocity.z);
 
 	if (speed > mParameter.maxSpeed)
@@ -119,4 +183,6 @@ void PlayerAI::Update(float elapsd_time)
 	mCharacter->SetPosition(position);
 	mCharacter->SetVelocity(velocity);
 	mCharacter->CalculateBoonTransform(elapsd_time);
+	pCamera.GetCamera()->SetEye(position + VECTOR3F(600, 250, -600));
+	pCamera.GetCamera()->SetFocus(position);
 }

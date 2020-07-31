@@ -8,7 +8,7 @@ SceneOver::SceneOver(ID3D11Device* device)
 
 void SceneOver::Update(float elapsed_time)
 {
-	if (pKeyBoad.RisingState(KeyLabel::SPACE))
+	if (pKeyBoad.RisingState(KeyLabel::ENTER))
 	{
 		pSceneManager.ChangeScene(SCENETYPE::CLEAR);
 		return;

@@ -12,7 +12,7 @@ SceneTitle::SceneTitle(ID3D11Device* device)
 void SceneTitle::Update(float elapsed_time)
 {
 
-	if (pKeyBoad.RisingState(KeyLabel::SPACE))
+	if (pKeyBoad.RisingState(KeyLabel::ENTER))
 	{
 		pSceneManager.ChangeScene(SCENETYPE::GAME);
 		return;

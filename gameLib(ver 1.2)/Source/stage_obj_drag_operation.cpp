@@ -43,6 +43,15 @@ int StageObjDragOperation::Update(std::shared_ptr<StageObj> obj, const VECTOR3F&
 	ImGui::SliderFloat3("scale0", *dragScale0, 0, 10);
 	ImGui::SliderFloat3("scale1", *dragScale1, 0, 10);
 	ImGui::SliderFloat3("scale2", *dragScale2, 0, 10);
+	if (ImGui::Button("end"))
+	{
+		for (int i = 0;i < 3;i++)
+		{
+			mArrowObjs[i]->SetColor(VECTOR4F(0, 0, 0, 0));
+		}
+		ImGui::End();
+		return -1;
+	}
 	ImGui::End();
 #endif
 	SetArrow(obj);
