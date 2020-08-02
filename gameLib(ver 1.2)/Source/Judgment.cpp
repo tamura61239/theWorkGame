@@ -89,7 +89,7 @@ void Judgment::Judge(PlayerCharacter* player, StageManager* manager)
 	pHitAreaDrow.SetCube(playerMin, playerMax);
 	player->SetPosition(playerPosition);
 	player->SetGroundFlag(groundFlaf);
-	if (!player->GetChangState() && !groundFlaf)
+	if (player->GetMoveState()==PlayerCharacter::MOVESTATE::MOVE && !groundFlaf)
 	{
 		player->SetMoveState(PlayerCharacter::MOVESTATE::LANDING);
 	}

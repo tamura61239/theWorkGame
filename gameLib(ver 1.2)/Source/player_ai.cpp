@@ -113,46 +113,49 @@ void PlayerAI::Update(float elapsd_time, StageManager* manager)
 	VECTOR3F velocity = mCharacter->GetVelocity();
 	VECTOR3F accel = VECTOR3F(0,0,0);
 	static float gravity = 0;
-	if(mCharacter->GetGroundFlag())gravity = 0;
+	if (mCharacter->GetGroundFlag())
+	{
+		gravity = 0;
+		jump = VECTOR3F(0, 0, 0);
+		velocity.y = 0;
+
+	}
+	gravity += mParameter.gravity * elapsd_time*60;
+	//if (gravity <= mParameter.gravity * 0.3f)
+	//{
+	//	gravity = mParameter.gravity * 0.3f;
+	//}
 	switch (mCharacter->GetMoveState())
 	{
 	case PlayerCharacter::MOVESTATE::MOVE:
-		
-		accel = mParameter.accel;
-		accel += VECTOR3F(0, -9.8f, 0);
-		velocity.y = 0;
+		accel = mParameter.accel*2.f;
 		break;
 	case PlayerCharacter::MOVESTATE::JUMP:
 		if (mCharacter->GetChangState())
 		{
-			velocity.y = 0;
+			velocity.y = mParameter.jump.y;
 			jump = mParameter.jump;
 		}
 		accel = mParameter.accel;
-		accel += VECTOR3F(0, gravity, 0);
-		accel += jump;
 		mCharacter->SetMoveState(PlayerCharacter::MOVESTATE::LANDING);
 		break;
 	case PlayerCharacter::MOVESTATE::RAMP:
-		velocity.y = 0;
+		if (mCharacter->GetChangState())
+		{
+			velocity.y = mParameter.ranp.y;
+		}
 		accel = mParameter.accel;
-		accel += VECTOR3F(0, gravity, 0);
-		accel += mParameter.ranp;
 		mCharacter->SetMoveState(PlayerCharacter::MOVESTATE::LANDING);
+
 		break;
 	case PlayerCharacter::MOVESTATE::LANDING:
-		gravity += mParameter.gravity * elapsd_time;
 		accel = mParameter.accel;
-		accel += VECTOR3F(0, gravity, 0);
 		break;
 	}
-	velocity += accel;
+	velocity += accel*elapsd_time;
+	velocity.y += gravity*elapsd_time;
 	mCharacter->SetChangState(false);
 	float speed = sqrt(velocity.z * velocity.z);
-	if (gravity <= mParameter.gravity*3.f)
-	{
-		gravity = mParameter.gravity;
-	}
 	if (speed > mParameter.maxSpeed)
 	{
 		velocity.z = velocity.z / speed * mParameter.maxSpeed;
@@ -164,7 +167,4 @@ void PlayerAI::Update(float elapsd_time, StageManager* manager)
 	pCamera.GetCamera()->SetEye(mCharacter->GetPosition() + VECTOR3F(600, 250, -600));
 	pCamera.GetCamera()->SetFocus(mCharacter->GetPosition());
 	mCharacter->CalculateBoonTransform(elapsd_time);
-	//mCharacter->CalculateBoonTransform(elapsd_time);
-	//pCamera.GetCamera()->SetEye(position + VECTOR3F(600, 250, -600));
-	//pCamera.GetCamera()->SetFocus(position);
 }
