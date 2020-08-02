@@ -71,6 +71,19 @@ void StageManager::ImGuiUpdate()
 		}
 	}
 	ImGui::Begin("stage editer");
+	int num = stageNo;
+	for (int i = 0;i < 5;i++)
+	{
+		std::string name = "sateg";
+		name += std::to_string(i);
+		ImGui::RadioButton(name.c_str(), &stageNo, i);
+		if (i < 4)ImGui::SameLine();
+	}
+	if (num != stageNo)
+	{
+		mStageObjs.clear();
+		Load();
+	}
 	if (ImGui::CollapsingHeader("create stage obj"))
 	{
 		static int objNo = 0;
@@ -85,6 +98,7 @@ void StageManager::ImGuiUpdate()
 			mStageObjs.push_back(std::make_shared<StageObj>(mMeshs[objNo]));
 		}
 	}
+	ImGui::Text("dragNumber%d", dragObjNumber);
 	ImGui::End();
 	//stageobj‚Ìƒhƒ‰ƒbƒO
 	if (dragObjNumber != -1)

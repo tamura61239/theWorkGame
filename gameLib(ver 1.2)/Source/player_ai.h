@@ -1,5 +1,6 @@
 #pragma once
 #include"player_character.h"
+#include"stage_manager.h"
 
 class PlayerAI
 {
@@ -12,7 +13,7 @@ public:
 	//imgui
 	void ImGuiUpdate();
 	//XV
-	void Update(float elapsd_time);
+	void Update(float elapsd_time,StageManager*manager);
 	PlayerCharacter*GetCharacter() { return mCharacter.get(); }
 private:
 	std::unique_ptr<PlayerCharacter>mCharacter;

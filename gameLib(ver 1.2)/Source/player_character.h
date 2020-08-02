@@ -22,10 +22,12 @@ public:
 	void SetExist(const bool exist) { mExist = exist; }
 	void SetMoveState(MOVESTATE state)
 	{
+		if (mMoveState == state)return;
 		mChangState = true;
 		mMoveState = state;
 	}
 	void SetChangState(const bool state) { mChangState = state; }
+	void SetGroundFlag(const bool flag) { mGroundFlag = flag; }
 	void SetMaxSpeed(const float maxSpeed) { mMaxSpeed = maxSpeed; }
 	void SetMinSpeed(const float minSpeed) { mMinSpeed = minSpeed; }
 	void SetBeforePosition(const VECTOR3F& beforePosition) { mBeforePosition = beforePosition; }
@@ -35,6 +37,8 @@ public:
 	const bool GetExist() { return mExist; }
 	const MOVESTATE&GetMoveState() { return mMoveState; }
 	const bool GetChangState() { return mChangState; }
+	const bool GetGroundFlag() { return mGroundFlag; }
+	
 	const float GetMaxSpeed() { return mMaxSpeed; }
 	const VECTOR3F& GetBeforePosition() { return mBeforePosition; }
 private:
@@ -44,6 +48,7 @@ private:
 	bool mExist;
 	MOVESTATE mMoveState;
 	bool mChangState;
+	bool mGroundFlag;
 	float mMaxSpeed;
 	float mMinSpeed;
 };

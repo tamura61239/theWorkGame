@@ -7,6 +7,7 @@
 #include"gamepad.h"
 #include"light.h"
 #include"Judgment.h"
+#include"hit_area_drow.h"
 #ifdef USE_IMGUI
 #include <imgui.h>
 #include <imgui_impl_dx11.h>
@@ -46,6 +47,7 @@ SceneGame::SceneGame(ID3D11Device* device)
 			modelRenderer = std::make_unique<ModelRenderer>(device);
 			bloom = std::make_unique<BloomRender>(device, 1920, 1080);
 			mStageOperation = std::make_unique<StageOperation>();
+			pHitAreaDrow.CreateObj(device);
 		}, device);
 	test = std::make_unique<Sprite>(device, L"Data/image/ゲームテスト.png");
 	nowLoading = std::make_unique<Sprite>(device, L"Data/image/wp-thumb.jpg");
@@ -78,36 +80,19 @@ void SceneGame::Update(float elapsed_time)
 	ImGui::SliderFloat("w", &light.w, -1, 1);
 	ImGui::End();
 	pLight.SetLightDirection(light);
-	//static int spotLightNumber = 0;
-	//ImGui::Begin("spotLight");
-	//SpotLight spot = pLight.GetSpotLight()[spotLightNumber];
-	//float* spotPosition[3] = { &spot.position.x,&spot.position.y ,&spot.position.z};
-	//ImGui::SliderFloat3("spotPosition", *spotPosition, -150, 150);
-	//float* spotColor[3] = { &spot.color.x,&spot.color.y ,&spot.color.z };
-	//ImGui::SliderFloat3("spotColor", *spotColor, 0, 1);
-	//float* spotDir[3] = { &spot.dir.x,&spot.dir.y ,&spot.dir.z};
-	//ImGui::SliderFloat3("spotDir", *spotDir, -1, 1);
-	//ImGui::SliderFloat("spotRange", &spot.range, 0, 100);
-	//ImGui::SliderFloat("spotNear", &spot.nearArea, 0, spot.farArea);
-	//ImGui::SliderFloat("spotFar", &spot.farArea, spot.nearArea, 150);
-	//pLight.SetSpotLight(spotLightNumber, VECTOR3F(spot.position.x, spot.position.y, spot.position.z), VECTOR3F(spot.color.x, spot.color.y, spot.color.z), VECTOR3F(spot.dir.x, spot.dir.y, spot.dir.z), spot.range, spot.nearArea, spot.farArea);
-	//ImGui::SliderInt("spotLightNumber", &spotLightNumber, 0, 31);
-	//ImGui::End();
+	ImGui::Begin("screen");
+	ImVec2 size = ImGui::GetWindowSize();
+	ImGui::Image(frameBuffer[0]->GetRenderTargetShaderResourceView().Get(), size);
+	ImGui::End();
 #endif
-	player->Update(elapsed_time);
+	mStageOperation->Update(elapsed_time, mSManager.get());
+
+	player->Update(elapsed_time,mSManager.get());
 	mSManager->Update(elapsed_time);
-	mStageOperation->Update(elapsed_time,mSManager.get());
-	Judgment::Judge(player->GetCharacter(), mSManager.get());
+
 	pCamera.Update(elapsed_time);
 
 	bloom->ImGuiUpdate();
-	//VECTOR3F position, normal;
-	//float l;
-	//if (staticObjs[1]->RayPick(player->GetCharacter()->GetPosition() + VECTOR3F(0, 10, 0), player->GetCharacter()->GetPosition(), &position, &normal, &l) != -1)
-	//{
-	//	player->GetCharacter()->SetPosition(position);
-	//}
-	//player->GetCharacter()->CalculateBoonTransform(elapsed_time);
 	if (pKeyBoad.RisingState(KeyLabel::ENTER))
 	{
 		pSceneManager.ChangeScene(SCENETYPE::OVER);
@@ -214,8 +199,33 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 
 	mSManager->Render(context, view, projection, pLight.GetLightDirection());
 	blend[0]->deactivate(context);
-	//frameBuffer[0]->Deactivate(context);
+	//pHitAreaDrow.Render(context, pLight.GetLightDirection(), view, projection);
 
+	//frameBuffer[0]->Deactivate(context);
+	frameBuffer[0]->Clear(context);
+	frameBuffer[0]->Activate(context);
+	Camera camera;
+	camera.SetFocus(pCamera.GetCamera()->GetFocus());
+	camera.SetPerspective(30 * (3.14f / 180.f), viewport.Width / viewport.Height, 0.1f, 10000.0f);
+	camera.SetEye(player->GetCharacter()->GetPosition() + VECTOR3F(600, 0, 0));
+	camera.CalculateMatrix();
+	view = camera.GetView();
+	projection = camera.GetProjection();
+	viewProjection;
+
+	DirectX::XMStoreFloat4x4(&viewProjection, DirectX::XMLoadFloat4x4(&view) * DirectX::XMLoadFloat4x4(&projection));
+
+	siro->Render(context, VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+
+	blend[0]->activate(context);
+	modelRenderer->Begin(context, viewProjection, pLight.GetLightDirection());
+	modelRenderer->Draw(context, *player->GetCharacter()->GetModel());
+	modelRenderer->End(context);
+
+	mSManager->Render(context, view, projection, pLight.GetLightDirection());
+	blend[0]->deactivate(context);
+	
+	frameBuffer[0]->Deactivate(context);
 	///****************影をつける******************/
 	//renderEffects->ShadowRender(context, frameBuffer[0]->GetRenderTargetShaderResourceView().Get(), frameBuffer[0]->GetDepthStencilShaderResourceView().Get(), shadowMap->GetDepthStencilShaderResourceView().Get(), view, projection, lightCamera.GetView(), lightCamera.GetProjection());
 	//mTextureRender->Render(context, frameBuffer[0]->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);

@@ -168,6 +168,7 @@
     <ClCompile Include="Source\framework.cpp" />
     <ClCompile Include="Source\gamepad.cpp" />
     <ClCompile Include="Source\geometric_primitive.cpp" />
+    <ClCompile Include="Source\hit_area_drow.cpp" />
     <ClCompile Include="Source\Judgment.cpp" />
     <ClCompile Include="Source\light.cpp" />
     <ClCompile Include="Source\main.cpp" />
@@ -223,6 +224,7 @@
     <ClInclude Include="Source\gamepad.h" />
     <ClInclude Include="Source\geometric_primitive.h" />
     <ClInclude Include="Source\high_resolution_timer.h" />
+    <ClInclude Include="Source\hit_area_drow.h" />
     <ClInclude Include="Source\Judgment.h" />
     <ClInclude Include="Source\key_board.h" />
     <ClInclude Include="Source\light.h" />
