@@ -45,8 +45,6 @@ void PlayerAI::Save()
 	fclose(fp);
 }
 static bool play = false;
-static VECTOR3F jump = VECTOR3F(0, 120, 0);
-static VECTOR3F ranp = VECTOR3F(0, 200, 0);
 void PlayerAI::ImGuiUpdate()
 {
 #ifdef USE_IMGUI
@@ -93,7 +91,6 @@ void PlayerAI::Update(float elapsd_time, StageManager* manager)
 	ImGuiUpdate();
 	if (!play)
 	{
-		Judgment::Judge(mCharacter.get(), manager);
 		return;
 	}
 	if (mCharacter->GetPosition().y < -1000)
@@ -108,35 +105,29 @@ void PlayerAI::Update(float elapsd_time, StageManager* manager)
 
 		return;
 	}
-	VECTOR3F position = mCharacter->GetPosition();
-	mCharacter->SetBeforePosition(position);
 	VECTOR3F velocity = mCharacter->GetVelocity();
-	VECTOR3F accel = VECTOR3F(0,0,0);
+	VECTOR3F accel = mCharacter->GetAccel();
 	static float gravity = 0;
 	if (mCharacter->GetGroundFlag())
 	{
-		gravity = 0;
-		jump = VECTOR3F(0, 0, 0);
+		accel.y = 0;
 		velocity.y = 0;
 
 	}
-	gravity += mParameter.gravity * elapsd_time*60;
-	//if (gravity <= mParameter.gravity * 0.3f)
-	//{
-	//	gravity = mParameter.gravity * 0.3f;
-	//}
+	accel.y += mParameter.gravity * elapsd_time*60;
 	switch (mCharacter->GetMoveState())
 	{
 	case PlayerCharacter::MOVESTATE::MOVE:
-		accel = mParameter.accel*2.f;
+		accel.x = mParameter.accel.x * 2.f;
+		accel.z = mParameter.accel.z*2.f;
 		break;
 	case PlayerCharacter::MOVESTATE::JUMP:
 		if (mCharacter->GetChangState())
 		{
 			velocity.y = mParameter.jump.y;
-			jump = mParameter.jump;
 		}
-		accel = mParameter.accel;
+		accel.x = mParameter.accel.x;
+		accel.z = mParameter.accel.z;
 		mCharacter->SetMoveState(PlayerCharacter::MOVESTATE::LANDING);
 		break;
 	case PlayerCharacter::MOVESTATE::RAMP:
@@ -144,25 +135,19 @@ void PlayerAI::Update(float elapsd_time, StageManager* manager)
 		{
 			velocity.y = mParameter.ranp.y;
 		}
-		accel = mParameter.accel;
+		accel.x = mParameter.accel.x;
+		accel.z = mParameter.accel.z;
 		mCharacter->SetMoveState(PlayerCharacter::MOVESTATE::LANDING);
 
 		break;
 	case PlayerCharacter::MOVESTATE::LANDING:
-		accel = mParameter.accel;
+		accel.x = mParameter.accel.x;
+		accel.z = mParameter.accel.z;
 		break;
 	}
-	velocity += accel*elapsd_time;
-	velocity.y += gravity*elapsd_time;
-	mCharacter->SetChangState(false);
-	float speed = sqrt(velocity.z * velocity.z);
-	if (speed > mParameter.maxSpeed)
-	{
-		velocity.z = velocity.z / speed * mParameter.maxSpeed;
-	}
-	position += velocity*elapsd_time;
-	mCharacter->SetPosition(position);
+	mCharacter->SetAccel(accel);
 	mCharacter->SetVelocity(velocity);
+	mCharacter->Move(elapsd_time);
 	Judgment::Judge(mCharacter.get(), manager);
 	pCamera.GetCamera()->SetEye(mCharacter->GetPosition() + VECTOR3F(600, 250, -600));
 	pCamera.GetCamera()->SetFocus(mCharacter->GetPosition());

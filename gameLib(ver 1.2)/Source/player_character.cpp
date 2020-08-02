@@ -8,4 +8,13 @@ PlayerCharacter::PlayerCharacter(std::shared_ptr<ModelResource> resouce):Charact
 
 void PlayerCharacter::Move(float elapsd_time)
 {
+	mBeforePosition = mPosition;
+	mChangState = false;
+	mVelocity += mAccel * elapsd_time;
+	float speed = sqrtf(mVelocity.z * mVelocity.z);
+	if (speed > mMaxSpeed)
+	{
+		mVelocity.z =  mMaxSpeed;
+	}
+	mPosition += mVelocity * elapsd_time;
 }
