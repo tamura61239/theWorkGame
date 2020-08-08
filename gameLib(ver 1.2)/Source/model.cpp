@@ -115,14 +115,29 @@ void Model::UpdateAnimation(float elapsed_time)
 // ローカル変換行列計算
 void Model::CalculateLocalTransform()
 {
+	bool lFlag = false;
 	for (Node& node : m_nodes)
 	{
 		DirectX::XMMATRIX scale, rotate, translate, local;
 		scale = DirectX::XMMatrixScaling(node.scale.x, node.scale.y, node.scale.z);
 		rotate = DirectX::XMMatrixRotationQuaternion(DirectX::XMVectorSet(node.rotate.x, node.rotate.y, node.rotate.z, node.rotate.w));
 		translate = DirectX::XMMatrixTranslation(node.translate.x, node.translate.y, node.translate.z);
+		if (!lFlag)
+		{
+			DirectX::XMMATRIX C = DirectX::XMMatrixSet(
+				-1, 0, 0, 0,
+				0, 1, 0, 0,
+				0, 0, 1, 0,
+				0, 0, 0, 1
+			);
+			local = C*scale * rotate * translate;
+			lFlag = true;
+		}
+		else
+		{
+			local = scale * rotate * translate;
 
-		local = scale * rotate * translate;
+		}
 		DirectX::XMStoreFloat4x4(&node.local_transform, local);
 	}
 }

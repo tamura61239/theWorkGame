@@ -10,3 +10,7 @@ cbuffer Cbuffer:register(b0)
 	float hightBlur;
 	float blurCount;
 }
+cbuffer CbBler:register(b1)
+{
+	float4 offset[8];
+}

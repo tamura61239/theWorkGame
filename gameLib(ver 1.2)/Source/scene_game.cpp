@@ -53,6 +53,7 @@ SceneGame::SceneGame(ID3D11Device* device)
 	nowLoading = std::make_unique<Sprite>(device, L"Data/image/wp-thumb.jpg");
 	siro = std::make_unique<Sprite>(device,L"Data/image/かめれおんの拝啓.png");
 	blend[0] = std::make_unique<blend_state>(device, BLEND_MODE::ALPHA);
+	blend[1] = std::make_unique<blend_state>(device, BLEND_MODE::ADD);
 	pCamera.CreateCamera();
 	pCamera.GetCamera()->SetEye(VECTOR3F(100, 40, -200));
 	pSoundManager.Play(0, true);
@@ -178,8 +179,8 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	DirectX::XMStoreFloat4x4(&viewProjection, DirectX::XMLoadFloat4x4(&view) * DirectX::XMLoadFloat4x4(&projection));
 
 	///************************カラーマップテクスチャの作成***********************/
-	//frameBuffer[0]->Clear(context);
-	//frameBuffer[0]->Activate(context);
+	frameBuffer[0]->Clear(context);
+	frameBuffer[0]->Activate(context);
 	pLight.ConstanceLightBufferSetShader(context);
 
 	//meshRender->Begin(context, pLight.GetLightDirection(), view, projection);
@@ -190,7 +191,6 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	//}
 	//blend[0]->deactivate(context);
 	//meshRender->End(context);
-	siro->Render(context, VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 
 	blend[0]->activate(context);
 	modelRenderer->Begin(context, viewProjection, pLight.GetLightDirection());
@@ -201,35 +201,13 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	blend[0]->deactivate(context);
 	//pHitAreaDrow.Render(context, pLight.GetLightDirection(), view, projection);
 
-	//frameBuffer[0]->Deactivate(context);
-	frameBuffer[0]->Clear(context);
-	frameBuffer[0]->Activate(context);
-	Camera camera;
-	camera.SetFocus(pCamera.GetCamera()->GetFocus());
-	camera.SetPerspective(30 * (3.14f / 180.f), viewport.Width / viewport.Height, 0.1f, 10000.0f);
-	camera.SetEye(player->GetCharacter()->GetPosition() + VECTOR3F(600, 0, 0));
-	camera.CalculateMatrix();
-	view = camera.GetView();
-	projection = camera.GetProjection();
-	viewProjection;
-
-	DirectX::XMStoreFloat4x4(&viewProjection, DirectX::XMLoadFloat4x4(&view) * DirectX::XMLoadFloat4x4(&projection));
-
-	siro->Render(context, VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
-
-	blend[0]->activate(context);
-	modelRenderer->Begin(context, viewProjection, pLight.GetLightDirection());
-	modelRenderer->Draw(context, *player->GetCharacter()->GetModel());
-	modelRenderer->End(context);
-
-	mSManager->Render(context, view, projection, pLight.GetLightDirection());
-	blend[0]->deactivate(context);
-	
 	frameBuffer[0]->Deactivate(context);
 	///****************影をつける******************/
 	//renderEffects->ShadowRender(context, frameBuffer[0]->GetRenderTargetShaderResourceView().Get(), frameBuffer[0]->GetDepthStencilShaderResourceView().Get(), shadowMap->GetDepthStencilShaderResourceView().Get(), view, projection, lightCamera.GetView(), lightCamera.GetProjection());
-	//mTextureRender->Render(context, frameBuffer[0]->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
-	////bloom->Render(context, frameBuffer[0]->GetRenderTargetShaderResourceView().Get(), true);
+	blend[1]->activate(context);
+	siro->Render(context, frameBuffer[0]->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+	bloom->Render(context, frameBuffer[0]->GetRenderTargetShaderResourceView().Get(), true);
+	blend[1]->deactivate(context);
 }
 
 SceneGame::~SceneGame()

@@ -41,16 +41,16 @@ BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHi
 		D3D11_SAMPLER_DESC desc;
 		ZeroMemory(&desc, sizeof(desc));
 		desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-		desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-		desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-		desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		desc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+		desc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+		desc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
 		desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
 		desc.MipLODBias = 0;
 		desc.MaxAnisotropy = 16;
 		desc.MinLOD = 0;
 		desc.MaxLOD = D3D11_FLOAT32_MAX;
 		desc.MaxAnisotropy = 16;
-		memcpy(desc.BorderColor, &VECTOR4F(1.0f, 1.0f, 1.0f, 1.0f), sizeof(VECTOR4F));
+		memcpy(desc.BorderColor, &VECTOR4F(.0f, .0f, .0f, .0f), sizeof(VECTOR4F));
 		hr = device->CreateSamplerState(&desc, mSamplerState.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
@@ -101,15 +101,15 @@ BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHi
 		desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 		desc.CPUAccessFlags = 0;
 		desc.MiscFlags = 0;
-		desc.ByteWidth = sizeof(CbScene);
+		desc.ByteWidth = sizeof(CbBloom);
 		desc.StructureByteStride = 0;
 		hr = device->CreateBuffer(&desc, nullptr, mCBbuffer.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		desc.ByteWidth = sizeof(CbBluer);
+		hr = device->CreateBuffer(&desc, nullptr, mCbBluerbuffer.GetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
-	mCbuffer.threshold = 0;
-	mCbuffer.widthBlur = 0;
-	mCbuffer.hightBlur = 0;
-	mCbuffer.blurCount = 0;
+	Load();
 }
 
 void BloomRender::ImGuiUpdate()
@@ -117,28 +117,33 @@ void BloomRender::ImGuiUpdate()
 #ifdef USE_IMGUI
 	ImGui::Begin("bloom");
 	ImGui::SliderInt("filter count", &count, 0, 4);
-	ImGui::SliderFloat("threshold", &mCbuffer.threshold, 0, 3);
-	ImGui::SliderFloat("widthBlur", &mCbuffer.widthBlur, 0, 10);
-	ImGui::SliderFloat("hightBlur", &mCbuffer.hightBlur, 0, 10);
+	ImGui::SliderFloat("threshold", &mCbuffer.threshold, 0, 10);
+	ImGui::SliderFloat("widthBlur", &mCbuffer.widthBlur, 0, 1);
+	ImGui::SliderFloat("hightBlur", &mCbuffer.hightBlur, 0, 1);
 	int blurCount = static_cast<int>(mCbuffer.blurCount);
-	if (ImGui::SliderInt("blurCount", &blurCount, 0, 3))
+	if (ImGui::SliderInt("blurCount", &blurCount, 1, 8))
 	{
 		mCbuffer.blurCount = static_cast<float>(blurCount);
 	}
-
+	if (ImGui::Button("save"))Save();
 	ImGui::End();
 #endif
 }
 
 void BloomRender::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView* colorSrv, bool render)
 {
-
+	ID3D11Buffer* buffer[] =
+	{
+		mCBbuffer.Get(),
+		mCbBluerbuffer.Get()
+	};
+	context->PSSetConstantBuffers(0, 2, buffer);
+	context->VSSetConstantBuffers(0, 2, buffer);
+	context->PSSetSamplers(0, 1, mSamplerState.GetAddressOf());
 	mFrameBuffer[0]->Clear(context);
 	if (count >= 0)
 	{
 		mFrameBuffer[0]->Activate(context);
-		context->PSSetConstantBuffers(0, 1, mCBbuffer.GetAddressOf());
-		context->VSSetConstantBuffers(0, 1, mCBbuffer.GetAddressOf());
 		context->UpdateSubresource(mCBbuffer.Get(), 0, 0, &mCbuffer, 0, 0);
 		context->VSSetShader(mVSShader.Get(), 0, 0);
 		context->PSSetShader(mPSShader[0].Get(), 0, 0);
@@ -151,20 +156,25 @@ void BloomRender::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView*
 		context->Draw(4, 0);
 		mFrameBuffer[0]->Deactivate(context);
 	}
+	//Ý’è
+	context->VSSetShader(mVSShader.Get(), 0, 0);
+	context->PSSetShader(mPSShader[1].Get(), 0, 0);
+	context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
+	context->RSSetState(mRasterizeState.Get());
+	context->IASetInputLayout(nullptr);
+	context->IASetVertexBuffers(0, 0, 0, 0, 0);
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
 	for (int i = 1;i < 5;i++)
 	{
 		mFrameBuffer[i]->Clear(context);
 		if (count < i)continue;
 		mFrameBuffer[i]->Activate(context);
-		context->VSSetShader(mVSShader.Get(), 0, 0);
-		context->PSSetShader(mPSShader[1].Get(), 0, 0);
+		D3D11_VIEWPORT viewport = mFrameBuffer[i]->GetViewPort();
+		CalucurateBluer(viewport.Width, viewport.Height, VECTOR2F(mCbuffer.widthBlur, mCbuffer.hightBlur), 2.5f, 1.0f);
+		context->UpdateSubresource(mCbBluerbuffer.Get(), 0, 0, &mCbBluer, 0, 0);
+
 		context->PSSetShaderResources(0, 1, mFrameBuffer[i - 1]->GetRenderTargetShaderResourceView().GetAddressOf());
-		context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
-		context->RSSetState(mRasterizeState.Get());
-		context->IASetInputLayout(nullptr);
-		context->IASetVertexBuffers(0, 0, 0, 0, 0);
-		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 		context->Draw(4, 0);
 		mFrameBuffer[i]->Deactivate(context);
 	}
@@ -201,4 +211,56 @@ void BloomRender::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView*
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	context->Draw(4, 0);
 
+}
+
+void BloomRender::Load()
+{
+	FILE* fp;
+	if (fopen_s(&fp, "Data/file/bloom.bin", "rb") == 0)
+	{
+		fread(&mCbuffer, sizeof(CbBloom), 1, fp);
+		fclose(fp);
+		return;
+	}
+	mCbuffer.threshold = 0;
+	mCbuffer.widthBlur = 0;
+	mCbuffer.hightBlur = 0;
+	mCbuffer.blurCount = 8;
+
+}
+
+void BloomRender::Save()
+{
+	FILE* fp;
+	fopen_s(&fp, "Data/file/bloom.bin", "wb");
+	fwrite(&mCbuffer, sizeof(CbBloom), 1, fp);
+	fclose(fp);
+}
+
+float BloomRender::GaussianDistribution(const VECTOR2F& position, const float rho)
+{
+	return exp(-(position.x * position.x + position.y * position.y) / (2.0f * rho * rho));
+}
+
+void BloomRender::CalucurateBluer(const float width, const float hight, const VECTOR2F& dir, const float deviation, const float multiply)
+{
+	float uvX = 1.0f / width;
+	float uvY = 1.0f / hight;
+
+	mCbBluer.mOffset[0].z = GaussianDistribution(VECTOR2F(0, 0), deviation) * multiply;
+	float totalWeigh = mCbBluer.mOffset[0].z;
+
+	mCbBluer.mOffset[0].x = 0;
+	mCbBluer.mOffset[0].y = 0;
+	for (int i = 1;i < 8;i++)
+	{
+		mCbBluer.mOffset[i].x = dir.x * i * uvX;
+		mCbBluer.mOffset[i].y = dir.y * i * uvY;
+		mCbBluer.mOffset[i].z = GaussianDistribution(dir * float(i), deviation) * multiply;
+		totalWeigh += mCbBluer.mOffset[i].z * 2.0f;
+	}
+	for (int i = 0;i < 8;i++)
+	{
+		mCbBluer.mOffset[i].z /= totalWeigh;
+	}
 }

@@ -14,7 +14,8 @@ void StageOperation::Load()
 	FILE* fp;
 	if (fopen_s(&fp, "Data/file/stageColor.txt", "r") == 0)
 	{
-		fwrite(&mColor[0], sizeof(VECTOR4F), 2, fp);
+		fread(&mColor[0], sizeof(VECTOR4F), 1, fp);
+		fread(&mColor[1], sizeof(VECTOR4F), 1, fp);
 		fclose(fp);
 		mChangFlag = false;
 		return;
@@ -27,7 +28,8 @@ void StageOperation::Save()
 {
 	FILE* fp;
 	fopen_s(&fp, "Data/file/stageColor.txt", "w");
-	fread(&mColor, sizeof(VECTOR4F), 2, fp);
+	fwrite(&mColor[0], sizeof(VECTOR4F), 1, fp);
+	fwrite(&mColor[1], sizeof(VECTOR4F), 1, fp);
 	fclose(fp);
 }
 

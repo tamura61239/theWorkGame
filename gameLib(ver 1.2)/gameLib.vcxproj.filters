@@ -415,9 +415,6 @@
     <None Include="Source\bloom.hlsli">
       <Filter>gameLib\Shaders</Filter>
     </None>
-    <None Include="Source\gpu_particle_test_render.hlsli">
-      <Filter>シェーダー</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\board_ps.hlsl">
@@ -485,15 +482,6 @@
     </FxCompile>
     <FxCompile Include="Source\combined_bloom.hlsl">
       <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\compute_test.hlsl">
-      <Filter>シェーダー</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\gpu_particle_test_render_vs.hlsl">
-      <Filter>シェーダー</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\gpu_particle_test_render_ps.hlsl">
-      <Filter>シェーダー</Filter>
     </FxCompile>
     <FxCompile Include="Source\bloomStart_ps.hlsl">
       <Filter>gameLib\Shaders</Filter>
