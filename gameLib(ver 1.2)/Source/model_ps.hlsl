@@ -6,8 +6,6 @@ Texture2D diffuseMap : register(t0);
 SamplerState diffuseMapSamplerState : register(s0);
 
 //半球ライトパラメータ 
-static const float3 skyColor = { 0.4,0.4,0.4 };
-static const float3 groundColor = { 0.4,0.4,0.2 };
 
 float4 main(VS_OUT pin) : SV_TARGET
 {
@@ -64,6 +62,6 @@ float4 main(VS_OUT pin) : SV_TARGET
 		//鏡面光の加算
 		LS += BlinnPhongSpcular(pin.worldNormal, -LV, LC, E, Ks, 20) * influence * influence * influence2;
 	}
-	color *= pin.color * float4(A + D + S + LD + LS, 1.0);
+	color *= pin.color * float4(A + D + S /*+ LD + LS*/, 1.0);
 	return color;
 }

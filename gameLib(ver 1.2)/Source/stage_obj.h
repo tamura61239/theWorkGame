@@ -15,11 +15,12 @@ public:
 	StageObj(std::shared_ptr<StaticMesh>mesh);
 	StageObj(ID3D11Device* device, const char* fileName, SHADER_TYPE shaderType = SHADER_TYPE::USEALLY, bool pathOrganize = false, int organizeType = 0);
 	//setter
-	void SetStageData(const StageData& data) 
+	void SetStageData(const StageData& data)
 	{
-		mData = data; 
-		mPosition = data.mPosition;
-		mScale = data.mScale;
+		static float s = gameObjScale / 10.0f;
+		mData = data;
+		mPosition = data.mPosition * s;
+		mScale = data.mScale * s;
 		mAngle = data.mAngle;
 		if (data.mColorType == 1)
 		{

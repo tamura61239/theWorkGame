@@ -12,7 +12,7 @@ public:
 	void ImGuiUpdate();
 	int CheckMouseDragObj();
 	void Update(float elapsd_time);
-	void Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const VECTOR4F& light);
+	void Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection);
 	void SetStageNo(int no) { stageNo = no; }
 	//getter
 	std::vector<std::shared_ptr<StageObj>>GetStages() { return mStageObjs; }

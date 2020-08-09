@@ -6,39 +6,6 @@
 
 ModelRenderer::ModelRenderer(ID3D11Device* device)
 {
-	// 頂点シェーダー
-	//{
-	//	// ファイルを開く
-	//	FILE* fp = nullptr;
-	//	fopen_s(&fp, "Data/shader/model_vs.cso", "rb");
-	//	_ASSERT_EXPR_A(fp, "CSO File not found");
-
-	//	// ファイルのサイズを求める
-	//	fseek(fp, 0, SEEK_END);
-	//	long cso_sz = ftell(fp);
-	//	fseek(fp, 0, SEEK_SET);
-
-	//	// メモリ上に頂点シェーダーデータを格納する領域を用意する
-	//	std::unique_ptr<u_char[]> cso_data = std::make_unique<u_char[]>(cso_sz);
-	//	fread(cso_data.get(), cso_sz, 1, fp);
-	//	fclose(fp);
-
-	//	// 頂点シェーダー生成
-	//	HRESULT hr = device->CreateVertexShader(cso_data.get(), cso_sz, nullptr, m_vertex_shader.GetAddressOf());
-	//	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-	//	// 入力レイアウト
-	//	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
-	//	{
-	//		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	//		{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	//		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	//		{ "WEIGHTS",  0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	//		{ "BONES",    0, DXGI_FORMAT_R32G32B32A32_UINT,  0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	//	};
-	//	hr = device->CreateInputLayout(input_element_desc, ARRAYSIZE(input_element_desc), cso_data.get(), cso_sz, m_input_layout.GetAddressOf());
-	//	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	//}
 	// 入力レイアウト
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
 	{
@@ -144,10 +111,10 @@ ModelRenderer::ModelRenderer(ID3D11Device* device)
 		desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
 		desc.MinLOD = -FLT_MAX;
 		desc.MaxLOD = FLT_MAX;
-		desc.BorderColor[0] = 1.0f;
-		desc.BorderColor[1] = 1.0f;
-		desc.BorderColor[2] = 1.0f;
-		desc.BorderColor[3] = 1.0f;
+		desc.BorderColor[0] = .0f;
+		desc.BorderColor[1] = .0f;
+		desc.BorderColor[2] = .0f;
+		desc.BorderColor[3] = .0f;
 		desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 		desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 		desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -199,7 +166,7 @@ ModelRenderer::ModelRenderer(ID3D11Device* device)
 }
 
 // 描画開始
-void ModelRenderer::Begin(ID3D11DeviceContext* context, const FLOAT4X4& view_projection, const VECTOR4F& light_direction)
+void ModelRenderer::Begin(ID3D11DeviceContext* context, const FLOAT4X4& view_projection)
 {
 
 	context->IASetInputLayout(m_input_layout.Get());
@@ -220,10 +187,6 @@ void ModelRenderer::Begin(ID3D11DeviceContext* context, const FLOAT4X4& view_pro
 	// シーン用定数バッファ更新
 	CbScene cb_scene;
 	cb_scene.view_projection = view_projection;
-	cb_scene.lightDirection = light_direction;
-	cb_scene.lightColor = VECTOR4F(1, 1, 1, 1);
-	cb_scene.ambientColor = VECTOR4F(1, 1, 1, 1);
-	cb_scene.eyePosition = VECTOR4F(pCamera.GetCamera()->GetEye().x, pCamera.GetCamera()->GetEye().y, pCamera.GetCamera()->GetEye().z, 1.0f);
 
 	context->UpdateSubresource(m_cb_scene.Get(), 0, 0, &cb_scene, 0, 0);
 }
@@ -315,10 +278,6 @@ void ModelRenderer::ShadowBegin(ID3D11DeviceContext* context, const FLOAT4X4& vi
 	// シーン用定数バッファ更新
 	CbScene cb_scene;
 	cb_scene.view_projection = view_projection;
-	cb_scene.lightDirection = VECTOR4F(0, 0, 0, 0);
-	cb_scene.lightColor = VECTOR4F(1, 1, 1, 1);
-	cb_scene.ambientColor = VECTOR4F(1, 1, 1, 1);
-	cb_scene.eyePosition = VECTOR4F(0,0,0,0);
 
 	context->UpdateSubresource(m_cb_scene.Get(), 0, 0, &cb_scene, 0, 0);
 

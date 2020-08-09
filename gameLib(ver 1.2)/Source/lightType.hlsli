@@ -35,12 +35,17 @@ cbuffer CbLight:register(b3)
 	POINTLIGHT pointLight[POINTMAX];
 	SPOTLIGHT spotLight[SPOTMAX];
 }
-
-struct Light
+cbuffer CbDefLight : register(b4)
 {
-	float3 PD;
-	float3 PS;
-};
+	float4 lightColor;
+	float4 lightDirection;
+	float4 ambientColor;
+	float4 eyePosition;
+	float3 skyColor;
+	float dummy1;
+	float3 groundColor;
+	float dummy2;
+}
 /****************************************/
 //ポイントライト計算関数
 //pointLight:ポイントライト

@@ -11,7 +11,7 @@ public:
 	{
 	}
 
-	void Begin(ID3D11DeviceContext* context, const FLOAT4X4& view_projection, const VECTOR4F& light_direction);
+	void Begin(ID3D11DeviceContext* context, const FLOAT4X4& view_projection);
 	void Draw(ID3D11DeviceContext* context, Model& model,const VECTOR4F&color= VECTOR4F(1,1,1,1));
 	void End(ID3D11DeviceContext* context);
 
@@ -24,10 +24,6 @@ private:
 
 	struct CbScene
 	{
-		VECTOR4F lightColor;
-		VECTOR4F lightDirection;
-		VECTOR4F ambientColor;
-		VECTOR4F eyePosition;
 		FLOAT4X4	view_projection;
 	};
 	struct CbMesh

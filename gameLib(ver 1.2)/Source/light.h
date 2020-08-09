@@ -32,38 +32,55 @@ static const int SPOTMAX = 32;
 class Light
 {
 public:
-	Light();
+	//バッファ生成関数
 	void CreateLightBuffer(ID3D11Device* device);
 	//setter
-	void SetLightDirection(const VECTOR4F& lightDirection) { mLightDirection = lightDirection; }
-	void SetLightColor(const VECTOR4F& lightColor) { mLightColor = lightColor; }
-	void SetAmbientColor(const VECTOR4F& ambientColor) { mAmbientColor = ambientColor; }
+	void SetLightDirection(const VECTOR4F& lightDirection) { mDefLight.mLightDirection = lightDirection; }
+	void SetLightColor(const VECTOR4F& lightColor) { mDefLight.mLightColor = lightColor; }
+	void SetAmbientColor(const VECTOR4F& ambientColor) { mDefLight.mAmbientColor = ambientColor; }
 	void SetPointLight(int index, VECTOR3F position, VECTOR3F color, float range);
 	void SetSpotLight(int index, VECTOR3F position, VECTOR3F color, VECTOR3F dir, float range, float nearArea, float farArea);
 	void ConstanceLightBufferSetShader(ID3D11DeviceContext* context);
 	//getter
-	const VECTOR4F& GetLightDirection() { return mLightDirection; }
-	const VECTOR4F& GetLightColor() { return mLightColor; }
-	const VECTOR4F& GetAmbientColor() { return mAmbientColor; }
+	const VECTOR4F& GetLightDirection() { return mDefLight.mLightDirection; }
+	const VECTOR4F& GetLightColor() { return mDefLight.mLightColor; }
+	const VECTOR4F& GetAmbientColor() { return mDefLight.mAmbientColor; }
 	PointLight* GetPointLight() { return pointLight; }
 	SpotLight* GetSpotLight() { return spotLight; }
 
+	//インスタンス関数
 	static Light& GetInctance()
 	{
 		static Light light;
 		return light;
 	}
+	//更新
+	void ImGuiUpdate();
+private:
+	Light();
+	void Load();
+	void Save();
 	struct CbLight
 	{
 		PointLight pointLight[POINTMAX];
 		SpotLight spotLight[SPOTMAX];
 	};
-private:
-	VECTOR4F mLightDirection;
-	VECTOR4F mLightColor;
-	VECTOR4F mAmbientColor;
+	struct CbDefLight
+	{
+		VECTOR4F mLightColor;
+		VECTOR4F mLightDirection;
+		VECTOR4F mAmbientColor;
+		VECTOR4F mEyePosition;
+		VECTOR3F mSkyColor;
+		float dummy1;
+		VECTOR3F mGroundColor;
+		float dummy2;
+	};
+
 	PointLight pointLight[POINTMAX];
 	SpotLight spotLight[SPOTMAX];
+	CbDefLight mDefLight;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbLight;
+	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbDefLight;
 };
 #define pLight (Light::GetInctance())

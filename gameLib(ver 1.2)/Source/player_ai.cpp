@@ -10,8 +10,8 @@ PlayerAI::PlayerAI(ID3D11Device* device, const char* fileName)
 	std::unique_ptr<ModelData>data = std::make_unique<ModelData>(fileName);
 	std::shared_ptr<ModelResource>resouce = std::make_shared<ModelResource>(device, std::move(data));
 	mCharacter = std::make_unique<PlayerCharacter>(resouce);
-	mCharacter->SetPosition(VECTOR3F(0, 10, 0));
-	mCharacter->SetScale(VECTOR3F(10, 10, 10));
+	mCharacter->SetPosition(VECTOR3F(0, 1, 0));
+	mCharacter->SetScale(VECTOR3F(gameObjScale, gameObjScale, gameObjScale));
 	mCharacter->CalculateBoonTransform(0);
 	Load();
 }
@@ -75,7 +75,7 @@ void PlayerAI::ImGuiUpdate()
 		mCharacter->SetVelocity(VECTOR3F(0, 0, 0));
 		mCharacter->CalculateBoonTransform(0);
 		mCharacter->SetMoveState(PlayerCharacter::MOVESTATE::LANDING);
-		pCamera.GetCamera()->SetEye(mCharacter->GetPosition() + VECTOR3F(600, 250, -600));
+		pCamera.GetCamera()->SetEye(mCharacter->GetPosition() + VECTOR3F(60, 25, -60)*gameObjScale);
 		pCamera.GetCamera()->SetFocus(mCharacter->GetPosition());
 	}
 	ImGui::Checkbox("play", &play);
@@ -100,7 +100,7 @@ void PlayerAI::Update(float elapsd_time, StageManager* manager)
 		mCharacter->SetBeforePosition(VECTOR3F(0, 10, 0));
 		mCharacter->SetVelocity(VECTOR3F(0, 0, 0));
 		mCharacter->CalculateBoonTransform(0);
-		pCamera.GetCamera()->SetEye(mCharacter->GetPosition() + VECTOR3F(600, 250, -600));
+		pCamera.GetCamera()->SetEye(mCharacter->GetPosition() + VECTOR3F(60, 25, -60) * gameObjScale);
 		pCamera.GetCamera()->SetFocus(mCharacter->GetPosition());
 
 		return;
@@ -149,7 +149,7 @@ void PlayerAI::Update(float elapsd_time, StageManager* manager)
 	mCharacter->SetVelocity(velocity);
 	mCharacter->Move(elapsd_time);
 	Judgment::Judge(mCharacter.get(), manager);
-	pCamera.GetCamera()->SetEye(mCharacter->GetPosition() + VECTOR3F(600, 250, -600));
+	pCamera.GetCamera()->SetEye(mCharacter->GetPosition() + VECTOR3F(60, 25, -60) * gameObjScale);
 	pCamera.GetCamera()->SetFocus(mCharacter->GetPosition());
 	mCharacter->CalculateBoonTransform(elapsd_time);
 }

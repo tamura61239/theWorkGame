@@ -8,19 +8,20 @@ void Judgment::Judge(PlayerCharacter* player, StageManager* manager)
 	VECTOR3F playerPosition = player->GetPosition();
 	VECTOR3F playerBefore = player->GetBeforePosition();
 	VECTOR3F playerScale = player->GetScale();
-	VECTOR3F playerMin = playerPosition - VECTOR3F(1.15f, 0, 1.15f) * playerScale;
-	VECTOR3F playerMax = playerPosition + VECTOR3F(1.15f, 6.6f, 1.15f) * playerScale;
+	static const VECTOR3F hitSize = VECTOR3F(1.15f, 6.6f, 1.3f);
+	VECTOR3F playerMin = playerPosition - VECTOR3F(hitSize.x, 0, hitSize.z) * playerScale;
+	VECTOR3F playerMax = playerPosition + hitSize * playerScale;
 	if (playerBefore.z > playerPosition.z)
 	{
-		playerMax.z = playerBefore.z + 1.15f * playerScale.z;
+		playerMax.z = playerBefore.z + hitSize.z * playerScale.z;
 	}
 	else
 	{
-		playerMin.z = playerBefore.z - 1.15f * playerScale.z;
+		playerMin.z = playerBefore.z - hitSize.z * playerScale.z;
 	}
 	if (playerBefore.y > playerPosition.y)
 	{
-		playerMax.y = playerBefore.y + 6.6f * playerScale.y;
+		playerMax.y = playerBefore.y + hitSize.y * playerScale.y;
 	}
 	else
 	{
@@ -40,16 +41,16 @@ void Judgment::Judge(PlayerCharacter* player, StageManager* manager)
 		case 0:
 			if (Collision::IsHitAABB(playerMin, playerMax, stageMin, stageMax, nullptr))
 			{
-				if (playerBefore.z + 1.15 * playerScale.z <= stageMin.z && playerPosition.z + 1.15f * playerScale.z >= stageMin.z)//è∞ÇÃëO
+				if (playerBefore.z + hitSize.z * playerScale.z <= stageMin.z && playerPosition.z + hitSize.z * playerScale.z >= stageMin.z)//è∞ÇÃëO
 				{
-					playerPosition = VECTOR3F(playerPosition.x, playerPosition.y, stageMin.z - 1.15f * playerScale.z);
+					playerPosition = VECTOR3F(playerPosition.x, playerPosition.y, stageMin.z - hitSize.z * playerScale.z);
 
 					playerMax.z = stageMin.z;
 				}
 				else if (playerBefore.y >= stageMax.y && playerPosition.y <= stageMax.y)//è∞ÇÃè„
 				{
 					groundFlaf = true;
-					if (stageMax.z - playerPosition.z <= 25.0f)
+					if (stageMax.z - playerPosition.z <= 2.5f* gameObjScale)
 					{
 						player->SetMoveState(PlayerCharacter::MOVESTATE::JUMP);
 					}
@@ -60,9 +61,9 @@ void Judgment::Judge(PlayerCharacter* player, StageManager* manager)
 					playerPosition = VECTOR3F(playerPosition.x, stageMax.y, playerPosition.z);
 					playerMin.y = stageMax.y;
 				}
-				else if (playerBefore.y + 6.6f * playerScale.y < stageMin.y && playerPosition.y + 6.6f * playerScale.y >= stageMin.y)//è∞ÇÃâ∫
+				else if (playerBefore.y + hitSize.y * playerScale.y < stageMin.y && playerPosition.y + hitSize.y * playerScale.y >= stageMin.y)//è∞ÇÃâ∫
 				{
-					playerPosition = VECTOR3F(playerPosition.x, stageMin.y - 6.6f * playerScale.y, playerPosition.z);
+					playerPosition = VECTOR3F(playerPosition.x, stageMin.y - hitSize.y * playerScale.y, playerPosition.z);
 					player->SetVelocity(player->GetVelocity() * VECTOR3F(1, 0, 1));
 					playerMax.y = stageMin.y;
 				}

@@ -137,9 +137,9 @@ void StageManager::Update(float elapsd_time)
 	}
 }
 /***************描画******************/
-void StageManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const VECTOR4F& light)
+void StageManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection)
 {
-	mRender->Begin(context, light, view, projection);
+	mRender->Begin(context, view, projection);
 	for (auto& stage : mStageObjs)
 	{
 		if (stage->GetColor().w <1)continue;
@@ -151,7 +151,7 @@ void StageManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, co
 		mRender->Render(context, stage->GetMesh(), stage->GetWorld(), stage->GetColor());
 	}
 	mRender->End(context);
-	mDragOperation->Render(context, mRender.get(),view,projection);
+	//mDragOperation->Render(context, mRender.get(),view,projection);
 }
 /*******************マウス座標系からワールド座標系に変換**********************/
 void StageManager::ScreeenToWorld(VECTOR3F* worldPosition, const VECTOR3F& screenPosition)

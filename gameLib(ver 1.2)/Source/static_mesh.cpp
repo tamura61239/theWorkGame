@@ -698,12 +698,8 @@ void MeshRender::ShadowBegin(ID3D11DeviceContext* context, const FLOAT4X4& view,
 	context->RSSetState(mRasterizerState.Get());
 	CbScene cbScene;
 
-	cbScene.lightDirection = VECTOR4F(0,0,0,0);
 	cbScene.view = view;
 	cbScene.projection = projection;
-	cbScene.lightColor = VECTOR4F(1, 1, 1, 1);
-	cbScene.ambientColor = VECTOR4F(1, 1, 1, 1);
-	cbScene.eyePosition = VECTOR4F(0,0,0,0);
 	context->UpdateSubresource(mCbScene.Get(), 0, 0, &cbScene, 0, 0);
 
 }
@@ -735,7 +731,7 @@ void MeshRender::ShadowEnd(ID3D11DeviceContext* context)
 {
 }
 
-void MeshRender::Begin(ID3D11DeviceContext* context, const VECTOR4F& light, const FLOAT4X4& view, const FLOAT4X4& projection)
+void MeshRender::Begin(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection)
 {
 
 	ID3D11Buffer* constant_buffers[] =
@@ -753,12 +749,8 @@ void MeshRender::Begin(ID3D11DeviceContext* context, const VECTOR4F& light, cons
 
 	CbScene cbScene;
 
-	cbScene.lightDirection = light;
 	cbScene.view = view;
 	cbScene.projection = projection;
-	cbScene.lightColor = VECTOR4F(1, 1, 1, 1);
-	cbScene.ambientColor = VECTOR4F(1, 1, 1, 1);
-	cbScene.eyePosition = VECTOR4F(pCamera.GetCamera()->GetEye().x, pCamera.GetCamera()->GetEye().y, pCamera.GetCamera()->GetEye().z, 1.0f);
 	context->UpdateSubresource(mCbScene.Get(), 0, 0, &cbScene, 0, 0);
 
 }

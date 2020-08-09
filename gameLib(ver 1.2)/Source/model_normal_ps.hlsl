@@ -8,9 +8,6 @@ Texture2D bump_map : register(t2);
 SamplerState diffuse_map_sampler_state : register(s0);
 SamplerState normal_map_sampler_state : register(s1);
 
-//半球ライトパラメータ 
-static const float3 skyColor = { 0.4,0.4,0.4 };
-static const float3 groundColor = { 0.4,0.4,0.4 };
 
 static const float viewOffset = 0.01f;
 

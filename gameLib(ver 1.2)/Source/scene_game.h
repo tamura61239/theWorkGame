@@ -13,6 +13,8 @@
 #include"player_ai.h"
 #include"stage_manager.h"
 #include"stage_operation.h"
+#include"blend_state.h"
+
 
 class SceneGame :public Scene
 {
@@ -59,4 +61,5 @@ private:
 	std::unique_ptr<BloomRender>bloom;
 	std::unique_ptr<StageManager>mSManager;
 	std::unique_ptr<StageOperation>mStageOperation;
+	std::unique_ptr<blend_state> blend[2];
 };

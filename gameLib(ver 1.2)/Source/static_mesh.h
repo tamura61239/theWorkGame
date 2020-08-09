@@ -153,7 +153,7 @@ public:
 	void ShadowBegin(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection);
 	void ShadowRender(ID3D11DeviceContext* context, StaticMesh* obj, const FLOAT4X4& world);
 	void ShadowEnd(ID3D11DeviceContext* context);
-	void Begin(ID3D11DeviceContext* context, const VECTOR4F& light,const FLOAT4X4&view,const FLOAT4X4&projection);
+	void Begin(ID3D11DeviceContext* context,const FLOAT4X4&view,const FLOAT4X4&projection);
 	void Render(ID3D11DeviceContext* context, StaticMesh* obj, const FLOAT4X4& world,const VECTOR4F color=VECTOR4F(1,1,1,1));
 	void End(ID3D11DeviceContext* context);
 private:
@@ -171,10 +171,6 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11VertexShader>mShadowVSShader;
 	struct CbScene
 	{
-		VECTOR4F lightColor;
-		VECTOR4F lightDirection;
-		VECTOR4F ambientColor;
-		VECTOR4F eyePosition;
 		FLOAT4X4 view;
 		FLOAT4X4 projection;
 	};

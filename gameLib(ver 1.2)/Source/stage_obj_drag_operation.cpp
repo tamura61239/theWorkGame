@@ -149,7 +149,7 @@ void StageObjDragOperation::Render(ID3D11DeviceContext* context, MeshRender* ren
 	VECTOR3F light;
 	DirectX::XMStoreFloat3(&light, DirectX::XMVector3Normalize(DirectX::XMLoadFloat3(&(pCamera.GetCamera()->GetFocus() - pCamera.GetCamera()->GetEye()))));
 	
-	render->Begin(context, -VECTOR4F(light.x, light.y, light.z, 0), view, projection);
+	render->Begin(context, view, projection);
 	render->Render(context, mArrowObjs[0]->GetMesh(), mArrowObjs[0]->GetWorld(),mArrowObjs[0]->GetColor());
 	render->Render(context, mArrowObjs[1]->GetMesh(), mArrowObjs[1]->GetWorld(),mArrowObjs[1]->GetColor());
 	render->Render(context, mArrowObjs[2]->GetMesh(), mArrowObjs[2]->GetWorld(),mArrowObjs[2]->GetColor());

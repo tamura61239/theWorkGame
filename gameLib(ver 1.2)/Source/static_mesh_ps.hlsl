@@ -5,9 +5,6 @@
 Texture2D diffuse_map : register(t0);
 SamplerState diffuse_map_sampler_state : register(s0);
 
-//半球ライトパラメータ 
-static const float3 skyColor = { 0.4,0.4,0.4 };
-static const float3 groundColor = { 0.4,0.4,0.2 };
 
 float4 main(VS_OUT pin) : SV_TARGET
 {

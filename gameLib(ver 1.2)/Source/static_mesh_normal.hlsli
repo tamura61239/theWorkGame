@@ -10,10 +10,6 @@ struct VS_OUT
 };
 cbuffer CbScene:register(b0)
 {
-	float4 lightColor;
-	float4 lightDirection;
-	float4 ambientColor;
-	float4 eyePosition;
 	row_major float4x4 view;
 	row_major float4x4 projection;
 };

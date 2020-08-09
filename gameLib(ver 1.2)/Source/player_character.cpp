@@ -16,5 +16,6 @@ void PlayerCharacter::Move(float elapsd_time)
 	{
 		mVelocity.z =  mMaxSpeed;
 	}
-	mPosition += mVelocity * elapsd_time;
+	static float s = mScale.x / 10;
+	mPosition += mVelocity * elapsd_time * s;
 }

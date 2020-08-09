@@ -271,7 +271,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </ExcludedFromBuild>
     </None>
-    <None Include="Source\light_function.hlsli" />
     <None Include="Source\model.hlsli" />
     <None Include="Source\model_normal.hlsli" />
     <None Include="Source\ps_function.hlsli" />
