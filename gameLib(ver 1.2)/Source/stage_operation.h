@@ -9,6 +9,7 @@ public:
 	void Save();
 	void ImGuiUpdate();
 	void Update(float elapsd_time, StageManager* manager);
+	const int GetColorType() { return mColorType; }
 private:
 	int mColorType;
 	bool mChangFlag;

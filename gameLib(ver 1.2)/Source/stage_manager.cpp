@@ -2,6 +2,7 @@
 #include"framework.h"
 #include"camera_manager.h"
 #include"key_board.h"
+#include"gpu_particle_manager.h"
 /***********************‰Šú‰»*************************/
 StageManager::StageManager(ID3D11Device* device, int width, int height):stageNo(3),mWidth(width), mHeight(height), dragObjNumber(-1)
 {
@@ -35,6 +36,7 @@ void StageManager::Load()
 			}
 		}
 		fclose(fp);
+		pGpuParticleManager.CreateStageObjParticle(mStageObjs);
 	}
 }
 //ƒZ[ƒu
@@ -145,6 +147,9 @@ void StageManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, co
 		if (stage->GetColor().w <1)continue;
 		mRender->Render(context, stage->GetMesh(), stage->GetWorld(),stage->GetColor());
 	}
+	mRender->End(context);
+	mRender->Begin(context, view, projection,true);
+
 	for (auto& stage : mStageObjs)
 	{
 		if (stage->GetColor().w >= 1)continue;

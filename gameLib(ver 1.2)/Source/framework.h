@@ -112,6 +112,9 @@ public:
 	HWND GetHwnd() { return hwnd; }
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView>GetDepthStencilView() { return mDepthStencilView; }
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView>GetRenderTargetView() { return mRenderTargetView; }
+
+	Microsoft::WRL::ComPtr<ID3D11Device>GetDevice() { return mDevice; }
+	Microsoft::WRL::ComPtr<ID3D11DeviceContext>GetDeviceContext() { return mDeviceContext; }
 private:
 	//********************************//
 	//             ïœêî               //

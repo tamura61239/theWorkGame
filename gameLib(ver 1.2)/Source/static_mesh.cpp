@@ -596,6 +596,7 @@ MeshRender::MeshRender(ID3D11Device* device)
 		hr = device->CreateRasterizerState(&rasterizerDesc, mRasterizerState.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		rasterizerDesc.CullMode = D3D11_CULL_NONE;
+		rasterizerDesc.FillMode = D3D11_FILL_WIREFRAME; //D3D11_FILL_WIREFRAME, D3D11_FILL_SOLID
 		hr = device->CreateRasterizerState(&rasterizerDesc, mShadowRasterizerState.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
@@ -731,7 +732,7 @@ void MeshRender::ShadowEnd(ID3D11DeviceContext* context)
 {
 }
 
-void MeshRender::Begin(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection)
+void MeshRender::Begin(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const bool w)
 {
 
 	ID3D11Buffer* constant_buffers[] =
@@ -743,7 +744,8 @@ void MeshRender::Begin(ID3D11DeviceContext* context, const FLOAT4X4& view, const
 	context->PSSetConstantBuffers(0, ARRAYSIZE(constant_buffers), constant_buffers);
 
 	context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
-	context->RSSetState(mRasterizerState.Get());
+	if (!w)context->RSSetState(mRasterizerState.Get());
+	else context->RSSetState(mShadowRasterizerState.Get());
 	context->PSSetSamplers(0, 1, mDiffuseSamplerState.GetAddressOf());
 	context->PSSetSamplers(1, 1, mNormalSamplerState.GetAddressOf());
 

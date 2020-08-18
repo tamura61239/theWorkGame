@@ -7,6 +7,7 @@
 #include"light.h"
 #include"Judgment.h"
 #include"hit_area_drow.h"
+#include"gpu_particle_manager.h"
 #ifdef USE_IMGUI
 #include <imgui.h>
 #include <imgui_impl_dx11.h>
@@ -29,6 +30,7 @@ SceneGame::SceneGame(ID3D11Device* device)
 			bloom = std::make_unique<BloomRender>(device, 1920, 1080);
 			mStageOperation = std::make_unique<StageOperation>();
 			pHitAreaDrow.CreateObj(device);
+			pGpuParticleManager.CreateBuffer(device);
 		}, device);
 	test = std::make_unique<Sprite>(device, L"Data/image/ゲームテスト.png");
 	nowLoading = std::make_unique<Sprite>(device, L"Data/image/wp-thumb.jpg");
@@ -37,8 +39,8 @@ SceneGame::SceneGame(ID3D11Device* device)
 	blend[1] = std::make_unique<blend_state>(device, BLEND_MODE::ADD);
 	pCamera.CreateCamera();
 	pCamera.GetCamera()->SetEye(VECTOR3F(100, 40, -200));
-	pSoundManager.Play(0, true);
-	pSoundManager.SetVolume(0, 1.0f);
+	//pSoundManager.Play(0, true);
+	//pSoundManager.SetVolume(0, 1.0f);
 	pLight.CreateLightBuffer(device);
 }
 void SceneGame::Update(float elapsed_time)
@@ -59,11 +61,11 @@ void SceneGame::Update(float elapsed_time)
 	mSManager->Update(elapsed_time);
 
 	pCamera.Update(elapsed_time);
-
+	pGpuParticleManager.Update(elapsed_time, mStageOperation->GetColorType());
 	if (pKeyBoad.RisingState(KeyLabel::ENTER))
 	{
 		pSceneManager.ChangeScene(SCENETYPE::OVER);
-		pSoundManager.Stop(0);
+		//pSoundManager.Stop(0);
 		return;
 	}
 }
@@ -117,11 +119,12 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 
 
 	blend[0]->activate(context);
-	modelRenderer->Begin(context, viewProjection);
-	modelRenderer->Draw(context, *player->GetCharacter()->GetModel());
-	modelRenderer->End(context);
+	//modelRenderer->Begin(context, viewProjection);
+	//modelRenderer->Draw(context, *player->GetCharacter()->GetModel());
+	//modelRenderer->End(context);
 
 	mSManager->Render(context, view, projection);
+	pGpuParticleManager.Render(context, view, projection);
 	blend[0]->deactivate(context);
 
 	frameBuffer[0]->Deactivate(context);
