@@ -56,6 +56,7 @@ void GpuParticleManager::CreateBuffer(ID3D11Device* device)
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 	}
+	mRunParticle = std::make_shared<RunParticles>(device);
 }
 
 void GpuParticleManager::CreateStageObjParticle(std::vector<std::shared_ptr<StageObj>> objs)
@@ -66,10 +67,11 @@ void GpuParticleManager::CreateStageObjParticle(std::vector<std::shared_ptr<Stag
 	mStageObjParticle->CreateBuffer(device, objs);
 }
 
-void GpuParticleManager::Update(float elapsd_time, float colorType)
+void GpuParticleManager::Update(float elapsd_time, float colorType, const VECTOR3F& velocity, const VECTOR3F& position, const bool groundFlag)
 {
 	ID3D11DeviceContext* context = Framework::Instance().GetDeviceContext().Get();
-	if (mStageObjParticle.get() != nullptr)mStageObjParticle->Update(context, elapsd_time, colorType);
+	//if (mStageObjParticle.get() != nullptr)mStageObjParticle->Update(context, elapsd_time, colorType);
+	if (mRunParticle.get() != nullptr)mRunParticle->Update(context, elapsd_time, velocity, groundFlag, position);
 }
 
 void GpuParticleManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection)
@@ -85,4 +87,5 @@ void GpuParticleManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& vi
 	cbScene.projection = projection;
 	context->UpdateSubresource(mCbScene.Get(), 0, 0, &cbScene, 0, 0);
 	if (mStageObjParticle.get() != nullptr)mStageObjParticle->Render(context);
+	if (mRunParticle.get() != nullptr)mRunParticle->Render(context);
 }

@@ -61,7 +61,7 @@ void SceneGame::Update(float elapsed_time)
 	mSManager->Update(elapsed_time);
 
 	pCamera.Update(elapsed_time);
-	pGpuParticleManager.Update(elapsed_time, mStageOperation->GetColorType());
+	pGpuParticleManager.Update(elapsed_time, mStageOperation->GetColorType(),player->GetCharacter()->GetVelocity(),player->GetCharacter()->GetPosition(),player->GetCharacter()->GetGroundFlag());
 	if (pKeyBoad.RisingState(KeyLabel::ENTER))
 	{
 		pSceneManager.ChangeScene(SCENETYPE::OVER);
@@ -119,9 +119,9 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 
 
 	blend[0]->activate(context);
-	//modelRenderer->Begin(context, viewProjection);
-	//modelRenderer->Draw(context, *player->GetCharacter()->GetModel());
-	//modelRenderer->End(context);
+	modelRenderer->Begin(context, viewProjection);
+	modelRenderer->Draw(context, *player->GetCharacter()->GetModel());
+	modelRenderer->End(context);
 
 	mSManager->Render(context, view, projection);
 	pGpuParticleManager.Render(context, view, projection);

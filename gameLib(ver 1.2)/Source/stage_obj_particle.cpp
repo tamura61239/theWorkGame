@@ -1,6 +1,9 @@
 #include "stage_obj_particle.h"
 #include"misc.h"
 #include"shader.h"
+#ifdef USE_IMGUI
+#include<imgui.h>
+#endif
 #define CS_TYPE 1
 StageObjParticle::StageObjParticle(ID3D11Device* device) :redObjSize(0), blueObjSize(0), particleSize(0)
 {
@@ -79,30 +82,30 @@ void StageObjParticle::CreateBuffer(ID3D11Device* device, std::vector<std::share
 	}
 	redObjSize = redObjs.size();
 	blueObjSize = blueObjs.size();
-	int red = redObjSize % 4;
-	if (red != 0)
-	{
-		for (int i = 0; i < 4 - red; i++)
-		{
-			Obj obj;
-			obj.min = VECTOR3F(0, 0, 0);
-			obj.max = VECTOR3F(0, 0, 0);
-			redObjs.push_back(obj);
-		}
-		redObjSize = redObjs.size();
-	}
-	int blue = blueObjSize % 4;
-	if (blue != 0)
-	{
-		for (int i = 0; i < 4 - blue; i++)
-		{
-			Obj obj;
-			obj.min = VECTOR3F(0, 0, 0);
-			obj.max = VECTOR3F(0, 0, 0);
-			blueObjs.push_back(obj);
-		}
-		blueObjSize = blueObjs.size();
-	}
+	//int red = redObjSize % 4;
+	//if (red != 0)
+	//{
+	//	for (int i = 0; i < 4 - red; i++)
+	//	{
+	//		Obj obj;
+	//		obj.min = VECTOR3F(0, 0, 0);
+	//		obj.max = VECTOR3F(0, 0, 0);
+	//		redObjs.push_back(obj);
+	//	}
+	//	redObjSize = redObjs.size();
+	//}
+	//int blue = blueObjSize % 4;
+	//if (blue != 0)
+	//{
+	//	for (int i = 0; i < 4 - blue; i++)
+	//	{
+	//		Obj obj;
+	//		obj.min = VECTOR3F(0, 0, 0);
+	//		obj.max = VECTOR3F(0, 0, 0);
+	//		blueObjs.push_back(obj);
+	//	}
+	//	blueObjSize = blueObjs.size();
+	//}
 
 	std::vector<Particle>particles;
 	particles.resize((redObjSize + blueObjSize) * 1000);
@@ -210,8 +213,21 @@ void StageObjParticle::Update(ID3D11DeviceContext* context, float elapsd_time, c
 {
 	mCb.elapsdTime = elapsd_time;
 	if (mParticleUAV.Get() == nullptr)return;
-	//mCb.startIndex += mCb.indexSize;
-	//if (mCb.startIndex >= 1000)mCb.startIndex -= 1000;
+#ifdef USE_IMGUI
+	ImGui::Begin("stage obj particle");
+	float* angleMovement[3] = { &mCb.angleMovement.x,&mCb.angleMovement.y,&mCb.angleMovement.z };
+	ImGui::SliderFloat3("angleMovement", *angleMovement, -DirectX::XMConvertToRadians(360), DirectX::XMConvertToRadians(360));
+	float* blueColor[4] = { &mStartData.blueColor.x,&mStartData.blueColor.y ,&mStartData.blueColor.z ,&mStartData.blueColor.w };
+	ImGui::ColorEdit4("blue color", *blueColor);
+	float* redColor[4] = { &mStartData.redColor.x,&mStartData.redColor.y ,&mStartData.redColor.z ,&mStartData.redColor.w };
+	ImGui::ColorEdit4("red color", *redColor);
+	ImGui::End();
+#endif
+	if (mCb.nowColorType != colorState)mStartData.changeColorFlag = 1;
+	else mStartData.changeColorFlag = 0;
+	mCb.nowColorType = colorState;
+	mStartData.startIndex += mStartData.indexSize*elapsd_time*0.3f;
+	if (mStartData.startIndex >= 1000)mStartData.startIndex -= 1000;
 	context->CSSetConstantBuffers(0, 1, mCbBuffer.GetAddressOf());
 	context->CSSetConstantBuffers(1, 1, mCbStartData.GetAddressOf());
 	context->UpdateSubresource(mCbBuffer.Get(), 0, 0, &mCb, 0, 0);
@@ -233,7 +249,7 @@ void StageObjParticle::Update(ID3D11DeviceContext* context, float elapsd_time, c
 	uav[1] = nullptr;
 	uav[2] = nullptr;
 	context->CSSetUnorderedAccessViews(0, 3, uav, nullptr);
-	mStartData.indexSize = 0;
+	//mStartData.indexSize = 0;
 #else
 	ID3D11UnorderedAccessView* uav[1] =
 	{

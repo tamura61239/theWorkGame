@@ -1,3 +1,4 @@
+
 RWByteAddressBuffer redObjsBuffer:register(u0);
 RWByteAddressBuffer blueObjsBuffer:register(u1);
 RWByteAddressBuffer rwBuffer:register(u2);
@@ -64,19 +65,16 @@ Particle Init(uint objNumber)
 		minPosition = asfloat(blueObjsBuffer.Load3(buffer + 3 * FLOAT_SIZE));
 	}
 	float3 range = maxPosition - minPosition;
-	range.x = length(range.x);
-	range.y = length(range.y);
-	range.z = length(range.z);
-	float3 position = minPosition + range / 2;
+	float3 position = minPosition + range/2;
 	Particle p;
 	p.colorType = objType + nowColorType;
 	if (p.colorType >= 2)p.colorType -= 2;
-	p.color = lerp(redColor, blueColor, 0);
-	p.position.xyz = minPosition;
+	p.color = lerp(redColor, blueColor, p.colorType);
+	p.position.xyz = position;
 	p.position.w = 1.0f;
-	p.scale = float3(10, 10, 10);
+	p.scale = float3(3, 3, 3);
 	p.life = 1.0f;
-	p.velocity = normalize(p.position- position);
+	p.velocity = /*normalize(position - p.position.xyz) * float3(5, 0, 5)*/ + lerp(float3(0, 10, 0), float3(0, -10, 0), p.colorType);
 	p.angle = (float3)0;
 	return p;
 }

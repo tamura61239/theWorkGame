@@ -52,6 +52,9 @@
     <Filter Include="シェーダー\stage_obj_particle">
       <UniqueIdentifier>{98ea4d3b-2726-4b4d-8837-9495afa3bb2e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="シェーダー\run_particle">
+      <UniqueIdentifier>{a127e850-c06f-4713-bda4-48f06681f991}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="External_Libraries\imgui\imgui.cpp">
@@ -211,6 +214,9 @@
       <Filter>ソース ファイル\GPU</Filter>
     </ClCompile>
     <ClCompile Include="Source\gpu_particle_manager.cpp">
+      <Filter>ソース ファイル\GPU</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\run_particle.cpp">
       <Filter>ソース ファイル\GPU</Filter>
     </ClCompile>
   </ItemGroup>
@@ -404,6 +410,9 @@
     <ClInclude Include="Source\gpu_particle_manager.h">
       <Filter>ヘッダー ファイル\GPU</Filter>
     </ClInclude>
+    <ClInclude Include="Source\run_particle.h">
+      <Filter>ヘッダー ファイル\GPU</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\board.hlsli">
@@ -444,6 +453,12 @@
     </None>
     <None Include="Source\stage_obj_particle_cs_function.hlsli">
       <Filter>シェーダー\stage_obj_particle</Filter>
+    </None>
+    <None Include="Source\curl_noise.hlsli">
+      <Filter>シェーダー</Filter>
+    </None>
+    <None Include="Source\run_particle_cs_function.hlsli">
+      <Filter>シェーダー\run_particle</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -527,6 +542,12 @@
     </FxCompile>
     <FxCompile Include="Source\stage_obj_particle_vs.hlsl">
       <Filter>シェーダー\stage_obj_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\run_particle_cs.hlsl">
+      <Filter>シェーダー\run_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\run_particle_vs.hlsl">
+      <Filter>シェーダー\run_particle</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

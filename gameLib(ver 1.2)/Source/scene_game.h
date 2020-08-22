@@ -14,6 +14,7 @@
 #include"stage_manager.h"
 #include"stage_operation.h"
 #include"blend_state.h"
+#include"stage_obj_particle.h"
 
 
 class SceneGame :public Scene
@@ -62,4 +63,5 @@ private:
 	std::unique_ptr<StageManager>mSManager;
 	std::unique_ptr<StageOperation>mStageOperation;
 	std::unique_ptr<blend_state> blend[2];
+	std::unique_ptr<StageObjParticle>run;
 };
