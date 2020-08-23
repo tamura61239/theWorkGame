@@ -1,5 +1,4 @@
 #include"stage_obj_particle_cs_function.hlsli"
-#include"curl_noise.hlsli"
 [numthreads(100, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {
@@ -22,17 +21,13 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
 	if (particleNumber >= startIndex && particleNumber < startIndex + indexSize)//初期化
 	{
-		if (p.life <= 0)p = Init(objNumber);
-	}
-	if (changeColorFlag >= 1)
-	{
-		p.colorType = 2;
+		if (p.life <= 0)p = Init(objNumber,index);
 	}
 	//更新
 	p.position.xyz += p.velocity * elapsdTime;
-	p.life -= (elapsdTime / maxLife) * lerp(1, 3, step(2, p.colorType));
+	p.life -= elapsdTime / maxLife;
 	p.angle += angleMovement * elapsdTime;
-	p.scale += p.scale * lerp(0, 1.5f, step(2, p.colorType)) * elapsdTime;
+	p.scale += lerp(float3(0.3, 0.3, 0.3), float3(0, 0, 0), step(3, p.scale.x)) * elapsdTime * 60;
 	float end = step(0, p.life);
 	p.color.w = lerp(0, 1, p.life) * end;
 	//セット

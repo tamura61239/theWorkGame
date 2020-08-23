@@ -70,7 +70,7 @@ void GpuParticleManager::CreateStageObjParticle(std::vector<std::shared_ptr<Stag
 void GpuParticleManager::Update(float elapsd_time, float colorType, const VECTOR3F& velocity, const VECTOR3F& position, const bool groundFlag)
 {
 	ID3D11DeviceContext* context = Framework::Instance().GetDeviceContext().Get();
-	//if (mStageObjParticle.get() != nullptr)mStageObjParticle->Update(context, elapsd_time, colorType);
+	if (mStageObjParticle.get() != nullptr)mStageObjParticle->Update(context, elapsd_time, colorType);
 	if (mRunParticle.get() != nullptr)mRunParticle->Update(context, elapsd_time, velocity, groundFlag, position);
 }
 

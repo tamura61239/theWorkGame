@@ -26,13 +26,8 @@ StageObjParticle::StageObjParticle(ID3D11Device* device) :redObjSize(0), blueObj
 	}
 	//シェーダー作成
 	{
-#if CS_TYPE
 		hr = create_cs_from_cso(device, "Data/shader/stage_obj_particle_cs.cso", mCSShader.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-#else
-		hr = create_cs_from_cso(device, "Data/shader/stage_obj_particle_cs.cso", mCSShader.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-#endif
 		hr = create_gs_from_cso(device, "Data/shader/stage_obj_particle_gs.cso", mGSShader.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		hr = create_ps_from_cso(device, "Data/shader/stage_obj_particle_ps.cso", mPSShader.GetAddressOf());
@@ -50,16 +45,17 @@ StageObjParticle::StageObjParticle(ID3D11Device* device) :redObjSize(0), blueObj
 		hr = create_vs_from_cso(device, "Data/shader/stage_obj_particle_vs.cso", mVSShader.GetAddressOf(), mInput.GetAddressOf(), inputElementDesc, ARRAYSIZE(inputElementDesc));
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
-
+	LoadCbData();
 }
 
 void StageObjParticle::CreateBuffer(ID3D11Device* device, std::vector<std::shared_ptr<StageObj>> stages)
 {
 
-	std::vector<Obj>redObjs;
-	std::vector<Obj>blueObjs;
+	//std::vector<Obj>redObjs;
+	//std::vector<Obj>blueObjs;
+	std::vector<Obj>objs;
 
-	for (int i=0;i<stages.size();i++)
+	for (int i = 0; i < stages.size(); i++)
 	{
 		auto& stage = stages[i];
 		if (stage->GetStageData().mObjType > 0)continue;
@@ -70,47 +66,39 @@ void StageObjParticle::CreateBuffer(ID3D11Device* device, std::vector<std::share
 		obj.max = position + scale;
 		obj.min = position - scale;
 
-		switch (stage->GetStageData().mColorType)
+		if (stage->GetStageData().mColorType == 0)
 		{
-		case 0:
-			redObjs.push_back(obj);
-			break;
-		case 1:
-			blueObjs.push_back(obj);
-			break;
+			redObjSize++;
+			objs.push_back(obj);
 		}
 	}
-	redObjSize = redObjs.size();
-	blueObjSize = blueObjs.size();
-	//int red = redObjSize % 4;
-	//if (red != 0)
-	//{
-	//	for (int i = 0; i < 4 - red; i++)
-	//	{
-	//		Obj obj;
-	//		obj.min = VECTOR3F(0, 0, 0);
-	//		obj.max = VECTOR3F(0, 0, 0);
-	//		redObjs.push_back(obj);
-	//	}
-	//	redObjSize = redObjs.size();
-	//}
-	//int blue = blueObjSize % 4;
-	//if (blue != 0)
-	//{
-	//	for (int i = 0; i < 4 - blue; i++)
-	//	{
-	//		Obj obj;
-	//		obj.min = VECTOR3F(0, 0, 0);
-	//		obj.max = VECTOR3F(0, 0, 0);
-	//		blueObjs.push_back(obj);
-	//	}
-	//	blueObjSize = blueObjs.size();
-	//}
+
+	for (int i = 0; i < stages.size(); i++)
+	{
+		auto& stage = stages[i];
+		if (stage->GetStageData().mObjType > 0)continue;
+		Obj obj;
+		VECTOR3F position = stage->GetPosition();
+		VECTOR3F scale = stage->GetScale();
+
+		obj.max = position + scale;
+		obj.min = position - scale;
+
+		if (stage->GetStageData().mColorType == 1)
+		{
+			objs.push_back(obj);
+		}
+	}
+
+	//redObjSize = redObjs.size();
+	//blueObjSize = blueObjs.size();
 
 	std::vector<Particle>particles;
-	particles.resize((redObjSize + blueObjSize) * 1000);
+	particles.resize((objs.size()) * 1000);
 	particleSize = particles.size();
 
+	std::vector<VECTOR3F>datas;
+	SetRandBufferData(datas);
 	HRESULT hr;
 	//バッファ生成
 	{
@@ -119,29 +107,28 @@ void StageObjParticle::CreateBuffer(ID3D11Device* device, std::vector<std::share
 		ZeroMemory(&desc, sizeof(desc));
 		ZeroMemory(&data, sizeof(data));
 		desc.Usage = D3D11_USAGE_DEFAULT;
-		desc.BindFlags = D3D11_BIND_VERTEX_BUFFER | D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
+		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 		desc.CPUAccessFlags = 0;
 		desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS;
-		//赤色のオブジェクト
-		desc.ByteWidth = sizeof(Obj) * redObjSize;
-		data.pSysMem = &redObjs[0];
-		hr = device->CreateBuffer(&desc, &data, mRedStageObjs.GetAddressOf());
+		//ステージのオブジェクト
+		desc.ByteWidth = sizeof(Obj) * objs.size();
+		data.pSysMem = &objs[0];
+		hr = device->CreateBuffer(&desc, &data, mStageObjs.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-		//青色のオブジェクト
-		ZeroMemory(&data, sizeof(data));
-		desc.ByteWidth = sizeof(Obj) * blueObjSize;
-		data.pSysMem = &blueObjs[0];
-		hr = device->CreateBuffer(&desc, &data, mBlueStageObjs.GetAddressOf());
+		//乱数バッファ
+		desc.ByteWidth = sizeof(VECTOR3F) * datas.size();
+		data.pSysMem = &datas[0];
+		hr = device->CreateBuffer(&desc, &data, mRands.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		//パーティクル
 		ZeroMemory(&data, sizeof(data));
 		desc.ByteWidth = sizeof(Particle) * particleSize;
+		desc.BindFlags = D3D11_BIND_VERTEX_BUFFER | D3D11_BIND_UNORDERED_ACCESS;
 		data.pSysMem = &particles[0];
 		hr = device->CreateBuffer(&desc, &data, mParticleBuffer.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 	}
-#if CS_TYPE
 	//UAV生成
 	{
 		D3D11_UNORDERED_ACCESS_VIEW_DESC desc;
@@ -150,20 +137,11 @@ void StageObjParticle::CreateBuffer(ID3D11Device* device, std::vector<std::share
 		desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
 		desc.Buffer.FirstElement = 0;
 		desc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_RAW;
-		//赤色のオブジェクト
-		desc.Buffer.NumElements = sizeof(Obj) * redObjSize / 4;
-		hr = device->CreateUnorderedAccessView(mRedStageObjs.Get(), &desc, mRedStageObjsUAV.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-		//青色のオブジェクト
-		desc.Buffer.NumElements = sizeof(Obj) * blueObjSize / 4;
-		hr = device->CreateUnorderedAccessView(mBlueStageObjs.Get(), &desc, mBlueStageObjsUAV.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		//パーティクル
 		desc.Buffer.NumElements = sizeof(Particle) * particleSize / 4;
 		hr = device->CreateUnorderedAccessView(mParticleBuffer.Get(), &desc, mParticleUAV.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
-#else
 	//SRV
 	{
 		D3D11_SHADER_RESOURCE_VIEW_DESC desc;
@@ -172,41 +150,21 @@ void StageObjParticle::CreateBuffer(ID3D11Device* device, std::vector<std::share
 		desc.ViewDimension = D3D11_SRV_DIMENSION_BUFFEREX;
 		desc.BufferEx.FirstElement = 0;
 		desc.BufferEx.Flags = D3D11_BUFFEREX_SRV_FLAG_RAW;
-		//赤色のオブジェクト
-		desc.BufferEx.NumElements = sizeof(Obj) * redObjSize / 4;
-		hr = device->CreateShaderResourceView(mRedStageObjs.Get(), &desc, mRedStageObjsSRV.GetAddressOf());
+		//乱数バッファのSRV
+		desc.BufferEx.NumElements = sizeof(VECTOR3F) * datas.size() / 4;
+		hr = device->CreateShaderResourceView(mRands.Get(), &desc, mRandsSRV.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-		//青色のオブジェクト
-		desc.BufferEx.NumElements = sizeof(Obj) * blueObjSize / 4;
-		hr = device->CreateShaderResourceView(mBlueStageObjs.Get(), &desc, mBlueStageObjsSRV.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-	}
-	//UAV
-	{
-		D3D11_UNORDERED_ACCESS_VIEW_DESC desc;
-		ZeroMemory(&desc, sizeof(desc));
-		desc.Format = DXGI_FORMAT_R32_TYPELESS;
-		desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-		desc.Buffer.FirstElement = 0;
-		desc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_RAW;
-		//パーティクル
-		desc.Buffer.NumElements = sizeof(Particle) * particleSize / 4;
-		hr = device->CreateUnorderedAccessView(mParticleBuffer.Get(), &desc, mParticleUAV.GetAddressOf());
+		//ステージオブジェクトのSRV
+		desc.BufferEx.NumElements = sizeof(Obj) * objs.size() / 4;
+		hr = device->CreateShaderResourceView(mStageObjs.Get(), &desc, mStageObjsSRV.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
-#endif
-	mStartData.blueColor = VECTOR4F(0, 0, 1, 1);
-	mStartData.redColor = VECTOR4F(1, 0, 0, 1);
-	mCb.angleMovement = VECTOR3F(0, 0, 0);
 	mStartData.changeColorFlag = 0;
 	mCb.elapsdTime = 0;
-	mStartData.indexSize = 10;
 	mStartData.startIndex = 0;
-	mCb.maxLife = 1.0f;
 	mStartData.redNumber = redObjSize;
 	mCb.nowColorType = 0;
-	mCb.maxSize = redObjSize + blueObjSize;
+	mCb.maxSize = objs.size();
 }
 
 void StageObjParticle::Update(ID3D11DeviceContext* context, float elapsd_time, const int colorState)
@@ -221,12 +179,15 @@ void StageObjParticle::Update(ID3D11DeviceContext* context, float elapsd_time, c
 	ImGui::ColorEdit4("blue color", *blueColor);
 	float* redColor[4] = { &mStartData.redColor.x,&mStartData.redColor.y ,&mStartData.redColor.z ,&mStartData.redColor.w };
 	ImGui::ColorEdit4("red color", *redColor);
+	ImGui::InputFloat("create particle size", &mStartData.indexSize);
+	ImGui::InputFloat("max life", &mCb.maxLife);
+	if (ImGui::Button("save"))SaveCbData();
 	ImGui::End();
 #endif
 	if (mCb.nowColorType != colorState)mStartData.changeColorFlag = 1;
 	else mStartData.changeColorFlag = 0;
 	mCb.nowColorType = colorState;
-	mStartData.startIndex += mStartData.indexSize*elapsd_time*0.3f;
+	mStartData.startIndex += mStartData.indexSize * elapsd_time * 0.3f;
 	if (mStartData.startIndex >= 1000)mStartData.startIndex -= 1000;
 	context->CSSetConstantBuffers(0, 1, mCbBuffer.GetAddressOf());
 	context->CSSetConstantBuffers(1, 1, mCbStartData.GetAddressOf());
@@ -234,42 +195,27 @@ void StageObjParticle::Update(ID3D11DeviceContext* context, float elapsd_time, c
 	context->UpdateSubresource(mCbStartData.Get(), 0, 0, &mStartData, 0, 0);
 
 	context->CSSetShader(mCSShader.Get(), nullptr, 0);
-#if CS_TYPE
-	ID3D11UnorderedAccessView* uav[3] =
-	{
-		mRedStageObjsUAV.Get(),
-		mBlueStageObjsUAV.Get(),
-		mParticleUAV.Get(),
-	};
-	context->CSSetUnorderedAccessViews(0, 3, uav, nullptr);
-
-	context->Dispatch(particleSize/100, 1, 1);
-
-	uav[0] = nullptr;
-	uav[1] = nullptr;
-	uav[2] = nullptr;
-	context->CSSetUnorderedAccessViews(0, 3, uav, nullptr);
-	//mStartData.indexSize = 0;
-#else
 	ID3D11UnorderedAccessView* uav[1] =
 	{
 		mParticleUAV.Get(),
 	};
-	context->CSSetUnorderedAccessViews(0, 1, uav, nullptr);
 	ID3D11ShaderResourceView* srv[2] =
 	{
-		mRedStageObjsSRV.Get(),
-		mBlueStageObjsSRV.Get(),
+		mRandsSRV.Get(),
+		mStageObjsSRV.Get(),
 	};
 	context->CSSetShaderResources(0, 2, srv);
+	context->CSSetUnorderedAccessViews(0, 1, uav, nullptr);
+
 	context->Dispatch(particleSize / 100, 1, 1);
 
-	uav[0] = nullptr;
-	context->CSSetUnorderedAccessViews(0, 1, uav, nullptr);
 	srv[0] = nullptr;
 	srv[1] = nullptr;
 	context->CSSetShaderResources(0, 2, srv);
-#endif
+
+	uav[0] = nullptr;
+	context->CSSetUnorderedAccessViews(0, 1, uav, nullptr);
+
 	context->CSSetShader(nullptr, nullptr, 0);
 }
 
@@ -292,4 +238,57 @@ void StageObjParticle::Render(ID3D11DeviceContext* context)
 	context->VSSetShader(nullptr, nullptr, 0);
 	context->GSSetShader(nullptr, nullptr, 0);
 	context->PSSetShader(nullptr, nullptr, 0);
+}
+
+void StageObjParticle::SetRandBufferData(std::vector<VECTOR3F>& data)
+{
+	FILE* fp;
+	if (fopen_s(&fp, "Data/file/stage_obj_particle_random.bin", "rb") == 0)
+	{
+		data.resize(400);
+		fread(&data[0], sizeof(VECTOR3F), 400, fp);
+		fclose(fp);
+		return;
+	}
+	for (int i = 0; i < 400; i++)
+	{
+		data.push_back(VECTOR3F(static_cast<float>(rand()) / 32767.f, static_cast<float>(rand()) / 32767.f, static_cast<float>(rand()) / 32767.f));
+	}
+	fopen_s(&fp, "Data/file/stage_obj_particle_random.bin", "wb");
+	fwrite(&data[0], sizeof(VECTOR3F), 400, fp);
+	fclose(fp);
+}
+
+void StageObjParticle::LoadCbData()
+{
+	FILE* fp;
+	if (fopen_s(&fp, "Data/file/stage_obj_particle_data.bin", "rb") == 0)
+	{
+		fread(&mStartData.redColor, sizeof(VECTOR4F), 1, fp);
+		fread(&mStartData.blueColor,sizeof(VECTOR4F),1, fp);
+		fread(&mCb.maxLife, sizeof(float), 1, fp);
+		fread(&mStartData.indexSize, sizeof(float), 1, fp);
+		fread(&mCb.angleMovement, sizeof(VECTOR3F), 1, fp);
+		fclose(fp);
+		return;
+	}
+	mStartData.blueColor = VECTOR4F(0, 0, 1, 1);
+	mStartData.redColor = VECTOR4F(1, 0, 0, 1);
+	mCb.angleMovement = VECTOR3F(DirectX::XMConvertToRadians(200), DirectX::XMConvertToRadians(100), 0);
+	mStartData.indexSize = 10;
+	mCb.maxLife = 1.0f;
+
+}
+
+void StageObjParticle::SaveCbData()
+{
+	FILE* fp;
+	fopen_s(&fp, "Data/file/stage_obj_particle_data.bin", "wb");
+	fwrite(&mStartData.redColor, sizeof(VECTOR4F), 1, fp);
+	fwrite(&mStartData.blueColor, sizeof(VECTOR4F), 1, fp);
+	fwrite(&mCb.maxLife, sizeof(float), 1, fp);
+	fwrite(&mStartData.indexSize, sizeof(float), 1, fp);
+	fwrite(&mCb.angleMovement, sizeof(VECTOR3F), 1, fp);
+	fclose(fp);
+
 }

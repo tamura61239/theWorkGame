@@ -36,7 +36,8 @@ void main(uint3 DTid : SV_DispatchThreadID)
 			p.accel = lerp(-normalize(playerVelocity), normalize(p.velocity) * 5, moveType);
 			p.angle = float3(0, rand.x, 0);
 			p.color = color;
-			p.scale = float3(1, 1, 1) * 1.5f;
+			p.color.w = 0;
+			p.scale = float3(1, 1, 1) * .5f;
 			p.life = maxLife / (1 + moveType);
 
 			rwBuffer.Store4(bufferIndex, asuint(p.position));
@@ -49,20 +50,24 @@ void main(uint3 DTid : SV_DispatchThreadID)
 			return;
 		}
 	}
+	if (p.life <= 0)return;
 	//更新
 	p.velocity += p.accel * elapsdTime * 60;
 	p.position.xyz += p.velocity * elapsdTime;
 	p.angle += angleMovement * elapsdTime;
 	p.life -= elapsdTime;
-	float wDown = step(p.life, 1);
-	//p.color.w = lerp(1, 0, (1 - p.life) * wDown);
+	//徐々に大きくする
+	p.scale += lerp(float3(0.1, 0.1, 0.1), float3(0, 0, 0), step(1.5f, p.scale.x)) * elapsdTime * 60;
+	//徐々に不透明にしていく
+	p.color.w += lerp(0.1f, 0, step(color.w, p.color.w)) * elapsdTime * 60;
+	//パーティクルの寿命が尽きたかどうか
 	float end = step(0, p.life);
-	rwBuffer.Store4(bufferIndex, asuint(p.position* end));
-	rwBuffer.Store3(bufferIndex + FLOAT_SIZE * 4, asuint(p.scale* end));
-	rwBuffer.Store3(bufferIndex + FLOAT_SIZE * 7, asuint(p.angle* end));
-	rwBuffer.Store4(bufferIndex + FLOAT_SIZE * 10, asuint(p.color* end));
-	rwBuffer.Store3(bufferIndex + FLOAT_SIZE * 14, asuint(p.velocity* end));
-	rwBuffer.Store3(bufferIndex + FLOAT_SIZE * 17, asuint(p.accel* end));
-	rwBuffer.Store(bufferIndex + FLOAT_SIZE * 20, asuint(p.life* end));
+	rwBuffer.Store4(bufferIndex, asuint(p.position * end));
+	rwBuffer.Store3(bufferIndex + FLOAT_SIZE * 4, asuint(p.scale * end));
+	rwBuffer.Store3(bufferIndex + FLOAT_SIZE * 7, asuint(p.angle * end));
+	rwBuffer.Store4(bufferIndex + FLOAT_SIZE * 10, asuint(p.color * end));
+	rwBuffer.Store3(bufferIndex + FLOAT_SIZE * 14, asuint(p.velocity * end));
+	rwBuffer.Store3(bufferIndex + FLOAT_SIZE * 17, asuint(p.accel * end));
+	rwBuffer.Store(bufferIndex + FLOAT_SIZE * 20, asuint(p.life * end));
 
 }

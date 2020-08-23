@@ -15,17 +15,15 @@ public:
 private:
 	//バッファ(UnorderedAccessView関係)
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mParticleBuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mRedStageObjs;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mBlueStageObjs;
+	Microsoft::WRL::ComPtr<ID3D11Buffer>mStageObjs;
+	Microsoft::WRL::ComPtr<ID3D11Buffer>mRands;
 	//バッファ(定数)
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbStartData;
 	//コンピュートシェーダーのビュー
 	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mParticleUAV;
-	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mRedStageObjsUAV;
-	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mBlueStageObjsUAV;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>mRedStageObjsSRV;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>mBlueStageObjsSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>mStageObjsSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>mRandsSRV;
 
 	//stageObjのバッファデータ
 	struct Obj
@@ -74,4 +72,7 @@ private:
 	int particleSize;
 	CbBuffer mCb;
 	CbStartData mStartData;
+	void SetRandBufferData(std::vector<VECTOR3F>& data);
+	void LoadCbData();
+	void SaveCbData();
 };
