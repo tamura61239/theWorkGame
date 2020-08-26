@@ -4,7 +4,7 @@
 #endif
 #include"key_board.h"
 
-StageOperation::StageOperation():mChangFlag(true),mColorType(0)
+StageOperation::StageOperation():mChangFlag(false),mColorType(0)
 {
 	Load();
 }
@@ -17,7 +17,7 @@ void StageOperation::Load()
 		fread(&mColor[0], sizeof(VECTOR4F), 1, fp);
 		fread(&mColor[1], sizeof(VECTOR4F), 1, fp);
 		fclose(fp);
-		mChangFlag = false;
+		mChangFlag = true;
 		return;
 	}
 	mColor[0] = VECTOR4F(1, 0, 0, 1);

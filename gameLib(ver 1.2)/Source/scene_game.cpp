@@ -59,7 +59,6 @@ void SceneGame::Update(float elapsed_time)
 
 	player->Update(elapsed_time,mSManager.get());
 	mSManager->Update(elapsed_time);
-
 	pCamera.Update(elapsed_time);
 	pGpuParticleManager.Update(elapsed_time, mStageOperation->GetColorType(),player->GetCharacter()->GetVelocity(),player->GetCharacter()->GetPosition(),player->GetCharacter()->GetGroundFlag());
 	if (pKeyBoad.RisingState(KeyLabel::ENTER))
@@ -122,9 +121,9 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	modelRenderer->Begin(context, viewProjection);
 	modelRenderer->Draw(context, *player->GetCharacter()->GetModel());
 	modelRenderer->End(context);
-
-	mSManager->Render(context, view, projection);
 	pGpuParticleManager.Render(context, view, projection);
+
+	mSManager->Render(context, view, projection,mStageOperation->GetColorType());
 	blend[0]->deactivate(context);
 
 	frameBuffer[0]->Deactivate(context);

@@ -31,6 +31,8 @@ private:
 	{
 		VECTOR4F mOffset[8];
 	};
+	float deviation;
+	float multiply;
 	float GaussianDistribution(const VECTOR2F& position, const float rho);
 	void CalucurateBluer(const float width, const float hight, const VECTOR2F& dir, const float deviation, const float multiply);
 	CbBloom mCbuffer;

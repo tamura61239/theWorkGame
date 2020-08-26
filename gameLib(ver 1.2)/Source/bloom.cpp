@@ -6,11 +6,11 @@
 #include<imgui.h>
 #endif
 
-BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHight) :count(3)
+BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHight) :count(3), deviation(2.5f), multiply(1.0f)
 {
 	unsigned int wight = static_cast<unsigned int>(screenWidth);
 	unsigned int hight = static_cast<unsigned int>(screenHight);
-	for (int i = 0;i < 5;i++)
+	for (int i = 0; i < 5; i++)
 	{
 		mFrameBuffer.emplace_back(std::make_unique<FrameBuffer>(device, static_cast<int>(wight >> i), static_cast<float>(hight >> i), true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R24G8_TYPELESS));
 	}
@@ -120,6 +120,8 @@ void BloomRender::ImGuiUpdate()
 	ImGui::SliderFloat("threshold", &mCbuffer.threshold, 0, 10);
 	ImGui::SliderFloat("widthBlur", &mCbuffer.widthBlur, 0, 1);
 	ImGui::SliderFloat("hightBlur", &mCbuffer.hightBlur, 0, 1);
+	ImGui::SliderFloat("devutation", &deviation, 0, 50);
+	ImGui::SliderFloat("multiply", &multiply, 0, 10);
 	int blurCount = static_cast<int>(mCbuffer.blurCount);
 	if (ImGui::SliderInt("blurCount", &blurCount, 1, 8))
 	{
@@ -165,13 +167,13 @@ void BloomRender::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView*
 	context->IASetVertexBuffers(0, 0, 0, 0, 0);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
-	for (int i = 1;i < 5;i++)
+	for (int i = 1; i < 5; i++)
 	{
 		mFrameBuffer[i]->Clear(context);
 		if (count < i)continue;
 		mFrameBuffer[i]->Activate(context);
 		D3D11_VIEWPORT viewport = mFrameBuffer[i]->GetViewPort();
-		CalucurateBluer(viewport.Width, viewport.Height, VECTOR2F(mCbuffer.widthBlur, mCbuffer.hightBlur), 2.5f, 1.0f);
+		CalucurateBluer(viewport.Width, viewport.Height, VECTOR2F(mCbuffer.widthBlur, mCbuffer.hightBlur), deviation, multiply);
 		context->UpdateSubresource(mCbBluerbuffer.Get(), 0, 0, &mCbBluer, 0, 0);
 
 		context->PSSetShaderResources(0, 1, mFrameBuffer[i - 1]->GetRenderTargetShaderResourceView().GetAddressOf());
@@ -184,7 +186,7 @@ void BloomRender::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView*
 		mFrameBuffer[5]->Activate(context);
 		context->VSSetShader(mVSShader.Get(), 0, 0);
 		context->PSSetShader(mPSShader[2].Get(), 0, 0);
-		for (int i = 0;i < 5;i++)
+		for (int i = 0; i < 5; i++)
 		{
 			context->PSSetShaderResources(i, 1, mFrameBuffer[i]->GetRenderTargetShaderResourceView().GetAddressOf());
 		}
@@ -200,7 +202,7 @@ void BloomRender::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView*
 	context->VSSetShader(mVSShader.Get(), 0, 0);
 	context->PSSetShader(mPSShader[2].Get(), 0, 0);
 	context->PSSetShaderResources(0, 1, &colorSrv);
-	for (int i = 0;i < 5;i++)
+	for (int i = 0; i < 5; i++)
 	{
 		context->PSSetShaderResources(i + 1, 1, mFrameBuffer[i]->GetRenderTargetShaderResourceView().GetAddressOf());
 	}
@@ -218,8 +220,19 @@ void BloomRender::Load()
 	FILE* fp;
 	if (fopen_s(&fp, "Data/file/bloom.bin", "rb") == 0)
 	{
-		fread(&mCbuffer, sizeof(CbBloom), 1, fp);
-		fclose(fp);
+		//fread(&mCbuffer, sizeof(CbBloom), 1, fp);
+		//fread(&deviation, sizeof(float), 1, fp);
+		//fread(&multiply, sizeof(float), 1, fp);
+		//fclose(fp);
+		int err = static_cast<int>(fread(&mCbuffer, sizeof(CbBloom), 1, fp));
+		assert(err >= 1);
+		err = static_cast<int>(fread(&deviation, sizeof(float), 1, fp));
+		assert(err >= 1);
+		err = static_cast<int>(fread(&multiply, sizeof(float), 1, fp));
+		assert(err >= 1);
+		err = static_cast<int>(fclose(fp));
+		assert(err != EOF);
+
 		return;
 	}
 	mCbuffer.threshold = 0;
@@ -233,8 +246,15 @@ void BloomRender::Save()
 {
 	FILE* fp;
 	fopen_s(&fp, "Data/file/bloom.bin", "wb");
-	fwrite(&mCbuffer, sizeof(CbBloom), 1, fp);
-	fclose(fp);
+	int err = static_cast<int>(fwrite(&mCbuffer, sizeof(CbBloom), 1, fp));
+	assert(err >= 1);
+	err = static_cast<int>(fwrite(&deviation, sizeof(float), 1, fp));
+	assert(err >= 1);
+	err = static_cast<int>(fwrite(&multiply, sizeof(float), 1, fp));
+	assert(err >= 1);
+	err = static_cast<int>(fclose(fp));
+	assert(err != EOF);
+
 }
 
 float BloomRender::GaussianDistribution(const VECTOR2F& position, const float rho)
@@ -252,14 +272,14 @@ void BloomRender::CalucurateBluer(const float width, const float hight, const VE
 
 	mCbBluer.mOffset[0].x = 0;
 	mCbBluer.mOffset[0].y = 0;
-	for (int i = 1;i < 8;i++)
+	for (int i = 1; i < 8; i++)
 	{
 		mCbBluer.mOffset[i].x = dir.x * i * uvX;
 		mCbBluer.mOffset[i].y = dir.y * i * uvY;
 		mCbBluer.mOffset[i].z = GaussianDistribution(dir * float(i), deviation) * multiply;
 		totalWeigh += mCbBluer.mOffset[i].z * 2.0f;
 	}
-	for (int i = 0;i < 8;i++)
+	for (int i = 0; i < 8; i++)
 	{
 		mCbBluer.mOffset[i].z /= totalWeigh;
 	}

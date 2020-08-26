@@ -139,20 +139,20 @@ void StageManager::Update(float elapsd_time)
 	}
 }
 /***************•`‰æ******************/
-void StageManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection)
+void StageManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const int stageState)
 {
 	mRender->Begin(context, view, projection);
 	for (auto& stage : mStageObjs)
 	{
-		if (stage->GetColor().w <1)continue;
+		int state = stage->GetStageData().mColorType + stageState;
+		if (state % 2 == 1)continue;
 		mRender->Render(context, stage->GetMesh(), stage->GetWorld(),stage->GetColor());
 	}
-	mRender->End(context);
-	mRender->Begin(context, view, projection,true);
 
 	for (auto& stage : mStageObjs)
 	{
-		if (stage->GetColor().w >= 1)continue;
+		int state = stage->GetStageData().mColorType + stageState;
+		if (state % 2 == 0)continue;
 		mRender->Render(context, stage->GetMesh(), stage->GetWorld(), stage->GetColor());
 	}
 	mRender->End(context);

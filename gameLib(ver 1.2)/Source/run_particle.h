@@ -62,4 +62,6 @@ private:
 	CbStart mCbStart;
 	void SetRandBufferData(std::vector<VECTOR2F>&data);
 	bool flag;
+	void Load();
+	void Save();
 };
