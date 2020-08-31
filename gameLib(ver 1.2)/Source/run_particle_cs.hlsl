@@ -37,7 +37,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
 			p.angle = float3(0, rand.x, 0);
 			p.color = color;
 			p.color.w = 0;
-			p.scale = float3(1, 1, 1) * .5f;
+			p.scale = float3(1, 1, 1) * 0.01f;
 			p.life = maxLife / (1 + moveType);
 
 			rwBuffer.Store4(bufferIndex, asuint(p.position));
@@ -50,14 +50,15 @@ void main(uint3 DTid : SV_DispatchThreadID)
 			return;
 		}
 	}
-	if (p.life <= 0)return;
+	//if (p.life <= 0)return;
 	//更新
 	p.velocity += p.accel * elapsdTime * 60;
+	p.velocity.y += 1.5f * elapsdTime * 60;
 	p.position.xyz += p.velocity * elapsdTime;
 	p.angle += angleMovement * elapsdTime;
 	p.life -= elapsdTime;
 	//徐々に大きくする
-	p.scale += lerp(float3(0.1, 0.1, 0.1), float3(0, 0, 0), step(1.5f, p.scale.x)) * elapsdTime * 60;
+	p.scale += lerp(float3(0.1, 0.1, 0.1), float3(0, 0, 0), step(0.4f, p.scale.x)) * elapsdTime * 60;
 	//徐々に不透明にしていく
 	p.color.w += lerp(0.1f, 0, step(color.w, p.color.w)) * elapsdTime * 60;
 	//パーティクルの寿命が尽きたかどうか

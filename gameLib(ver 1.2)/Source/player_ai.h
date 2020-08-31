@@ -26,5 +26,12 @@ private:
 		VECTOR3F ranp;
 		float gravity;
 	};
+	struct CameraParameter
+	{
+		float angle;
+		float length;
+		float y;
+	};
 	PlayerParameter mParameter;
+	CameraParameter mCameraParameter;
 };

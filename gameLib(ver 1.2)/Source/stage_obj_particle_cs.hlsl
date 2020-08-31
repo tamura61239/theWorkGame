@@ -27,7 +27,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
 	p.position.xyz += p.velocity * elapsdTime;
 	p.life -= elapsdTime / maxLife;
 	p.angle += angleMovement * elapsdTime;
-	p.scale += lerp(float3(0.3, 0.3, 0.3), float3(0, 0, 0), step(3, p.scale.x)) * elapsdTime * 60;
+	p.scale += lerp(float3(0.3, 0.3, 0.3), float3(0, 0, 0), step(2, p.scale.x)) * elapsdTime * 20;
 	float end = step(0, p.life);
 	p.color.w = lerp(0, 1, p.life) * end;
 	//ƒZƒbƒg

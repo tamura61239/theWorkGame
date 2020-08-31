@@ -65,6 +65,7 @@ void SceneGame::Update(float elapsed_time)
 	{
 		pSceneManager.ChangeScene(SCENETYPE::OVER);
 		//pSoundManager.Stop(0);
+		pGpuParticleManager.ClearBuffer();
 		return;
 	}
 }
@@ -104,7 +105,6 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 
 		return;
 	}
-	const VECTOR4F light = VECTOR4F(0, -0.5f, -1, 0);
 	FLOAT4X4 view = pCamera.GetCamera()->GetView();
 	FLOAT4X4 projection = pCamera.GetCamera()->GetProjection();
 	FLOAT4X4 viewProjection;
@@ -118,12 +118,14 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 
 
 	blend[0]->activate(context);
+
 	modelRenderer->Begin(context, viewProjection);
 	modelRenderer->Draw(context, *player->GetCharacter()->GetModel());
 	modelRenderer->End(context);
-	pGpuParticleManager.Render(context, view, projection);
 
 	mSManager->Render(context, view, projection,mStageOperation->GetColorType());
+	pGpuParticleManager.Render(context, view, projection);
+
 	blend[0]->deactivate(context);
 
 	frameBuffer[0]->Deactivate(context);

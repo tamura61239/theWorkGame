@@ -76,7 +76,7 @@ RunParticles::RunParticles(ID3D11Device* device)
 	mCb.indexSize = 100;
 	mCb.createFlag = 0;
 
-	mCbStart.color = VECTOR4F(1, 1, 1, 1);
+	mCbStart.color = VECTOR4F(1, 0, 0, 1);
 	mCbStart.maxLife = 1;
 	mCbStart.moveType = 0;
 	mCbStart.playerPosition = VECTOR4F(0, 0, 0, 1);
@@ -88,7 +88,7 @@ RunParticles::RunParticles(ID3D11Device* device)
 	{
 		hr = create_cs_from_cso(device, "Data/shader/run_particle_cs.cso", mCSShader.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-		hr = create_gs_from_cso(device, "Data/shader/stage_obj_particle_gs.cso", mGSShader.GetAddressOf());
+		hr = create_gs_from_cso(device, "Data/shader/run_particle_gs.cso", mGSShader.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		hr = create_ps_from_cso(device, "Data/shader/stage_obj_particle_ps.cso", mPSShader.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
@@ -110,6 +110,12 @@ RunParticles::RunParticles(ID3D11Device* device)
 
 void RunParticles::Update(ID3D11DeviceContext* context, float elapsd_time, const VECTOR3F& velocity, bool groundFlag, const VECTOR3F& position)
 {
+#ifdef USE_IMGUI
+	ImGui::Begin("run particle");
+	float* color[4] = { &mCbStart.color.x,&mCbStart.color.y ,&mCbStart.color.z ,&mCbStart.color.w };
+	ImGui::ColorEdit4("color", *color);
+	ImGui::End();
+#endif
 	float length = 0;
 	DirectX::XMStoreFloat(&length, DirectX::XMVector3Length(DirectX::XMLoadFloat3(&velocity)));
 	mCb.createFlag = 1;
@@ -187,4 +193,12 @@ void RunParticles::SetRandBufferData(std::vector<VECTOR2F>&data)
 	fopen_s(&fp, "Data/file/run_particle_rundom_data.bin", "wb");
 	fwrite(&data[0], sizeof(VECTOR2F), 400, fp);
 	fclose(fp);
+}
+
+void RunParticles::Load()
+{
+}
+
+void RunParticles::Save()
+{
 }

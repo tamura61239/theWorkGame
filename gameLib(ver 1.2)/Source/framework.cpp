@@ -142,7 +142,7 @@ bool Framework::Initialize(HWND hwnd)
 	//camera->SetPerspective(30 * (3.14f / 180.f), viewport.Width / viewport.Height, 0.1f, 1000.0f);
 	//cameraOperation->SetCameraType(CameraOperation::CAMERA_TYPE::DEBUG);
 	pSceneManager.SetDevice(mDevice.Get());
-	pSceneManager.ChangeScene(SCENETYPE::TITLE);
+	pSceneManager.ChangeScene(SCENETYPE::GAME);
 	return true;
 }
 //çXêV

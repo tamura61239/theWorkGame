@@ -13,6 +13,7 @@ public:
 		return manager;
 	}
 	void CreateBuffer(ID3D11Device* device);
+	void ClearBuffer();
 	//パーティクル生成関数
 	void CreateStageObjParticle(std::vector<std::shared_ptr<StageObj>>objs);
 	//更新
@@ -22,7 +23,7 @@ public:
 private:
 	GpuParticleManager(){}
 	std::unique_ptr<StageObjParticle>mStageObjParticle;
-	std::shared_ptr<RunParticles>mRunParticle;
+	std::unique_ptr<RunParticles>mRunParticle;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState>mDepth;
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState>mRasterizer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbScene;

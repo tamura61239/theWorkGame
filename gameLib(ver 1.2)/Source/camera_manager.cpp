@@ -20,9 +20,19 @@ void CameraManager::Update(float elapsed_time)
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("camera");
-	if (ImGui::Button("debug"))
+	if (mCameraOperation->GetCameraType() != CameraOperation::CAMERA_TYPE::DEBUG)
 	{
-		mCameraOperation->SetCameraType(CameraOperation::CAMERA_TYPE::DEBUG);
+		if (ImGui::Button("debug"))
+		{
+			mCameraOperation->SetCameraType(CameraOperation::CAMERA_TYPE::DEBUG);
+		}
+	}
+	else
+	{
+		if (ImGui::Button("end"))
+		{
+			mCameraOperation->SetCameraType(CameraOperation::CAMERA_TYPE::NORMAL);
+		}
 	}
 	ImGui::End();
 #endif

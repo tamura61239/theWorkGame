@@ -15,6 +15,7 @@ public:
 	};
 	//setter
 	void SetCameraType(CAMERA_TYPE type) { mType = type; }
+	CAMERA_TYPE GetCameraType() { return mType; }
 private:
 	std::shared_ptr<Camera>mCamera;
 	CAMERA_TYPE mType;

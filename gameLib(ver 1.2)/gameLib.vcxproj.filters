@@ -549,5 +549,8 @@
     <FxCompile Include="Source\run_particle_vs.hlsl">
       <Filter>シェーダー\run_particle</Filter>
     </FxCompile>
+    <FxCompile Include="Source\run_particle_gs.hlsl">
+      <Filter>シェーダー\run_particle</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

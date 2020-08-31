@@ -56,7 +56,12 @@ void GpuParticleManager::CreateBuffer(ID3D11Device* device)
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 	}
-	mRunParticle = std::make_shared<RunParticles>(device);
+	mRunParticle = std::make_unique<RunParticles>(device);
+}
+
+void GpuParticleManager::ClearBuffer()
+{
+	mRunParticle.reset();
 }
 
 void GpuParticleManager::CreateStageObjParticle(std::vector<std::shared_ptr<StageObj>> objs)
