@@ -2,7 +2,7 @@
 #include"static_mesh.h"
 #include"obj3d.h"
 
-static const float gameObjScale = 1;
+static const float gameObjScale = 2;
 
 class StaticObj:public Obj3D
 {

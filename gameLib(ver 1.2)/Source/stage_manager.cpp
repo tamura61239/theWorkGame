@@ -148,6 +148,11 @@ void StageManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, co
 		if (state % 2 == 1)continue;
 		mRender->Render(context, stage->GetMesh(), stage->GetWorld(),stage->GetColor());
 	}
+	mRender->End(context);
+
+	pGpuParticleManager.Render(context, view, projection);
+
+	mRender->Begin(context, view, projection);
 
 	for (auto& stage : mStageObjs)
 	{

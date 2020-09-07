@@ -10,6 +10,7 @@ class StageObjParticle
 public:
 	StageObjParticle(ID3D11Device* device);
 	void CreateBuffer(ID3D11Device* device, std::vector<std::shared_ptr<StageObj>>stages);
+	void ImGuiUpdate(float elapsdTime);
 	void Update(ID3D11DeviceContext* context, float elapsd_time, const int colorState);
 	void Render(ID3D11DeviceContext* context);
 private:
@@ -63,6 +64,7 @@ private:
 	};
 	//シェーダー
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSShader;
+	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSCreateShader;
 	Microsoft::WRL::ComPtr<ID3D11GeometryShader>mGSShader;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader>mPSShader;
 	Microsoft::WRL::ComPtr<ID3D11VertexShader>mVSShader;
@@ -72,6 +74,9 @@ private:
 	int particleSize;
 	CbBuffer mCb;
 	CbStartData mStartData;
+	int beforeIndex;
+	int objSize;
+	int particleOneObjSize;
 	void SetRandBufferData(std::vector<VECTOR3F>& data);
 	void LoadCbData();
 	void SaveCbData();

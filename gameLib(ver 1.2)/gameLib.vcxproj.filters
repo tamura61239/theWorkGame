@@ -55,6 +55,9 @@
     <Filter Include="シェーダー\run_particle">
       <UniqueIdentifier>{a127e850-c06f-4713-bda4-48f06681f991}</UniqueIdentifier>
     </Filter>
+    <Filter Include="シェーダー\stage_scene_particle">
+      <UniqueIdentifier>{f8b9c1ea-ac49-43ea-bb3f-23d4d164c53d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="External_Libraries\imgui\imgui.cpp">
@@ -217,6 +220,12 @@
       <Filter>ソース ファイル\GPU</Filter>
     </ClCompile>
     <ClCompile Include="Source\run_particle.cpp">
+      <Filter>ソース ファイル\GPU</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\respon_particle.cpp">
+      <Filter>ソース ファイル\GPU</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\stage_scene_particle.cpp">
       <Filter>ソース ファイル\GPU</Filter>
     </ClCompile>
   </ItemGroup>
@@ -413,6 +422,12 @@
     <ClInclude Include="Source\run_particle.h">
       <Filter>ヘッダー ファイル\GPU</Filter>
     </ClInclude>
+    <ClInclude Include="Source\respon_particle.h">
+      <Filter>ヘッダー ファイル\GPU</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\stage_scene_particle.h">
+      <Filter>ヘッダー ファイル\GPU</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\board.hlsli">
@@ -459,6 +474,9 @@
     </None>
     <None Include="Source\run_particle_cs_function.hlsli">
       <Filter>シェーダー\run_particle</Filter>
+    </None>
+    <None Include="Source\stage_scene_particle.hlsli">
+      <Filter>シェーダー\stage_scene_particle</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -551,6 +569,21 @@
     </FxCompile>
     <FxCompile Include="Source\run_particle_gs.hlsl">
       <Filter>シェーダー\run_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\run_particle_create_cs.hlsl">
+      <Filter>シェーダー\run_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\stage_obj_particle_create_cs.hlsl">
+      <Filter>シェーダー\stage_obj_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\stage_scene_particle_create_cs.hlsl">
+      <Filter>シェーダー\stage_scene_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\stage_scene_particle_cs.hlsl">
+      <Filter>シェーダー\stage_scene_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\stage_scene_particle_vs.hlsl">
+      <Filter>シェーダー\stage_scene_particle</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

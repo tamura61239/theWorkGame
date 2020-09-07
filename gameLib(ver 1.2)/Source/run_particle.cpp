@@ -86,6 +86,8 @@ RunParticles::RunParticles(ID3D11Device* device)
 	mCbStart.totalRand = 400;
 	//シェーダー生成
 	{
+		hr = create_cs_from_cso(device, "Data/shader/run_particle_create_cs.cso", mCSCreateShader.GetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		hr = create_cs_from_cso(device, "Data/shader/run_particle_cs.cso", mCSShader.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		hr = create_gs_from_cso(device, "Data/shader/run_particle_gs.cso", mGSShader.GetAddressOf());
@@ -108,7 +110,7 @@ RunParticles::RunParticles(ID3D11Device* device)
 	flag = false;
 }
 
-void RunParticles::Update(ID3D11DeviceContext* context, float elapsd_time, const VECTOR3F& velocity, bool groundFlag, const VECTOR3F& position)
+void RunParticles::ImGuiUpdate(float elapsdTime)
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("run particle");
@@ -116,6 +118,11 @@ void RunParticles::Update(ID3D11DeviceContext* context, float elapsd_time, const
 	ImGui::ColorEdit4("color", *color);
 	ImGui::End();
 #endif
+
+}
+
+void RunParticles::Update(ID3D11DeviceContext* context, float elapsd_time, const VECTOR3F& velocity, bool groundFlag, const VECTOR3F& position)
+{
 	float length = 0;
 	DirectX::XMStoreFloat(&length, DirectX::XMVector3Length(DirectX::XMLoadFloat3(&velocity)));
 	mCb.createFlag = 1;
@@ -126,7 +133,7 @@ void RunParticles::Update(ID3D11DeviceContext* context, float elapsd_time, const
 	mCbStart.playerPosition = VECTOR4F(position.x, position.y, position.z, 1);
 	mCbStart.playerVelocity = velocity;
 	mCbStart.moveType = 0;
-	if (groundFlag&&!flag)mCbStart.moveType = 1;
+	if (groundFlag && !flag)mCbStart.moveType = 1;
 	flag = groundFlag;
 	context->CSSetConstantBuffers(0, 1, mCbBuffer.GetAddressOf());
 	context->CSSetConstantBuffers(1, 1, mCbStartBuffer.GetAddressOf());
@@ -134,21 +141,24 @@ void RunParticles::Update(ID3D11DeviceContext* context, float elapsd_time, const
 	context->UpdateSubresource(mCbBuffer.Get(), 0, 0, &mCb, 0, 0);
 	context->UpdateSubresource(mCbStartBuffer.Get(), 0, 0, &mCbStart, 0, 0);
 
+	context->CSSetShader(mCSCreateShader.Get(), nullptr, 0);
+
+	ID3D11UnorderedAccessView* uav[1] = { mParticleUAV.Get() };
+	context->CSSetUnorderedAccessViews(0, 1, uav, 0);
+
+	ID3D11ShaderResourceView* srv[1] = { mRandSRV.Get() };
+	context->CSSetShaderResources(0, 1, srv);
+
+	context->Dispatch(1 + mCbStart.moveType * 9, 1, 1);
 	context->CSSetShader(mCSShader.Get(), nullptr, 0);
-
-	ID3D11UnorderedAccessView* uav = mParticleUAV.Get();
-	context->CSSetUnorderedAccessViews(0, 1, &uav, 0);
-
-	ID3D11ShaderResourceView* srv = mRandSRV.Get();
-	context->CSSetShaderResources(0, 1, &srv);
 
 	context->Dispatch(1000, 1, 1);
 
-	uav = nullptr;
-	context->CSSetUnorderedAccessViews(0, 1, &uav, 0);
+	uav[0] = nullptr;
+	context->CSSetUnorderedAccessViews(0, 1, uav, 0);
 
-	srv = nullptr;
-	context->CSSetShaderResources(0, 1, &srv);
+	srv[0] = nullptr;
+	context->CSSetShaderResources(0, 1, srv);
 
 	context->CSSetShader(nullptr, nullptr, 0);
 }
@@ -173,7 +183,7 @@ void RunParticles::Render(ID3D11DeviceContext* context)
 
 }
 
-void RunParticles::SetRandBufferData(std::vector<VECTOR2F>&data)
+void RunParticles::SetRandBufferData(std::vector<VECTOR2F>& data)
 {
 	FILE* fp;
 	if (fopen_s(&fp, "Data/file/run_particle_rundom_data.bin", "rb") == 0)

@@ -36,7 +36,7 @@ struct Particle
 	float3 angle;
 };
 //パーティクルの生成
-Particle Init(uint objNumber,uint index)
+Particle Init(uint objNumber, uint index)
 {
 	uint objType = step(redNumber - 1, objNumber);
 	float3 maxPosition, minPosition;
@@ -45,7 +45,7 @@ Particle Init(uint objNumber,uint index)
 	maxPosition = asfloat(StageBuffer.Load3(buffer));
 	minPosition = asfloat(StageBuffer.Load3(buffer + 3 * FLOAT_SIZE));
 
-	buffer = index%400/* * 3 * FLOAT_SIZE*/;
+	buffer = index % 400/* * 3 * FLOAT_SIZE*/;
 	buffer *= 3 * FLOAT_SIZE;
 	float3 rand = asfloat(randBuffer.Load3(buffer));
 
@@ -53,15 +53,14 @@ Particle Init(uint objNumber,uint index)
 	float3 position = minPosition + range / 2;
 	Particle p;
 	p.colorType = objType + nowColorType;
-	if (p.colorType >= 2)p.colorType -= 2;
+	p.colorType *= step(p.colorType, 1);
 	p.color = lerp(redColor, blueColor, p.colorType);
-	p.position.xyz = minPosition + range*rand;
+	float3 vec = lerp(float3(0, 0, range.z / 2), float3(0, -range.y / 2, 0), step(range.z, range.y));
+	p.position.xyz = minPosition + range / 2 - vec;
 	p.position.w = 1.0f;
-	p.scale = float3(3, 3, 3)*0.1f;
-	p.life = 1.0f;
-	p.velocity = normalize(snoise(normalize(position - p.position.xyz))) * float3(5, 0, 5) +lerp(float3(0, 10, 0), float3(0, -10, 0), p.colorType);
+	p.scale = lerp(float3(range.x, range.y,1), float3(range.x, 1, range.z), step(range.z, range.y))*1.1f;
+	p.life = maxLife;
+	p.velocity = normalize(vec)*range/maxLife;
 	p.angle = (float3)0;
-	p.angle.y = radians((index + objNumber) % 360);
-	p.angle.x= radians((index * objNumber) % 360);
 	return p;
 }

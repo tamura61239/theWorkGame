@@ -2,6 +2,7 @@
 #include"stage_obj_particle.h"
 #include"stage_obj.h"
 #include"run_particle.h"
+#include"stage_scene_particle.h"
 #include<memory>
 
 class GpuParticleManager
@@ -24,6 +25,7 @@ private:
 	GpuParticleManager(){}
 	std::unique_ptr<StageObjParticle>mStageObjParticle;
 	std::unique_ptr<RunParticles>mRunParticle;
+	std::unique_ptr<StageSceneParticle>mStageSceneParticle;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState>mDepth;
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState>mRasterizer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbScene;

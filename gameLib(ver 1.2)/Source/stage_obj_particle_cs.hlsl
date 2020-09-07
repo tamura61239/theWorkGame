@@ -7,9 +7,6 @@ void main(uint3 DTid : SV_DispatchThreadID)
 	//出たスレッドIDにバッファに格納されてる構造体のサイズ
 	uint bufferIndex = index * 19 * FLOAT_SIZE;
 
-	uint particleNumber = index % 1000;
-	uint objNumber = index / 1000;
-
 	Particle p;
 	p.position = asfloat(rwBuffer.Load4(bufferIndex));
 	p.life = asfloat(rwBuffer.Load(bufferIndex + 4 * FLOAT_SIZE));
@@ -19,17 +16,11 @@ void main(uint3 DTid : SV_DispatchThreadID)
 	p.colorType = asfloat(rwBuffer.Load((bufferIndex + 15 * FLOAT_SIZE)));
 	p.angle = asfloat(rwBuffer.Load3((bufferIndex + 16 * FLOAT_SIZE)));
 
-	if (particleNumber >= startIndex && particleNumber < startIndex + indexSize)//初期化
-	{
-		if (p.life <= 0)p = Init(objNumber,index);
-	}
 	//更新
 	p.position.xyz += p.velocity * elapsdTime;
-	p.life -= elapsdTime / maxLife;
-	p.angle += angleMovement * elapsdTime;
-	p.scale += lerp(float3(0.3, 0.3, 0.3), float3(0, 0, 0), step(2, p.scale.x)) * elapsdTime * 20;
+	p.life -= elapsdTime + step(1, changeColorFlag) * elapsdTime * 40;
 	float end = step(0, p.life);
-	p.color.w = lerp(0, 1, p.life) * end;
+	p.color.w = lerp(0, 1, min(p.life,1)) * end;
 	//セット
 	rwBuffer.Store4(bufferIndex, asuint(p.position * end));
 	rwBuffer.Store(bufferIndex + 4 * FLOAT_SIZE, asuint(p.life));

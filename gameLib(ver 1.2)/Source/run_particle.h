@@ -9,6 +9,7 @@ class RunParticles
 {
 public:
 	RunParticles(ID3D11Device* device);
+	void ImGuiUpdate(float elapsdTime);
 	void Update(ID3D11DeviceContext* context, float elapsd_time, const VECTOR3F& velocity, bool groundFlag, const VECTOR3F& position);
 	void Render(ID3D11DeviceContext* context);
 	struct Particle
@@ -53,6 +54,7 @@ private:
 	//SRV
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>mRandSRV;
 	//シェーダー
+	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSCreateShader;
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSShader;
 	Microsoft::WRL::ComPtr<ID3D11GeometryShader>mGSShader;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader>mPSShader;

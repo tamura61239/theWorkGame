@@ -70,13 +70,20 @@ void GpuParticleManager::CreateStageObjParticle(std::vector<std::shared_ptr<Stag
 	ID3D11Device* device = Framework::Instance().GetDevice().Get();
 	mStageObjParticle = std::make_unique<StageObjParticle>(device);
 	mStageObjParticle->CreateBuffer(device, objs);
+	mStageSceneParticle.reset(nullptr);
+	mStageSceneParticle = std::make_unique<StageSceneParticle>(device);
 }
 
 void GpuParticleManager::Update(float elapsd_time, float colorType, const VECTOR3F& velocity, const VECTOR3F& position, const bool groundFlag)
 {
+#ifdef USE_IMGUI
+	if (mStageObjParticle.get() != nullptr)mStageObjParticle->ImGuiUpdate(elapsd_time);
+	if (mRunParticle.get() != nullptr)mRunParticle->ImGuiUpdate(elapsd_time);
+#endif
 	ID3D11DeviceContext* context = Framework::Instance().GetDeviceContext().Get();
 	if (mStageObjParticle.get() != nullptr)mStageObjParticle->Update(context, elapsd_time, colorType);
 	if (mRunParticle.get() != nullptr)mRunParticle->Update(context, elapsd_time, velocity, groundFlag, position);
+	if (mStageSceneParticle.get() != nullptr)mStageSceneParticle->Update(context, elapsd_time);
 }
 
 void GpuParticleManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection)
@@ -91,6 +98,7 @@ void GpuParticleManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& vi
 	cbScene.view = view;
 	cbScene.projection = projection;
 	context->UpdateSubresource(mCbScene.Get(), 0, 0, &cbScene, 0, 0);
+	if (mStageSceneParticle.get() != nullptr)mStageSceneParticle->Render(context);
 	if (mStageObjParticle.get() != nullptr)mStageObjParticle->Render(context);
 	if (mRunParticle.get() != nullptr)mRunParticle->Render(context);
 }

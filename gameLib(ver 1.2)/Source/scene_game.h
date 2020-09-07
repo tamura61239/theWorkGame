@@ -55,7 +55,7 @@ private:
 	std::vector<std::unique_ptr<StaticObj>>staticObjs;
 	std::unique_ptr<MeshRender>meshRender;
 	std::unique_ptr<FrameBuffer>shadowMap;
-	std::unique_ptr<FrameBuffer>frameBuffer[2];
+	std::unique_ptr<FrameBuffer>frameBuffer;
 	std::unique_ptr<RenderEffects>renderEffects;
 	std::unique_ptr<PlayerAI>player;
 	std::unique_ptr<ModelRenderer>modelRenderer;
