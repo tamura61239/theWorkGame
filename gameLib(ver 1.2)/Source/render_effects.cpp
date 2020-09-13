@@ -11,11 +11,7 @@ RenderEffects::RenderEffects(ID3D11Device* device)
 	};
 	Microsoft::WRL::ComPtr<ID3D11InputLayout>input;
 
-	hr=create_vs_from_cso(device, "Data/shader/render_effects_vs.cso", mVSShader.GetAddressOf(), input.GetAddressOf(), inputElementDesc, ARRAYSIZE(inputElementDesc));
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-	hr=create_ps_from_cso(device, "Data/shader/render_effects_ps.cso", mPSShader.GetAddressOf());
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	mShader = std::make_unique<DrowShader>(device, "Data/shader/render_effects_vs.cso", "", "Data/shader/render_effects_ps.cso");
 
 	{
 		D3D11_BUFFER_DESC bufferDesc = {};
@@ -141,16 +137,14 @@ RenderEffects::RenderEffects(ID3D11Device* device)
 void RenderEffects::ShadowRender(ID3D11DeviceContext* context, ID3D11ShaderResourceView* colorMapSRV, ID3D11ShaderResourceView* depthMapSRV, ID3D11ShaderResourceView* shadowMapSRV
 	, const FLOAT4X4& view, const FLOAT4X4& projection, const FLOAT4X4& lightView, const FLOAT4X4& lightProjection)
 {
-	CbScene cbScene;
-	DirectX::XMStoreFloat4x4(&cbScene.lightViewProjection, DirectX::XMLoadFloat4x4(&lightView) * DirectX::XMLoadFloat4x4(&lightProjection));
-	DirectX::XMStoreFloat4x4(&cbScene.inverseViewProjection, DirectX::XMMatrixInverse(nullptr, DirectX::XMLoadFloat4x4(&view) * DirectX::XMLoadFloat4x4(&projection)));
-	
+	DirectX::XMStoreFloat4x4(&mCbScene.lightViewProjection, DirectX::XMLoadFloat4x4(&lightView) * DirectX::XMLoadFloat4x4(&lightProjection));
+	DirectX::XMStoreFloat4x4(&mCbScene.inverseViewProjection, DirectX::XMMatrixInverse(nullptr, DirectX::XMLoadFloat4x4(&view) * DirectX::XMLoadFloat4x4(&projection)));
+
 	context->VSSetConstantBuffers(0, 1, mCbBuffer.GetAddressOf());
 	context->PSSetConstantBuffers(0, 1, mCbBuffer.GetAddressOf());
-	context->UpdateSubresource(mCbBuffer.Get(), 0, 0, &cbScene, 0, 0);
+	context->UpdateSubresource(mCbBuffer.Get(), 0, 0, &mCbScene, 0, 0);
 
-	context->VSSetShader(mVSShader.Get(), 0, 0);
-	context->PSSetShader(mPSShader.Get(), 0, 0);
+	mShader->Activate(context);
 
 	context->PSSetShaderResources(0, 1, &colorMapSRV);
 	context->PSSetShaderResources(1, 1, &depthMapSRV);
@@ -167,6 +161,35 @@ void RenderEffects::ShadowRender(ID3D11DeviceContext* context, ID3D11ShaderResou
 
 	context->Draw(4, 0);
 
+	mShader->Deactivate(context);
+
 	ID3D11ShaderResourceView* nullSRV[3] = {};
 	context->PSSetShaderResources(0, 3, nullSRV);
+}
+
+void RenderEffects::DeferrdShadowRender(ID3D11DeviceContext* context, DrowShader* shader, const FLOAT4X4& view, const FLOAT4X4& projection, const FLOAT4X4& lightView, const FLOAT4X4& lightProjection)
+{
+	DirectX::XMStoreFloat4x4(&mCbScene.lightViewProjection, DirectX::XMLoadFloat4x4(&lightView) * DirectX::XMLoadFloat4x4(&lightProjection));
+	DirectX::XMStoreFloat4x4(&mCbScene.inverseViewProjection, DirectX::XMMatrixInverse(nullptr, DirectX::XMLoadFloat4x4(&view) * DirectX::XMLoadFloat4x4(&projection)));
+
+	context->VSSetConstantBuffers(0, 1, mCbBuffer.GetAddressOf());
+	context->PSSetConstantBuffers(0, 1, mCbBuffer.GetAddressOf());
+	context->UpdateSubresource(mCbBuffer.Get(), 0, 0, &mCbScene, 0, 0);
+
+	shader->Activate(context);
+
+
+	context->PSSetSamplers(0, 1, mSamplerState[0].GetAddressOf());
+	context->PSSetSamplers(1, 1, mSamplerState[1].GetAddressOf());
+
+	context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
+	context->RSSetState(mRasterizerState.Get());
+	context->IASetInputLayout(nullptr);
+	context->IASetVertexBuffers(0, 0, 0, 0, 0);
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+
+	context->Draw(4, 0);
+
+	shader->Deactivate(context);
+
 }

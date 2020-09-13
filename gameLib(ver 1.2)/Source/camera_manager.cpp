@@ -9,9 +9,9 @@
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wparam, LPARAM lparam);
 #endif
 
-void CameraManager::CreateCamera()
+void CameraManager::CreateCamera(ID3D11Device* device)
 {
-	mCamera = std::make_shared<Camera>();
+	mCamera = std::make_shared<Camera>(device);
 	mCameraOperation = std::make_unique<CameraOperation>(mCamera);
 	mCamera->SetPerspective(defaultFov, defaultAspect, defaultNearZ, defaultFarZ);
 }

@@ -11,6 +11,25 @@ StageManager::StageManager(ID3D11Device* device, int width, int height):stageNo(
 	mMeshs.push_back(std::make_shared<StaticMesh>(device, "Data/FBX/go-ru.fbx"));
 	mDragOperation = std::make_shared<StageObjDragOperation>(device);
 	mRender = std::make_unique<MeshRender>(device);
+	{
+		D3D11_BUFFER_DESC bufferDesc = {};
+		bufferDesc.ByteWidth = sizeof(FLOAT4X4);
+		bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		bufferDesc.CPUAccessFlags = 0;
+		bufferDesc.MiscFlags = 0;
+		bufferDesc.StructureByteStride = 0;
+		HRESULT hr = device->CreateBuffer(&bufferDesc, nullptr, mCbBeforeBuffer.GetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	}
+	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	};
+
+	mVelocityShader = std::make_unique<DrowShader>(device, "Data/shader/static_mesh_blur_vs.cso", "", "Data/shader/static_mesh_blur_ps.cso", inputElementDesc,ARRAYSIZE(inputElementDesc));
 	Load();
 }
 /*********************ファイル操作*************************/
@@ -150,7 +169,7 @@ void StageManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, co
 	}
 	mRender->End(context);
 
-	pGpuParticleManager.Render(context, view, projection);
+	//pGpuParticleManager.Render(context, view, projection);
 
 	mRender->Begin(context, view, projection);
 
@@ -162,6 +181,38 @@ void StageManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, co
 	}
 	mRender->End(context);
 	//mDragOperation->Render(context, mRender.get(),view,projection);
+}
+void StageManager::RenderVelocity(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const int stageState)
+{
+	mRender->Begin(context, view, projection);
+	for (auto& stage : mStageObjs)
+	{
+		int state = stage->GetStageData().mColorType + stageState;
+		if (state % 2 == 1)continue;
+		context->VSSetConstantBuffers(2, 1, mCbBeforeBuffer.GetAddressOf());
+		context->PSSetConstantBuffers(2, 1, mCbBeforeBuffer.GetAddressOf());
+		context->UpdateSubresource(mCbBeforeBuffer.Get(), 0, 0, &stage->GetBeforeWorld(), 0, 0);
+		mRender->Render(context, mVelocityShader.get(), stage->GetMesh(), stage->GetWorld(), stage->GetColor());
+		stage->SetBeforeWorld(stage->GetWorld());
+	}
+	mRender->End(context);
+
+	//pGpuParticleManager.Render(context, view, projection);
+
+	mRender->Begin(context, view, projection);
+
+	for (auto& stage : mStageObjs)
+	{
+		int state = stage->GetStageData().mColorType + stageState;
+		if (state % 2 == 0)continue;
+		context->VSSetConstantBuffers(2, 1, mCbBeforeBuffer.GetAddressOf());
+		context->PSSetConstantBuffers(2, 1, mCbBeforeBuffer.GetAddressOf());
+		context->UpdateSubresource(mCbBeforeBuffer.Get(), 0, 0, &stage->GetBeforeWorld(), 0, 0);
+		mRender->Render(context, mVelocityShader.get(), stage->GetMesh(), stage->GetWorld(), stage->GetColor());
+		stage->SetBeforeWorld(stage->GetWorld());
+	}
+	mRender->End(context);
+
 }
 /*******************マウス座標系からワールド座標系に変換**********************/
 void StageManager::ScreeenToWorld(VECTOR3F* worldPosition, const VECTOR3F& screenPosition)

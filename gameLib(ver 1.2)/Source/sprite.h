@@ -2,6 +2,8 @@
 #include<d3d11.h>
 #include"vector.h"
 #include <wrl.h>
+#include"drow_shader.h"
+#include<memory>
 
 class Sprite
 {
@@ -16,6 +18,10 @@ public:
 		const VECTOR2F& texPosition, const VECTOR2F& texSize, float angle, const VECTOR4F&color = VECTOR4F(1.0f, 1.0f, 1.0f, 1.0f));
 	void Render(ID3D11DeviceContext* context,ID3D11ShaderResourceView*srv, const VECTOR2F& position, const VECTOR2F& size,
 		const VECTOR2F& texPosition, const VECTOR2F& texSize, float angle, const VECTOR4F& color = VECTOR4F(1.0f, 1.0f, 1.0f, 1.0f));
+	void Render(ID3D11DeviceContext* context, DrowShader* shader, const VECTOR2F& position, const VECTOR2F& size,
+		const VECTOR2F& texPosition, const VECTOR2F& texSize, float angle, const VECTOR4F& color = VECTOR4F(1.0f, 1.0f, 1.0f, 1.0f));
+	void Render(ID3D11DeviceContext* context, DrowShader* shader, ID3D11ShaderResourceView* srv, const VECTOR2F& position, const VECTOR2F& size,
+		const VECTOR2F& texPosition, const VECTOR2F& texSize, float angle, const VECTOR4F& color = VECTOR4F(1.0f, 1.0f, 1.0f, 1.0f));
 
 	//~Sprite()
 	//{
@@ -25,9 +31,7 @@ private:
 	//********************************//
     //             ïœêî               //
     //********************************//
-	Microsoft::WRL::ComPtr<ID3D11VertexShader>mVSShader;
-	Microsoft::WRL::ComPtr<ID3D11PixelShader>mPSShader;
-	Microsoft::WRL::ComPtr<ID3D11InputLayout>mInput;
+	std::unique_ptr<DrowShader>mShader;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mVSBuffer;
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState>mRasterizerState;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>mTexview;

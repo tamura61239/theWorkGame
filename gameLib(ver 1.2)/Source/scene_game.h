@@ -15,6 +15,9 @@
 #include"stage_operation.h"
 #include"blend_state.h"
 #include"stage_obj_particle.h"
+#include"sky_map.h"
+#include"drow_shader.h"
+#include"motionblur.h"
 
 
 class SceneGame :public Scene
@@ -54,8 +57,12 @@ private:
 	std::vector<std::unique_ptr<StaticMesh>>meshs;
 	std::vector<std::unique_ptr<StaticObj>>staticObjs;
 	std::unique_ptr<MeshRender>meshRender;
+	std::unique_ptr<MulltiRenderTargetFunction>mullti;
 	std::unique_ptr<FrameBuffer>shadowMap;
-	std::unique_ptr<FrameBuffer>frameBuffer;
+	std::shared_ptr<FrameBuffer>frameBuffer;
+	std::shared_ptr<FrameBuffer>velocityBuffer;
+	std::unique_ptr<FrameBuffer>nowFrame;
+	std::unique_ptr<FrameBuffer>oldFrame;
 	std::unique_ptr<RenderEffects>renderEffects;
 	std::unique_ptr<PlayerAI>player;
 	std::unique_ptr<ModelRenderer>modelRenderer;
@@ -64,4 +71,7 @@ private:
 	std::unique_ptr<StageOperation>mStageOperation;
 	std::unique_ptr<blend_state> blend[2];
 	std::unique_ptr<StageObjParticle>run;
+	std::unique_ptr<SkyMap>sky;
+	std::unique_ptr<DrowShader>motionShader;
+	std::unique_ptr<MotionBlur>motionBlur;
 };

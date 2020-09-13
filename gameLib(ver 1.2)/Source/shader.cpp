@@ -42,7 +42,7 @@ HRESULT create_vs_from_cso(ID3D11Device* device, const char* cso_name, ID3D11Ver
 
 	HRESULT hr = device->CreateVertexShader(cso_data.get(), cso_sz, nullptr, vertex_shader);
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
+	if (num_elements <= 0)return hr;
 	hr = device->CreateInputLayout(input_element_desc, num_elements, cso_data.get(), cso_sz, input_layout);
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 

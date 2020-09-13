@@ -3,6 +3,8 @@
 #include<d3d11.h>
 #include<wrl.h>
 #include<vector>
+#include"drow_shader.h"
+#include<memory>
 
 class StageSceneParticle
 {
@@ -10,6 +12,7 @@ public:
 	StageSceneParticle(ID3D11Device* device);
 	void Update(ID3D11DeviceContext* context, float elapsdTime);
 	void Render(ID3D11DeviceContext* context);
+	void RenderVelocity(ID3D11DeviceContext* context);
 private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mParticleBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mRandBuffer;
@@ -55,6 +58,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11GeometryShader>mGSShader;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader>mPSShader;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout>mInput;
+	std::unique_ptr<DrowShader>mVelocityShader;
 	void LoadRandData(std::vector<VECTOR3F>& data);
 	void Load();
 	void Save();

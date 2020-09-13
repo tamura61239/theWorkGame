@@ -37,12 +37,15 @@ int StageObjDragOperation::Update(std::shared_ptr<StageObj> obj, const VECTOR3F&
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("drag");
-	float* dragScale0[3] = { &mLocalScale[0].x,&mLocalScale[0].y ,&mLocalScale[0].z };
-	float* dragScale1[3] = { &mLocalScale[1].x,&mLocalScale[1].y ,&mLocalScale[1].z };
-	float* dragScale2[3] = { &mLocalScale[2].x,&mLocalScale[2].y ,&mLocalScale[2].z };
-	ImGui::SliderFloat3("scale0", *dragScale0, 0, 10);
-	ImGui::SliderFloat3("scale1", *dragScale1, 0, 10);
-	ImGui::SliderFloat3("scale2", *dragScale2, 0, 10);
+	//float* dragScale0[3] = { &mLocalScale[0].x,&mLocalScale[0].y ,&mLocalScale[0].z };
+	//float* dragScale1[3] = { &mLocalScale[1].x,&mLocalScale[1].y ,&mLocalScale[1].z };
+	//float* dragScale2[3] = { &mLocalScale[2].x,&mLocalScale[2].y ,&mLocalScale[2].z };
+	//ImGui::SliderFloat3("scale0", *dragScale0, 0, 10);
+	//ImGui::SliderFloat3("scale1", *dragScale1, 0, 10);
+	//ImGui::SliderFloat3("scale2", *dragScale2, 0, 10);
+	VECTOR3F p = obj->GetPosition();
+	ImGui::SliderFloat("pos.,z", &p.z, -1000, 1000);
+	obj->SetPosition(p);
 	if (ImGui::Button("end"))
 	{
 		for (int i = 0;i < 3;i++)

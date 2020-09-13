@@ -1,8 +1,8 @@
 #include "texture.h"
 #include "misc.h"
-
-#include <WICTextureLoader.h>
+#include<DirectXTex.h>
 #include <wrl.h>
+#include <Shlwapi.h>
 
 #include <map>
 #include<string>
@@ -19,16 +19,57 @@ HRESULT load_texture_from_file(ID3D11Device* device, const wchar_t* file_name, I
 		//it->second.Attach(*shader_resource_view);
 		*shader_resource_view = it->second.Get();
 		(*shader_resource_view)->AddRef();
-		(*shader_resource_view)->GetResource(resource.GetAddressOf());
 	}
 	else
 	{
-		hr = DirectX::CreateWICTextureFromFile(device, file_name, resource.GetAddressOf(), shader_resource_view);
+		DirectX::TexMetadata metadata;
+		DirectX::ScratchImage image;
+		std::wstring extension = PathFindExtensionW(file_name);
+		std::transform(extension.begin(), extension.end(), extension.begin(), ::towlower);
+		bool mise = false;
+		if (L".png" == extension || L".jpeg" == extension || L".jpg" == extension || L".jpe" == extension || L".gif" == extension || L".tiff" == extension || L".tif" == extension || L".bmp" == extension)
+		{
+			mise = false;
+			hr = DirectX::LoadFromWICFile(file_name, 0, &metadata, image);
+			_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		}
+		else if (L".dds" == extension)
+		{
+			mise = true;
+			hr = DirectX::LoadFromDDSFile(file_name, 0, &metadata, image);
+			_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		}
+		else if (L".tga" == extension || L".vda" == extension || L".icb" == extension || L".vst" == extension)
+		{
+			mise = true;
+			hr = DirectX::LoadFromTGAFile(file_name, &metadata, image);
+			_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		}
+		else
+		{
+			_ASSERT_EXPR(false, L"File format not supported.");
+			return E_FAIL;
+		}
+		hr = DirectX::CreateShaderResourceViewEx(
+			device,
+			image.GetImages(),
+			image.GetImageCount(),
+			metadata,
+			D3D11_USAGE_DEFAULT,
+			D3D11_BIND_SHADER_RESOURCE,
+			0,
+			D3D11_RESOURCE_MISC_TEXTURECUBE,
+			mise,
+			shader_resource_view);
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+		//hr = DirectX::CreateWICTextureFromFile(device, file_name, resource.GetAddressOf(), shader_resource_view);
+		//_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		cache.insert(std::make_pair(file_name, *shader_resource_view));
 	}
-
+	if (texture2d_desc == nullptr)return hr;
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> texture2d;
+	(*shader_resource_view)->GetResource(resource.GetAddressOf());
 	hr = resource.Get()->QueryInterface<ID3D11Texture2D>(texture2d.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	texture2d->GetDesc(texture2d_desc);

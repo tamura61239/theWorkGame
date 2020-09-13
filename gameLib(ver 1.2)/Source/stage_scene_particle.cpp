@@ -30,8 +30,8 @@ StageSceneParticle::StageSceneParticle(ID3D11Device* device)
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		hr = create_cs_from_cso(device, "Data/shader/stage_scene_particle_create_cs.cso", mCSCreateShader.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-		//hr = create_gs_from_cso(device, "Data/shader/run_particle_gs.cso", mGSShader.GetAddressOf());
-		hr = create_gs_from_cso(device, "Data/shader/stage_obj_particle_gs.cso", mGSShader.GetAddressOf());
+		hr = create_gs_from_cso(device, "Data/shader/run_particle_gs.cso", mGSShader.GetAddressOf());
+		//hr = create_gs_from_cso(device, "Data/shader/stage_obj_particle_gs.cso", mGSShader.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		hr = create_ps_from_cso(device, "Data/shader/stage_obj_particle_ps.cso", mPSShader.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
@@ -45,8 +45,9 @@ StageSceneParticle::StageSceneParticle(ID3D11Device* device)
 			{"COLORTYPE",0,DXGI_FORMAT_R32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 			{"ANGLE",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 		};
-		hr = create_vs_from_cso(device, "Data/shader/stage_obj_particle_vs.cso", mVSShader.GetAddressOf(), mInput.GetAddressOf(), inputElementDesc, ARRAYSIZE(inputElementDesc));
+		hr = create_vs_from_cso(device, "Data/shader/stage_scene_particle_vs.cso", mVSShader.GetAddressOf(), mInput.GetAddressOf(), inputElementDesc, ARRAYSIZE(inputElementDesc));
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		mVelocityShader = std::make_unique<DrowShader>(device, "Data/shader/stage_scene_particle_blur_vs.cso", "Data/shader/stage_scene_particle_blur_gs.cso", "Data/shader/stage_scene_particle_blur_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
 	}
 
 	//
@@ -156,6 +157,11 @@ void StageSceneParticle::Update(ID3D11DeviceContext* context, float elapsdTime)
 		context->CSSetShader(mCSCreateShader.Get(), nullptr, 0);
 		context->Dispatch(oneframeIndex, 1, 1);
 		mCbStart.startIndex = newStartIndex;
+		if (mCbStart.startIndex >= particleSize)
+		{
+			mCbStart.startIndex = 0;
+			newStartIndex = 0;
+		}
 	}
 	//パーティクル更新
 	context->CSSetShader(mCSShader.Get(), nullptr, 0);
@@ -178,6 +184,8 @@ void StageSceneParticle::Render(ID3D11DeviceContext* context)
 	context->GSSetShader(mGSShader.Get(), nullptr, 0);
 	context->PSSetShader(mPSShader.Get(), nullptr, 0);
 	context->IASetInputLayout(mInput.Get());
+
+
 	u_int stride = sizeof(Particle);
 	u_int offset = 0;
 
@@ -189,6 +197,29 @@ void StageSceneParticle::Render(ID3D11DeviceContext* context)
 	context->VSSetShader(nullptr, nullptr, 0);
 	context->GSSetShader(nullptr, nullptr, 0);
 	context->PSSetShader(nullptr, nullptr, 0);
+
+}
+
+void StageSceneParticle::RenderVelocity(ID3D11DeviceContext* context)
+{
+	if (mParticleUAV.Get() == nullptr)return;
+
+	mVelocityShader->Activate(context);
+	context->GSSetConstantBuffers(1, 1, mCbBuffer.GetAddressOf());
+	context->PSSetConstantBuffers(1, 1, mCbBuffer.GetAddressOf());
+	context->VSSetConstantBuffers(1, 1, mCbBuffer.GetAddressOf());
+
+	context->UpdateSubresource(mCbBuffer.Get(), 0, 0, &mCb, 0, 0);
+
+	u_int stride = sizeof(Particle);
+	u_int offset = 0;
+
+	context->IASetVertexBuffers(0, 1, mParticleBuffer.GetAddressOf(), &stride, &offset);
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+
+	context->Draw(particleSize, 0);
+
+	mVelocityShader->Deactivate(context);
 
 }
 

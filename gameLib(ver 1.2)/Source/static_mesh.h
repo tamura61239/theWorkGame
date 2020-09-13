@@ -6,6 +6,7 @@
 #include<fbxsdk.h>
 #include"serialize_function.h"
 #include"shader_type.h"
+#include"drow_shader.h"
 
 struct TextureMapData
 {
@@ -17,7 +18,7 @@ class StaticMesh
 {
 public:
 	//コンストラクタ
-	StaticMesh(ID3D11Device* device, const char* fileName, SHADER_TYPE shaderType= SHADER_TYPE::USEALLY,bool pathOrganize=false,int organizeType=0);
+	StaticMesh(ID3D11Device* device, const char* fileName, SHADER_TYPE shaderType = SHADER_TYPE::USEALLY, bool pathOrganize = false, int organizeType = 0);
 	virtual~StaticMesh() {}
 	int RayPick(
 		const VECTOR3F& startPosition,//レイを飛ばす開始座標
@@ -26,12 +27,10 @@ public:
 		VECTOR3F* outNormal,//レイが当たった面の法線
 		float* outLength//レイが当たった面までの距離
 	);
-	Microsoft::WRL::ComPtr<ID3D11VertexShader>GetVSShader() { return mVSShader; }
-	Microsoft::WRL::ComPtr<ID3D11PixelShader>GetPSShader() { return mPSShader; }
-	Microsoft::WRL::ComPtr<ID3D11InputLayout>GetInputLayout() { return mInput; }
 	const VECTOR3F& GetMaxPosition() { return maxPosition; }
 	const VECTOR3F& GetMinPosition() { return minPosition; }
-	void ChangeShader(ID3D11Device* device, SHADER_TYPE shaderType, std::vector<TextureMapData>data);
+	void ChangeShaderResourceView(ID3D11Device* device, SHADER_TYPE shaderType, std::vector<TextureMapData>data);
+	SHADER_TYPE GetShaderType() { return mShaderType; }
 public:
 	//シリアライズ
 	struct Vertex
@@ -129,18 +128,13 @@ public:
 	}
 public:
 	void SetShaderResouceView(ID3D11DeviceContext* context, Subset& subset);
-	void CreateShader(ID3D11Device* device, const char* vsShaderName, const char* psShaderName);
 private:
 	void SetMinAndMaxPosition();
 	void CreateMesh(ID3D11Device* device, const char* fileName, bool pathOrganize, int organizeType);
-	void FbxTettureNameLoad(const char* property_name,const char* factor_name, Material& material, const FbxSurfaceMaterial* surfaceMaterial, const char* fileName, bool pathOrganize, int organizeType);
+	void FbxTettureNameLoad(const char* property_name, const char* factor_name, Material& material, const FbxSurfaceMaterial* surfaceMaterial, const char* fileName, bool pathOrganize, int organizeType);
 	void CreateBuffers(ID3D11Device* device);
 	void CreateShaderResourceView(ID3D11Device* device, SHADER_TYPE shaderType);
-	void CreateShader(ID3D11Device* device, SHADER_TYPE shaderType);
 private:
-	Microsoft::WRL::ComPtr<ID3D11VertexShader>mVSShader;
-	Microsoft::WRL::ComPtr<ID3D11PixelShader>mPSShader;
-	Microsoft::WRL::ComPtr<ID3D11InputLayout>mInput;
 	SHADER_TYPE mShaderType;
 	VECTOR3F minPosition;
 	VECTOR3F maxPosition;
@@ -153,10 +147,13 @@ public:
 	void ShadowBegin(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection);
 	void ShadowRender(ID3D11DeviceContext* context, StaticMesh* obj, const FLOAT4X4& world);
 	void ShadowEnd(ID3D11DeviceContext* context);
-	void Begin(ID3D11DeviceContext* context,const FLOAT4X4&view,const FLOAT4X4&projection,const bool w=false);
-	void Render(ID3D11DeviceContext* context, StaticMesh* obj, const FLOAT4X4& world,const VECTOR4F color=VECTOR4F(1,1,1,1));
+	void Begin(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const bool w = false);
+	void Render(ID3D11DeviceContext* context, StaticMesh* obj, const FLOAT4X4& world, const VECTOR4F color = VECTOR4F(1, 1, 1, 1));
+	void Render(ID3D11DeviceContext* context, DrowShader* shader, StaticMesh* obj, const FLOAT4X4& world, const VECTOR4F color = VECTOR4F(1, 1, 1, 1));
 	void End(ID3D11DeviceContext* context);
 private:
+	std::vector<std::unique_ptr<DrowShader>>mShader;
+	std::unique_ptr<DrowShader>mShadowShader;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbScene;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbObj;
 
@@ -168,7 +165,6 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11SamplerState>mDiffuseSamplerState;
 	Microsoft::WRL::ComPtr<ID3D11SamplerState>mNormalSamplerState;
 
-	Microsoft::WRL::ComPtr<ID3D11VertexShader>mShadowVSShader;
 	struct CbScene
 	{
 		FLOAT4X4 view;

@@ -33,6 +33,9 @@ public:
 	}
 	//getter
 	const StageData& GetStageData() { return mData; }
+	void SetBeforeWorld(const FLOAT4X4& w) { beforeWorld = w; }
+	const FLOAT4X4& GetBeforeWorld() { return beforeWorld; }
 private:
 	StageData mData;
+	FLOAT4X4 beforeWorld;
 };

@@ -23,7 +23,8 @@ public:
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView>GetRenderargetView() { return mRenderTargetView; }
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView>GetDepthStencilView() { return mDepthStencilView; }
 	D3D11_VIEWPORT GetViewPort() { return viewport; }
-
+	void SetPsTexture(ID3D11DeviceContext* context, const int number);
+	void SetPsDepth(ID3D11DeviceContext* context, const int number);
 private:
 	//render target view data
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView>mRenderTargetView;
@@ -51,6 +52,10 @@ public:
 	void DeleteFrameBuffer(const int num)
 	{
 		frameBuffers.erase(frameBuffers.begin() + num);
+	}
+	void ClearFrameBuffer()
+	{
+		frameBuffers.clear();
 	}
 	//èâä˙âª
 	void Clear(ID3D11DeviceContext* context, float r = 0, float g = 0, float b = 0, float a = 1, unsigned int clearFlags = D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, float depth = 1, unsigned char stencil = 0);

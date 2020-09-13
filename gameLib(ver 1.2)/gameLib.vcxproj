@@ -79,7 +79,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>.\External_Libraries\DirectXTK-master\Inc;.\External_Libraries\imgui;.\Source;.\External_Libraries\FBX SDK\2016.1.2\include;.\External_Libraries\cereal-1.2.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\External_Libraries\imgui;.\Source;.\External_Libraries\FBX SDK\2016.1.2\include;.\External_Libraries\cereal-1.2.2\include;.\External_Libraries\DirectXTex;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MinimalRebuild>false</MinimalRebuild>
       <UseFullPaths>false</UseFullPaths>
       <PreprocessorDefinitions>_DEBUG;USE_IMGUI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -87,8 +87,8 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>.\External_Libraries\DirectXTK-master\Bin\Desktop_2015\Win32\Debug;.\External_Libraries\FBX SDK\2016.1.2\lib\vs2015\x86\debug;.\External_Libraries\DirectXTK-master\Audio\Bin\Desktop_2015\Win32\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>dxgi.lib;d3d11.lib;shlwapi.lib;libfbxsdk-mt.lib;DirectXTK.lib;DirectXTKAudioWin8.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>.\External_Libraries\FBX SDK\2016.1.2\lib\vs2015\x86\debug;.\External_Libraries\DirectXTK-master\Audio\Bin\Desktop_2015\Win32\Debug;.\External_Libraries\DirectXTex\Bin\Desktop_2015\Win32\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>dxgi.lib;d3d11.lib;shlwapi.lib;libfbxsdk-mt.lib;DirectXTKAudioWin8.lib;DirectXTex.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
@@ -114,7 +114,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>.\External_Libraries\DirectXTK-master\Inc;.\External_Libraries\FBX SDK\2016.1.2\include;.\External_Libraries\cereal-1.2.2\include;.\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\External_Libraries\FBX SDK\2016.1.2\include;.\External_Libraries\cereal-1.2.2\include;.\Source;.\External_Libraries\DirectXTex;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <UseFullPaths>false</UseFullPaths>
@@ -124,8 +124,8 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>dxgi.lib;d3d11.lib;shlwapi.lib;libfbxsdk-mt.lib;DirectXTK.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>.\External_Libraries\DirectXTK-master\Bin\Desktop_2015\Win32\Release;.\External_Libraries\FBX SDK\2016.1.2\lib\vs2015\x86\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>dxgi.lib;d3d11.lib;shlwapi.lib;libfbxsdk-mt.lib;DirectXTex.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>.\External_Libraries\FBX SDK\2016.1.2\lib\vs2015\x86\release;.\External_Libraries\DirectXTex\Bin\Desktop_2015\Win32\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
@@ -163,6 +163,7 @@
     <ClCompile Include="Source\character.cpp" />
     <ClCompile Include="Source\collision.cpp" />
     <ClCompile Include="Source\direct_input.cpp" />
+    <ClCompile Include="Source\drow_shader.cpp" />
     <ClCompile Include="Source\fbx_load.cpp" />
     <ClCompile Include="Source\framebuffer.cpp" />
     <ClCompile Include="Source\framework.cpp" />
@@ -177,6 +178,7 @@
     <ClCompile Include="Source\model_data.cpp" />
     <ClCompile Include="Source\model_renderer.cpp" />
     <ClCompile Include="Source\model_resource.cpp" />
+    <ClCompile Include="Source\motionblur.cpp" />
     <ClCompile Include="Source\player.cpp" />
     <ClCompile Include="Source\player_ai.cpp" />
     <ClCompile Include="Source\player_character.cpp" />
@@ -189,6 +191,7 @@
     <ClCompile Include="Source\scene_over.cpp" />
     <ClCompile Include="Source\scene_title.cpp" />
     <ClCompile Include="Source\shader.cpp" />
+    <ClCompile Include="Source\sky_map.cpp" />
     <ClCompile Include="Source\sound.cpp" />
     <ClCompile Include="Source\sound_buffer.cpp" />
     <ClCompile Include="Source\sound_manager.cpp" />
@@ -198,6 +201,7 @@
     <ClCompile Include="Source\stage_obj_drag_operation.cpp" />
     <ClCompile Include="Source\stage_obj_particle.cpp" />
     <ClCompile Include="Source\stage_operation.cpp" />
+    <ClCompile Include="Source\stage_point_particle.cpp" />
     <ClCompile Include="Source\stage_scene_particle.cpp" />
     <ClCompile Include="Source\static_mesh.cpp" />
     <ClCompile Include="Source\static_obj.cpp" />
@@ -223,6 +227,7 @@
     <ClInclude Include="Source\character.h" />
     <ClInclude Include="Source\collision.h" />
     <ClInclude Include="Source\direct_input.h" />
+    <ClInclude Include="Source\drow_shader.h" />
     <ClInclude Include="Source\fbx_load.h" />
     <ClInclude Include="Source\framebuffer.h" />
     <ClInclude Include="Source\framework.h" />
@@ -240,6 +245,7 @@
     <ClInclude Include="Source\model_data.h" />
     <ClInclude Include="Source\model_renderer.h" />
     <ClInclude Include="Source\model_resource.h" />
+    <ClInclude Include="Source\motionblur.h" />
     <ClInclude Include="Source\obj3d.h" />
     <ClInclude Include="Source\player.h" />
     <ClInclude Include="Source\player_ai.h" />
@@ -257,6 +263,7 @@
     <ClInclude Include="Source\serialize_function.h" />
     <ClInclude Include="Source\shader.h" />
     <ClInclude Include="Source\shader_type.h" />
+    <ClInclude Include="Source\sky_map.h" />
     <ClInclude Include="Source\sound.h" />
     <ClInclude Include="Source\sound_buffer.h" />
     <ClInclude Include="Source\sound_manager.h" />
@@ -266,6 +273,7 @@
     <ClInclude Include="Source\stage_obj_drag_operation.h" />
     <ClInclude Include="Source\stage_obj_particle.h" />
     <ClInclude Include="Source\stage_operation.h" />
+    <ClInclude Include="Source\stage_point_particle.h" />
     <ClInclude Include="Source\static_mesh.h" />
     <ClInclude Include="Source\static_obj.h" />
     <ClInclude Include="Source\texture.h" />
@@ -277,6 +285,7 @@
     <None Include="Source\curl_noise.hlsli" />
     <None Include="Source\bloom.hlsli" />
     <None Include="Source\board.hlsli" />
+    <None Include="Source\deferred_stage_scene_particle.hlsli" />
     <None Include="Source\geometric_primitive.hlsli" />
     <None Include="Source\lightType.hlsli">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -284,14 +293,18 @@
     </None>
     <None Include="Source\model.hlsli" />
     <None Include="Source\model_normal.hlsli" />
+    <None Include="Source\motionblur.hlsli" />
     <None Include="Source\ps_function.hlsli" />
     <None Include="Source\render_effects.hlsli" />
     <None Include="Source\run_particle_cs_function.hlsli" />
+    <None Include="Source\sky_map.hlsli" />
     <None Include="Source\sprite.hlsli" />
     <None Include="Source\stage_obj_particle.hlsli" />
     <None Include="Source\stage_obj_particle_cs_function.hlsli" />
     <None Include="Source\stage_scene_particle.hlsli" />
+    <None Include="Source\stage_scene_particle_blur.hlsli" />
     <None Include="Source\static_mesh.hlsli" />
+    <None Include="Source\static_mesh_blur.hlsli" />
     <None Include="Source\static_mesh_normal.hlsli" />
   </ItemGroup>
   <ItemGroup>
@@ -358,6 +371,50 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
+    </FxCompile>
+    <FxCompile Include="Source\deferred_stage_scene_particle_gs.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
+    </FxCompile>
+    <FxCompile Include="Source\deferred_stage_scene_particle_ps.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
+    </FxCompile>
+    <FxCompile Include="Source\deferred_stage_scene_particle_vs.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AssemblyCode</AssemblerOutput>
@@ -453,6 +510,36 @@
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AssemblyCode</AssemblerOutput>
       <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
     </FxCompile>
+    <FxCompile Include="Source\motionblur_cs.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
+    </FxCompile>
+    <FxCompile Include="Source\motionblur_ps.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
+    </FxCompile>
     <FxCompile Include="Source\render_effects_ps.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
@@ -530,6 +617,34 @@
       <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
     </FxCompile>
     <FxCompile Include="Source\run_particle_vs.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
+    </FxCompile>
+    <FxCompile Include="Source\sky_map_ps.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
+    </FxCompile>
+    <FxCompile Include="Source\sky_map_vs.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
@@ -643,6 +758,50 @@
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AssemblyCode</AssemblerOutput>
       <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
     </FxCompile>
+    <FxCompile Include="Source\stage_scene_particle_blur_gs.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
+    </FxCompile>
+    <FxCompile Include="Source\stage_scene_particle_blur_ps.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
+    </FxCompile>
+    <FxCompile Include="Source\stage_scene_particle_blur_vs.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
+    </FxCompile>
     <FxCompile Include="Source\stage_scene_particle_create_cs.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
@@ -688,6 +847,34 @@
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AssemblyCode</AssemblerOutput>
       <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
+    </FxCompile>
+    <FxCompile Include="Source\static_mesh_blur_ps.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
+    </FxCompile>
+    <FxCompile Include="Source\static_mesh_blur_vs.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
     </FxCompile>
     <FxCompile Include="Source\static_mesh_normal_ps.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>

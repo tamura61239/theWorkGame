@@ -81,7 +81,7 @@ void GpuParticleManager::Update(float elapsd_time, float colorType, const VECTOR
 	if (mRunParticle.get() != nullptr)mRunParticle->ImGuiUpdate(elapsd_time);
 #endif
 	ID3D11DeviceContext* context = Framework::Instance().GetDeviceContext().Get();
-	if (mStageObjParticle.get() != nullptr)mStageObjParticle->Update(context, elapsd_time, colorType);
+	//if (mStageObjParticle.get() != nullptr)mStageObjParticle->Update(context, elapsd_time, colorType);
 	if (mRunParticle.get() != nullptr)mRunParticle->Update(context, elapsd_time, velocity, groundFlag, position);
 	if (mStageSceneParticle.get() != nullptr)mStageSceneParticle->Update(context, elapsd_time);
 }
@@ -99,6 +99,22 @@ void GpuParticleManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& vi
 	cbScene.projection = projection;
 	context->UpdateSubresource(mCbScene.Get(), 0, 0, &cbScene, 0, 0);
 	if (mStageSceneParticle.get() != nullptr)mStageSceneParticle->Render(context);
-	if (mStageObjParticle.get() != nullptr)mStageObjParticle->Render(context);
-	if (mRunParticle.get() != nullptr)mRunParticle->Render(context);
+	//if (mStageObjParticle.get() != nullptr)mStageObjParticle->Render(context);
+	//if (mRunParticle.get() != nullptr)mRunParticle->Render(context);
+}
+
+void GpuParticleManager::RenderVelocity(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection)
+{
+	context->OMSetDepthStencilState(mDepth.Get(), 0);
+	context->RSSetState(mRasterizer.Get());
+	context->VSSetConstantBuffers(0, 1, mCbScene.GetAddressOf());
+	context->GSSetConstantBuffers(0, 1, mCbScene.GetAddressOf());
+	context->PSSetConstantBuffers(0, 1, mCbScene.GetAddressOf());
+
+	CbScene cbScene;
+	cbScene.view = view;
+	cbScene.projection = projection;
+	context->UpdateSubresource(mCbScene.Get(), 0, 0, &cbScene, 0, 0);
+	if (mStageSceneParticle.get() != nullptr)mStageSceneParticle->RenderVelocity(context);
+
 }

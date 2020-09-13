@@ -137,6 +137,16 @@ void FrameBuffer::Deactivate(ID3D11DeviceContext* context)
 	context->OMSetRenderTargets(1, mDefaultRenderTargetView.GetAddressOf(), mDefaultDepthStencilView.Get());
 
 }
+void FrameBuffer::SetPsTexture(ID3D11DeviceContext* context, const int number)
+{
+	context->PSSetShaderResources(number, 1, mRenderTargetShaderResourceView.GetAddressOf());
+}
+void FrameBuffer::SetPsDepth(ID3D11DeviceContext* context, const int number)
+{
+	context->PSSetShaderResources(number, 1, mDepthStencilShaderResourceView.GetAddressOf());
+
+}
+
 /*********************************MulltiRenderTargetFunction**********************************/
 
 void MulltiRenderTargetFunction::Clear(ID3D11DeviceContext* context, float r, float g, float b, float a, unsigned int clearFlags, float depth, unsigned char stencil)

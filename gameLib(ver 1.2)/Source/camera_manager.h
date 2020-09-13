@@ -5,7 +5,7 @@
 class CameraManager
 {
 public:
-	void CreateCamera();
+	void CreateCamera(ID3D11Device*device);
 	void Update(float elapsed_time);
 	//setter
 	void SetDefaultPerspective(float fov, float aspect, float nearZ, float farZ)

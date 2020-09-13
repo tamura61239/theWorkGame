@@ -10,11 +10,11 @@
 class GeometricPrimitive
 {
 public:
-	GeometricPrimitive(ID3D11Device* device):indexNum(0) {};
+	GeometricPrimitive(ID3D11Device* device) :indexNum(0) {};
 	virtual ~GeometricPrimitive() {};
 	Microsoft::WRL::ComPtr<ID3D11Buffer>GetVertexBuffer() { return mVertexBuffer; }
 	Microsoft::WRL::ComPtr<ID3D11Buffer>GetIndexBuffer() { return mIndexBuffer; }
-	
+
 	const int& GetIndexNum() { return indexNum; }
 #if TYPE
 	const FLOAT4X4& GetWorld() { return world; }
@@ -41,7 +41,7 @@ public:
 		VECTOR3F normal;
 	};
 protected:
-	void CreateBuffer(ID3D11Device* device, std::vector<Vertex>vertics,std::vector<UINT>index);
+	void CreateBuffer(ID3D11Device* device, std::vector<Vertex>vertics, std::vector<UINT>index);
 private:
 	FLOAT4X4 world;
 	int indexNum;
@@ -64,7 +64,7 @@ public:
 class GeometricSphere :public GeometricPrimitive
 {
 public:
-	GeometricSphere(ID3D11Device* device, u_int slices, u_int stacks);
+	GeometricSphere(ID3D11Device* device, u_int slices, u_int stacks);//slices:32,stacks:16
 };
 
 //•`‰æƒNƒ‰ƒX
@@ -74,7 +74,7 @@ public:
 	PrimitiveRender(ID3D11Device* device);
 #if TYPE
 	void Begin(ID3D11DeviceContext* context, const VECTOR4F& light);
-	void Render(ID3D11DeviceContext* context, GeometricPrimitive* obj,const FLOAT4X4& view, const FLOAT4X4& projection ,const VECTOR4F& color = VECTOR4F(1, 1, 1, 1));
+	void Render(ID3D11DeviceContext* context, GeometricPrimitive* obj, const FLOAT4X4& view, const FLOAT4X4& projection, const VECTOR4F& color = VECTOR4F(1, 1, 1, 1));
 #else
 	void Begin(ID3D11DeviceContext* context, const VECTOR4F& light, const FLOAT4X4& view, const FLOAT4X4& projection);
 	void Render(ID3D11DeviceContext* context, GeometricPrimitive* obj, const FLOAT4X4& world, const VECTOR4F& color = VECTOR4F(1, 1, 1, 1));

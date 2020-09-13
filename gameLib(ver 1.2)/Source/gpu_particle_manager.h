@@ -21,6 +21,7 @@ public:
 	void Update(float elapsd_time,float colorType,const VECTOR3F&velocity,const VECTOR3F&position,const bool groundFlag);
 	//•`‰æ
 	void Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection);
+	void RenderVelocity(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection);
 private:
 	GpuParticleManager(){}
 	std::unique_ptr<StageObjParticle>mStageObjParticle;

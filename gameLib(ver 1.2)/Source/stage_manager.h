@@ -12,7 +12,8 @@ public:
 	void ImGuiUpdate();
 	int CheckMouseDragObj();
 	void Update(float elapsd_time);
-	void Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection,const int stageState);
+	void Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const int stageState);
+	void RenderVelocity(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection,const int stageState);
 	void SetStageNo(int no) { stageNo = no; }
 	//getter
 	std::vector<std::shared_ptr<StageObj>>GetStages() { return mStageObjs; }
@@ -30,4 +31,6 @@ private:
 	VECTOR3F mNearMouse;
 	VECTOR3F mFarMouse;
 	int dragObjNumber;
+	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbBeforeBuffer;
+	std::unique_ptr<DrowShader>mVelocityShader;
 };

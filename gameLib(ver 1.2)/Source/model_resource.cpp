@@ -1,4 +1,3 @@
-#include <WICTextureLoader.h>
 
 #include "logger.h"
 #include "model_resource.h"

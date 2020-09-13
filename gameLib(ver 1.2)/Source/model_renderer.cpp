@@ -15,14 +15,18 @@ ModelRenderer::ModelRenderer(ID3D11Device* device)
 		{ "WEIGHTS",  0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "BONES",    0, DXGI_FORMAT_R32G32B32A32_UINT,  0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
-	create_vs_from_cso(device, "Data/shader/model_vs.cso", m_vertex_shader[0].GetAddressOf(), m_input_layout.GetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
-	Microsoft::WRL::ComPtr<ID3D11InputLayout>		input_layout;
-	create_vs_from_cso(device, "Data/shader/model_normal_vs.cso", m_vertex_shader[1].GetAddressOf(), input_layout.GetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
-	Microsoft::WRL::ComPtr<ID3D11InputLayout>		shadow_input;
-	create_vs_from_cso(device, "Data/shader/model_shadow_vs.cso", mShadowVSShader.GetAddressOf(), shadow_input.GetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
+	//create_vs_from_cso(device, "Data/shader/model_vs.cso", m_vertex_shader[0].GetAddressOf(), m_input_layout.GetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
+	//Microsoft::WRL::ComPtr<ID3D11InputLayout>		input_layout;
+	//create_vs_from_cso(device, "Data/shader/model_normal_vs.cso", m_vertex_shader[1].GetAddressOf(), input_layout.GetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
+	//Microsoft::WRL::ComPtr<ID3D11InputLayout>		shadow_input;
+	//create_vs_from_cso(device, "Data/shader/model_shadow_vs.cso", mShadowVSShader.GetAddressOf(), shadow_input.GetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
 
-	create_ps_from_cso(device, "Data/shader/model_ps.cso", m_pixel_shader[0].GetAddressOf());
-	create_ps_from_cso(device, "Data/shader/model_normal_ps.cso", m_pixel_shader[1].GetAddressOf());
+	//create_ps_from_cso(device, "Data/shader/model_ps.cso", m_pixel_shader[0].GetAddressOf());
+	//create_ps_from_cso(device, "Data/shader/model_normal_ps.cso", m_pixel_shader[1].GetAddressOf());
+
+	mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/model_vs.cso", "", "Data/shader/model_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc)));
+	mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/model_normal_vs.cso", "", "Data/shader/model_normal_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc)));
+	mShadowShader = std::make_unique<DrowShader>(device, "Data/shader/model_shadow_vs.cso", "", "");
 	// 定数バッファ
 	{
 		// シーン用バッファ
@@ -168,8 +172,6 @@ ModelRenderer::ModelRenderer(ID3D11Device* device)
 // 描画開始
 void ModelRenderer::Begin(ID3D11DeviceContext* context, const FLOAT4X4& view_projection)
 {
-
-	context->IASetInputLayout(m_input_layout.Get());
 	
 	ID3D11Buffer* constant_buffers[] =
 	{
@@ -198,13 +200,11 @@ void ModelRenderer::Draw(ID3D11DeviceContext* context, Model& model, const VECTO
 	const std::vector<Model::Node>& nodes = model.GetNodes();
 
 	SHADER_TYPE shaderType = model_resource->GetShaderType();
-	context->VSSetShader(m_vertex_shader[static_cast<int>(shaderType)].Get(), nullptr, 0);
-	context->PSSetShader(m_pixel_shader[static_cast<int>(shaderType)].Get(), nullptr, 0);
-
+	mShader[static_cast<int>(shaderType)]->Activate(context);
 	context->PSSetSamplers(0, 1, m_sampler_state[0].GetAddressOf());
 	if (shaderType == SHADER_TYPE::NORMAL)
 	{
-		context->PSSetSamplers(0, 1, m_sampler_state[1].GetAddressOf());
+		context->PSSetSamplers(1, 1, m_sampler_state[1].GetAddressOf());
 	}
 	for (const ModelResource::Mesh& mesh : model_resource->GetMeshes())
 	{
@@ -247,6 +247,63 @@ void ModelRenderer::Draw(ID3D11DeviceContext* context, Model& model, const VECTO
 			context->DrawIndexed(subset.index_count, subset.start_index, 0);
 		}
 	}
+	mShader[static_cast<int>(shaderType)]->Deactivate(context);
+}
+
+void ModelRenderer::Draw(ID3D11DeviceContext* context, DrowShader* shader, Model& model, const VECTOR4F& color)
+{
+	const ModelResource* model_resource = model.GetModelResource();
+	const std::vector<Model::Node>& nodes = model.GetNodes();
+
+	SHADER_TYPE shaderType = model_resource->GetShaderType();
+	shader->Activate(context);
+	context->PSSetSamplers(0, 1, m_sampler_state[0].GetAddressOf());
+	if (shaderType == SHADER_TYPE::NORMAL)
+	{
+		context->PSSetSamplers(0, 1, m_sampler_state[1].GetAddressOf());
+	}
+	for (const ModelResource::Mesh& mesh : model_resource->GetMeshes())
+	{
+		// メッシュ用定数バッファ更新
+		CbMesh cb_mesh;
+		::memset(&cb_mesh, 0, sizeof(cb_mesh));
+		if (mesh.node_indices.size() > 0)
+		{
+			for (size_t i = 0; i < mesh.node_indices.size(); ++i)
+			{
+				DirectX::XMMATRIX inverse_transform = DirectX::XMLoadFloat4x4(mesh.inverse_transforms.at(i));
+				DirectX::XMMATRIX world_transform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.node_indices.at(i)).world_transform);
+				DirectX::XMMATRIX bone_transform = inverse_transform * world_transform;
+				DirectX::XMStoreFloat4x4(&cb_mesh.bone_transforms[i], bone_transform);
+			}
+		}
+		else
+		{
+			cb_mesh.bone_transforms[0] = nodes.at(mesh.node_index).world_transform;
+		}
+		context->UpdateSubresource(m_cb_mesh.Get(), 0, 0, &cb_mesh, 0, 0);
+
+		UINT stride = sizeof(ModelData::Vertex);
+		UINT offset = 0;
+		context->IASetVertexBuffers(0, 1, mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
+		context->IASetIndexBuffer(mesh.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		for (const ModelResource::Subset& subset : mesh.subsets)
+		{
+			CbSubset cb_subset;
+			cb_subset.material_color = VECTOR4F(subset.diffuse->color.x * color.x, subset.diffuse->color.y * color.y, subset.diffuse->color.z * color.z, subset.diffuse->color.w * color.w);
+			context->UpdateSubresource(m_cb_subset.Get(), 0, 0, &cb_subset, 0, 0);
+			context->PSSetShaderResources(0, 1, subset.diffuse->shader_resource_view.Get() ? subset.diffuse->shader_resource_view.GetAddressOf() : m_dummy_srv.GetAddressOf());
+			if (shaderType == SHADER_TYPE::NORMAL)
+			{
+				context->PSSetShaderResources(1, 1, subset.normal->shader_resource_view.Get() ? subset.normal->shader_resource_view.GetAddressOf() : m_dummy_srv.GetAddressOf());
+				context->PSSetShaderResources(2, 1, subset.bump->shader_resource_view.Get() ? subset.bump->shader_resource_view.GetAddressOf() : m_dummy_srv.GetAddressOf());
+			}
+			context->DrawIndexed(subset.index_count, subset.start_index, 0);
+		}
+	}
+	shader->Deactivate(context);
 
 }
 
@@ -258,10 +315,7 @@ void ModelRenderer::End(ID3D11DeviceContext* context)
 //影の描画
 void ModelRenderer::ShadowBegin(ID3D11DeviceContext* context, const FLOAT4X4& view_projection)
 {
-	context->VSSetShader(mShadowVSShader.Get(), nullptr, 0);
-	context->PSSetShader(nullptr, nullptr, 0);
-	context->IASetInputLayout(m_input_layout.Get());
-
+	mShadowShader->Activate(context);
 	ID3D11Buffer* constant_buffers[] =
 	{
 		m_cb_scene.Get(),
@@ -328,4 +382,6 @@ void ModelRenderer::ShadowDraw(ID3D11DeviceContext* context, Model& model, const
 
 void ModelRenderer::ShadowEnd(ID3D11DeviceContext* context)
 {
+	mShadowShader->Deactivate(context);
+
 }

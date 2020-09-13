@@ -20,8 +20,8 @@ void main(uint3 DTid : SV_DispatchThreadID)
 	p.color.w = 0;
 	p.maxA = rand.x + rand.y + rand.z;
 	p.maxA = p.maxA - floor(p.maxA)+0.2f;
-	p.scale = float3(1 - p.maxA + 0.3f, 1 - p.maxA + 0.3f, 1 - p.maxA + 0.3f)*5;
-	p.maxA *= 0.7f;
+	p.scale = float3(1 - p.maxA + 0.3f, 1 - p.maxA + 0.3f, 1 - p.maxA + 0.3f)*8;
+	p.maxA *= 0.8f;
 
 	rwBuffer.Store4(bufferIndex, asuint(p.position));
 	rwBuffer.Store(bufferIndex + 4 * FLOAT_SIZE, asuint(p.life));

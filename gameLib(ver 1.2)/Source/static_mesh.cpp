@@ -49,7 +49,7 @@ StaticMesh::StaticMesh(ID3D11Device* device, const char* fileName, SHADER_TYPE s
 	SetMinAndMaxPosition();
 	CreateBuffers(device);
 	CreateShaderResourceView(device,shaderType);
-	CreateShader(device, shaderType);
+	mShaderType = shaderType;
 }
 
 
@@ -425,47 +425,6 @@ void StaticMesh::CreateShaderResourceView(ID3D11Device* device, SHADER_TYPE shad
 	}
 }
 
-void StaticMesh::CreateShader(ID3D11Device* device, SHADER_TYPE shaderType)
-{
-	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
-	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	};
-
-	std::string vsName = { "Data/shader/" };
-	std::string psName = { "Data/shader/" };
-	switch (shaderType)
-	{
-	case SHADER_TYPE::USEALLY:
-		vsName += "static_mesh_vs.cso";
-		psName += "static_mesh_ps.cso";
-		break;
-	case SHADER_TYPE::NORMAL:
-		vsName += "static_mesh_normal_vs.cso";
-		psName += "static_mesh_normal_ps.cso";
-		break;
-	}
-	create_vs_from_cso(device, vsName.c_str(), mVSShader.GetAddressOf(), mInput.GetAddressOf(), inputElementDesc, ARRAYSIZE(inputElementDesc));
-	/*if(shaderType!=SHADER_TYPE::SHADOW)*/create_ps_from_cso(device, psName.c_str(), mPSShader.GetAddressOf());
-	mShaderType = shaderType;
-}
-
-void StaticMesh::CreateShader(ID3D11Device* device, const char* vsShaderName, const char* psShaderName)
-{
-	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
-	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	};
-	HRESULT hr;
-	hr= create_vs_from_cso(device, vsShaderName, mVSShader.GetAddressOf(), mInput.GetAddressOf(), inputElementDesc, ARRAYSIZE(inputElementDesc));
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	hr = create_ps_from_cso(device, psShaderName, mPSShader.GetAddressOf());
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-}
 
 int StaticMesh::RayPick(const VECTOR3F& startPosition, const VECTOR3F& endPosition, VECTOR3F* outPosition, VECTOR3F* outNormal, float* outLength)
 {
@@ -541,7 +500,7 @@ int StaticMesh::RayPick(const VECTOR3F& startPosition, const VECTOR3F& endPositi
 
 	return ret;
 }
-void StaticMesh::ChangeShader(ID3D11Device* device, SHADER_TYPE shaderType, std::vector<TextureMapData> data)
+void StaticMesh::ChangeShaderResourceView(ID3D11Device* device, SHADER_TYPE shaderType, std::vector<TextureMapData> data)
 {
 	for (auto& mesh : meshes)
 	{
@@ -559,7 +518,6 @@ void StaticMesh::ChangeShader(ID3D11Device* device, SHADER_TYPE shaderType, std:
 		}
 	}
 	CreateShaderResourceView(device, shaderType);
-	CreateShader(device, shaderType);
 }
 /************************************************/
 //             •`‰æƒNƒ‰ƒX
@@ -576,8 +534,11 @@ MeshRender::MeshRender(ID3D11Device* device)
 			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
-		Microsoft::WRL::ComPtr<ID3D11InputLayout>input;
-		create_vs_from_cso(device, "Data/shader/static_mesh_shadow_vs.cso", mShadowVSShader.GetAddressOf(), input.GetAddressOf(), inputElementDesc, ARRAYSIZE(inputElementDesc));
+		//Microsoft::WRL::ComPtr<ID3D11InputLayout>input;
+		//create_vs_from_cso(device, "Data/shader/static_mesh_shadow_vs.cso", mShadowVSShader.GetAddressOf(), input.GetAddressOf(), inputElementDesc, ARRAYSIZE(inputElementDesc));
+		mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/static_mesh_vs.cso", "", "Data/shader/static_mesh_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc)));
+		mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/static_mesh_normal_vs.cso", "", "Data/shader/static_mesh_normal_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc)));
+		mShadowShader = std::make_unique<DrowShader>(device, "Data/shader/static_mesh_shadow_vs.cso", "", "");
 	}
 
 	// create rasterizer state : solid mode
@@ -686,9 +647,7 @@ MeshRender::MeshRender(ID3D11Device* device)
 
 void MeshRender::ShadowBegin(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection)
 {
-	context->VSSetShader(mShadowVSShader.Get(), nullptr, 0);
-	context->PSSetShader(nullptr, nullptr, 0);
-
+	mShadowShader->Activate(context);
 	ID3D11Buffer* constant_buffers[] =
 	{
 		mCbScene.Get(),
@@ -707,7 +666,6 @@ void MeshRender::ShadowBegin(ID3D11DeviceContext* context, const FLOAT4X4& view,
 
 void MeshRender::ShadowRender(ID3D11DeviceContext* context, StaticMesh* obj, const FLOAT4X4& world)
 {
-	context->IASetInputLayout(obj->GetInputLayout().Get());
 
 	for (StaticMesh::Mesh& mesh : obj->meshes)
 	{
@@ -730,6 +688,8 @@ void MeshRender::ShadowRender(ID3D11DeviceContext* context, StaticMesh* obj, con
 
 void MeshRender::ShadowEnd(ID3D11DeviceContext* context)
 {
+	mShadowShader->Deactivate(context);
+
 }
 
 void MeshRender::Begin(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const bool w)
@@ -759,9 +719,8 @@ void MeshRender::Begin(ID3D11DeviceContext* context, const FLOAT4X4& view, const
 
 void MeshRender::Render(ID3D11DeviceContext* context, StaticMesh* obj, const FLOAT4X4& world, const VECTOR4F color)
 {
-	context->VSSetShader(obj->GetVSShader().Get(), nullptr, 0);
-	context->PSSetShader(obj->GetPSShader().Get(), nullptr, 0);
-	context->IASetInputLayout(obj->GetInputLayout().Get());
+	SHADER_TYPE shaderType = obj->GetShaderType();
+	mShader[static_cast<int>(shaderType)]->Activate(context);
 
 	for (StaticMesh::Mesh& mesh : obj->meshes)
 	{
@@ -791,6 +750,42 @@ void MeshRender::Render(ID3D11DeviceContext* context, StaticMesh* obj, const FLO
 	{
 		context->PSSetShaderResources(i, 1, &srv);
 	}
+	mShader[static_cast<int>(shaderType)]->Deactivate(context);
+
+}
+
+void MeshRender::Render(ID3D11DeviceContext* context, DrowShader* shader, StaticMesh* obj, const FLOAT4X4& world, const VECTOR4F color)
+{
+	shader->Activate(context);
+	for (StaticMesh::Mesh& mesh : obj->meshes)
+	{
+		u_int stride = sizeof(StaticMesh::Vertex);
+		u_int offset = 0;
+		context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &stride, &offset);
+		context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		CbObj data;
+
+		DirectX::XMStoreFloat4x4(&data.world, DirectX::XMLoadFloat4x4(&mesh.globalTransform) * DirectX::XMLoadFloat4x4(&world));
+
+		for (StaticMesh::Subset& subset : mesh.subsets)
+		{
+			data.color.x = subset.diffuse.color.x * color.x;
+			data.color.y = subset.diffuse.color.y * color.y;
+			data.color.z = subset.diffuse.color.z * color.z;
+			data.color.w = color.w;
+			context->UpdateSubresource(mCbObj.Get(), 0, 0, &data, 0, 0);
+			obj->SetShaderResouceView(context, subset);
+			context->DrawIndexed(subset.indexCount, subset.indexStart, 0);
+		}
+	}
+	ID3D11ShaderResourceView* srv = nullptr;
+	for (int i = 0; i < 3; i++)
+	{
+		context->PSSetShaderResources(i, 1, &srv);
+	}
+	shader->Deactivate(context);
 
 }
 
