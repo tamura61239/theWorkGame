@@ -200,6 +200,23 @@ void StageSceneParticle::Render(ID3D11DeviceContext* context)
 
 }
 
+void StageSceneParticle::Render(ID3D11DeviceContext* context, DrowShader* shader)
+{
+	if (mParticleUAV.Get() == nullptr)return;
+
+	shader->Activate(context);
+
+	u_int stride = sizeof(Particle);
+	u_int offset = 0;
+
+	context->IASetVertexBuffers(0, 1, mParticleBuffer.GetAddressOf(), &stride, &offset);
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+
+	context->Draw(particleSize, 0);
+
+	shader->Deactivate(context);
+}
+
 void StageSceneParticle::RenderVelocity(ID3D11DeviceContext* context)
 {
 	if (mParticleUAV.Get() == nullptr)return;
@@ -254,7 +271,7 @@ void StageSceneParticle::Load()
 		mCbStart.startPosition = data.startPosition;
 		mCbStart.maxLife = data.maxLife;
 		mCb.angleMovement = data.angleMovement;
-		oneTimeIndexSize = data.oneTimeIndexSize;
+		oneTimeIndexSize = static_cast<float>(data.oneTimeIndexSize);
 		fclose(fp);
 	}
 }
@@ -269,7 +286,7 @@ void StageSceneParticle::Save()
 	data.createRange = mCbStart.createRange;
 	data.startPosition = mCbStart.startPosition;
 	data.angleMovement = mCb.angleMovement;
-	data.oneTimeIndexSize = oneTimeIndexSize;
+	data.oneTimeIndexSize = static_cast<float>(oneTimeIndexSize);
 	fwrite(&data, sizeof(SaveData), 1, fp);
 	fclose(fp);
 }

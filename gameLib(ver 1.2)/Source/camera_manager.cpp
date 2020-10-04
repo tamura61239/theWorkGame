@@ -20,20 +20,11 @@ void CameraManager::Update(float elapsed_time)
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("camera");
-	if (mCameraOperation->GetCameraType() != CameraOperation::CAMERA_TYPE::DEBUG)
-	{
-		if (ImGui::Button("debug"))
-		{
-			mCameraOperation->SetCameraType(CameraOperation::CAMERA_TYPE::DEBUG);
-		}
-	}
-	else
-	{
-		if (ImGui::Button("end"))
-		{
-			mCameraOperation->SetCameraType(CameraOperation::CAMERA_TYPE::NORMAL);
-		}
-	}
+	int cameraType = static_cast<int>(mCameraOperation->GetCameraType());
+	ImGui::RadioButton("normal", &cameraType, 0);
+	ImGui::RadioButton("debug", &cameraType, 1);
+	ImGui::RadioButton("title camera", &cameraType, 2);
+	mCameraOperation->SetCameraType(static_cast<CameraOperation::CAMERA_TYPE>(cameraType));
 	ImGui::End();
 #endif
 	mCameraOperation->Update(elapsed_time);

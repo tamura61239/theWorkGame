@@ -7,7 +7,7 @@
 
 StagePointParticle::StagePointParticle(ID3D11Device* device)
 {
-	HRESULT* hr;
+	//HRESULT* hr;
 
 }
 

@@ -43,6 +43,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer>			m_cb_scene;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>			m_cb_mesh;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>			m_cb_subset;
+	Microsoft::WRL::ComPtr<ID3D11Buffer>            mCbBeforeMesh;
 
 	std::vector<std::unique_ptr<DrowShader>>mShader;
 	std::unique_ptr<DrowShader>mShadowShader;

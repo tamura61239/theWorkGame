@@ -4,7 +4,7 @@ struct VS_OUT
 	float4 color : COLOR;
 	float2 texcoord : TEXCOORD;
 	float3 worldNormal:TEXCOORD1;
-	float3 worldPosition:TEXCOORD2;
+	float4 worldPosition:TEXCOORD2;
 };
 
 cbuffer CbScene:register(b0)

@@ -259,7 +259,7 @@ void BloomRender::Save()
 
 float BloomRender::GaussianDistribution(const VECTOR2F& position, const float rho)
 {
-	return exp(-(position.x * position.x + position.y * position.y) / (2.0f * rho * rho));
+	return static_cast<float>(exp(-(position.x * position.x + position.y * position.y) / (2.0f * rho * rho)));
 }
 
 void BloomRender::CalucurateBluer(const float width, const float hight, const VECTOR2F& dir, const float deviation, const float multiply)

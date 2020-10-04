@@ -8,10 +8,14 @@ public:
 	CameraOperation(std::shared_ptr<Camera>camera);
 	void Update(float elapsedTime);
 	void DebugCamera();
+	void TitleCamera();
+	void Load();
+	void Save();
 	enum CAMERA_TYPE
 	{
 		NORMAL,
-		DEBUG
+		DEBUG,
+		TITLE_CAMERA
 	};
 	//setter
 	void SetCameraType(CAMERA_TYPE type) { mType = type; }
@@ -24,4 +28,6 @@ private:
 	VECTOR2F newCursor;
 	float distance;
 	VECTOR2F rotate;
+	float angle1;
+	float angle2;
 };

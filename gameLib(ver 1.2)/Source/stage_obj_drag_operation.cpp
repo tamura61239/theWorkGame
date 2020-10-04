@@ -17,9 +17,9 @@ StageObjDragOperation::StageObjDragOperation(ID3D11Device* device)
 	mArrowObjs[1]->SetAngle(VECTOR3F(0, 0, DirectX::XMConvertToRadians(180.f)));
 	mArrowObjs[2]->SetAngle(VECTOR3F(DirectX::XMConvertToRadians(90.f), 0, 0));
 	mArrowSize = mesh->GetMaxPosition() - mesh->GetMinPosition();
-	mLocalPosition[0] = VECTOR3F(1, 0.1, 0);
-	mLocalPosition[1] = VECTOR3F(0, 1.1, 0);
-	mLocalPosition[2] = VECTOR3F(0, 0.1, -1);
+	mLocalPosition[0] = VECTOR3F(1, 0.1f, 0);
+	mLocalPosition[1] = VECTOR3F(0, 1.1f, 0);
+	mLocalPosition[2] = VECTOR3F(0, 0.1f, -1);
 	for (int i = 0;i < 3;i++)
 	{
 		//mLocalPosition[i] *= mArrowSize.y;
@@ -133,7 +133,7 @@ void StageObjDragOperation::SetArrow(std::shared_ptr<StageObj>obj)
 	};
 	for (int i = 0;i < 3;i++)
 	{
-		mArrowObjs[i]->SetScale(VECTOR3F(0.15,0.3,0.15)+ mLocalScale[i]/* + mLocalPosition[i] * mDragObjSize * scale*/);
+		mArrowObjs[i]->SetScale(VECTOR3F(0.15f,0.3f,0.15f)+ mLocalScale[i]/* + mLocalPosition[i] * mDragObjSize * scale*/);
 		mArrowObjs[i]->SetPosition(position + mLocalPosition[i] * mArrowSize.y*(mArrowObjs[i]->GetScale().y));
 		mArrowObjs[i]->CalculateTransform();
 		mArrowObjs[i]->SetColor(VECTOR4F(s[i].x, s[i].y, s[i].z, 0.5));

@@ -147,6 +147,7 @@ void Model::CalculateWorldTransform(const DirectX::XMMATRIX& world_transform)
 {
 	for (Node& node : m_nodes)
 	{
+		node.beforeWorldTransform = node.world_transform;
 		if (node.parent != nullptr)
 		{
 			DirectX::XMMATRIX local_transform = DirectX::XMLoadFloat4x4(&node.local_transform);

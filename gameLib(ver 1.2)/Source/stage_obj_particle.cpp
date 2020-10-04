@@ -57,7 +57,7 @@ void StageObjParticle::CreateBuffer(ID3D11Device* device, std::vector<std::share
 	//std::vector<Obj>blueObjs;
 	std::vector<Obj>objs;
 
-	for (int i = 0; i < stages.size(); i++)
+	for (int i = 0; i < static_cast<int>(stages.size()); i++)
 	{
 		auto& stage = stages[i];
 		if (stage->GetStageData().mObjType > 0)continue;
@@ -75,7 +75,7 @@ void StageObjParticle::CreateBuffer(ID3D11Device* device, std::vector<std::share
 		}
 	}
 
-	for (int i = 0; i < stages.size(); i++)
+	for (int i = 0; i < static_cast<int>(stages.size()); i++)
 	{
 		auto& stage = stages[i];
 		if (stage->GetStageData().mObjType > 0)continue;
@@ -164,9 +164,9 @@ void StageObjParticle::CreateBuffer(ID3D11Device* device, std::vector<std::share
 	mStartData.changeColorFlag = 0;
 	mCb.elapsdTime = 0;
 	mStartData.startIndex = 0;
-	mStartData.redNumber = redObjSize;
+	mStartData.redNumber = static_cast<float>(redObjSize);
 	mCb.nowColorType = 0;
-	mCb.maxSize = objs.size();
+	mCb.maxSize = static_cast<float>(objs.size());
 	beforeIndex = -1;
 }
 
@@ -213,7 +213,7 @@ void StageObjParticle::Update(ID3D11DeviceContext* context, float elapsd_time, c
 
 	if (mCb.nowColorType != colorState)mStartData.changeColorFlag = 1;
 	else mStartData.changeColorFlag = 0;
-	mCb.nowColorType = colorState;
+	mCb.nowColorType = static_cast<float>(colorState);
 	mStartData.startIndex += mStartData.indexSize * elapsd_time * 0.5f;
 	if (mStartData.startIndex - beforeIndex >= 1.0f)
 	{

@@ -12,6 +12,7 @@ public:
 	StageSceneParticle(ID3D11Device* device);
 	void Update(ID3D11DeviceContext* context, float elapsdTime);
 	void Render(ID3D11DeviceContext* context);
+	void Render(ID3D11DeviceContext* context,DrowShader*shader);
 	void RenderVelocity(ID3D11DeviceContext* context);
 private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mParticleBuffer;

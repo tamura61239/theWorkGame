@@ -18,6 +18,7 @@ public:
 		VECTOR3F	translate;
 		FLOAT4X4	local_transform;
 		FLOAT4X4	world_transform;
+		FLOAT4X4    beforeWorldTransform;
 	};
 
 	// アニメーション

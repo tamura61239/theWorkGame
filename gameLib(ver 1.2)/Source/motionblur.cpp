@@ -16,8 +16,8 @@ MotionBlur::MotionBlur(ID3D11Device* device)
 		//desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS;
 		//desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
 		//desc.CPUAccessFlags = 0;
-		desc.Width = 1920;
-		desc.Height = 1080;
+		desc.Width = 1920/3;
+		desc.Height = 1080/3;
 		desc.MipLevels = 1;
 		desc.ArraySize = 1;
 		desc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
@@ -60,7 +60,7 @@ void MotionBlur::CreateNeighborMaxBuffer(ID3D11DeviceContext* context, ID3D11Sha
 	context->CSSetShaderResources(0, 1, &srv);
 	context->CSSetUnorderedAccessViews(0, 1, mUAV.GetAddressOf(), 0);
 
-	context->Dispatch(1920, 1080, 1);
+	context->Dispatch(640, 360, 1);
 
 	context->CSSetShader(nullptr, nullptr, 0);
 	ID3D11ShaderResourceView* s = nullptr;

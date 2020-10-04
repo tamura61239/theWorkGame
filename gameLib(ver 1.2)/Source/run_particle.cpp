@@ -149,7 +149,7 @@ void RunParticles::Update(ID3D11DeviceContext* context, float elapsd_time, const
 	ID3D11ShaderResourceView* srv[1] = { mRandSRV.Get() };
 	context->CSSetShaderResources(0, 1, srv);
 
-	context->Dispatch(1 + mCbStart.moveType * 9, 1, 1);
+	context->Dispatch(1 + static_cast<UINT>(mCbStart.moveType) * 9, 1, 1);
 	context->CSSetShader(mCSShader.Get(), nullptr, 0);
 
 	context->Dispatch(1000, 1, 1);
@@ -196,7 +196,7 @@ void RunParticles::SetRandBufferData(std::vector<VECTOR2F>& data)
 	for (int i = 0; i < 400; i++)
 	{
 		VECTOR2F rad;
-		rad.x = DirectX::XMConvertToRadians(rand() % 360);
+		rad.x = DirectX::XMConvertToRadians(static_cast<float>(rand() % 360));
 		rad.y = static_cast<float>(rand() - 16383.5f) / 16383.5f;
 		data.push_back(rad);
 	}

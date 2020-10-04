@@ -117,6 +117,8 @@ void PlayerAI::Update(float elapsd_time, StageManager* manager)
 		pCamera.GetCamera()->SetEye(mCharacter->GetPosition() + VECTOR3F(sinf(mCameraParameter.angle) * mCameraParameter.length, mCameraParameter.y, cosf(mCameraParameter.angle) * mCameraParameter.length) * gameObjScale);
 		pCamera.GetCamera()->SetFocus(mCharacter->GetPosition());
 		pCamera.GetCamera()->SetUp(VECTOR3F(0, 1, 0));
+		mCharacter->CalculateBoonTransform(0);
+
 		return;
 	}
 	pCamera.GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::NORMAL);

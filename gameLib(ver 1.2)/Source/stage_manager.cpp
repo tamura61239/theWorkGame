@@ -4,7 +4,7 @@
 #include"key_board.h"
 #include"gpu_particle_manager.h"
 /***********************èâä˙âª*************************/
-StageManager::StageManager(ID3D11Device* device, int width, int height):stageNo(3),mWidth(width), mHeight(height), dragObjNumber(-1)
+StageManager::StageManager(ID3D11Device* device, int width, int height):stageNo(3),mWidth(static_cast<float>(width)), mHeight(static_cast<float>(height)), dragObjNumber(-1)
 {
 	mMeshs.push_back(std::make_shared<StaticMesh>(device, "Data/FBX/000_cube.fbx"));
 	mMeshs.push_back(std::make_shared<StaticMesh>(device, "Data/FBX/jumpstand.fbx"));
@@ -29,7 +29,8 @@ StageManager::StageManager(ID3D11Device* device, int width, int height):stageNo(
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
-	mVelocityShader = std::make_unique<DrowShader>(device, "Data/shader/static_mesh_blur_vs.cso", "", "Data/shader/static_mesh_blur_ps.cso", inputElementDesc,ARRAYSIZE(inputElementDesc));
+	mVelocityShader = std::make_unique<DrowShader>(device, "Data/shader/static_mesh_blur_vs.cso", "", "Data/shader/static_mesh_blur_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
+	mDeferredShader = std::make_unique<DrowShader>(device, "Data/shader/static_mesh_vs.cso", "", "Data/shader/deferred_depth_static_mesh_ps.cso", inputElementDesc,ARRAYSIZE(inputElementDesc));
 	Load();
 }
 /*********************ÉtÉ@ÉCÉãëÄçÏ*************************/
@@ -134,7 +135,7 @@ int StageManager::CheckMouseDragObj()
 	int objNumber = -1;
 	float minLength = 10000;
 	VECTOR3F position, normal;
-	for (int i = 0;i < mStageObjs.size();i++)
+	for (int i = 0;i < static_cast<int>(mStageObjs.size());i++)
 	{
 		float length = 0;
 		if (mStageObjs[i]->RayPick(mNearMouse,mFarMouse,&position,&normal, &length) != -1)
@@ -158,28 +159,55 @@ void StageManager::Update(float elapsd_time)
 	}
 }
 /***************ï`âÊ******************/
-void StageManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const int stageState)
+void StageManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const int stageState, DrowShader* srv)
 {
-	mRender->Begin(context, view, projection);
-	for (auto& stage : mStageObjs)
+	if (srv == nullptr)
 	{
-		int state = stage->GetStageData().mColorType + stageState;
-		if (state % 2 == 1)continue;
-		mRender->Render(context, stage->GetMesh(), stage->GetWorld(),stage->GetColor());
+		mRender->Begin(context, view, projection);
+		for (auto& stage : mStageObjs)
+		{
+			int state = stage->GetStageData().mColorType + stageState;
+			if (state % 2 == 1)continue;
+			mRender->Render(context, stage->GetMesh(), stage->GetWorld(), stage->GetColor());
+		}
+		mRender->End(context);
+
+		//pGpuParticleManager.Render(context, view, projection);
+
+		mRender->Begin(context, view, projection);
+
+		for (auto& stage : mStageObjs)
+		{
+			int state = stage->GetStageData().mColorType + stageState;
+			if (state % 2 == 0)continue;
+			mRender->Render(context, stage->GetMesh(), stage->GetWorld(), stage->GetColor());
+		}
+		mRender->End(context);
 	}
-	mRender->End(context);
-
-	//pGpuParticleManager.Render(context, view, projection);
-
-	mRender->Begin(context, view, projection);
-
-	for (auto& stage : mStageObjs)
+	else
 	{
-		int state = stage->GetStageData().mColorType + stageState;
-		if (state % 2 == 0)continue;
-		mRender->Render(context, stage->GetMesh(), stage->GetWorld(), stage->GetColor());
+		mRender->Begin(context, view, projection);
+		for (auto& stage : mStageObjs)
+		{
+			int state = stage->GetStageData().mColorType + stageState;
+			if (state % 2 == 1)continue;
+			mRender->Render(context, srv, stage->GetMesh(), stage->GetWorld(), stage->GetColor());
+		}
+		mRender->End(context);
+
+		//pGpuParticleManager.Render(context, view, projection);
+
+		mRender->Begin(context, view, projection);
+
+		for (auto& stage : mStageObjs)
+		{
+			int state = stage->GetStageData().mColorType + stageState;
+			if (state % 2 == 0)continue;
+			mRender->Render(context, srv, stage->GetMesh(), stage->GetWorld(), stage->GetColor());
+		}
+		mRender->End(context);
+
 	}
-	mRender->End(context);
 	//mDragOperation->Render(context, mRender.get(),view,projection);
 }
 void StageManager::RenderVelocity(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const int stageState)

@@ -49,6 +49,9 @@ ModelRenderer::ModelRenderer(ID3D11Device* device)
 		hr = device->CreateBuffer(&desc, 0, m_cb_mesh.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
+		hr = device->CreateBuffer(&desc, 0, mCbBeforeMesh.GetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
 		// サブセット用バッファ
 		desc.ByteWidth = sizeof(CbSubset);
 
@@ -258,14 +261,18 @@ void ModelRenderer::Draw(ID3D11DeviceContext* context, DrowShader* shader, Model
 	SHADER_TYPE shaderType = model_resource->GetShaderType();
 	shader->Activate(context);
 	context->PSSetSamplers(0, 1, m_sampler_state[0].GetAddressOf());
+
+	context->VSSetConstantBuffers(6, 1, mCbBeforeMesh.GetAddressOf());
+	context->PSSetConstantBuffers(6, 1, mCbBeforeMesh.GetAddressOf());
 	if (shaderType == SHADER_TYPE::NORMAL)
 	{
-		context->PSSetSamplers(0, 1, m_sampler_state[1].GetAddressOf());
+		context->PSSetSamplers(1, 1, m_sampler_state[1].GetAddressOf());
 	}
 	for (const ModelResource::Mesh& mesh : model_resource->GetMeshes())
 	{
 		// メッシュ用定数バッファ更新
 		CbMesh cb_mesh;
+		CbMesh cbBeforeMesh;
 		::memset(&cb_mesh, 0, sizeof(cb_mesh));
 		if (mesh.node_indices.size() > 0)
 		{
@@ -275,13 +282,18 @@ void ModelRenderer::Draw(ID3D11DeviceContext* context, DrowShader* shader, Model
 				DirectX::XMMATRIX world_transform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.node_indices.at(i)).world_transform);
 				DirectX::XMMATRIX bone_transform = inverse_transform * world_transform;
 				DirectX::XMStoreFloat4x4(&cb_mesh.bone_transforms[i], bone_transform);
+				DirectX::XMMATRIX beforeWorldTransform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.node_indices.at(i)).beforeWorldTransform);
+				DirectX::XMStoreFloat4x4(&cbBeforeMesh.bone_transforms[i], inverse_transform * beforeWorldTransform);
+
 			}
 		}
 		else
 		{
 			cb_mesh.bone_transforms[0] = nodes.at(mesh.node_index).world_transform;
+			cbBeforeMesh.bone_transforms[0] = nodes.at(mesh.node_index).beforeWorldTransform;
 		}
 		context->UpdateSubresource(m_cb_mesh.Get(), 0, 0, &cb_mesh, 0, 0);
+		context->UpdateSubresource(mCbBeforeMesh.Get(), 0, 0, &cbBeforeMesh, 0, 0);
 
 		UINT stride = sizeof(ModelData::Vertex);
 		UINT offset = 0;

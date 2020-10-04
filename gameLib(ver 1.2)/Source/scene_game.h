@@ -18,6 +18,7 @@
 #include"sky_map.h"
 #include"drow_shader.h"
 #include"motionblur.h"
+#include"depth_of_field.h"
 
 
 class SceneGame :public Scene
@@ -60,7 +61,9 @@ private:
 	std::unique_ptr<MulltiRenderTargetFunction>mullti;
 	std::unique_ptr<FrameBuffer>shadowMap;
 	std::shared_ptr<FrameBuffer>frameBuffer;
+	std::shared_ptr<FrameBuffer>shrinkBuffer[2];
 	std::shared_ptr<FrameBuffer>velocityBuffer;
+	std::shared_ptr<FrameBuffer>depthBuffer;
 	std::unique_ptr<FrameBuffer>nowFrame;
 	std::unique_ptr<FrameBuffer>oldFrame;
 	std::unique_ptr<RenderEffects>renderEffects;
@@ -69,9 +72,16 @@ private:
 	std::unique_ptr<BloomRender>bloom;
 	std::unique_ptr<StageManager>mSManager;
 	std::unique_ptr<StageOperation>mStageOperation;
-	std::unique_ptr<blend_state> blend[2];
+	std::unique_ptr<blend_state> blend[3];
 	std::unique_ptr<StageObjParticle>run;
 	std::unique_ptr<SkyMap>sky;
 	std::unique_ptr<DrowShader>motionShader;
+	std::unique_ptr<DrowShader>skyBlurShader;
+	std::unique_ptr<DrowShader>modelBlurShader;
+	std::unique_ptr<DrowShader>modelDepthShader;
+	std::unique_ptr<DrowShader>staticMeshDepthShader;
+	std::unique_ptr<DrowShader>depthShader;
+	std::unique_ptr<DrowShader>blurShader;
 	std::unique_ptr<MotionBlur>motionBlur;
+	std::unique_ptr<DepthOfField>depthOfField;
 };

@@ -58,6 +58,18 @@
     <Filter Include="シェーダー\stage_scene_particle">
       <UniqueIdentifier>{f8b9c1ea-ac49-43ea-bb3f-23d4d164c53d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="シェーダー\motion_blur">
+      <UniqueIdentifier>{d7c7f7b4-2fd1-4214-a05f-3854700f952b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="シェーダー\被写界深度">
+      <UniqueIdentifier>{5c4b093c-eff3-4ad4-bd87-f61c9ab1753e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="シェーダー\title_particle">
+      <UniqueIdentifier>{abd5f4ef-594c-4472-85be-d52e9ba2b8f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="シェーダー\select_scsne_particle">
+      <UniqueIdentifier>{c05a1663-6da8-4fc0-a0c0-31ad2f2c08be}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="External_Libraries\imgui\imgui.cpp">
@@ -239,6 +251,15 @@
     </ClCompile>
     <ClCompile Include="Source\motionblur.cpp">
       <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\depth_of_field.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\title_particle.cpp">
+      <Filter>ソース ファイル\GPU</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\select_scene_particle.cpp">
+      <Filter>ソース ファイル\GPU</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -452,6 +473,15 @@
     <ClInclude Include="Source\motionblur.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="Source\depth_of_field.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\title_particle.h">
+      <Filter>ヘッダー ファイル\GPU</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\select_scene_particle.h">
+      <Filter>ヘッダー ファイル\GPU</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\board.hlsli">
@@ -508,14 +538,41 @@
     <None Include="Source\deferred_stage_scene_particle.hlsli">
       <Filter>シェーダー\stage_scene_particle</Filter>
     </None>
-    <None Include="Source\motionblur.hlsli">
-      <Filter>シェーダー</Filter>
-    </None>
     <None Include="Source\stage_scene_particle_blur.hlsli">
-      <Filter>シェーダー\stage_scene_particle</Filter>
+      <Filter>シェーダー\motion_blur</Filter>
+    </None>
+    <None Include="Source\motionblur.hlsli">
+      <Filter>シェーダー\motion_blur</Filter>
     </None>
     <None Include="Source\static_mesh_blur.hlsli">
+      <Filter>シェーダー\motion_blur</Filter>
+    </None>
+    <None Include="Source\sky_map_blur.hlsli">
+      <Filter>シェーダー\motion_blur</Filter>
+    </None>
+    <None Include="Source\model_blur.hlsli">
+      <Filter>シェーダー\motion_blur</Filter>
+    </None>
+    <None Include="Source\depth_of_field_data.hlsli">
+      <Filter>シェーダー\被写界深度</Filter>
+    </None>
+    <None Include="Source\deferred_depth_static_mesh.hlsli">
+      <Filter>シェーダー\被写界深度</Filter>
+    </None>
+    <None Include="Source\title_psrticle_compute.hlsli">
+      <Filter>シェーダー\title_particle</Filter>
+    </None>
+    <None Include="Source\rand_function.hlsli">
       <Filter>シェーダー</Filter>
+    </None>
+    <None Include="Source\matrix_calculation.hlsli">
+      <Filter>シェーダー</Filter>
+    </None>
+    <None Include="Source\render_particle_cube.hlsli">
+      <Filter>シェーダー\title_particle</Filter>
+    </None>
+    <None Include="Source\select_scene_particle.hlsli">
+      <Filter>シェーダー\select_scsne_particle</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -639,26 +696,86 @@
     <FxCompile Include="Source\deferred_stage_scene_particle_ps.hlsl">
       <Filter>シェーダー\stage_scene_particle</Filter>
     </FxCompile>
-    <FxCompile Include="Source\motionblur_ps.hlsl">
-      <Filter>シェーダー</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\motionblur_cs.hlsl">
-      <Filter>シェーダー</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\stage_scene_particle_blur_vs.hlsl">
-      <Filter>シェーダー\stage_scene_particle</Filter>
-    </FxCompile>
     <FxCompile Include="Source\stage_scene_particle_blur_gs.hlsl">
-      <Filter>シェーダー\stage_scene_particle</Filter>
+      <Filter>シェーダー\motion_blur</Filter>
     </FxCompile>
     <FxCompile Include="Source\stage_scene_particle_blur_ps.hlsl">
-      <Filter>シェーダー\stage_scene_particle</Filter>
+      <Filter>シェーダー\motion_blur</Filter>
     </FxCompile>
-    <FxCompile Include="Source\static_mesh_blur_vs.hlsl">
-      <Filter>シェーダー</Filter>
+    <FxCompile Include="Source\stage_scene_particle_blur_vs.hlsl">
+      <Filter>シェーダー\motion_blur</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\motionblur_cs.hlsl">
+      <Filter>シェーダー\motion_blur</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\motionblur_ps.hlsl">
+      <Filter>シェーダー\motion_blur</Filter>
     </FxCompile>
     <FxCompile Include="Source\static_mesh_blur_ps.hlsl">
-      <Filter>シェーダー</Filter>
+      <Filter>シェーダー\motion_blur</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\static_mesh_blur_vs.hlsl">
+      <Filter>シェーダー\motion_blur</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\sky_map_blur_vs.hlsl">
+      <Filter>シェーダー\motion_blur</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\sky_map_blur_ps.hlsl">
+      <Filter>シェーダー\motion_blur</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\model_blur_vs.hlsl">
+      <Filter>シェーダー\motion_blur</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\model_blur_ps.hlsl">
+      <Filter>シェーダー\motion_blur</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\deferred_depth_static_mesh_ps.hlsl">
+      <Filter>シェーダー\被写界深度</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\deferred_depth_model_ps.hlsl">
+      <Filter>シェーダー\被写界深度</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\deferred_depth_sky_map_ps.hlsl">
+      <Filter>シェーダー\被写界深度</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\deferred_depth_stage_scene_particle_ps.hlsl">
+      <Filter>シェーダー\被写界深度</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\depth_conversion_cs.hlsl">
+      <Filter>シェーダー\被写界深度</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\depth_of_field_synthetic_ps.hlsl">
+      <Filter>シェーダー\被写界深度</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\gaussian_blur_ps.hlsl">
+      <Filter>シェーダー\被写界深度</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\deferred_depth_static_mesh_vs.hlsl">
+      <Filter>シェーダー\被写界深度</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\title_particle_cs.hlsl">
+      <Filter>シェーダー\title_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\title_particle_create_cs.hlsl">
+      <Filter>シェーダー\title_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\title_particle_vs.hlsl">
+      <Filter>シェーダー\title_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\particle_render_set_cs.hlsl">
+      <Filter>シェーダー\title_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\clear_render_cs.hlsl">
+      <Filter>シェーダー\title_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\select_scene_create_particle_cs.hlsl">
+      <Filter>シェーダー\select_scsne_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\select_scene_particle_cs.hlsl">
+      <Filter>シェーダー\select_scsne_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\title_scene_change_particle_cs.hlsl">
+      <Filter>シェーダー\title_particle</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

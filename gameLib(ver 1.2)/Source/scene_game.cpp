@@ -16,7 +16,7 @@
 //#include <imgui_internal.h>
 //extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wparam, LPARAM lparam);
 //#endif
-#define RENDER_MODE 1
+#define RENDER_MODE 0
 
 SceneGame::SceneGame(ID3D11Device* device)
 {
@@ -27,37 +27,80 @@ SceneGame::SceneGame(ID3D11Device* device)
 			pCamera.CreateCamera(device);
 			pCamera.GetCamera()->SetEye(VECTOR3F(100, 40, -200));
 
-			frameBuffer = std::make_shared<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R16G16B16A16_FLOAT);
-			velocityBuffer = std::make_shared<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R16G16B16A16_FLOAT);
+			frameBuffer = std::make_shared<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
+			for (int i = 1; i <= 2; i++)
+			{
+				shrinkBuffer[i-1] = std::make_unique<FrameBuffer>(device, 1920 >> i, 1080 >> i, true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
+			}
+			velocityBuffer = std::make_shared<FrameBuffer>(device, 1920, 1080, true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
+			depthBuffer = std::make_shared<FrameBuffer>(device, 1920, 1080, true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
 			nowFrame = std::make_unique<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
 			oldFrame = std::make_unique<FrameBuffer>(device, 1920, 1080, false, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
 			mullti = std::make_unique<MulltiRenderTargetFunction>();
 			mullti->SetFrameBuffer(frameBuffer);
-			mullti->SetFrameBuffer(velocityBuffer);
+			mullti->SetFrameBuffer(depthBuffer);
+			pGpuParticleManager.CreateGameBuffer(device);
+
 			player = std::make_unique<PlayerAI>(device, "Data/FBX/new_player_anim.fbx");
 			mSManager = std::make_unique<StageManager>(device, 1920, 1080);
 			modelRenderer = std::make_unique<ModelRenderer>(device);
 			bloom = std::make_unique<BloomRender>(device, 1920, 1080);
 			mStageOperation = std::make_unique<StageOperation>();
 			pHitAreaDrow.CreateObj(device);
-			pGpuParticleManager.CreateBuffer(device);
 			pLight.CreateLightBuffer(device);
-			D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
 			{
-				{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-				{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-				{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+				D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
+				{
+					{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+					{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+					{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 
-			};
-			motionShader = std::make_unique<DrowShader>(device, "Data/shader/sprite_vs.cso", "", "Data/shader/motionblur_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc));
-			//sky = std::make_unique<SkyMap>(device, L"Data/image/sor_sea.dds",MAPTYPE::BOX);
+				};
+				motionShader = std::make_unique<DrowShader>(device, "Data/shader/sprite_vs.cso", "", "Data/shader/motionblur_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc));
+				depthShader = std::make_unique<DrowShader>(device, "Data/shader/sprite_vs.cso", "", "Data/shader/depth_of_field_synthetic_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc));
+				blurShader = std::make_unique<DrowShader>(device, "Data/shader/sprite_vs.cso", "", "Data/shader/gaussian_blur_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc));
+			}
+			//{
+			//	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
+			//	{
+			//		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			//		{ "NORAML", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+			//	};
+
+			//	skyBlurShader = std::make_unique<DrowShader>(device, "Data/shader/sprite_vs.cso", "", "Data/shader/motionblur_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc));
+			//}
+			{
+				D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
+				{
+					{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+					{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+					{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+					{ "WEIGHTS",  0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+					{ "BONES",    0, DXGI_FORMAT_R32G32B32A32_UINT,  0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+				};
+				modelBlurShader = std::make_unique<DrowShader>(device, "Data/shader/model_blur_vs.cso", "", "Data/shader/model_blur_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc));
+				modelDepthShader = std::make_unique<DrowShader>(device, "Data/shader/model_vs.cso", "", "Data/shader/deferred_depth_model_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc));
+				
+			}
+			{
+				D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
+				{
+					{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+					{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+					{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+				};
+				staticMeshDepthShader = std::make_unique<DrowShader>(device, "Data/shader/deferred_depth_static_mesh_vs.cso", "", "Data/shader/deferred_depth_static_mesh_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
+			}
+			sky = std::make_unique<SkyMap>(device, L"Data/image/sor_sea.dds", MAPTYPE::BOX);
 			motionBlur = std::make_unique<MotionBlur>(device);
+			depthOfField = std::make_unique<DepthOfField>(device);
 		}, device);
 	test = std::make_unique<Sprite>(device, L"Data/image/ゲームテスト.png");
 	nowLoading = std::make_unique<Sprite>(device, L"Data/image/wp-thumb.jpg");
 	siro = std::make_unique<Sprite>(device, L"Data/image/かめれおんの拝啓.png");
 	blend[0] = std::make_unique<blend_state>(device, BLEND_MODE::ALPHA);
 	blend[1] = std::make_unique<blend_state>(device, BLEND_MODE::ADD);
+	blend[2] = std::make_unique<blend_state>(device, BLEND_MODE::NONE);
 
 }
 static bool stop = false;
@@ -72,28 +115,32 @@ void SceneGame::Update(float elapsed_time)
 #ifdef USE_IMGUI
 	bloom->ImGuiUpdate();
 	pLight.ImGuiUpdate();
-	//VECTOR3F scale = sky->GetPosData()->GetScale();
-	//VECTOR3F position = sky->GetPosData()->GetPosition();
-	//ImGui::Begin("sky map");
-	//ImGui::InputFloat("scale x", &scale.x, 1);
-	//ImGui::InputFloat("scale y", &scale.y, 1);
-	//ImGui::InputFloat("scale z", &scale.z, 1);
+	VECTOR3F scale = sky->GetPosData()->GetScale();
+	VECTOR3F position = sky->GetPosData()->GetPosition();
+	ImGui::Begin("sky map");
+	ImGui::InputFloat("scale x", &scale.x, 1);
+	ImGui::InputFloat("scale y", &scale.y, 1);
+	ImGui::InputFloat("scale z", &scale.z, 1);
 
-	//ImGui::InputFloat("position x", &position.x, 1);
-	//ImGui::InputFloat("position y", &position.y, 1);
-	//ImGui::InputFloat("position z", &position.z, 1);
+	ImGui::InputFloat("position x", &position.x, 1);
+	ImGui::InputFloat("position y", &position.y, 1);
+	ImGui::InputFloat("position z", &position.z, 1);
 
-	//ImGui::End();
-	//sky->GetPosData()->SetScale(scale);
-	//sky->GetPosData()->SetPosition(position);
-	//sky->GetPosData()->CalculateTransform();
+	ImGui::End();
+	sky->GetPosData()->SetScale(scale);
+	sky->GetPosData()->SetPosition(position);
+	sky->GetPosData()->CalculateTransform();
 	ImGui::Begin("scene");
-	ImVec2 view = ImGui::GetWindowSize();
-	view.y /= 2.5f;
-	ImGui::Image(frameBuffer->GetRenderTargetShaderResourceView().Get(), view);
-	ImGui::Image(velocityBuffer->GetRenderTargetShaderResourceView().Get(), view);
+	ImVec2 view = ImVec2(192*3,108*3);
+	ImGui::Image(frameBuffer->GetRenderTargetShaderResourceView().Get(), view); 
+	ImGui::Image(frameBuffer->GetDepthStencilShaderResourceView().Get(), view);ImGui::SameLine();
+	//ImGui::Image(depthOfField->GetSRV().Get(), view);
+	//ImGui::Image(shrinkBuffer[0]->GetRenderTargetShaderResourceView().Get(), view); ImGui::SameLine();
+	//ImGui::Image(shrinkBuffer[1]->GetRenderTargetShaderResourceView().Get(), view);
+
 	ImGui::Checkbox("stop", &stop);
 	ImGui::End();
+	depthOfField->ImGuiUpdate();
 #endif
 	if (stop)return;
 	mStageOperation->Update(elapsed_time, mSManager.get());
@@ -108,7 +155,7 @@ void SceneGame::Update(float elapsed_time)
 	//pCamera.GetCamera()->SetFocus(pCamera.GetCamera()->GetEye()+VECTOR3F(sinf(angle), -0.1f, cosf(angle)));
 #endif
 	pCamera.Update(elapsed_time);
-	pGpuParticleManager.Update(elapsed_time, mStageOperation->GetColorType(), player->GetCharacter()->GetVelocity(), player->GetCharacter()->GetPosition(), player->GetCharacter()->GetGroundFlag());
+	pGpuParticleManager.Update(elapsed_time, static_cast<float>(mStageOperation->GetColorType()), player->GetCharacter()->GetVelocity(), player->GetCharacter()->GetPosition(), player->GetCharacter()->GetGroundFlag());
 	if (pKeyBoad.RisingState(KeyLabel::ENTER))
 	{
 		pSceneManager.ChangeScene(SCENETYPE::TITLE);
@@ -162,26 +209,31 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	pLight.ConstanceLightBufferSetShader(context);
 #if (RENDER_MODE==0)
 	/************************カラーマップテクスチャの作成***********************/
-	frameBuffer->Clear(context);
-	frameBuffer->Activate(context);
+	if (!stop)
+	{
 
-	blend[0]->activate(context);
+		frameBuffer->Clear(context);
+		frameBuffer->Activate(context);
 
-	modelRenderer->Begin(context, viewProjection);
-	modelRenderer->Draw(context, *player->GetCharacter()->GetModel());
-	modelRenderer->End(context);
-	pGpuParticleManager.Render(context, view, projection);
+		blend[0]->activate(context);
 
-	mSManager->Render(context, view, projection, mStageOperation->GetColorType());
+		modelRenderer->Begin(context, viewProjection);
+		modelRenderer->Draw(context, *player->GetCharacter()->GetModel());
+		modelRenderer->End(context);
+		pGpuParticleManager.Render(context, view, projection);
 
-	blend[0]->deactivate(context);
-	frameBuffer->Deactivate(context);
+		mSManager->Render(context, view, projection, mStageOperation->GetColorType());
 
+		blend[0]->deactivate(context);
+		frameBuffer->Deactivate(context);
+	}
 	/****************ブルームをかける******************/
-	blend[1]->activate(context);
+	//blend[1]->activate(context);
+	//siro->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+	//bloom->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), true);
+	//blend[1]->deactivate(context);
 	siro->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
-	bloom->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), true);
-	blend[1]->deactivate(context);
+
 #elif (RENDER_MODE==1)
 	/************************カラーマップテクスチャの作成***********************/
 	if (!stop)
@@ -189,12 +241,12 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 		frameBuffer->Clear(context);
 		frameBuffer->Activate(context);
 		blend[0]->activate(context);
+		//sky->Render(context, view, projection, VECTOR4F(1, 1, 1, 1));
 
 		pGpuParticleManager.Render(context, view, projection);
 		modelRenderer->Begin(context, viewProjection);
 		modelRenderer->Draw(context, *player->GetCharacter()->GetModel());
 		modelRenderer->End(context);
-
 		mSManager->Render(context, view, projection, mStageOperation->GetColorType());
 
 		blend[0]->deactivate(context);
@@ -203,9 +255,18 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 		/************************速度マップテクスチャの作成***********************/
 		velocityBuffer->Clear(context);
 		velocityBuffer->Activate(context);
+		blend[0]->activate(context);
+
 		pCamera.GetCamera()->ShaderSetBeforeBuffer(context, 5);
 		pGpuParticleManager.RenderVelocity(context, view, projection);
+		modelRenderer->Begin(context, viewProjection);
+		modelRenderer->Draw(context, modelBlurShader.get(), *player->GetCharacter()->GetModel());
+		modelRenderer->End(context);
+
+		//sky->Render(context, skyBlurShader.get(), view, projection);
+		//sky->SaveBeforeWorld();
 		mSManager->RenderVelocity(context, view, projection, mStageOperation->GetColorType());
+		blend[0]->deactivate(context);
 
 		velocityBuffer->Deactivate(context);
 
@@ -214,14 +275,68 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	/************************速度マップを使ってブラーをかける***********************/
 	nowFrame->Clear(context);
 	nowFrame->Activate(context);
+	//motionBlur->CreateNeighborMaxBuffer(context, velocityBuffer->GetRenderTargetShaderResourceView().Get());
+	//motionBlur->SetPsTexture(context,1);
 	velocityBuffer->SetPsTexture(context, 1);
 	siro->Render(context, motionShader.get(), frameBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+
+
 	nowFrame->Deactivate(context);
+
 
 	blend[1]->activate(context);
 	siro->Render(context, nowFrame->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 	bloom->Render(context, nowFrame->GetRenderTargetShaderResourceView().Get(), true);
 	blend[1]->deactivate(context);
+
+#elif (RENDER_MODE==2)
+	if (!stop)
+	{
+		//frameBuffer->Clear(context);
+		//frameBuffer->Activate(context);
+		//blend[0]->activate(context);
+		////sky->Render(context, view, projection, VECTOR4F(1, 1, 1, 1));
+
+		//pGpuParticleManager.Render(context, view, projection);
+		//modelRenderer->Begin(context, viewProjection);
+		//modelRenderer->Draw(context, *player->GetCharacter()->GetModel());
+		//modelRenderer->End(context);
+		//mSManager->Render(context, view, projection, mStageOperation->GetColorType());
+
+		//blend[0]->deactivate(context);
+
+		//frameBuffer->Deactivate(context);
+
+		mullti->Clear(context);
+		mullti->Activate(context);
+		//blend[0]->activate(context);
+		//sky->Render(context, view, projection, VECTOR4F(1, 1, 1, 1));
+
+		pGpuParticleManager.Render(context, view, projection,true);
+		modelRenderer->Begin(context, viewProjection);
+		modelRenderer->Draw(context, modelDepthShader.get(), *player->GetCharacter()->GetModel());
+		modelRenderer->End(context);
+		mSManager->Render(context, view, projection, mStageOperation->GetColorType(), staticMeshDepthShader.get());
+
+		//blend[0]->deactivate(context);
+
+		mullti->Deactivate(context);
+
+		for (int i = 0; i < 2; i++)
+		{
+			shrinkBuffer[i]->Clear(context);
+			shrinkBuffer[i]->Activate(context);
+			siro->Render(context, blurShader.get(), frameBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920>>(i+1), 1080 >> (i + 1)), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+			shrinkBuffer[i]->Deactivate(context);
+		}
+	}
+	//depthOfField->ConversionDepthTexture(context, depthBuffer->GetRenderTargetShaderResourceView().Get());
+	depthBuffer->SetPsTexture(context, 1);
+	shrinkBuffer[0]->SetPsTexture(context,2);
+	shrinkBuffer[1]->SetPsTexture(context, 3);
+
+	siro->Render(context, depthShader.get(), frameBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+	//siro->Render(context, depthShader.get(), frameBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 
 #endif
 }
