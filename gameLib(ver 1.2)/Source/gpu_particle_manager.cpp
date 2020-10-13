@@ -2,6 +2,7 @@
 #include"framework.h"
 #include"misc.h"
 
+
 void GpuParticleManager::CreateBuffer(ID3D11Device* device)
 {
 	HRESULT hr = S_OK;
@@ -62,10 +63,12 @@ void GpuParticleManager::CreateTitleBuffer(ID3D11Device* device)
 {
 	CreateBuffer(device);
 	mTitleParticle = std::make_unique<TitleParticle>(device);
+	mTitleTextureParticle = std::make_unique<TitleTextureParticle>(device);
 }
 
 void GpuParticleManager::CreateGameBuffer(ID3D11Device* device)
 {
+	mState = 0;
 	CreateBuffer(device);
 	mRunParticle = std::make_unique<RunParticles>(device);
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
@@ -79,7 +82,7 @@ void GpuParticleManager::CreateGameBuffer(ID3D11Device* device)
 		{"ANGLE",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 	};
 	mSSceneShader = std::make_unique<DrowShader>(device, "Data/shader/stage_scene_particle_vs.cso", "Data/shader/run_particle_gs.cso", "Data/shader/deferred_depth_stage_scene_particle_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
-
+	mSelectSceneParticle = std::make_unique<SelectSceneParticle>(device);
 }
 
 void GpuParticleManager::ClearBuffer()
@@ -100,17 +103,91 @@ void GpuParticleManager::CreateStageObjParticle(std::vector<std::shared_ptr<Stag
 	mStageSceneParticle = std::make_unique<StageSceneParticle>(device);
 }
 
-void GpuParticleManager::Update(float elapsd_time, float colorType, const VECTOR3F& velocity, const VECTOR3F& position, const bool groundFlag)
+void GpuParticleManager::Update(float elapsd_time)
+{
+	ID3D11DeviceContext* context = Framework::Instance().GetDeviceContext().Get();
+	switch (mState)
+	{
+	case TITLE:
+		mTitleParticle->Update(elapsd_time, context);
+		break;
+	case SELECT:
+		mSelectSceneParticle->Update(elapsd_time, context);
+		break;
+	case GAME:
+		mRunParticle->Update(context, elapsd_time);
+		mStageSceneParticle->Update(context, elapsd_time);
+		break;
+	}
+}
+
+
+void GpuParticleManager::ImGuiUpdate()
+{
+	switch (mState)
+	{
+	case TITLE:
+		TitleImGui();
+		break;
+	case SELECT:
+		SelectImGui();
+		break;
+	case GAME:
+		GameImGui();
+		break;
+	}
+}
+void GpuParticleManager::TitleImGui()
 {
 #ifdef USE_IMGUI
-	if (mStageObjParticle.get() != nullptr)mStageObjParticle->ImGuiUpdate(elapsd_time);
-	if (mRunParticle.get() != nullptr)mRunParticle->ImGuiUpdate(elapsd_time);
+	static bool selects[2] = { false,false };
+	ImGui::Begin("title particles");
+	ImGui::Selectable("title scene particle", &selects[0]);
+	ImGui::Selectable("title text particle", &selects[1]);
+	ImGui::End();
+	if (selects[0])
+	{
+		mTitleParticle->ImGuiUpdate();
+	}
 #endif
-	ID3D11DeviceContext* context = Framework::Instance().GetDeviceContext().Get();
-	//if (mStageObjParticle.get() != nullptr)mStageObjParticle->Update(context, elapsd_time, colorType);
-	if (mRunParticle.get() != nullptr)mRunParticle->Update(context, elapsd_time, velocity, groundFlag, position);
-	if (mStageSceneParticle.get() != nullptr)mStageSceneParticle->Update(context, elapsd_time);
-	if (mTitleParticle.get() != nullptr)mTitleParticle->Update(elapsd_time, context);
+
+}
+
+void GpuParticleManager::SelectImGui()
+{
+#ifdef USE_IMGUI
+	static bool selects[2] = { false,false };
+	ImGui::Begin("select particles");
+	ImGui::Selectable("select scene particle", &selects[0]);
+	ImGui::End();
+	if (selects[0])
+	{
+		mSelectSceneParticle->ImGuiUpdate();
+	}
+
+#endif
+
+}
+
+void GpuParticleManager::GameImGui()
+{
+#ifdef USE_IMGUI
+	static bool selects[2] = { false,false };
+	ImGui::Begin("game particles");
+	ImGui::Selectable("run particle", &selects[0]);
+	ImGui::Selectable("stage scene particle", &selects[1]);
+	ImGui::End();
+	if (selects[0])
+	{
+		mRunParticle->ImGuiUpdate();
+	}
+	if (selects[1])
+	{
+		mStageSceneParticle->ImGuiUpdate();
+	}
+
+#endif
+
 }
 
 void GpuParticleManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, bool drowMullti)
@@ -125,19 +202,31 @@ void GpuParticleManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& vi
 	cbScene.view = view;
 	cbScene.projection = projection;
 	context->UpdateSubresource(mCbScene.Get(), 0, 0, &cbScene, 0, 0);
-	if (drowMullti)
+	switch (mState)
 	{
-		if (mStageSceneParticle.get() != nullptr)mStageSceneParticle->Render(context, mSSceneShader.get());
+	case TITLE:
+		mTitleParticle->Render(context);
+		break;
+	case SELECT:
+		mSelectSceneParticle->Render(context);
+		break;
+	case GAME:
+		mStageSceneParticle->Render(context);
+		mRunParticle->Render(context);
+		break;
+	}
+	//if (drowMullti)
+	//{
+	//	if (mStageSceneParticle.get() != nullptr)mStageSceneParticle->Render(context, mSSceneShader.get());
+	//	//if (mStageObjParticle.get() != nullptr)mStageObjParticle->Render(context);
+	//	//if (mRunParticle.get() != nullptr)mRunParticle->Render(context);
+	//}
+	//else
+	//{
+		//if (mTitleTextureParticle.get() != nullptr)mTitleTextureParticle->Render(context);
 		//if (mStageObjParticle.get() != nullptr)mStageObjParticle->Render(context);
 		//if (mRunParticle.get() != nullptr)mRunParticle->Render(context);
-	}
-	else
-	{
-		if (mStageSceneParticle.get() != nullptr)mStageSceneParticle->Render(context);
-		if (mTitleParticle.get() != nullptr)mTitleParticle->Render(context);
-		//if (mStageObjParticle.get() != nullptr)mStageObjParticle->Render(context);
-		//if (mRunParticle.get() != nullptr)mRunParticle->Render(context);
-	}
+	//}
 }
 
 void GpuParticleManager::RenderVelocity(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection)

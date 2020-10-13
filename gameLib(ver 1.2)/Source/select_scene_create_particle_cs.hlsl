@@ -18,12 +18,12 @@ void main(uint3 DTid : SV_DispatchThreadID)
 	z = z * 2.f - scope.z;
 	p.position.xy = xy * range;
 	p.position.z = z * range;
-	p.position.w = 1.0f;
+	p.position.w = 1.0f; 
 	p.angle = (float3)0;
 	p.angleMovement = angleMovement * rand_1_normal(float2((bufferIndex + index) % 652, (bufferIndex - index) % 311), 1);
 	p.speed = speed + (rand_1_normal(float2((bufferIndex + index) % 652, (bufferIndex - index) % 311), 1) * 0.5f * speed);
-	p.life = 10;
-	p.color = color * (rand_1_normal(float2((bufferIndex + index) % 444, (bufferIndex - index) % 222), 1));
+	p.life = 8;
+	p.color = color * (rand_1_normal(float2((bufferIndex + index) % 546, (bufferIndex - index) % 825), 1));
 	p.centerPosition = p.position.xyz;
 	p.sinAngle = (rand_1_normal(float2(bufferIndex % 712, bufferIndex % 583), 0.2f) - 1) * 3.14f;
 	p.sinAngleMovement = (rand_1_normal(float2(bufferIndex % 645, bufferIndex % 377), 0.2f) - 1) * 3.14f * 0.75f;

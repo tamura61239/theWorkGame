@@ -31,7 +31,27 @@ StageManager::StageManager(ID3D11Device* device, int width, int height):stageNo(
 
 	mVelocityShader = std::make_unique<DrowShader>(device, "Data/shader/static_mesh_blur_vs.cso", "", "Data/shader/static_mesh_blur_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
 	mDeferredShader = std::make_unique<DrowShader>(device, "Data/shader/static_mesh_vs.cso", "", "Data/shader/deferred_depth_static_mesh_ps.cso", inputElementDesc,ARRAYSIZE(inputElementDesc));
-	Load();
+	StageCount();
+}
+void StageManager::StageCount()
+{
+	FILE* fp;
+	mMaxStage = 0;
+	while (1)
+	{
+		std::string fileName = { "Data/file/stage" };
+		fileName += std::to_string(mMaxStage) + ".bin";
+		mMaxStage++;
+		if (fopen_s(&fp, fileName.c_str(), "rb") == 0)
+		{
+			fclose(fp);
+		}
+		else
+		{
+			break;
+		}
+	}
+
 }
 /*********************ファイル操作*************************/
 //ロード
@@ -103,7 +123,7 @@ void StageManager::ImGuiUpdate()
 	}
 	if (num != stageNo)
 	{
-		mStageObjs.clear();
+		Clear();
 		Load();
 	}
 	if (ImGui::CollapsingHeader("create stage obj"))
@@ -152,7 +172,6 @@ int StageManager::CheckMouseDragObj()
 /******************更新**********************/
 void StageManager::Update(float elapsd_time)
 {
-	ImGuiUpdate();
 	for (auto& stage : mStageObjs)
 	{
 		stage->CalculateTransform();

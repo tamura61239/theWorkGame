@@ -44,7 +44,7 @@ RWByteAddressBuffer rwBuffer:register(u0);
 #define SINLUNGTH_INDEX 21*4
 #define CENTERPOSITION_INDEX 22*4
 
-#define MAX_INDEX 29*4
+#define MAX_INDEX 25*4
 
 void WriteParticle(in Particle p, in float bufferIndex)
 {

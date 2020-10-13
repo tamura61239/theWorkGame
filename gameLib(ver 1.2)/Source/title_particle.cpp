@@ -11,8 +11,8 @@ TitleParticle::TitleParticle(ID3D11Device* device):mSceneChange(false)
 {
 	std::vector<Particle>particles;
 	//Microsoft::WRL::ComPtr<ID3D11Buffer>mParticleBuffer;
-
-	particles.resize(100000);
+	mMaxParticle = 30000;
+	particles.resize(mMaxParticle);
 	HRESULT hr;
 	//buffer
 	{
@@ -154,13 +154,13 @@ void TitleParticle::ImGuiUpdate()
 	ImGui::SliderFloat3("def velocity", *defVelocity, -1, 1);
 	ImGui::Checkbox("scene change", &mSceneChange);
 	if (ImGui::Button("save"))Save();
+	ImGui::Text("%f", mNewIndex);
 	ImGui::End();
 #endif
 }
 
 void TitleParticle::Update(float elapsdTime, ID3D11DeviceContext* context)
 {
-	ImGuiUpdate();
 	mCb.elapsdTime = elapsdTime;
 	if (mUAV.Get() == nullptr)return;
 	context->CSSetUnorderedAccessViews(2, 1, mRenderUAV.GetAddressOf(), nullptr);
@@ -177,7 +177,7 @@ void TitleParticle::Update(float elapsdTime, ID3D11DeviceContext* context)
 	context->CSSetUnorderedAccessViews(0, 1, mUAV.GetAddressOf(), nullptr);
 	if (!mSceneChange)
 	{
-		mNewIndex += 200 * elapsdTime;
+		mNewIndex += 1000 * elapsdTime;
 		float indexSize = mNewIndex - mCbStart.startIndex;
 		if (indexSize >= 1)
 		{
@@ -186,7 +186,7 @@ void TitleParticle::Update(float elapsdTime, ID3D11DeviceContext* context)
 			context->Dispatch(static_cast<UINT>(indexSize), 1, 1);
 			mCbStart.startIndex = mNewIndex;
 		}
-		if (mNewIndex > 100000)
+		if (mNewIndex > mMaxParticle)
 		{
 			mNewIndex = 0;
 			mCbStart.startIndex = 0;
@@ -217,7 +217,7 @@ void TitleParticle::Render(ID3D11DeviceContext* context)
 	context->IASetVertexBuffers(0, 1, mRenderBuffer.GetAddressOf(), &stride, &offset);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 
-	context->Draw(100000, 0);
+	context->Draw(mMaxParticle, 0);
 	mShader->Deactivate(context);
 
 }

@@ -112,17 +112,12 @@ StageSceneParticle::StageSceneParticle(ID3D11Device* device)
 	Load();
 }
 
-void StageSceneParticle::Update(ID3D11DeviceContext* context, float elapsdTime)
+void StageSceneParticle::ImGuiUpdate()
 {
-	mCb.elapsdTime = elapsdTime;
-	if (mParticleUAV.Get() == nullptr)return;
 #ifdef USE_IMGUI
 	ImGui::Begin("stage scene particle");
 	float* angle[3] = { &mCb.angleMovement.x,&mCb.angleMovement.y,&mCb.angleMovement.z };
 	ImGui::SliderFloat3("angleMovement", *angle, -3.14f, 3.14f);
-	//ImGui::InputFloat("range x", &mCbStart.createRange.x, 0.1f);
-	//ImGui::InputFloat("range y", &mCbStart.createRange.y, 0.1f);
-	//ImGui::InputFloat("range z", &mCbStart.createRange.z, 0.1f);
 	float* range[3] = { &mCbStart.createRange.x,&mCbStart.createRange.y,&mCbStart.createRange.z };
 	ImGui::DragFloat3("range", *range, 10);
 	float* position[3] = { &mCbStart.startPosition.x,&mCbStart.startPosition.y,&mCbStart.startPosition.z };
@@ -132,6 +127,13 @@ void StageSceneParticle::Update(ID3D11DeviceContext* context, float elapsdTime)
 	if (ImGui::Button("save"))Save();
 	ImGui::End();
 #endif
+
+}
+
+void StageSceneParticle::Update(ID3D11DeviceContext* context, float elapsdTime)
+{
+	mCb.elapsdTime = elapsdTime;
+	if (mParticleUAV.Get() == nullptr)return;
 	ID3D11ShaderResourceView* srv = mRandSRV.Get();
 
 	context->CSSetShaderResources(0, 1, &srv);

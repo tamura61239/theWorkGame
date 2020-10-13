@@ -70,6 +70,15 @@
     <Filter Include="シェーダー\select_scsne_particle">
       <UniqueIdentifier>{c05a1663-6da8-4fc0-a0c0-31ad2f2c08be}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\UI">
+      <UniqueIdentifier>{c68eed34-9c40-43b5-a41e-ac06c95d7742}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\UI">
+      <UniqueIdentifier>{681f31e4-71f5-4c11-9b15-c9195fc959fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="シェーダー\title_texture_particle">
+      <UniqueIdentifier>{1cf72a95-3df3-486e-8b01-cace96b73e5d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="External_Libraries\imgui\imgui.cpp">
@@ -259,6 +268,21 @@
       <Filter>ソース ファイル\GPU</Filter>
     </ClCompile>
     <ClCompile Include="Source\select_scene_particle.cpp">
+      <Filter>ソース ファイル\GPU</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\stage_select.cpp">
+      <Filter>ソース ファイル\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ui_manager.cpp">
+      <Filter>ソース ファイル\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ui.cpp">
+      <Filter>ソース ファイル\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\title_ui_move.cpp">
+      <Filter>ソース ファイル\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\title_texture_particle.cpp">
       <Filter>ソース ファイル\GPU</Filter>
     </ClCompile>
   </ItemGroup>
@@ -482,6 +506,21 @@
     <ClInclude Include="Source\select_scene_particle.h">
       <Filter>ヘッダー ファイル\GPU</Filter>
     </ClInclude>
+    <ClInclude Include="Source\stage_select.h">
+      <Filter>ヘッダー ファイル\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\ui.h">
+      <Filter>ヘッダー ファイル\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\ui_manager.h">
+      <Filter>ヘッダー ファイル\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\title_ui_move.h">
+      <Filter>ヘッダー ファイル\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\title_texture_particle.h">
+      <Filter>ヘッダー ファイル\GPU</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\board.hlsli">
@@ -573,6 +612,9 @@
     </None>
     <None Include="Source\select_scene_particle.hlsli">
       <Filter>シェーダー\select_scsne_particle</Filter>
+    </None>
+    <None Include="Source\title_texture_particle.hlsli">
+      <Filter>シェーダー\title_texture_particle</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -776,6 +818,15 @@
     </FxCompile>
     <FxCompile Include="Source\title_scene_change_particle_cs.hlsl">
       <Filter>シェーダー\title_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\title_texture_particle_create_cs.hlsl">
+      <Filter>シェーダー\title_texture_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\title_texture_particle_cs.hlsl">
+      <Filter>シェーダー\title_texture_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\title_texture_particle_vs.hlsl">
+      <Filter>シェーダー\title_texture_particle</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

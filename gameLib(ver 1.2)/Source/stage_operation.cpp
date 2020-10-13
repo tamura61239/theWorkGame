@@ -54,7 +54,6 @@ void StageOperation::ImGuiUpdate()
 
 void StageOperation::Update(float elapsd_time, StageManager* manager)
 {
-	ImGuiUpdate();
 	if (pKeyBoad.RisingState(KeyLabel::SPACE)&&!mChangFlag)
 	{
 		mChangFlag = true;

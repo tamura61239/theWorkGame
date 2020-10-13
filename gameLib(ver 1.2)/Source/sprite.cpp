@@ -48,7 +48,7 @@ Sprite::Sprite(ID3D11Device* device, const wchar_t* fileName)
 	//hr = create_ps_from_cso(device, "Data/shader/sprite_ps.cso", mPSShader.GetAddressOf());
 	//_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	mShader = std::make_unique<DrowShader>(device, "Data/shader/sprite_vs.cso", "", "Data/shader/sprite_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc));
-	hr = load_texture_from_file(device, fileName, mTexview.GetAddressOf(), &texture2d);
+	hr = load_texture_from_file(device, fileName, mTexview.GetAddressOf(), &mTexture2d);
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 	//RasterizerState‚Ì¶¬
@@ -206,7 +206,7 @@ void Sprite::Load(ID3D11Device* device, const wchar_t* fileName)
 {
 	HRESULT hr;
 
-	hr = load_texture_from_file(device, fileName, mTexview.GetAddressOf(), &texture2d);
+	hr = load_texture_from_file(device, fileName, mTexview.GetAddressOf(), &mTexture2d);
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 }
@@ -264,8 +264,8 @@ void Sprite::Render(ID3D11DeviceContext* context, const VECTOR2F& position, cons
 		v[i].position.x = (vertices[i].position.x / viewport.Width) * 2.0f - 1.0f;
 		v[i].position.y = -(vertices[i].position.y / viewport.Height) * 2.0f + 1.0f;
 		v[i].color = vertices[i].color;
-		v[i].texcoord.x = vertices[i].texcoord.x / texture2d.Width;
-		v[i].texcoord.y = vertices[i].texcoord.y / texture2d.Height;
+		v[i].texcoord.x = vertices[i].texcoord.x / mTexture2d.Width;
+		v[i].texcoord.y = vertices[i].texcoord.y / mTexture2d.Height;
 	}
 
 	context->Unmap(mVSBuffer.Get(), 0);
@@ -287,6 +287,8 @@ void Sprite::Render(ID3D11DeviceContext* context, const VECTOR2F& position, cons
 
 void Sprite::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView* srv, const VECTOR2F& position, const VECTOR2F& size, const VECTOR2F& texPosition, const VECTOR2F& texSize, float angle, const VECTOR4F& color)
 {
+	D3D11_TEXTURE2D_DESC texture2d;
+
 	Microsoft::WRL::ComPtr<ID3D11Texture2D>tex2d;
 	Microsoft::WRL::ComPtr<ID3D11Resource>resouce;
 	srv->GetResource(resouce.GetAddressOf());
@@ -417,8 +419,8 @@ void Sprite::Render(ID3D11DeviceContext* context, DrowShader* shader, const VECT
 		v[i].position.x = (vertices[i].position.x / viewport.Width) * 2.0f - 1.0f;
 		v[i].position.y = -(vertices[i].position.y / viewport.Height) * 2.0f + 1.0f;
 		v[i].color = vertices[i].color;
-		v[i].texcoord.x = vertices[i].texcoord.x / texture2d.Width;
-		v[i].texcoord.y = vertices[i].texcoord.y / texture2d.Height;
+		v[i].texcoord.x = vertices[i].texcoord.x / mTexture2d.Width;
+		v[i].texcoord.y = vertices[i].texcoord.y / mTexture2d.Height;
 	}
 
 	context->Unmap(mVSBuffer.Get(), 0);
@@ -440,6 +442,8 @@ void Sprite::Render(ID3D11DeviceContext* context, DrowShader* shader, const VECT
 
 void Sprite::Render(ID3D11DeviceContext* context, DrowShader* shader, ID3D11ShaderResourceView* srv, const VECTOR2F& position, const VECTOR2F& size, const VECTOR2F& texPosition, const VECTOR2F& texSize, float angle, const VECTOR4F& color)
 {
+	D3D11_TEXTURE2D_DESC texture2d;
+
 	Microsoft::WRL::ComPtr<ID3D11Texture2D>tex2d;
 	Microsoft::WRL::ComPtr<ID3D11Resource>resouce;
 	srv->GetResource(resouce.GetAddressOf());

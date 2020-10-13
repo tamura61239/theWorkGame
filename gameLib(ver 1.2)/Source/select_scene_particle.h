@@ -70,4 +70,5 @@ private:
 	Cb mCb;
 	float particleSize;
 	float newIndex;
+	float mMaxParticle;
 };

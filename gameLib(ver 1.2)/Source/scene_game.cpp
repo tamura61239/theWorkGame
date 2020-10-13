@@ -25,7 +25,7 @@ SceneGame::SceneGame(ID3D11Device* device)
 			std::lock_guard<std::mutex> lock(loading_mutex);
 
 			pCamera.CreateCamera(device);
-			pCamera.GetCamera()->SetEye(VECTOR3F(100, 40, -200));
+			pCamera.GetCamera()->SetEye(VECTOR3F(0, 0, -200));
 
 			frameBuffer = std::make_shared<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
 			for (int i = 1; i <= 2; i++)
@@ -40,6 +40,7 @@ SceneGame::SceneGame(ID3D11Device* device)
 			mullti->SetFrameBuffer(frameBuffer);
 			mullti->SetFrameBuffer(depthBuffer);
 			pGpuParticleManager.CreateGameBuffer(device);
+			pGpuParticleManager.SetState(GpuParticleManager::STATE::SELECT);
 
 			player = std::make_unique<PlayerAI>(device, "Data/FBX/new_player_anim.fbx");
 			mSManager = std::make_unique<StageManager>(device, 1920, 1080);
@@ -60,15 +61,6 @@ SceneGame::SceneGame(ID3D11Device* device)
 				depthShader = std::make_unique<DrowShader>(device, "Data/shader/sprite_vs.cso", "", "Data/shader/depth_of_field_synthetic_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc));
 				blurShader = std::make_unique<DrowShader>(device, "Data/shader/sprite_vs.cso", "", "Data/shader/gaussian_blur_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc));
 			}
-			//{
-			//	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
-			//	{
-			//		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			//		{ "NORAML", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-			//	};
-
-			//	skyBlurShader = std::make_unique<DrowShader>(device, "Data/shader/sprite_vs.cso", "", "Data/shader/motionblur_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc));
-			//}
 			{
 				D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
 				{
@@ -93,17 +85,17 @@ SceneGame::SceneGame(ID3D11Device* device)
 			}
 			sky = std::make_unique<SkyMap>(device, L"Data/image/sor_sea.dds", MAPTYPE::BOX);
 			motionBlur = std::make_unique<MotionBlur>(device);
-			depthOfField = std::make_unique<DepthOfField>(device);
+			mStageSelect = std::make_unique<StageSelect>(device);
 		}, device);
 	test = std::make_unique<Sprite>(device, L"Data/image/ゲームテスト.png");
-	nowLoading = std::make_unique<Sprite>(device, L"Data/image/wp-thumb.jpg");
+	nowLoading = std::make_unique<Sprite>(device, L"Data/image/now.png");
 	siro = std::make_unique<Sprite>(device, L"Data/image/かめれおんの拝啓.png");
 	blend[0] = std::make_unique<blend_state>(device, BLEND_MODE::ALPHA);
 	blend[1] = std::make_unique<blend_state>(device, BLEND_MODE::ADD);
 	blend[2] = std::make_unique<blend_state>(device, BLEND_MODE::NONE);
-
+	stop = false;
+	editorNo = 0;
 }
-static bool stop = false;
 void SceneGame::Update(float elapsed_time)
 {
 	if (IsNowLoading())
@@ -111,40 +103,97 @@ void SceneGame::Update(float elapsed_time)
 		return;
 	}
 	EndLoading();
-
+	if (mStageSelect->GetSelectFlag())
+	{
 #ifdef USE_IMGUI
-	bloom->ImGuiUpdate();
-	pLight.ImGuiUpdate();
-	VECTOR3F scale = sky->GetPosData()->GetScale();
-	VECTOR3F position = sky->GetPosData()->GetPosition();
-	ImGui::Begin("sky map");
-	ImGui::InputFloat("scale x", &scale.x, 1);
-	ImGui::InputFloat("scale y", &scale.y, 1);
-	ImGui::InputFloat("scale z", &scale.z, 1);
+		static bool selects2[4] = { false,false,false,false };
+		ImGui::Begin("select scene");
+		ImGui::Selectable("SELECT_SCENE", &selects2[0]);
+		ImGui::Selectable("PARTICLE", &selects2[1]);
+		ImGui::Selectable("BLOOM", &selects2[2]);
+		ImGui::Selectable("CAMERA", &selects2[3]);
+		ImGui::End();
+		if (selects2[0])
+		{
+			mStageSelect->ImGuiUpdate();
+		}
+		if (selects2[1])
+		{
+			pGpuParticleManager.ImGuiUpdate();
+		}
+		if (selects2[2])
+		{
+			bloom->ImGuiUpdate();
+		}
+		if (selects2[3])
+		{
+			pCamera.GetCameraOperation()->ImGuiUpdate();
+		}
 
-	ImGui::InputFloat("position x", &position.x, 1);
-	ImGui::InputFloat("position y", &position.y, 1);
-	ImGui::InputFloat("position z", &position.z, 1);
+#endif
+		pCamera.Update(elapsed_time);
+		pGpuParticleManager.Update(elapsed_time);
+		mStageSelect->Update(elapsed_time, mSManager.get());
 
-	ImGui::End();
-	sky->GetPosData()->SetScale(scale);
-	sky->GetPosData()->SetPosition(position);
-	sky->GetPosData()->CalculateTransform();
-	ImGui::Begin("scene");
+		return;
+
+	}
+#ifdef USE_IMGUI
+	ImGui::Begin("game scene");
 	ImVec2 view = ImVec2(192*3,108*3);
 	ImGui::Image(frameBuffer->GetRenderTargetShaderResourceView().Get(), view); 
 	ImGui::Image(frameBuffer->GetDepthStencilShaderResourceView().Get(), view);ImGui::SameLine();
-	//ImGui::Image(depthOfField->GetSRV().Get(), view);
-	//ImGui::Image(shrinkBuffer[0]->GetRenderTargetShaderResourceView().Get(), view); ImGui::SameLine();
-	//ImGui::Image(shrinkBuffer[1]->GetRenderTargetShaderResourceView().Get(), view);
-
 	ImGui::Checkbox("stop", &stop);
+	if (ImGui::Button("return select scene"))
+	{
+		mSManager->Clear();
+		mStageSelect->SetSelectFlag(true);
+		pGpuParticleManager.SetState(GpuParticleManager::STATE::SELECT);
+		pCamera.GetCamera()->SetEye(VECTOR3F(0, 0, -200));
+		pCamera.GetCamera()->SetFocus(VECTOR3F(0, 0, 0));
+		pCamera.GetCamera()->SetUp(VECTOR3F(0, 1, 0));
+		pCamera.Update(elapsed_time);
+		ImGui::End();
+		return;
+	}
+	static bool selects[6] = { false,false,false,false,false,false };
+	ImGui::Selectable("BLOOM", &selects[0]);
+	ImGui::Selectable("LIGHT", &selects[1]);
+	ImGui::Selectable("STAGE", &selects[2]);
+	ImGui::Selectable("CAMERA", &selects[3]);
+	ImGui::Selectable("PLAYER", &selects[4]);
+	ImGui::Selectable("PARTICLE", &selects[5]);
 	ImGui::End();
-	depthOfField->ImGuiUpdate();
-#endif
-	if (stop)return;
-	mStageOperation->Update(elapsed_time, mSManager.get());
+	if (selects[0])
+	{
+		bloom->ImGuiUpdate();
+	}
+	if (selects[1])
+	{
+		pLight.ImGuiUpdate();
+	}
+	if (selects[2])
+	{
+		mStageOperation->ImGuiUpdate();
+		mSManager->ImGuiUpdate();
+	}
+	if (selects[3])
+	{
+		pCamera.GetCameraOperation()->ImGuiUpdate();
+	}
+	if (selects[4])
+	{
+		player->ImGuiUpdate();
+	}
+	if (selects[5])
+	{
+		pGpuParticleManager.ImGuiUpdate();
+	}
 
+	if (stop)return;
+#endif
+	mStageOperation->Update(elapsed_time, mSManager.get());
+	pCamera.Update(elapsed_time);
 	player->Update(elapsed_time, mSManager.get());
 	mSManager->Update(elapsed_time);
 #if (RENDER_MODE==1)
@@ -155,7 +204,8 @@ void SceneGame::Update(float elapsed_time)
 	//pCamera.GetCamera()->SetFocus(pCamera.GetCamera()->GetEye()+VECTOR3F(sinf(angle), -0.1f, cosf(angle)));
 #endif
 	pCamera.Update(elapsed_time);
-	pGpuParticleManager.Update(elapsed_time, static_cast<float>(mStageOperation->GetColorType()), player->GetCharacter()->GetVelocity(), player->GetCharacter()->GetPosition(), player->GetCharacter()->GetGroundFlag());
+	pGpuParticleManager.GetRunParticle()->SetPlayerData(player->GetCharacter()->GetVelocity(), player->GetCharacter()->GetGroundFlag(), player->GetCharacter()->GetPosition());
+	pGpuParticleManager.Update(elapsed_time);
 	if (pKeyBoad.RisingState(KeyLabel::ENTER))
 	{
 		pSceneManager.ChangeScene(SCENETYPE::TITLE);
@@ -194,13 +244,33 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 		}
 		loadTimer += elapsed_time;
 		blend[0]->activate(context);
-		nowLoading->Render(context, VECTOR2F(0, 0), VECTOR2F(viewport.Width, viewport.Height), VECTOR2F(0, 0), VECTOR2F(1200, 675), 0, color);
+		nowLoading->Render(context, VECTOR2F(1300, 900), VECTOR2F(600, 100), VECTOR2F(0, 0), VECTOR2F(600, 100), 0, color);
 		blend[0]->deactivate(context);
 
 		return;
 	}
 	EndLoading();
+	if (mStageSelect->GetSelectFlag())
+	{
+		FLOAT4X4 view = pCamera.GetCamera()->GetView();
+		FLOAT4X4 projection = pCamera.GetCamera()->GetProjection();
+		frameBuffer->Clear(context);
+		frameBuffer->Activate(context);
+		pGpuParticleManager.Render(context, view, projection);
 
+		blend[0]->activate(context);
+
+		mStageSelect->Render(context);
+		blend[0]->deactivate(context);
+		frameBuffer->Deactivate(context);
+
+		blend[1]->activate(context);
+		siro->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+		bloom->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), true);
+		blend[1]->deactivate(context);
+
+		return;
+	}
 	FLOAT4X4 view = pCamera.GetCamera()->GetView();
 	FLOAT4X4 projection = pCamera.GetCamera()->GetProjection();
 	FLOAT4X4 viewProjection;
@@ -228,11 +298,11 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 		frameBuffer->Deactivate(context);
 	}
 	/****************ブルームをかける******************/
-	//blend[1]->activate(context);
-	//siro->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
-	//bloom->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), true);
-	//blend[1]->deactivate(context);
+	blend[1]->activate(context);
 	siro->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+	bloom->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), true);
+	blend[1]->deactivate(context);
+	//siro->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 
 #elif (RENDER_MODE==1)
 	/************************カラーマップテクスチャの作成***********************/

@@ -37,7 +37,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>mTexview;
 	Microsoft::WRL::ComPtr<ID3D11SamplerState>mSamplerState;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState>mDepthStencilState;
-	D3D11_TEXTURE2D_DESC texture2d;
+	D3D11_TEXTURE2D_DESC mTexture2d;
 	//
 	struct Vertex
 	{

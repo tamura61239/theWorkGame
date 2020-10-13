@@ -7,6 +7,8 @@ class StageManager
 {
 public:
 	StageManager(ID3D11Device* device, int width, int height);
+	void StageCount();
+	void Clear() { mStageObjs.clear(); }
 	void Load();
 	void Save();
 	void ImGuiUpdate();
@@ -16,6 +18,7 @@ public:
 	void RenderVelocity(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection,const int stageState);
 	void SetStageNo(int no) { stageNo = no; }
 	//getter
+	const int GetMaxStageCount() { return mMaxStage; }
 	std::vector<std::shared_ptr<StageObj>>GetStages() { return mStageObjs; }
 private:
 	void ScreeenToWorld(VECTOR3F* worldPosition, const VECTOR3F& screenPosition);
@@ -31,6 +34,7 @@ private:
 	VECTOR3F mNearMouse;
 	VECTOR3F mFarMouse;
 	int dragObjNumber;
+	int mMaxStage;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbBeforeBuffer;
 	std::unique_ptr<DrowShader>mVelocityShader;
 	std::unique_ptr<DrowShader>mDeferredShader;

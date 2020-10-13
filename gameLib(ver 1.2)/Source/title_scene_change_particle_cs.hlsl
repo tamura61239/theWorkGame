@@ -16,8 +16,17 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	float l = length(vec);
 	vec = normalize(vec);
 	float3 vec2 = cross(float3(0, 0, -1), vec);
-	p.velocity = (vec2 + vec)*p.speed * elapsdTime;
+	
+	p.velocity = lerp((vec2 + vec) * p.speed * 10.f * elapsdTime, (vec2 + vec) * p.speed * l * elapsdTime, step(l,10));
 	p.position += p.velocity;
+	l = length(float3(0, 0, 0) - p.position);
+	if (abs(l) <= 2.f)
+	{
+		p.color = float4(0, 0, 0, 0);
+		p.position = float3(0, 0, 0);
+		p.scale = float3(0, 0, 0);
+		p.life = 0;
+	}
 	//更新データの書き出し
 	WriteParticle(p, bufferIndex);
 

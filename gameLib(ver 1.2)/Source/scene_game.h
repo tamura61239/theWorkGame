@@ -19,6 +19,7 @@
 #include"drow_shader.h"
 #include"motionblur.h"
 #include"depth_of_field.h"
+#include"stage_select.h"
 
 
 class SceneGame :public Scene
@@ -84,4 +85,7 @@ private:
 	std::unique_ptr<DrowShader>blurShader;
 	std::unique_ptr<MotionBlur>motionBlur;
 	std::unique_ptr<DepthOfField>depthOfField;
+	std::unique_ptr<StageSelect>mStageSelect;
+	bool stop;
+	int editorNo;
 };

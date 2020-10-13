@@ -29,7 +29,7 @@ HRESULT load_texture_from_file(ID3D11Device* device, const wchar_t* file_name, I
 		bool mise = false;
 		if (L".png" == extension || L".jpeg" == extension || L".jpg" == extension || L".jpe" == extension || L".gif" == extension || L".tiff" == extension || L".tif" == extension || L".bmp" == extension)
 		{
-			mise = false;
+			mise = true;
 			hr = DirectX::LoadFromWICFile(file_name, 0, &metadata, image);
 			_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		}

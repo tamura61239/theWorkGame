@@ -110,7 +110,7 @@ RunParticles::RunParticles(ID3D11Device* device)
 	flag = false;
 }
 
-void RunParticles::ImGuiUpdate(float elapsdTime)
+void RunParticles::ImGuiUpdate()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("run particle");
@@ -121,20 +121,27 @@ void RunParticles::ImGuiUpdate(float elapsdTime)
 
 }
 
-void RunParticles::Update(ID3D11DeviceContext* context, float elapsd_time, const VECTOR3F& velocity, bool groundFlag, const VECTOR3F& position)
+void RunParticles::SetPlayerData(const VECTOR3F& velocity, bool groundFlag, const VECTOR3F& position)
+{
+	mPlayerData.mGroundFlag = groundFlag;
+	mPlayerData.mPosition = position;
+	mPlayerData.mVelocity = velocity;
+}
+
+void RunParticles::Update(ID3D11DeviceContext* context, float elapsd_time)
 {
 	float length = 0;
-	DirectX::XMStoreFloat(&length, DirectX::XMVector3Length(DirectX::XMLoadFloat3(&velocity)));
+	DirectX::XMStoreFloat(&length, DirectX::XMVector3Length(DirectX::XMLoadFloat3(&mPlayerData.mVelocity)));
 	mCb.createFlag = 1;
 	if (length <= 0.1f)mCb.createFlag = 0;
 	mCb.elapsdTime = elapsd_time;
 	mCb.startIndex += mCb.indexSize * elapsd_time;
 	if (mCb.startIndex >= 100000)mCb.startIndex -= 100000;
-	mCbStart.playerPosition = VECTOR4F(position.x, position.y, position.z, 1);
-	mCbStart.playerVelocity = velocity;
+	mCbStart.playerPosition = VECTOR4F(mPlayerData.mPosition.x, mPlayerData.mPosition.y, mPlayerData.mPosition.z, 1);
+	mCbStart.playerVelocity = mPlayerData.mVelocity;
 	mCbStart.moveType = 0;
-	if (groundFlag && !flag)mCbStart.moveType = 1;
-	flag = groundFlag;
+	if (mPlayerData.mGroundFlag && !flag)mCbStart.moveType = 1;
+	flag = mPlayerData.mGroundFlag;
 	context->CSSetConstantBuffers(0, 1, mCbBuffer.GetAddressOf());
 	context->CSSetConstantBuffers(1, 1, mCbStartBuffer.GetAddressOf());
 

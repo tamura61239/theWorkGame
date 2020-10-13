@@ -12,6 +12,7 @@ public:
 	void ImGuiUpdate();
 	void Update(float elapsdTime, ID3D11DeviceContext* context);
 	void Render(ID3D11DeviceContext* context);
+	void SetChangeFlag(const bool changeFlag) { mSceneChange = changeFlag; }
 private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbStartBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbStart2Buffer;
@@ -87,6 +88,7 @@ private:
 	CbStart2 mCbStart2;
 	Cb mCb;
 	float particleSize;
+	int mMaxParticle;
 	float mNewIndex;
 	bool mSceneChange;
 	void Load();

@@ -12,8 +12,8 @@ SelectSceneParticle::SelectSceneParticle(ID3D11Device* device)
 {
 	std::vector<Particle>particles;
 	//Microsoft::WRL::ComPtr<ID3D11Buffer>mParticleBuffer;
-
-	particles.resize(100000);
+	mMaxParticle = 60000;
+	particles.resize(mMaxParticle);
 	HRESULT hr;
 	{
 		D3D11_BUFFER_DESC desc;
@@ -93,9 +93,9 @@ SelectSceneParticle::SelectSceneParticle(ID3D11Device* device)
 	mCb.endPosition = VECTOR3F(0, 0, 1000);
 
 	mCb.defVelocity = VECTOR3F(0, 0, 1);
-	hr = create_cs_from_cso(device, "Data/shader/title_particle_create_cs.cso", mCreateShader.GetAddressOf());
+	hr = create_cs_from_cso(device, "Data/shader/select_scene_create_particle_cs.cso", mCreateShader.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	hr = create_cs_from_cso(device, "Data/shader/title_particle_cs.cso", mCSShader.GetAddressOf());
+	hr = create_cs_from_cso(device, "Data/shader/select_scene_particle_cs.cso", mCSShader.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	hr = create_cs_from_cso(device, "Data/shader/particle_render_set_cs.cso", mRenderSetCSShader.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
@@ -126,6 +126,7 @@ void SelectSceneParticle::ImGuiUpdate()
 	ImGui::SliderFloat3("scope", *scope, 0, 1);
 	float* angleMovement[3] = { &mCbStart.angleMovement.x,&mCbStart.angleMovement.y ,&mCbStart.angleMovement.z };
 	ImGui::SliderFloat3("def angleMovement", *angleMovement, -3.14f, 3.14f);
+	ImGui::Text("%f", newIndex);
 	ImGui::End();
 #endif
 
@@ -133,7 +134,6 @@ void SelectSceneParticle::ImGuiUpdate()
 
 void SelectSceneParticle::Update(float elapsdTime, ID3D11DeviceContext* context)
 {
-	ImGuiUpdate();
 	mCb.elapsdTime = elapsdTime;
 	mCbStart.eye = pCamera.GetCamera()->GetEye();
 	mCbStart.eye.y = 0;
@@ -158,7 +158,7 @@ void SelectSceneParticle::Update(float elapsdTime, ID3D11DeviceContext* context)
 		context->Dispatch(static_cast<UINT>(indexSize), 1, 1);
 		mCbStart.startIndex = newIndex;
 	}
-	if (newIndex > 100000)
+	if (newIndex >= mMaxParticle)
 	{
 		newIndex = 0;
 		mCbStart.startIndex = 0;
@@ -186,7 +186,7 @@ void SelectSceneParticle::Render(ID3D11DeviceContext* context)
 	context->IASetVertexBuffers(0, 1, mRenderBuffer.GetAddressOf(), &stride, &offset);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 
-	context->Draw(100000, 0);
+	context->Draw(mMaxParticle, 0);
 	mShader->Deactivate(context);
 
 }

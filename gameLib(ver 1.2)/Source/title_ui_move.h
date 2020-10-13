@@ -1,0 +1,31 @@
+#pragma once
+#include"ui.h"
+#include<vector>
+
+class TitleUIMove
+{
+public:
+	TitleUIMove(const int UICount);
+	void Update(float elapsdTime, std::vector<std::shared_ptr<UI>>uis);
+	void ResetTimer() 
+	{ 
+		mTimer = 0; 
+		mMoveChangeFlag = false;
+	}
+	void Load();
+	void Save();
+	struct TitleUIMoveData
+	{
+		float startTime;
+		float startAlpha;
+		float alphaAmount;
+		float endAlpha;
+	};
+	const bool GetMoveChangeFlag() { return mMoveChangeFlag; }
+	std::vector<TitleUIMoveData>GetTitleUIMove() { return mDatas; }
+	void SetTitleUIMove(std::vector<TitleUIMoveData>datas) { mDatas = datas; }
+private:
+	std::vector<TitleUIMoveData>mDatas;
+	float mTimer;
+	bool mMoveChangeFlag;
+};

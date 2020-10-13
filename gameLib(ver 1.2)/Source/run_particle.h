@@ -9,8 +9,9 @@ class RunParticles
 {
 public:
 	RunParticles(ID3D11Device* device);
-	void ImGuiUpdate(float elapsdTime);
-	void Update(ID3D11DeviceContext* context, float elapsd_time, const VECTOR3F& velocity, bool groundFlag, const VECTOR3F& position);
+	void ImGuiUpdate();
+	void SetPlayerData(const VECTOR3F& velocity, bool groundFlag, const VECTOR3F& position);
+	void Update(ID3D11DeviceContext* context, float elapsd_time);
 	void Render(ID3D11DeviceContext* context);
 	struct Particle
 	{
@@ -44,6 +45,12 @@ private:
 		float moveType;
 
 	};
+	struct PlayerData
+	{
+		VECTOR3F mVelocity;
+		VECTOR3F mPosition;
+		bool mGroundFlag;
+	};
 	//バッファ
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mParticleBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbBuffer;
@@ -62,6 +69,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11InputLayout>mInput;
 	Cb mCb;
 	CbStart mCbStart;
+	PlayerData mPlayerData;
 	void SetRandBufferData(std::vector<VECTOR2F>&data);
 	bool flag;
 	void Load();

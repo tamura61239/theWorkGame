@@ -18,15 +18,6 @@ void CameraManager::CreateCamera(ID3D11Device* device)
 
 void CameraManager::Update(float elapsed_time)
 {
-#ifdef USE_IMGUI
-	ImGui::Begin("camera");
-	int cameraType = static_cast<int>(mCameraOperation->GetCameraType());
-	ImGui::RadioButton("normal", &cameraType, 0);
-	ImGui::RadioButton("debug", &cameraType, 1);
-	ImGui::RadioButton("title camera", &cameraType, 2);
-	mCameraOperation->SetCameraType(static_cast<CameraOperation::CAMERA_TYPE>(cameraType));
-	ImGui::End();
-#endif
 	mCameraOperation->Update(elapsed_time);
 	mCamera->CalculateMatrix();
 }
