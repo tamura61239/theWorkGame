@@ -5,7 +5,7 @@
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
-PlayerAI::PlayerAI(ID3D11Device* device, const char* fileName)
+PlayerAI::PlayerAI(ID3D11Device* device, const char* fileName):mPlayFlag(false)
 {
 	std::unique_ptr<ModelData>data = std::make_unique<ModelData>(fileName);
 	std::shared_ptr<ModelResource>resouce = std::make_shared<ModelResource>(device, std::move(data));
@@ -66,20 +66,23 @@ void PlayerAI::ImGuiUpdate()
 #ifdef USE_IMGUI
 	ImGui::Begin("player");
 	float* accel[3] = { &mParameter.accel.x,&mParameter.accel.y ,&mParameter.accel.z };
-	ImGui::SliderFloat3("accel", *accel, 0, 500);
+	//ImGui::SliderFloat3("accel", *accel, 0, 1000);
+	ImGui::InputFloat("accel", &mParameter.accel.z,10);
 	float* j[3] = { &mParameter.jump.x,&mParameter.jump.y,&mParameter.jump.z };
-	ImGui::SliderFloat3("jump", *j, 0, 1700);
+	//ImGui::SliderFloat3("jump", *j, 0, 1700);
+	ImGui::InputFloat("jump", &mParameter.jump.y, 10);
 	float* r[3] = { &mParameter.ranp.x,&mParameter.ranp.y,&mParameter.ranp.z };
-	ImGui::SliderFloat3("ranp", *r, 0, 3500);
-	if (ImGui::SliderFloat("maxSpeed", &mParameter.maxSpeed, mParameter.minSpeed, 1500))
+	//ImGui::SliderFloat3("ranp", *r, 0, 3500);
+	ImGui::InputFloat("ranp", &mParameter.ranp.y, 10);
+	if (ImGui::InputFloat("maxSpeed", &mParameter.maxSpeed, 10))
 	{
 		mCharacter->SetMaxSpeed(mParameter.maxSpeed);
 	}
-	if (ImGui::SliderFloat("minSpeed", &mParameter.minSpeed, 0, mParameter.maxSpeed))
+	if (ImGui::InputFloat("minSpeed", &mParameter.minSpeed, 10))
 	{
 		mCharacter->SetMinSpeed(mParameter.minSpeed);
 	}
-	ImGui::InputFloat("gravity", &mParameter.gravity);
+	ImGui::InputFloat("gravity", &mParameter.gravity,10);
 	ImGui::Text("camera data");
 	ImGui::SliderFloat("camera angle", &mCameraParameter.angle, -3.14f, 3.14f);
 	ImGui::InputFloat("camera length", &mCameraParameter.length, 10);
@@ -100,7 +103,7 @@ void PlayerAI::ImGuiUpdate()
 		pCamera.GetCamera()->SetUp(VECTOR3F(0, 1, 0));
 
 	}
-	ImGui::Checkbox("play", &play);
+	ImGui::Checkbox("play", &mPlayFlag);
 	ImGui::Text("position:%f,%f,%f", mCharacter->GetPosition().x, mCharacter->GetPosition().y, mCharacter->GetPosition().z);
 	ImGui::Text("velocity:%f,%f,%f", mCharacter->GetVelocity().x, mCharacter->GetVelocity().y, mCharacter->GetVelocity().z);
 	ImGui::Text("state:%d", mCharacter->GetMoveState());
@@ -108,10 +111,10 @@ void PlayerAI::ImGuiUpdate()
 #endif
 }
 
+
 void PlayerAI::Update(float elapsd_time, StageManager* manager)
 {
-	ImGuiUpdate();
-	if (!play)
+	if (!mPlayFlag)
 	{
 		if (pCamera.GetCameraOperation()->GetCameraType() == CameraOperation::CAMERA_TYPE::DEBUG)return;
 		pCamera.GetCamera()->SetEye(mCharacter->GetPosition() + VECTOR3F(sinf(mCameraParameter.angle) * mCameraParameter.length, mCameraParameter.y, cosf(mCameraParameter.angle) * mCameraParameter.length) * gameObjScale);
@@ -124,7 +127,7 @@ void PlayerAI::Update(float elapsd_time, StageManager* manager)
 	pCamera.GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::NORMAL);
 	if (mCharacter->GetPosition().y < -1000)
 	{
-		play = false;
+		mPlayFlag = false;
 		mCharacter->SetPosition(VECTOR3F(0, 10, 0));
 		mCharacter->SetBeforePosition(VECTOR3F(0, 10, 0));
 		mCharacter->SetVelocity(VECTOR3F(0, 0, 0));

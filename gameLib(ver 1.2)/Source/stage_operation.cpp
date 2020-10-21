@@ -52,28 +52,45 @@ void StageOperation::ImGuiUpdate()
 #endif
 }
 
-void StageOperation::Update(float elapsd_time, StageManager* manager)
+void StageOperation::Update(float elapsd_time, StageManager* manager, const bool playFlag)
 {
-	if (pKeyBoad.RisingState(KeyLabel::SPACE)&&!mChangFlag)
+	if (!playFlag)
 	{
-		mChangFlag = true;
-		mColorType++;
-		if (mColorType >= 2)mColorType = 0;
+		if (mColorType > 0)
+		{
+			mColorType = 0;
+			mChangFlag = true;
+		}
+	}
+	else
+	{
+		if (pKeyBoad.RisingState(KeyLabel::SPACE) && !mChangFlag)
+		{
+			mChangFlag = true;
+			mColorType++;
+			if (mColorType >= 2)mColorType = 0;
+		}
 	}
 	if (mChangFlag)
 	{
-		for (auto& stage : manager->GetStages())
-		{
-			switch (mColorType)
-			{
-			case 0:
-				stage->SetColor(mColor[stage->GetStageData().mColorType]);
-				break;
-			case 1:
-				stage->SetColor(mColor[1 - stage->GetStageData().mColorType]);
-				break;
-			}
-		}
+		SetStageColor(manager);
 		mChangFlag = false;
 	}
+}
+
+void StageOperation::SetStageColor(StageManager* manager)
+{
+	for (auto& stage : manager->GetStages())
+	{
+		switch (mColorType)
+		{
+		case 0:
+			stage->SetColor(mColor[stage->GetStageData().mColorType]);
+			break;
+		case 1:
+			stage->SetColor(mColor[1 - stage->GetStageData().mColorType]);
+			break;
+		}
+	}
+
 }

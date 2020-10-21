@@ -10,11 +10,11 @@ void main(uint3 DTid : SV_DispatchThreadID)
 	p.velocity = (float3)0;
 	float2 bR = float2(bufferIndex % 591, bufferIndex % 256);
 	float2 r = float2(index % 591, index % 256);
-	float x = rand_1_normal(float2(bufferIndex % 591, bufferIndex % 256), 0.3f) + rand_1_normal(float2(index % 591, index % 256), 0.3f) * scope.x;
-	float y = rand_1_normal(float2(bufferIndex % 777, bufferIndex % 444), 0.3f) + rand_1_normal(float2(index % 777, index % 444), 0.3f) * scope.y;
+	float x = (rand_1_normal(float2(bufferIndex % 591, bufferIndex % 256), 0.34f) + rand_1_normal(float2(index % 591, index % 256),0.34f)) * scope.x;
+	float y = (rand_1_normal(float2(bufferIndex % 777, bufferIndex % 444), 0.34f) + rand_1_normal(float2(index % 777, index % 444),0.34f)) * scope.y;
 	float2 xy = float2(x, y);
 	float z = rand_1_normal(bR, 0.5f) + rand_1_normal(r, 0.5f) * scope.z;
-	xy = xy * 2.f - scope.xy;
+	xy = xy*2.f - scope.xy;
 	z = z * 2.f - scope.z;
 	p.position.xy = xy * range;
 	p.position.z = z * range;

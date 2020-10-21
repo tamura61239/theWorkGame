@@ -41,10 +41,10 @@ void StageManager::StageCount()
 	{
 		std::string fileName = { "Data/file/stage" };
 		fileName += std::to_string(mMaxStage) + ".bin";
-		mMaxStage++;
 		if (fopen_s(&fp, fileName.c_str(), "rb") == 0)
 		{
 			fclose(fp);
+			mMaxStage++;
 		}
 		else
 		{

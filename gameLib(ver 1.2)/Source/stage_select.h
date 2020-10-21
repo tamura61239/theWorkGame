@@ -1,15 +1,11 @@
 #pragma once
-#include<d3d11.h>
-#include"vector.h"
-#include<memory>
-#include<vector>
-#include"sprite.h"
 #include"stage_manager.h"
+#include"stage_borad.h"
 
 class StageSelect
 {
 public:
-	StageSelect(ID3D11Device* device);
+	StageSelect(ID3D11Device* device,const int maxCount);
 	void ImGuiUpdate();
 	void Update(float elapsdTime,StageManager*manager);
 	void Select(StageManager* manager);
@@ -22,20 +18,27 @@ private:
 	void Load();
 	void Save();
 	bool mSelectSceneFlag;
-	struct Texture
-	{
-		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>mSRV;
-		D3D11_TEXTURE2D_DESC mDesc;
-		VECTOR2F mDrowSize;
-	};
-	Texture mSelect;
-	Texture mNumber;
+	std::shared_ptr<TextureData>mStageTexture;
+	std::shared_ptr<TextureData>mNumberTexture;
+	std::shared_ptr<TextureData>mBackTexture;
 	std::unique_ptr<Sprite>mDrow;
 	int mSelectNumber;
-	VECTOR2F mSizeParsent;
-	VECTOR2F mMaskLeftUp;
-	VECTOR2F mMaskSize;
-	int mMaxStage;
-	VECTOR2F mPositionParsent;
-	VECTOR4F mTextColor;
+	float mInterval;
+	struct Local
+	{
+		std::shared_ptr<LocalData>mData;
+		std::string mName;
+	};
+	std::vector<Local>mLocalDatas;
+	std::vector<std::unique_ptr<StageBorad>>mStageBoards;
+	bool mStageBoardCreateFlag;
+	VECTOR2F mBoardSize;
+	int mChangeSelect;
+	float mMoveTimer;
+	//VECTOR2F mSizeParsent;
+	//VECTOR2F mMaskLeftUp;
+	//VECTOR2F mMaskSize;
+	//int mMaxStage;
+	//VECTOR2F mPositionParsent;
+	//VECTOR4F mTextColor;
 };

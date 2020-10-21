@@ -18,7 +18,7 @@ CameraOperation::CameraOperation(std::shared_ptr<Camera> camera) :mType(CAMERA_T
 	VECTOR3F l = focusF - eyeF;
 	distance = sqrtf(l.x * l.x + l.y * l.y + l.z * l.z);
 }
-
+//エディタ関数
 void CameraOperation::ImGuiUpdate()
 {
 #ifdef USE_IMGUI
@@ -87,7 +87,7 @@ void CameraOperation::Update(float elapsedTime)
 		break;
 	}
 }
-
+//デバックカメラ
 void CameraOperation::DebugCamera()
 {
 	VECTOR3F focusF = mCamera->GetFocus();
@@ -170,11 +170,12 @@ void CameraOperation::DebugCamera()
 		mCamera->SetUp(upF);
 	}
 }
-
+//タイトルシーンのカメラ
 void CameraOperation::TitleCamera(float elapsedTime)
 {
-	if (!mTitleSceneChangeFlag)return;
+	if (!mTitleSceneChangeFlag)return;//spaceキーが押されたかどうか
 	time += elapsedTime;
+	//押されてから一定時間がたったかどうか
 	if (time >= mTitleData.startTime)
 	{
 		VECTOR3F eye = mCamera->GetEye();
@@ -182,11 +183,14 @@ void CameraOperation::TitleCamera(float elapsedTime)
 		DirectX::XMVECTOR endPosVecc = DirectX::XMLoadFloat3(&mTitleData.endPosition);
 		float length = 0;
 		DirectX::XMStoreFloat(&mLerpMovement, DirectX::XMVectorLerp(DirectX::XMLoadFloat(&mTitleData.mMinLerp), DirectX::XMLoadFloat(&mTitleData.mMaxLerp), mTitleData.mLerpChangeAmount*60*elapsedTime));
+		//カメラのeye座標からendPosition(最終座標)までlerp関数で移動する
 		eyeVecc = DirectX::XMVectorLerp(eyeVecc, endPosVecc, mLerpMovement);
+		//カメラのeye座標からendPosition(最終座標)までの距離を測る
 		DirectX::XMStoreFloat(&length, DirectX::XMVector3Length(DirectX::XMVectorSubtract(eyeVecc, endPosVecc)));
 		DirectX::XMStoreFloat3(&eye, eyeVecc);
 		mCamera->SetEye(eye);
 		mCamera->SetFocus(eye + mTitleData.mFront);
+		//距離が一定以下かどうか
 		if (length <= 20)
 		{
 			mEndTitleFlag = true;
@@ -194,6 +198,7 @@ void CameraOperation::TitleCamera(float elapsedTime)
 	}
 }
 
+//titleDataのロード
 void CameraOperation::LoadTitleData()
 {
 	FILE* fp;
@@ -212,7 +217,7 @@ void CameraOperation::LoadTitleData()
 	mCamera->SetEye(mTitleData.mEye);
 	mCamera->SetFocus(mTitleData.mEye + mTitleData.mFront);
 }
-
+//titleDataのセーブ
 void CameraOperation::SaveTitleData()
 {
 	FILE* fp;

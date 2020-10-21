@@ -12,6 +12,8 @@ public:
 	void Save();
 	//imgui
 	void ImGuiUpdate();
+	//getter
+	const bool GetPlayFlag() { return mPlayFlag; }
 	//XV
 	void Update(float elapsd_time,StageManager*manager);
 	PlayerCharacter*GetCharacter() { return mCharacter.get(); }
@@ -34,4 +36,5 @@ private:
 	};
 	PlayerParameter mParameter;
 	CameraParameter mCameraParameter;
+	bool mPlayFlag;
 };

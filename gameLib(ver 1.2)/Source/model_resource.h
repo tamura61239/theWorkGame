@@ -40,6 +40,7 @@ public:
 	const std::vector<Mesh>& GetMeshes() const { return m_meshes; }
 	const std::vector<ModelData::Node>& GetNodes() const { return m_data->nodes; }
 	const std::vector<ModelData::Animation>& GetAnimations() const { return m_data->animations; }
+	const std::vector<ModelData::Mesh>& GetMeshDatas() const { return m_data->meshes; }
 	SHADER_TYPE GetShaderType() const{ return mShaderType; }
 private:
 	std::unique_ptr<ModelData>	m_data;

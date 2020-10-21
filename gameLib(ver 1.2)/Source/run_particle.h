@@ -3,6 +3,9 @@
 #include<d3d11.h>
 #include<wrl.h>
 #include<vector>
+#include"model.h"
+#include"drow_shader.h"
+#include"static_mesh.h"
 
 
 class RunParticles
@@ -10,68 +13,76 @@ class RunParticles
 public:
 	RunParticles(ID3D11Device* device);
 	void ImGuiUpdate();
-	void SetPlayerData(const VECTOR3F& velocity, bool groundFlag, const VECTOR3F& position);
+	void SetBoneData(Model* model);
+	void SetPlayerData(const VECTOR3F&velocity,const bool playFlag);
 	void Update(ID3D11DeviceContext* context, float elapsd_time);
 	void Render(ID3D11DeviceContext* context);
+private:
+	struct Vertex
+	{
+		VECTOR3F	position;
+		VECTOR3F	normal;
+		VECTOR4F	bone_weight;
+		VECTOR4F	bone_index;
+	};
+	struct CbeBone
+	{
+		VECTOR4F boneWorld[32];
+		float boneNumber;
+		VECTOR3F dummmy;
+	};
+	struct CbCreateData
+	{
+		VECTOR3F velocity;
+		float maxLife;
+		VECTOR4F color;
+		float scale;
+		float mStartNumber;
+		VECTOR2F dummy;
+	};
+	struct CbUpdate
+	{
+		float elapsdTime;
+		VECTOR3F dummy2;
+	};
 	struct Particle
 	{
-		VECTOR4F position = VECTOR4F(0, 0, 0, 0);
-		VECTOR3F scale = VECTOR3F(0, 0, 0);
-		VECTOR3F angle = VECTOR3F(0, 0, 0);
-		VECTOR4F color = VECTOR4F(0, 0, 0, 0);
-		VECTOR3F velocity = VECTOR3F(0, 0, 0);
-		VECTOR3F accel = VECTOR3F(0, 0, 0);
-		float life = 0;
-	};
-private:
-	struct Cb
-	{
-		VECTOR3F angleMovement;
-		float elapsdTime;
-		float startIndex;
-		float indexSize;
-		float createFlag;
-		float dummy;
-	};
-	struct CbStart
-	{
-		VECTOR4F playerPosition;
+		VECTOR3F position;
+		VECTOR3F velocity;
+		float life;
 		VECTOR4F color;
-		VECTOR3F playerVelocity;
-		float maxLife;
-		float rand1;
-		float rand2;
-		float totalRand;
-		float moveType;
-
+		float scele;
+		float lifeAmount;
 	};
-	struct PlayerData
+	struct RenderParticle
 	{
-		VECTOR3F mVelocity;
-		VECTOR3F mPosition;
-		bool mGroundFlag;
+		VECTOR4F position;
+		VECTOR3F angle;
+		VECTOR4F color;
+		VECTOR3F velocity;
+		VECTOR3F scale;
 	};
-	//バッファ
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mParticleBuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbBuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbStartBuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mRandBuffer;
-	//UAV
+	int mRenderSize;
+	bool mPlayFlag;
+	float mCreateSize;
+	float mNewIndex;
+	//Mesh周り
+	std::vector<CbeBone>mCbBones;
+	CbeBone mCbBone;
+	//パーティクルバッファ
+	Microsoft::WRL::ComPtr<ID3D11Buffer>mRenderBuffer;
 	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mParticleUAV;
-	//SRV
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>mRandSRV;
-	//シェーダー
-	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSCreateShader;
-	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSShader;
-	Microsoft::WRL::ComPtr<ID3D11GeometryShader>mGSShader;
-	Microsoft::WRL::ComPtr<ID3D11PixelShader>mPSShader;
-	Microsoft::WRL::ComPtr<ID3D11VertexShader>mVSShader;
-	Microsoft::WRL::ComPtr<ID3D11InputLayout>mInput;
-	Cb mCb;
-	CbStart mCbStart;
-	PlayerData mPlayerData;
-	void SetRandBufferData(std::vector<VECTOR2F>&data);
-	bool flag;
+	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mRenderUAV;
+	//定数バッファ
+	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbCreateBuffer;
+	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbBoneBuffer;
+	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbUpdateBuffer;
+	//Shader
+	std::unique_ptr<DrowShader>mShader;
+	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCreateShader;
+	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mUpdateShader;
+	CbCreateData mCbCreateData;
+	//ファイル操作関数
 	void Load();
 	void Save();
 };

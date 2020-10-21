@@ -7,41 +7,96 @@
 #include"imgui.h"
 #endif
 
-StageSelect::StageSelect(ID3D11Device* device) :mSelectSceneFlag(true),mSelectNumber(0),mMaxStage(4), mTextColor(1,1,1,1)
+//初期化
+StageSelect::StageSelect(ID3D11Device* device, const int maxCount) :mSelectSceneFlag(true), mSelectNumber(0)/*,mMaxStage(4), mTextColor(1,1,1,1)*/, mStageBoardCreateFlag(false), mChangeSelect(0),mMoveTimer(1)
 {
 	HRESULT hr;
+	//ステージフォントのテクスチャ
+	mStageTexture = std::make_shared<TextureData>();
+	hr = load_texture_from_file(device, L"Data/image/stage.png", mStageTexture->mSRV.GetAddressOf(), &mStageTexture->mDesc);
+	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	mStageTexture->mTextureDrowSize = VECTOR2F(320, 100);
+	//数字フォントのテクスチャ
+	mNumberTexture = std::make_shared<TextureData>();
+	hr = load_texture_from_file(device, L"Data/image/number.png", mNumberTexture->mSRV.GetAddressOf(), &mNumberTexture->mDesc);
+	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	mNumberTexture->mTextureDrowSize = VECTOR2F(63, 100);
 
-	hr = load_texture_from_file(device, L"Data/image/stage.png", mSelect.mSRV.GetAddressOf(), &mSelect.mDesc);
+	mBoardSize = VECTOR2F(200, 500);
+	//枠のテクスチャ
+	mBackTexture = std::make_shared<TextureData>();
+	hr = load_texture_from_file(device, L"Data/image/siro.png", mBackTexture->mSRV.GetAddressOf(), &mBackTexture->mDesc);
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	mSelect.mDrowSize = VECTOR2F(320, 100);
-	hr = load_texture_from_file(device, L"Data/image/number.png", mNumber.mSRV.GetAddressOf(), &mNumber.mDesc);
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	mNumber.mDrowSize = VECTOR2F(62, 100);
+
 	mDrow = std::make_unique<Sprite>(device);
-	mPositionParsent = VECTOR2F(0, 0);
-	mSizeParsent = VECTOR2F(1, 1);
-	mMaskLeftUp = VECTOR2F(100, 100);
-	mMaskSize = VECTOR2F(850, 1000);
+	//LocalDataの一様の初期化
+	mLocalDatas.resize(4);
+	std::string name[4] = { "front","number","back" ,"tutorial" };
+	for (int i = 0; i < mLocalDatas.size(); i++)
+	{
+		mLocalDatas[i].mName = name[i];
+		mLocalDatas[i].mData = std::make_shared<LocalData>();
+		mLocalDatas[i].mData->mAlpha = 1;
+		mLocalDatas[i].mData->mPosition = VECTOR2F(0, 0);
+		mLocalDatas[i].mData->mScale = VECTOR2F(1, 1);
+	}
+	mInterval = 10;
+	//データのロード
 	Load();
+	//枠のテクスチャの描画サイズ
+	mBackTexture->mTextureDrowSize = mBoardSize;
+	//stageboardの初期化
+	for (int i = 0; i < maxCount; i++)
+	{
+		mStageBoards.push_back(std::make_unique<StageBorad>());
+		mStageBoards.back()->CreateText(mBackTexture, mLocalDatas[2].mData, VECTOR2F(0, 0));
+		mStageBoards.back()->CreateText(mStageTexture, mLocalDatas[0].mData, VECTOR2F(0, 0));
+		VECTOR2F uv;
+		uv.y = 0;
+		uv.x = mNumberTexture->mTextureDrowSize.x * i;
+		mStageBoards.back()->CreateText(mNumberTexture, mLocalDatas[1].mData, uv);
+		mStageBoards.back()->SetSize(mBoardSize);
+		mStageBoards.back()->SetStageNo(i);
+		mStageBoards.back()->SetInterval(mInterval);
+	}
 }
 
+//エディタ(ImGui)関数
 void StageSelect::ImGuiUpdate()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("stage select data");
-	ImGui::Text("mask");
-	ImGui::InputFloat("mask position x", &mMaskLeftUp.x, 10);
-	ImGui::InputFloat("mask position y", &mMaskLeftUp.x, 10);
-	ImGui::InputFloat("mask size x", &mMaskSize.x, 10);
-	ImGui::InputFloat("mask size y", &mMaskSize.x, 10);
-	ImGui::Text("drow texture");
-	float* sizeParsent[2] = { &mSizeParsent.x,&mSizeParsent.y };
+	ImGui::InputFloat("board size x", &mBoardSize.x, 10);
+	ImGui::InputFloat("board size y", &mBoardSize.y, 10);
+	ImGui::InputFloat("interval", &mInterval, 1);
 
-	ImGui::SliderFloat2("size parsent", *sizeParsent, 0, 1);
-	float* positionParsent[2] = { &mPositionParsent.x,&mPositionParsent.y };
-	ImGui::SliderFloat2("position parsent", *positionParsent, 0, 1);
-	float* color[4] = { &mTextColor.x,&mTextColor.y ,&mTextColor.z ,&mTextColor.w };
-	ImGui::ColorEdit4("text color", *color);
+	for (auto& stage : mStageBoards)
+	{
+		stage->SetSize(mBoardSize);
+		stage->SetInterval(mInterval);
+	}
+	mBackTexture->mTextureDrowSize = mBoardSize;
+	if (ImGui::CollapsingHeader("localData"))
+	{
+		for (int i = 0; i < mLocalDatas.size(); i++)
+		{
+			auto& local = mLocalDatas[i].mData;
+			std::string defName = std::to_string(i);
+			defName += mLocalDatas[i].mName;
+			if (ImGui::CollapsingHeader(defName.c_str()))
+			{
+				float* position[2] = { &local->mPosition.x,&local->mPosition.y };
+				std::string name = defName + ":position";
+				ImGui::SliderFloat(name.c_str(), *position, 0, 1);
+				name = defName + ":alpha";
+				ImGui::SliderFloat(name.c_str(), &local->mAlpha, 0, 1);
+				name = defName + ":scale.x";
+				ImGui::InputFloat(name.c_str(), &local->mScale.x, 0.1f);
+				name = defName + ":scale.y";
+				ImGui::InputFloat(name.c_str(), &local->mScale.y, 0.1f);
+			}
+		}
+	}
 	ImGui::Text("%d", mSelectNumber);
 	if (ImGui::Button("save"))
 	{
@@ -53,41 +108,69 @@ void StageSelect::ImGuiUpdate()
 
 void StageSelect::Update(float elapsdTime, StageManager* manager)
 {
-	Select(manager);
-}
+	if (!mSelectSceneFlag)return;
+	float time = elapsdTime*5.f;
+	if (mChangeSelect == 0)//選択するステージを変更してない時
+	{
+		Select(manager);
+	}
+	else//選択するステージを変更してる時
+	{
+		mMoveTimer+= time;
+		if (mMoveTimer > 1)
+		{
+			mMoveTimer = 1;
+		}
+	}
+	//ステージボードの更新
+	for (auto& stageBoard : mStageBoards)
+	{
+		stageBoard->Update(mChangeSelect, mMoveTimer, mSelectNumber, VECTOR2F(1920, 1080) * 0.5f);
+	}
+	//変更時間が一定値を超えた時
+	if (mMoveTimer >= 1&& mChangeSelect!=0)
+	{
+		if (mChangeSelect > 0)
+		{
+			mSelectNumber++;
+		}
+		else
+		{
+			mSelectNumber--;
+		}
+		mMoveTimer = 1;
 
+		mChangeSelect = 0;
+	}
+}
+//ステージの選択関数
 void StageSelect::Select(StageManager* manager)
 {
-	if (pKeyBoad.RisingState(KeyLabel::RIGHT)&& mSelectNumber < mMaxStage - 1)
+
+	if (pKeyBoad.PressedState(KeyLabel::RIGHT)&& mSelectNumber < mStageBoards.size() - 1)//右に移動
 	{
-		mSelectNumber++;
+		mMoveTimer = 0;
+		mChangeSelect = 1;
 	}
-	if (pKeyBoad.RisingState(KeyLabel::LEFT) && mSelectNumber > 0)
+	if (pKeyBoad.PressedState(KeyLabel::LEFT) && mSelectNumber > 0)//左に移動
 	{
-		mSelectNumber--;
+		mMoveTimer = 0;
+		mChangeSelect =- 1;
 	}
-	if (pKeyBoad.RisingState(KeyLabel::SPACE))
+	if (pKeyBoad.RisingState(KeyLabel::SPACE))//決定
 	{
 		manager->SetStageNo(mSelectNumber);
-		manager->Load();
 		mSelectSceneFlag = false;
-		pGpuParticleManager.SetState(GpuParticleManager::STATE::GAME);
 	}
 }
 
-void StageSelect::Move(float elapsdtime)
-{
-}
-
-void StageSelect::Mask()
-{
-
-}
-
+//描画
 void StageSelect::Render(ID3D11DeviceContext* context)
 {
-	mDrow->Render(context, mSelect.mSRV.Get(), mMaskLeftUp + mPositionParsent * mMaskSize, mSelect.mDrowSize*mSizeParsent, VECTOR2F(0, 0), mSelect.mDrowSize, 0, mTextColor);
-	mDrow->Render(context, mNumber.mSRV.Get(), mMaskLeftUp + mPositionParsent * mMaskSize+VECTOR2F(mSelect.mDrowSize.x,0) * mSizeParsent, mNumber.mDrowSize * mSizeParsent, VECTOR2F(mNumber.mDrowSize.x*mSelectNumber, 0), mNumber.mDrowSize, 0, mTextColor);
+	for (auto& stageBoard : mStageBoards)
+	{
+		stageBoard->Render(context, mDrow.get());
+	}
 }
 
 void StageSelect::Load()
@@ -95,25 +178,33 @@ void StageSelect::Load()
 	FILE* fp;
 	if (fopen_s(&fp, "Data/file/stage_select_scene.bin", "rb") == 0)
 	{
-		fread(&mMaskLeftUp, sizeof(VECTOR2F), 1, fp);
-		fread(&mMaskSize, sizeof(VECTOR2F), 1, fp);
-		fread(&mPositionParsent, sizeof(VECTOR2F), 1, fp);
-		fread(&mSizeParsent, sizeof(VECTOR2F), 1, fp);
-		fread(&mTextColor, sizeof(VECTOR4F), 1, fp);
+		fread(&mBoardSize, sizeof(VECTOR2F), 1, fp);
+		fread(&mInterval, sizeof(float), 1, fp);
+		for (int i = 0; i < 4; i++)
+		{
+			LocalData data;
+			fread(&data, sizeof(LocalData), 1, fp);
+			mLocalDatas[i].mData->mAlpha = data.mAlpha;
+			mLocalDatas[i].mData->mPosition = data.mPosition;
+			mLocalDatas[i].mData->mScale = data.mScale;
+		}
+
 		fclose(fp);
 	}
 }
-
+//ファイル書き込み関数
 void StageSelect::Save()
 {
 	FILE* fp;
 	fopen_s(&fp, "Data/file/stage_select_scene.bin", "wb");
 	{
-		fwrite(&mMaskLeftUp, sizeof(VECTOR2F), 1, fp);
-		fwrite(&mMaskSize, sizeof(VECTOR2F), 1, fp);
-		fwrite(&mPositionParsent, sizeof(VECTOR2F), 1, fp);
-		fwrite(&mSizeParsent, sizeof(VECTOR2F), 1, fp);
-		fwrite(&mTextColor, sizeof(VECTOR4F), 1, fp);
+		fwrite(&mBoardSize, sizeof(VECTOR2F), 1, fp);
+		fwrite(&mInterval, sizeof(float), 1, fp);
+		for (int i = 0; i < 4; i++)
+		{
+
+			fwrite(mLocalDatas[i].mData.get(), sizeof(LocalData), 1, fp);
+		}
 		fclose(fp);
 	}
 

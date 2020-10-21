@@ -8,7 +8,8 @@ public:
 	void Load();
 	void Save();
 	void ImGuiUpdate();
-	void Update(float elapsd_time, StageManager* manager);
+	void Update(float elapsd_time, StageManager* manager,const bool playFlag);
+	void SetStageColor(StageManager* manager);
 	const int GetColorType() { return mColorType; }
 private:
 	int mColorType;

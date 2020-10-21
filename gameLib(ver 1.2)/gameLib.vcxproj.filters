@@ -79,6 +79,9 @@
     <Filter Include="シェーダー\title_texture_particle">
       <UniqueIdentifier>{1cf72a95-3df3-486e-8b01-cace96b73e5d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="シェーダー\particle_render">
+      <UniqueIdentifier>{40a2e2b5-b5fa-4fed-92a8-249484203e64}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="External_Libraries\imgui\imgui.cpp">
@@ -284,6 +287,15 @@
     </ClCompile>
     <ClCompile Include="Source\title_texture_particle.cpp">
       <Filter>ソース ファイル\GPU</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\select_text.cpp">
+      <Filter>ソース ファイル\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\stage_borad.cpp">
+      <Filter>ソース ファイル\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\fade.cpp">
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -521,6 +533,15 @@
     <ClInclude Include="Source\title_texture_particle.h">
       <Filter>ヘッダー ファイル\GPU</Filter>
     </ClInclude>
+    <ClInclude Include="Source\select_text.h">
+      <Filter>ヘッダー ファイル\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\stage_borad.h">
+      <Filter>ヘッダー ファイル\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\fade.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\board.hlsli">
@@ -615,6 +636,9 @@
     </None>
     <None Include="Source\title_texture_particle.hlsli">
       <Filter>シェーダー\title_texture_particle</Filter>
+    </None>
+    <None Include="Source\particle_render.hlsli">
+      <Filter>シェーダー\particle_render</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -801,9 +825,6 @@
     <FxCompile Include="Source\title_particle_create_cs.hlsl">
       <Filter>シェーダー\title_particle</Filter>
     </FxCompile>
-    <FxCompile Include="Source\title_particle_vs.hlsl">
-      <Filter>シェーダー\title_particle</Filter>
-    </FxCompile>
     <FxCompile Include="Source\particle_render_set_cs.hlsl">
       <Filter>シェーダー\title_particle</Filter>
     </FxCompile>
@@ -827,6 +848,18 @@
     </FxCompile>
     <FxCompile Include="Source\title_texture_particle_vs.hlsl">
       <Filter>シェーダー\title_texture_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\particle_render_cube_mesh_gs.hlsl">
+      <Filter>シェーダー\particle_render</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\particle_render_cube_line_gs.hlsl">
+      <Filter>シェーダー\particle_render</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\particle_render_ps.hlsl">
+      <Filter>シェーダー\particle_render</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\particle_render_vs.hlsl">
+      <Filter>シェーダー\particle_render</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

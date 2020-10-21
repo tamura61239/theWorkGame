@@ -57,6 +57,7 @@ void GpuParticleManager::CreateBuffer(ID3D11Device* device)
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 	}
+
 }
 
 void GpuParticleManager::CreateTitleBuffer(ID3D11Device* device)
@@ -70,7 +71,6 @@ void GpuParticleManager::CreateGameBuffer(ID3D11Device* device)
 {
 	mState = 0;
 	CreateBuffer(device);
-	mRunParticle = std::make_unique<RunParticles>(device);
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
 	{
 		{"POSITION",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
@@ -83,6 +83,8 @@ void GpuParticleManager::CreateGameBuffer(ID3D11Device* device)
 	};
 	mSSceneShader = std::make_unique<DrowShader>(device, "Data/shader/stage_scene_particle_vs.cso", "Data/shader/run_particle_gs.cso", "Data/shader/deferred_depth_stage_scene_particle_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
 	mSelectSceneParticle = std::make_unique<SelectSceneParticle>(device);
+	mRunParticle = std::make_unique<RunParticles>(device);
+
 }
 
 void GpuParticleManager::ClearBuffer()
@@ -115,7 +117,7 @@ void GpuParticleManager::Update(float elapsd_time)
 		mSelectSceneParticle->Update(elapsd_time, context);
 		break;
 	case GAME:
-		mRunParticle->Update(context, elapsd_time);
+		if (mRunParticle.get() != nullptr)mRunParticle->Update(context, elapsd_time);
 		mStageSceneParticle->Update(context, elapsd_time);
 		break;
 	}
@@ -179,7 +181,7 @@ void GpuParticleManager::GameImGui()
 	ImGui::End();
 	if (selects[0])
 	{
-		mRunParticle->ImGuiUpdate();
+		if (mRunParticle.get() != nullptr)mRunParticle->ImGuiUpdate();
 	}
 	if (selects[1])
 	{
@@ -211,8 +213,8 @@ void GpuParticleManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& vi
 		mSelectSceneParticle->Render(context);
 		break;
 	case GAME:
-		mStageSceneParticle->Render(context);
-		mRunParticle->Render(context);
+		//mStageSceneParticle->Render(context);
+		if(mRunParticle.get()!=nullptr)mRunParticle->Render(context);
 		break;
 	}
 	//if (drowMullti)

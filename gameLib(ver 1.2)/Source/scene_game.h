@@ -20,6 +20,7 @@
 #include"motionblur.h"
 #include"depth_of_field.h"
 #include"stage_select.h"
+#include"fade.h"
 
 
 class SceneGame :public Scene
@@ -52,6 +53,7 @@ private:
 		}
 	}
 private:
+	void ImGuiUpdate();
 	std::unique_ptr<Sprite>test;
 	std::unique_ptr<Sprite>nowLoading;
 	std::unique_ptr<Sprite>siro;
@@ -86,6 +88,8 @@ private:
 	std::unique_ptr<MotionBlur>motionBlur;
 	std::unique_ptr<DepthOfField>depthOfField;
 	std::unique_ptr<StageSelect>mStageSelect;
+	std::unique_ptr<Fade>fadeOut;
 	bool stop;
 	int editorNo;
+	bool selectSceneFlag;
 };

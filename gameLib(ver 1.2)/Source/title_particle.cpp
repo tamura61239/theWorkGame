@@ -120,7 +120,7 @@ TitleParticle::TitleParticle(ID3D11Device* device):mSceneChange(false)
 		{"VELOCITY",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 		{"SCALE",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 	};
-	mShader = std::make_unique<DrowShader>(device, "Data/shader/title_particle_vs.cso", "Data/shader/run_particle_gs.cso", "Data/shader/stage_obj_particle_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
+	mShader = std::make_unique<DrowShader>(device, "Data/shader/particle_render_vs.cso", "Data/shader/particle_render_cube_mesh_gs.cso", "Data/shader/particle_render_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
 	Load();
 	mCbStart.startIndex = 0;
 
