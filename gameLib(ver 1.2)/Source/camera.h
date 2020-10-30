@@ -37,6 +37,9 @@ public:
 	const VECTOR3F& GetRight() { return mRight; }
 	const FLOAT4X4& GetView() { return mView; }
 	const FLOAT4X4& GetProjection() { return mProjection; }
+	const float GetFov() { return mFov; }
+	const float GetAspect() { return mAspect; }
+	const float GetNear() { return mNearZ; }
 	const float GetFar() { return mFarZ; }
 private:
 	struct Cb

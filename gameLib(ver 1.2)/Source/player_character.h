@@ -28,6 +28,7 @@ public:
 	}
 	void SetChangState(const bool state) { mChangState = state; }
 	void SetGroundFlag(const bool flag) { mGroundFlag = flag; }
+	void SetGorlFlag(const bool flag) { mGorlFlag = flag; }
 	void SetMaxSpeed(const float maxSpeed) { mMaxSpeed = maxSpeed; }
 	void SetMinSpeed(const float minSpeed) { mMinSpeed = minSpeed; }
 	void SetBeforePosition(const VECTOR3F& beforePosition) { mBeforePosition = beforePosition; }
@@ -38,6 +39,7 @@ public:
 	const MOVESTATE&GetMoveState() { return mMoveState; }
 	const bool GetChangState() { return mChangState; }
 	const bool GetGroundFlag() { return mGroundFlag; }
+	const bool GetGorlFlag() { return mGorlFlag; }
 	
 	const float GetMaxSpeed() { return mMaxSpeed; }
 	const VECTOR3F& GetBeforePosition() { return mBeforePosition; }
@@ -49,6 +51,7 @@ private:
 	MOVESTATE mMoveState;
 	bool mChangState;
 	bool mGroundFlag;
+	bool mGorlFlag;
 	float mMaxSpeed;
 	float mMinSpeed;
 };

@@ -1,16 +1,20 @@
 #include "scene_clear.h"
 #include"scene_manager.h"
 #include"key_board.h"
-SceneClear::SceneClear(ID3D11Device* device)
+#ifdef USE_IMGUI
+#include <imgui.h>
+#include"stage_manager.h"
+#endif
+
+SceneClear::SceneClear(ID3D11Device* device):mEditorFlag(true)
 {
 	test = std::make_unique<Sprite>(device, L"Data/image/クリアテスト.png");
 }
 
 void SceneClear::Update(float elapsed_time)
 {
-	if (pKeyBoad.RisingState(KeyLabel::ENTER))
+	if (ImGuiUpdate())
 	{
-		pSceneManager.ChangeScene(SCENETYPE::TITLE);
 		return;
 	}
 }
@@ -23,4 +27,33 @@ void SceneClear::Render(ID3D11DeviceContext* context, float elapsed_time)
 
 SceneClear::~SceneClear()
 {
+}
+
+bool SceneClear::ImGuiUpdate()
+{
+#ifdef USE_IMGUI
+	switch (pSceneManager.GetSceneEditor()->Editor(&mEditorFlag, StageManager::GetMaxStageCount()))
+	{
+	case 1:
+		pSceneManager.ChangeScene(SCENETYPE::TITLE);
+		return true;
+		break;
+	case 2:
+	case 3:
+		pSceneManager.ChangeScene(SCENETYPE::GAME);
+		return true;
+		break;
+	case 4:
+		pSceneManager.ChangeScene(SCENETYPE::CLEAR);
+		return true;
+		break;
+	case 5:
+		pSceneManager.ChangeScene(SCENETYPE::OVER);
+		return true;
+		break;
+
+	}
+	if (!mEditorFlag)return false;
+#endif
+	return false;
 }

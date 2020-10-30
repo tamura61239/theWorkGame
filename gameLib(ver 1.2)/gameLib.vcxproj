@@ -170,6 +170,7 @@
     <ClCompile Include="Source\framebuffer.cpp" />
     <ClCompile Include="Source\framework.cpp" />
     <ClCompile Include="Source\gamepad.cpp" />
+    <ClCompile Include="Source\game_ui_move.cpp" />
     <ClCompile Include="Source\geometric_primitive.cpp" />
     <ClCompile Include="Source\gpu_particle_manager.cpp" />
     <ClCompile Include="Source\hit_area_drow.cpp" />
@@ -184,10 +185,12 @@
     <ClCompile Include="Source\player.cpp" />
     <ClCompile Include="Source\player_ai.cpp" />
     <ClCompile Include="Source\player_character.cpp" />
+    <ClCompile Include="Source\play_camera_operation.cpp" />
     <ClCompile Include="Source\render_effects.cpp" />
     <ClCompile Include="Source\respon_particle.cpp" />
     <ClCompile Include="Source\run_particle.cpp" />
     <ClCompile Include="Source\scene_clear.cpp" />
+    <ClCompile Include="Source\scene_editor.cpp" />
     <ClCompile Include="Source\scene_game.cpp" />
     <ClCompile Include="Source\scene_manager.cpp" />
     <ClCompile Include="Source\scene_over.cpp" />
@@ -201,6 +204,8 @@
     <ClCompile Include="Source\sound_manager.cpp" />
     <ClCompile Include="Source\sprite.cpp" />
     <ClCompile Include="Source\stage_borad.cpp" />
+    <ClCompile Include="Source\stage_editor.cpp" />
+    <ClCompile Include="Source\stage_editor_camera_operation.cpp" />
     <ClCompile Include="Source\stage_manager.cpp" />
     <ClCompile Include="Source\stage_obj.cpp" />
     <ClCompile Include="Source\stage_obj_drag_operation.cpp" />
@@ -212,6 +217,7 @@
     <ClCompile Include="Source\static_mesh.cpp" />
     <ClCompile Include="Source\static_obj.cpp" />
     <ClCompile Include="Source\texture.cpp" />
+    <ClCompile Include="Source\title_camera_operation.cpp" />
     <ClCompile Include="Source\title_particle.cpp" />
     <ClCompile Include="Source\title_texture_particle.cpp" />
     <ClCompile Include="Source\title_ui_move.cpp" />
@@ -245,6 +251,7 @@
     <ClInclude Include="Source\framebuffer.h" />
     <ClInclude Include="Source\framework.h" />
     <ClInclude Include="Source\gamepad.h" />
+    <ClInclude Include="Source\game_ui_move.h" />
     <ClInclude Include="Source\geometric_primitive.h" />
     <ClInclude Include="Source\gpu_particle_manager.h" />
     <ClInclude Include="Source\high_resolution_timer.h" />
@@ -263,11 +270,13 @@
     <ClInclude Include="Source\player.h" />
     <ClInclude Include="Source\player_ai.h" />
     <ClInclude Include="Source\player_character.h" />
+    <ClInclude Include="Source\play_camera_operation.h" />
     <ClInclude Include="Source\render_effects.h" />
     <ClInclude Include="Source\respon_particle.h" />
     <ClInclude Include="Source\run_particle.h" />
     <ClInclude Include="Source\scene.h" />
     <ClInclude Include="Source\scene_clear.h" />
+    <ClInclude Include="Source\scene_editor.h" />
     <ClInclude Include="Source\scene_game.h" />
     <ClInclude Include="Source\scene_manager.h" />
     <ClInclude Include="Source\scene_over.h" />
@@ -284,6 +293,8 @@
     <ClInclude Include="Source\sound_manager.h" />
     <ClInclude Include="Source\sprite.h" />
     <ClInclude Include="Source\stage_borad.h" />
+    <ClInclude Include="Source\stage_editor.h" />
+    <ClInclude Include="Source\stage_editor_camera_operation.h" />
     <ClInclude Include="Source\stage_manager.h" />
     <ClInclude Include="Source\stage_obj.h" />
     <ClInclude Include="Source\stage_obj_drag_operation.h" />
@@ -294,6 +305,8 @@
     <ClInclude Include="Source\static_mesh.h" />
     <ClInclude Include="Source\static_obj.h" />
     <ClInclude Include="Source\texture.h" />
+    <ClInclude Include="Source\time_ui.h" />
+    <ClInclude Include="Source\title_camera_operation.h" />
     <ClInclude Include="Source\title_particle.h" />
     <ClInclude Include="Source\title_texture_particle.h" />
     <ClInclude Include="Source\title_ui_move.h" />
@@ -364,6 +377,10 @@
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AssemblyCode</AssemblerOutput>
       <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
     </FxCompile>
     <FxCompile Include="Source\bloom_vs.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
@@ -374,6 +391,10 @@
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AssemblyCode</AssemblerOutput>
       <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
     </FxCompile>
     <FxCompile Include="Source\board_ps.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
@@ -424,6 +445,10 @@
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AssemblyCode</AssemblerOutput>
       <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cod</AssemblerOutputFile>
     </FxCompile>
     <FxCompile Include="Source\deferred_depth_model_ps.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>

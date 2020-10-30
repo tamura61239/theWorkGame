@@ -120,7 +120,7 @@ void TitleTextureParticle::Update(float elapsdTime, ID3D11DeviceContext* context
 		context->CSSetShader(mCSCreateShader.Get(), nullptr, 0);
 		context->CSSetConstantBuffers(0, 1, mCbCreateBuffer.GetAddressOf());
 		CbCreate create;
-		DirectX::XMStoreFloat4x4(&create.inverseViewProjection, DirectX::XMMatrixInverse(nullptr, DirectX::XMLoadFloat4x4(&pCamera.GetCamera()->GetView()) * DirectX::XMLoadFloat4x4(&pCamera.GetCamera()->GetProjection())));
+		DirectX::XMStoreFloat4x4(&create.inverseViewProjection, DirectX::XMMatrixInverse(nullptr, DirectX::XMLoadFloat4x4(&pCameraManager.GetCamera()->GetView()) * DirectX::XMLoadFloat4x4(&pCameraManager.GetCamera()->GetProjection())));
 		D3D11_VIEWPORT viewport;
 		UINT num_viewports = 1;
 		context->RSGetViewports(&num_viewports, &viewport);

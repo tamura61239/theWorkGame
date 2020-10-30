@@ -3,6 +3,7 @@
 #include"blend_state.h"
 #include"scene_manager.h"
 #include"camera_manager.h"
+#include"stage_manager.h"
 #include"gamepad.h"
 Framework* Framework::inst = nullptr;
 
@@ -138,11 +139,12 @@ bool Framework::Initialize(HWND hwnd)
 	D3D11_VIEWPORT viewport;
 	UINT num_viewports = 1;
 	mDeviceContext.Get()->RSGetViewports(&num_viewports, &viewport);
-	pCamera.SetDefaultPerspective(30 * (3.14f / 180.f), viewport.Width / viewport.Height, 0.1f, 10000);
+	pCameraManager.SetDefaultPerspective(30 * (3.14f / 180.f), viewport.Width / viewport.Height, 0.1f, 10000);
 	//camera->SetPerspective(30 * (3.14f / 180.f), viewport.Width / viewport.Height, 0.1f, 1000.0f);
 	//cameraOperation->SetCameraType(CameraOperation::CAMERA_TYPE::DEBUG);
 	pSceneManager.SetDevice(mDevice.Get());
 	pSceneManager.ChangeScene(SCENETYPE::TITLE);
+	StageManager::StageCount();
 	return true;
 }
 //XV

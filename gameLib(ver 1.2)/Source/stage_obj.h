@@ -22,15 +22,16 @@ public:
 		mPosition = data.mPosition * s;
 		mScale = data.mScale * s;
 		mAngle = data.mAngle;
-		if (data.mColorType == 1)
-		{
-			mColor = VECTOR4F(0, 0, 1, 0.3f);
-		}
-		else
-		{
-			mColor = VECTOR4F(1, 0, 0, 1);
-		}
+		//if (data.mColorType == 1)
+		//{
+		//	mColor = VECTOR4F(0, 0, 1, 0.3f);
+		//}
+		//else
+		//{
+		//	mColor = VECTOR4F(1, 0, 0, 1);
+		//}
 	}
+	void SetColorType(const int type) { mData.mColorType = type; }
 	//getter
 	const StageData& GetStageData() { return mData; }
 	void SetBeforeWorld(const FLOAT4X4& w) { beforeWorld = w; }

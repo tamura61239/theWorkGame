@@ -94,10 +94,10 @@ int StageObjDragOperation::isHitArrow(const VECTOR3F& nearMouse, const VECTOR3F&
 
 void StageObjDragOperation::Move(std::shared_ptr<StageObj> obj, const VECTOR3F& farMouse, int arrowNumber)
 {
-	float cameraFar = pCamera.GetCamera()->GetFar();
+	float cameraFar = pCameraManager.GetCamera()->GetFar();
 	VECTOR3F objPosition = obj->GetPosition();
 	DirectX::XMVECTOR position = DirectX::XMLoadFloat3(&objPosition);
-	DirectX::XMVECTOR eye = DirectX::XMLoadFloat3(&pCamera.GetCamera()->GetEye());
+	DirectX::XMVECTOR eye = DirectX::XMLoadFloat3(&pCameraManager.GetCamera()->GetEye());
 	DirectX::XMVECTOR length = DirectX::XMVector3Length(DirectX::XMVectorSubtract(position, eye));
 
 	float fLength;
@@ -150,7 +150,7 @@ void StageObjDragOperation::SetArrow(std::shared_ptr<StageObj>obj)
 void StageObjDragOperation::Render(ID3D11DeviceContext* context, MeshRender* render, const FLOAT4X4& view, const FLOAT4X4& projection)
 {
 	VECTOR3F light;
-	DirectX::XMStoreFloat3(&light, DirectX::XMVector3Normalize(DirectX::XMLoadFloat3(&(pCamera.GetCamera()->GetFocus() - pCamera.GetCamera()->GetEye()))));
+	DirectX::XMStoreFloat3(&light, DirectX::XMVector3Normalize(DirectX::XMLoadFloat3(&(pCameraManager.GetCamera()->GetFocus() - pCameraManager.GetCamera()->GetEye()))));
 	
 	render->Begin(context, view, projection);
 	render->Render(context, mArrowObjs[0]->GetMesh(), mArrowObjs[0]->GetWorld(),mArrowObjs[0]->GetColor());

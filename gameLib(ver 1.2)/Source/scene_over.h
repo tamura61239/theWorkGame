@@ -35,5 +35,7 @@ private:
 		}
 	}
 private:
+	bool ImGuiUpdate();
+	bool mEditorFlag;
 	std::unique_ptr<Sprite>test;
 };

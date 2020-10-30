@@ -10,6 +10,13 @@ public:
 	void ImGuiUpdate();
 	void Update(float elapsd_time, StageManager* manager,const bool playFlag);
 	void SetStageColor(StageManager* manager);
+	void Reset(StageManager* manager)
+	{
+		mColorType = 0;
+		mChangFlag = false;
+		SetStageColor(manager);
+	}
+	//getter
 	const int GetColorType() { return mColorType; }
 private:
 	int mColorType;

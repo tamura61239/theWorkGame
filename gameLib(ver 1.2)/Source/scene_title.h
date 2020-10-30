@@ -40,6 +40,7 @@ private:
 		}
 	}
 private:
+	bool ImGuiUpdate();
 	std::unique_ptr<Sprite>test;
 	std::unique_ptr<BloomRender>bloom;
 	std::unique_ptr<FrameBuffer>frameBuffer;
@@ -50,4 +51,5 @@ private:
 	//std::unique_ptr<Character>character;
 	std::unique_ptr<StaticObj>obj;
 	std::unique_ptr<MeshRender>mRender;
+	bool mEditorFlag;
 };

@@ -4,6 +4,10 @@
 #include"scene_over.h"
 #include"scene_clear.h"
 #include"key_board.h"
+#ifdef USE_IMGUI
+#include <imgui.h>
+#endif
+
 
 
 void SceneManager::Update(float elapsed_time)

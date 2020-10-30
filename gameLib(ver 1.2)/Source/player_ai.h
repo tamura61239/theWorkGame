@@ -1,6 +1,7 @@
 #pragma once
 #include"player_character.h"
 #include"stage_manager.h"
+#include"stage_operation.h"
 
 class PlayerAI
 {
@@ -12,10 +13,12 @@ public:
 	void Save();
 	//imgui
 	void ImGuiUpdate();
+	//setter
+	void SetPlayFlag(const bool flag) { mPlayFlag = flag; }
 	//getter
 	const bool GetPlayFlag() { return mPlayFlag; }
 	//çXêV
-	void Update(float elapsd_time,StageManager*manager);
+	void Update(float elapsd_time,StageManager*manager,StageOperation*operation);
 	PlayerCharacter*GetCharacter() { return mCharacter.get(); }
 private:
 	std::unique_ptr<PlayerCharacter>mCharacter;
@@ -28,13 +31,6 @@ private:
 		VECTOR3F ranp;
 		float gravity;
 	};
-	struct CameraParameter
-	{
-		float angle;
-		float length;
-		float y;
-	};
 	PlayerParameter mParameter;
-	CameraParameter mCameraParameter;
 	bool mPlayFlag;
 };

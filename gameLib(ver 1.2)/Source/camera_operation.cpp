@@ -1,22 +1,27 @@
 #include "camera_operation.h"
 #include<Windows.h>
-#include"key_board.h"
 #include<string>
 #ifdef USE_IMGUI
 #include <imgui.h>
-#include <imgui_impl_dx11.h>
-#include <imgui_impl_win32.h>
-#include <imgui_internal.h>
-extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wparam, LPARAM lparam);
 #endif
 
-CameraOperation::CameraOperation(std::shared_ptr<Camera> camera) :mType(CAMERA_TYPE::NORMAL), mTitleSceneChangeFlag(false), time(0), mEndTitleFlag(false), mLerpMovement(0)
+CameraOperation::CameraOperation(std::shared_ptr<Camera> camera, int scene) :mType(CAMERA_TYPE::NORMAL), mScene(scene)
 {
 	mCamera = camera;
-	VECTOR3F focusF = mCamera->GetFocus();
-	VECTOR3F eyeF = mCamera->GetEye();
+	VECTOR3F focusF = camera->GetFocus();
+	VECTOR3F eyeF = camera->GetEye();
 	VECTOR3F l = focusF - eyeF;
 	distance = sqrtf(l.x * l.x + l.y * l.y + l.z * l.z);
+	switch (mScene)
+	{
+	case 0:
+		mTitleCamera = std::make_unique<TitleCameraOperation>(camera);
+		break;
+	case 1:
+		mPlayCamera = std::make_unique<PlayCameraOperation>(camera);
+		mStageEditorCamera = std::make_unique<StageEditorCameraOperation>(camera);
+		break;
+	}
 }
 //エディタ関数
 void CameraOperation::ImGuiUpdate()
@@ -26,49 +31,41 @@ void CameraOperation::ImGuiUpdate()
 	int type = static_cast<int>(mType);
 	ImGui::RadioButton("normal", &type, 0);
 	ImGui::RadioButton("debug", &type, 1);
-	ImGui::RadioButton("title camera", &type, 2);
+	switch (mScene)
+	{
+	case 0:
+		ImGui::RadioButton("title camera", &type, 2);
+		break;
+	case 1:
+		ImGui::RadioButton("play camera", &type, 3);
+		ImGui::RadioButton("stage editor camera", &type, 4);
+		break;
+	}
 	mType = static_cast<CAMERA_TYPE>(type);
 	ImGui::Separator();
-	VECTOR3F eye = mCamera->GetEye();
-	VECTOR3F focus = mCamera->GetFocus();
-	VECTOR3F up = mCamera->GetUp();
+	VECTOR3F eye = mCamera.lock()->GetEye();
+	VECTOR3F focus = mCamera.lock()->GetFocus();
+	VECTOR3F up = mCamera.lock()->GetUp();
 	ImGui::Text("[eye] x:%f y:%f z:%f", eye.x, eye.y, eye.z);
 	ImGui::Text("[focus] x:%f y:%f z:%f", focus.x, focus.y, focus.z);
 	ImGui::Text("[up] x:%f y:%f z:%f", up.x, up.y, up.z);
 	ImGui::Separator();
-	if (mType == CAMERA_TYPE::NORMAL)
+	switch (mType)
 	{
-
+	case CAMERA_TYPE::NORMAL:
+		break;
+	case CAMERA_TYPE::DEBUG:
+		break;
+	case CAMERA_TYPE::TITLE_CAMERA:
+		mTitleCamera->ImGuiUpdate();
+		break;
+	case CAMERA_TYPE::PLAY:
+		mPlayCamera->ImGuiUpdate();
+		break;
+	case CAMERA_TYPE::STAGE_EDITOR:
+		mStageEditorCamera->ImGuiUpdate();
+		break;
 	}
-	else if (mType == CAMERA_TYPE::DEBUG)
-	{
-
-	}
-	else if (mType == CAMERA_TYPE::TITLE_CAMERA)
-	{
-		ImGui::InputFloat("startEye.x", &mTitleData.mEye.x, 1);
-		ImGui::InputFloat("startEye.y", &mTitleData.mEye.y, 1);
-		ImGui::InputFloat("startEye.z", &mTitleData.mEye.z, 1);
-		ImGui::SliderFloat("startFront.x", &mTitleData.mFront.x, -1, 1);
-		ImGui::SliderFloat("startFront.y", &mTitleData.mFront.y, -1, 1);
-		ImGui::SliderFloat("startFront.z", &mTitleData.mFront.z, -1, 1);
-		ImGui::SliderFloat("lerpMin", &mTitleData.mMinLerp, 0, 1);
-		ImGui::SliderFloat("lerpMax", &mTitleData.mMaxLerp, 0, 1);
-		ImGui::InputFloat("startTime", &mTitleData.startTime, 0.1f);
-		ImGui::SliderFloat("lerp change amount", &mTitleData.mLerpChangeAmount, 0, 1);
-		ImGui::Checkbox("start flag", &mTitleSceneChangeFlag);
-		if (!mTitleSceneChangeFlag)
-		{
-			mCamera->SetEye(mTitleData.mEye);
-			mCamera->SetFocus(mTitleData.mEye + mTitleData.mFront);
-			time = 0;
-		}
-		if (ImGui::Button("save"))
-		{
-			SaveTitleData();
-		}
-	}
-
 	ImGui::End();
 #endif
 
@@ -83,17 +80,23 @@ void CameraOperation::Update(float elapsedTime)
 		DebugCamera();
 		break;
 	case CAMERA_TYPE::TITLE_CAMERA:
-		TitleCamera(elapsedTime);
+		mTitleCamera->Update(elapsedTime);
+		break;
+	case CAMERA_TYPE::PLAY:
+		mPlayCamera->Update(elapsedTime);
+		break;
+	case CAMERA_TYPE::STAGE_EDITOR:
+		mStageEditorCamera->Update(elapsedTime);
 		break;
 	}
 }
 //デバックカメラ
 void CameraOperation::DebugCamera()
 {
-	VECTOR3F focusF = mCamera->GetFocus();
-	VECTOR3F upF = mCamera->GetUp();
-	VECTOR3F rightF = mCamera->GetRight();
-	VECTOR3F eyeF = mCamera->GetEye();
+	VECTOR3F focusF = mCamera.lock()->GetFocus();
+	VECTOR3F upF = mCamera.lock()->GetUp();
+	VECTOR3F rightF = mCamera.lock()->GetRight();
+	VECTOR3F eyeF = mCamera.lock()->GetEye();
 	POINT cursor;
 	::GetCursorPos(&cursor);
 
@@ -165,67 +168,8 @@ void CameraOperation::DebugCamera()
 		DirectX::XMVECTOR eye = DirectX::XMVectorSubtract(focus, DirectX::XMVectorMultiply(front, distance));
 		DirectX::XMStoreFloat3(&eyeF, eye);
 		DirectX::XMStoreFloat3(&upF, up);
-		mCamera->SetEye(eyeF);
-		mCamera->SetFocus(focusF);
-		mCamera->SetUp(upF);
+		mCamera.lock()->SetEye(eyeF);
+		mCamera.lock()->SetFocus(focusF);
+		mCamera.lock()->SetUp(upF);
 	}
 }
-//タイトルシーンのカメラ
-void CameraOperation::TitleCamera(float elapsedTime)
-{
-	if (!mTitleSceneChangeFlag)return;//spaceキーが押されたかどうか
-	time += elapsedTime;
-	//押されてから一定時間がたったかどうか
-	if (time >= mTitleData.startTime)
-	{
-		VECTOR3F eye = mCamera->GetEye();
-		DirectX::XMVECTOR eyeVecc = DirectX::XMLoadFloat3(&eye);
-		DirectX::XMVECTOR endPosVecc = DirectX::XMLoadFloat3(&mTitleData.endPosition);
-		float length = 0;
-		DirectX::XMStoreFloat(&mLerpMovement, DirectX::XMVectorLerp(DirectX::XMLoadFloat(&mTitleData.mMinLerp), DirectX::XMLoadFloat(&mTitleData.mMaxLerp), mTitleData.mLerpChangeAmount*60*elapsedTime));
-		//カメラのeye座標からendPosition(最終座標)までlerp関数で移動する
-		eyeVecc = DirectX::XMVectorLerp(eyeVecc, endPosVecc, mLerpMovement);
-		//カメラのeye座標からendPosition(最終座標)までの距離を測る
-		DirectX::XMStoreFloat(&length, DirectX::XMVector3Length(DirectX::XMVectorSubtract(eyeVecc, endPosVecc)));
-		DirectX::XMStoreFloat3(&eye, eyeVecc);
-		mCamera->SetEye(eye);
-		mCamera->SetFocus(eye + mTitleData.mFront);
-		//距離が一定以下かどうか
-		if (length <= 20)
-		{
-			mEndTitleFlag = true;
-		}
-	}
-}
-
-//titleDataのロード
-void CameraOperation::LoadTitleData()
-{
-	FILE* fp;
-	if (fopen_s(&fp, "Data/file/Title_camera.bin", "rb") == 0)
-	{
-		fread(&mTitleData, sizeof(TitleCameraData), 1, fp);
-		fclose(fp);
-	}
-	else
-	{
-		mTitleData.mEye = mCamera->GetEye();
-		VECTOR3F front = mCamera->GetFocus() - mTitleData.mEye;
-		DirectX::XMStoreFloat3(&mTitleData.mFront, DirectX::XMVector3Normalize(DirectX::XMLoadFloat3(&front)));
-		mTitleData.endPosition = VECTOR3F(0, 0, 100);
-	}
-	mCamera->SetEye(mTitleData.mEye);
-	mCamera->SetFocus(mTitleData.mEye + mTitleData.mFront);
-}
-//titleDataのセーブ
-void CameraOperation::SaveTitleData()
-{
-	FILE* fp;
-	fopen_s(&fp, "Data/file/Title_camera.bin", "wb");
-
-	fwrite(&mTitleData, sizeof(TitleCameraData), 1, fp);
-	fclose(fp);
-
-
-}
-

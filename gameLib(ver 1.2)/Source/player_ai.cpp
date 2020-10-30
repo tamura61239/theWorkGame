@@ -35,17 +35,6 @@ void PlayerAI::Load()
 		mParameter.ranp = VECTOR3F(0, 200, 0);
 		mParameter.gravity = -9.8f * 60;
 	}
-	if (fopen_s(&fp, "Data/file/playerCameraParameter.bin", "rb") == 0)
-	{
-		fread(&mCameraParameter, sizeof(CameraParameter), 1, fp);
-		fclose(fp);
-	}
-	else
-	{
-		mCameraParameter.angle = 3.14f * 0.75f;
-		mCameraParameter.length = 60;
-		mCameraParameter.y = 25;
-	}
 }
 
 void PlayerAI::Save()
@@ -55,12 +44,8 @@ void PlayerAI::Save()
 	fwrite(&mParameter, sizeof(PlayerParameter), 1, fp);
 	fclose(fp);
 
-	fopen_s(&fp, "Data/file/playerCameraParameter.bin", "wb");
-	fwrite(&mCameraParameter, sizeof(CameraParameter), 1, fp);
-	fclose(fp);
 
 }
-static bool play = false;
 void PlayerAI::ImGuiUpdate()
 {
 #ifdef USE_IMGUI
@@ -83,10 +68,6 @@ void PlayerAI::ImGuiUpdate()
 		mCharacter->SetMinSpeed(mParameter.minSpeed);
 	}
 	ImGui::InputFloat("gravity", &mParameter.gravity,10);
-	ImGui::Text("camera data");
-	ImGui::SliderFloat("camera angle", &mCameraParameter.angle, -3.14f, 3.14f);
-	ImGui::InputFloat("camera length", &mCameraParameter.length, 10);
-	ImGui::InputFloat("camera y", &mCameraParameter.y, 5);
 	if (ImGui::Button("save"))
 	{
 		Save();
@@ -96,11 +77,9 @@ void PlayerAI::ImGuiUpdate()
 		mCharacter->SetPosition(VECTOR3F(0, 10, 0));
 		mCharacter->SetBeforePosition(VECTOR3F(0, 10, 0));
 		mCharacter->SetVelocity(VECTOR3F(0, 0, 0));
+		mCharacter->SetAngle(VECTOR3F(0, 0, 0));
 		mCharacter->CalculateBoonTransform(0);
 		mCharacter->SetMoveState(PlayerCharacter::MOVESTATE::LANDING);
-		pCamera.GetCamera()->SetEye(mCharacter->GetPosition() + VECTOR3F(sinf(mCameraParameter.angle) * mCameraParameter.length, mCameraParameter.y, cosf(mCameraParameter.angle) * mCameraParameter.length) * gameObjScale);
-		pCamera.GetCamera()->SetFocus(mCharacter->GetPosition());
-		pCamera.GetCamera()->SetUp(VECTOR3F(0, 1, 0));
 
 	}
 	ImGui::Checkbox("play", &mPlayFlag);
@@ -112,31 +91,25 @@ void PlayerAI::ImGuiUpdate()
 }
 
 
-void PlayerAI::Update(float elapsd_time, StageManager* manager)
+void PlayerAI::Update(float elapsd_time, StageManager* manager, StageOperation* operation)
 {
 	if (!mPlayFlag)
 	{
-		if (pCamera.GetCameraOperation()->GetCameraType() == CameraOperation::CAMERA_TYPE::DEBUG)return;
-		pCamera.GetCamera()->SetEye(mCharacter->GetPosition() + VECTOR3F(sinf(mCameraParameter.angle) * mCameraParameter.length, mCameraParameter.y, cosf(mCameraParameter.angle) * mCameraParameter.length) * gameObjScale);
-		pCamera.GetCamera()->SetFocus(mCharacter->GetPosition());
-		pCamera.GetCamera()->SetUp(VECTOR3F(0, 1, 0));
+		pCameraManager.GetCameraOperation()->GetPlayCamera()->SetPlayerPosition(mCharacter->GetPosition());
 		mCharacter->CalculateBoonTransform(0);
-
+		mCharacter->SetGorlFlag(false);
 		return;
 	}
-	pCamera.GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::NORMAL);
+	//pCamera.GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::NORMAL);
 	if (mCharacter->GetPosition().y < -1000)
 	{
-		mPlayFlag = false;
 		mCharacter->SetPosition(VECTOR3F(0, 10, 0));
 		mCharacter->SetBeforePosition(VECTOR3F(0, 10, 0));
 		mCharacter->SetVelocity(VECTOR3F(0, 0, 0));
+		mCharacter->SetAngle(VECTOR3F(0, 0, 0));
 		mCharacter->CalculateBoonTransform(0);
-		pCamera.GetCamera()->SetEye(mCharacter->GetPosition() + VECTOR3F(sinf(mCameraParameter.angle) * mCameraParameter.length, mCameraParameter.y, cosf(mCameraParameter.angle) * mCameraParameter.length) * gameObjScale);
-		pCamera.GetCamera()->SetFocus(mCharacter->GetPosition());
-		pCamera.GetCamera()->SetUp(VECTOR3F(0, 1, 0));
-
-
+		pCameraManager.GetCameraOperation()->GetPlayCamera()->SetPlayerPosition(mCharacter->GetPosition());
+		operation->Reset(manager);
 		return;
 	}
 	VECTOR3F velocity = mCharacter->GetVelocity();
@@ -152,7 +125,6 @@ void PlayerAI::Update(float elapsd_time, StageManager* manager)
 	switch (mCharacter->GetMoveState())
 	{
 	case PlayerCharacter::MOVESTATE::MOVE:
-		accel.x = mParameter.accel.x * 2.f;
 		accel.z = mParameter.accel.z * 2.f;
 		break;
 	case PlayerCharacter::MOVESTATE::JUMP:
@@ -160,7 +132,6 @@ void PlayerAI::Update(float elapsd_time, StageManager* manager)
 		{
 			velocity.y = mParameter.jump.y;
 		}
-		accel.x = mParameter.accel.x;
 		accel.z = mParameter.accel.z;
 		mCharacter->SetMoveState(PlayerCharacter::MOVESTATE::LANDING);
 		break;
@@ -169,22 +140,28 @@ void PlayerAI::Update(float elapsd_time, StageManager* manager)
 		{
 			velocity.y = mParameter.ranp.y;
 		}
-		accel.x = mParameter.accel.x;
 		accel.z = mParameter.accel.z;
 		mCharacter->SetMoveState(PlayerCharacter::MOVESTATE::LANDING);
 
 		break;
 	case PlayerCharacter::MOVESTATE::LANDING:
-		accel.x = mParameter.accel.x;
 		accel.z = mParameter.accel.z;
 		break;
+	}
+	if (mCharacter->GetGorlFlag())
+	{
+		VECTOR3F angle = mCharacter->GetAngle();
+		if (angle.y < DirectX::XMConvertToRadians(135))
+		{
+			angle.y += 3.14f * elapsd_time * 1.05f;
+			mCharacter->SetAngle(angle);
+		}
+		accel.z = -velocity.z * 3.f;
 	}
 	mCharacter->SetAccel(accel);
 	mCharacter->SetVelocity(velocity);
 	mCharacter->Move(elapsd_time);
-	Judgment::Judge(mCharacter.get(), manager);
-	pCamera.GetCamera()->SetEye(mCharacter->GetPosition() + VECTOR3F(sinf(mCameraParameter.angle) * mCameraParameter.length, mCameraParameter.y, cosf(mCameraParameter.angle) * mCameraParameter.length) * gameObjScale);
-	pCamera.GetCamera()->SetFocus(mCharacter->GetPosition());
-	pCamera.GetCamera()->SetUp(VECTOR3F(0, 1, 0));
+	if (!mCharacter->GetGorlFlag())Judgment::Judge(mCharacter.get(), manager);
+	pCameraManager.GetCameraOperation()->GetPlayCamera()->SetPlayerPosition(mCharacter->GetPosition());
 	mCharacter->CalculateBoonTransform(elapsd_time);
 }

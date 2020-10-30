@@ -85,6 +85,14 @@ void Judgment::Judge(PlayerCharacter* player, StageManager* manager)
 			}
 
 			break;
+		case 2:
+			stageMin = stage->GetPosition() - stage->GetScale() * VECTOR3F(1.5f, 3, 0.5f);
+			stageMax = stage->GetPosition() + stage->GetScale() * VECTOR3F(1.5f, 3, 0.5f);
+			if (Collision::IsHitAABB(playerMin, playerMax, stageMin, stageMax, nullptr))
+			{
+				player->SetGorlFlag(true);
+			}
+			break;
 		}
 	}
 	pHitAreaDrow.SetCube(playerMin, playerMax);

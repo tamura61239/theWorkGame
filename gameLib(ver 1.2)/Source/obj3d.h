@@ -24,11 +24,11 @@ public:
 	void SetScale(const VECTOR3F&scale) { mScale = scale; }
 	void SetColor(const VECTOR4F& color) { mColor = color; }
 	//getter
-	const VECTOR3F& GetPosition() { return mPosition; }
-	const VECTOR3F& GetAngle() { return mAngle; }
-	const VECTOR3F& GetScale() { return mScale; }
-	const VECTOR4F& GetColor() { return mColor; }
-	const FLOAT4X4& GetWorld() { return mWorld; }
+	VECTOR3F& GetPosition() { return mPosition; }
+	VECTOR3F& GetAngle() { return mAngle; }
+	VECTOR3F& GetScale() { return mScale; }
+	VECTOR4F& GetColor() { return mColor; }
+	FLOAT4X4& GetWorld() { return mWorld; }
 protected:
 	VECTOR3F mPosition;
 	VECTOR3F mAngle;

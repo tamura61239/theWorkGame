@@ -71,11 +71,7 @@ void StageOperation::Update(float elapsd_time, StageManager* manager, const bool
 			if (mColorType >= 2)mColorType = 0;
 		}
 	}
-	if (mChangFlag)
-	{
-		SetStageColor(manager);
-		mChangFlag = false;
-	}
+	SetStageColor(manager);
 }
 
 void StageOperation::SetStageColor(StageManager* manager)
@@ -92,5 +88,5 @@ void StageOperation::SetStageColor(StageManager* manager)
 			break;
 		}
 	}
-
+	mChangFlag = false;
 }

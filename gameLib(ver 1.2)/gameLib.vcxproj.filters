@@ -82,6 +82,18 @@
     <Filter Include="シェーダー\particle_render">
       <UniqueIdentifier>{40a2e2b5-b5fa-4fed-92a8-249484203e64}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Player">
+      <UniqueIdentifier>{cd2832f0-c81a-4330-aa63-cf7cbfca6eca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Player">
+      <UniqueIdentifier>{910f18a4-901a-4d2e-a2bf-7563660e28b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Camera">
+      <UniqueIdentifier>{f7a17061-b610-4a6c-ab5e-7b75cd97b7b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Camera">
+      <UniqueIdentifier>{a26b2fc9-c19c-4e12-9ef1-6a00d10fc4b7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="External_Libraries\imgui\imgui.cpp">
@@ -106,15 +118,6 @@
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
     <ClCompile Include="Source\board.cpp">
-      <Filter>gameLib\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\camera.cpp">
-      <Filter>gameLib\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\camera_manager.cpp">
-      <Filter>gameLib\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\camera_operation.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
     <ClCompile Include="Source\direct_input.cpp">
@@ -204,17 +207,8 @@
     <ClCompile Include="Source\bloom.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Source\player.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="Source\character.cpp">
       <Filter>gameLib\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\player_character.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\player_ai.cpp">
-      <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Judgment.cpp">
       <Filter>ソース ファイル</Filter>
@@ -297,6 +291,42 @@
     <ClCompile Include="Source\fade.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="Source\stage_editor.cpp">
+      <Filter>ソース ファイル\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\player.cpp">
+      <Filter>ソース ファイル\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\player_ai.cpp">
+      <Filter>ソース ファイル\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\player_character.cpp">
+      <Filter>ソース ファイル\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\camera.cpp">
+      <Filter>ソース ファイル\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\camera_manager.cpp">
+      <Filter>ソース ファイル\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\camera_operation.cpp">
+      <Filter>ソース ファイル\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\title_camera_operation.cpp">
+      <Filter>ソース ファイル\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\play_camera_operation.cpp">
+      <Filter>ソース ファイル\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\stage_editor_camera_operation.cpp">
+      <Filter>ソース ファイル\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\scene_editor.cpp">
+      <Filter>ソース ファイル\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game_ui_move.cpp">
+      <Filter>ソース ファイル\UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="External_Libraries\imgui\imconfig.h">
@@ -327,15 +357,6 @@
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
     <ClInclude Include="Source\board.h">
-      <Filter>gameLib\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\camera.h">
-      <Filter>gameLib\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\camera_manager.h">
-      <Filter>gameLib\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\camera_operation.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
     <ClInclude Include="Source\direct_input.h">
@@ -446,20 +467,11 @@
     <ClInclude Include="Source\bloom.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\player.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="Source\obj3d.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
     <ClInclude Include="Source\character.h">
       <Filter>gameLib\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\player_character.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\player_ai.h">
-      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Judgment.h">
       <Filter>ヘッダー ファイル</Filter>
@@ -541,6 +553,45 @@
     </ClInclude>
     <ClInclude Include="Source\fade.h">
       <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\stage_editor.h">
+      <Filter>ヘッダー ファイル\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\player.h">
+      <Filter>ヘッダー ファイル\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\player_ai.h">
+      <Filter>ヘッダー ファイル\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\player_character.h">
+      <Filter>ヘッダー ファイル\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\camera.h">
+      <Filter>ヘッダー ファイル\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\camera_manager.h">
+      <Filter>ヘッダー ファイル\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\camera_operation.h">
+      <Filter>ヘッダー ファイル\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\title_camera_operation.h">
+      <Filter>ヘッダー ファイル\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\play_camera_operation.h">
+      <Filter>ヘッダー ファイル\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\stage_editor_camera_operation.h">
+      <Filter>ヘッダー ファイル\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\scene_editor.h">
+      <Filter>ヘッダー ファイル\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game_ui_move.h">
+      <Filter>ヘッダー ファイル\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\time_ui.h">
+      <Filter>ヘッダー ファイル\UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

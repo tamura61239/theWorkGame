@@ -1,51 +1,40 @@
 #pragma once
-#include"camera.h"
-#include<memory>
+#include"title_camera_operation.h"
+#include"play_camera_operation.h"
+#include"stage_editor_camera_operation.h"
 
 class CameraOperation
 {
 public:
-	CameraOperation(std::shared_ptr<Camera>camera);
+	CameraOperation(std::shared_ptr<Camera>camera,int scene);
 	void ImGuiUpdate();
 	void Update(float elapsedTime);
 	void DebugCamera();
-	void TitleCamera(float elapsedTime);
-	void LoadTitleData();
-	void SaveTitleData();
-	const bool GetTitleSceneChangeFlag() { return mTitleSceneChangeFlag; }
-	void SetTitleSceneChangeFlag(const bool flag) { mTitleSceneChangeFlag = flag; }
-	const bool GetEndTitleFlag() { return mEndTitleFlag; }
-	void SetEndPosition(const VECTOR3F& end) { mTitleData.endPosition = end; }
-	enum CAMERA_TYPE
+	TitleCameraOperation* GetTitleCamera() { return mTitleCamera.get(); }
+	PlayCameraOperation* GetPlayCamera() { return mPlayCamera.get(); }
+	StageEditorCameraOperation* GetStageEditorCamera(){ return mStageEditorCamera.get(); }
+	enum class CAMERA_TYPE
 	{
 		NORMAL,
 		DEBUG,
-		TITLE_CAMERA
-	};
-	struct TitleCameraData
-	{
-		VECTOR3F mEye;
-		VECTOR3F mFront;
-		float mMinLerp;
-		float mMaxLerp;
-		float mLerpChangeAmount;
-		float startTime;
-		VECTOR3F endPosition;
+		TITLE_CAMERA,
+		PLAY,
+		STAGE_EDITOR
 	};
 	//setter
 	void SetCameraType(CAMERA_TYPE type) { mType = type; }
+	//getter
 	CAMERA_TYPE GetCameraType() { return mType; }
 private:
-	std::shared_ptr<Camera>mCamera;
-	TitleCameraData mTitleData;
+	std::unique_ptr<TitleCameraOperation>mTitleCamera;
+	std::unique_ptr<PlayCameraOperation>mPlayCamera;
+	std::unique_ptr<StageEditorCameraOperation>mStageEditorCamera;
+	std::weak_ptr<Camera>mCamera;
 	CAMERA_TYPE mType;
 	//DebugCamera
 	VECTOR2F oldCursor;
 	VECTOR2F newCursor;
 	float distance;
 	VECTOR2F rotate;
-	float time;
-	bool mTitleSceneChangeFlag;
-	bool mEndTitleFlag;
-	float mLerpMovement;
+	int mScene;
 };

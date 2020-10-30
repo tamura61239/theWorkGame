@@ -135,7 +135,7 @@ void SelectSceneParticle::ImGuiUpdate()
 void SelectSceneParticle::Update(float elapsdTime, ID3D11DeviceContext* context)
 {
 	mCb.elapsdTime = elapsdTime;
-	mCbStart.eye = pCamera.GetCamera()->GetEye();
+	mCbStart.eye = pCameraManager.GetCamera()->GetEye();
 	mCbStart.eye.y = 0;
 	if (mUAV.Get() == nullptr)return;
 	context->CSSetUnorderedAccessViews(2, 1, mRenderUAV.GetAddressOf(), nullptr);

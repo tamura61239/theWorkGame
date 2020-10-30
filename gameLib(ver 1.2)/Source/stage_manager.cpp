@@ -3,13 +3,13 @@
 #include"camera_manager.h"
 #include"key_board.h"
 #include"gpu_particle_manager.h"
+int StageManager::mMaxStage = 0;
 /***********************初期化*************************/
-StageManager::StageManager(ID3D11Device* device, int width, int height):stageNo(3),mWidth(static_cast<float>(width)), mHeight(static_cast<float>(height)), dragObjNumber(-1)
+StageManager::StageManager(ID3D11Device* device, int width, int height) :stageNo(3), mWidth(static_cast<float>(width)), mHeight(static_cast<float>(height)), dragObjNumber(-1)
 {
 	mMeshs.push_back(std::make_shared<StaticMesh>(device, "Data/FBX/000_cube.fbx"));
 	mMeshs.push_back(std::make_shared<StaticMesh>(device, "Data/FBX/jumpstand.fbx"));
 	mMeshs.push_back(std::make_shared<StaticMesh>(device, "Data/FBX/go-ru.fbx"));
-	mDragOperation = std::make_shared<StageObjDragOperation>(device);
 	mRender = std::make_unique<MeshRender>(device);
 	{
 		D3D11_BUFFER_DESC bufferDesc = {};
@@ -30,8 +30,8 @@ StageManager::StageManager(ID3D11Device* device, int width, int height):stageNo(
 	};
 
 	mVelocityShader = std::make_unique<DrowShader>(device, "Data/shader/static_mesh_blur_vs.cso", "", "Data/shader/static_mesh_blur_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
-	mDeferredShader = std::make_unique<DrowShader>(device, "Data/shader/static_mesh_vs.cso", "", "Data/shader/deferred_depth_static_mesh_ps.cso", inputElementDesc,ARRAYSIZE(inputElementDesc));
-	StageCount();
+	mDeferredShader = std::make_unique<DrowShader>(device, "Data/shader/static_mesh_vs.cso", "", "Data/shader/deferred_depth_static_mesh_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
+	mEditor = std::make_unique<StageEditor>(device, 1920, 1080);
 }
 void StageManager::StageCount()
 {
@@ -103,71 +103,31 @@ void StageManager::Save()
 void StageManager::ImGuiUpdate()
 {
 #ifdef USE_IMGUI
-	MouseToWorld();
-	if (dragObjNumber == -1)
+	mEditor->Update(mStageObjs);
+	switch (mEditor->GetFileState())
 	{
-		if (pKeyBoad.RisingState(VK_LBUTTON))
-		{
-			dragObjNumber = CheckMouseDragObj();
-			if(dragObjNumber!=-1)mDragOperation->DragStart(mFarMouse, mStageObjs[dragObjNumber]->GetMesh()->GetMinPosition(), mStageObjs[dragObjNumber]->GetMesh()->GetMaxPosition());
-		}
-	}
-	ImGui::Begin("stage editer");
-	int num = stageNo;
-	for (int i = 0;i < 5;i++)
-	{
-		std::string name = "sateg";
-		name += std::to_string(i);
-		ImGui::RadioButton(name.c_str(), &stageNo, i);
-		if (i < 4)ImGui::SameLine();
-	}
-	if (num != stageNo)
-	{
+	case 1:
 		Clear();
 		Load();
+		break;
+	case 2:
+		Save();
+		break;
 	}
-	if (ImGui::CollapsingHeader("create stage obj"))
+	mEditor->ClearFileState();
+	if (mEditor->GetCreateFlag())
 	{
-		static int objNo = 0;
-		static const char* StageObjNames[] =
-		{
-			"floor","gimmick","goal"
-		};
-		ImGui::Combo("stage obj", &objNo, StageObjNames, 3);
-		if (ImGui::Button("create"))
-		{
-			dragObjNumber = static_cast<int>(mStageObjs.size());
-			mStageObjs.push_back(std::make_shared<StageObj>(mMeshs[objNo]));
-		}
+		StageData data = mEditor->GetCreateData();
+		mStageObjs.push_back(std::make_shared<StageObj>(mMeshs[data.mObjType]));
+		mStageObjs.back()->SetStageData(data);
+		mEditor->ClearCreateData();
 	}
-	ImGui::Text("dragNumber%d", dragObjNumber);
-	ImGui::End();
-	//stageobjのドラッグ
-	if (dragObjNumber != -1)
+	int deleteNo = mEditor->GetDeleteNo();
+	if (deleteNo != -1)
 	{
-		dragObjNumber = mDragOperation->Update(mStageObjs[dragObjNumber], mNearMouse, mFarMouse, dragObjNumber);
+		mStageObjs.erase(mStageObjs.begin() + deleteNo);
 	}
 #endif
-}
-/******************マウスでドラッグするオブジェクト判定*********************/
-int StageManager::CheckMouseDragObj()
-{
-	int objNumber = -1;
-	float minLength = 10000;
-	VECTOR3F position, normal;
-	for (int i = 0;i < static_cast<int>(mStageObjs.size());i++)
-	{
-		float length = 0;
-		if (mStageObjs[i]->RayPick(mNearMouse,mFarMouse,&position,&normal, &length) != -1)
-		{
-			if (minLength > length)
-			{
-				objNumber = i;
-				minLength = length;
-			}
-		}
-	}
-	return objNumber;
 }
 /******************更新**********************/
 void StageManager::Update(float elapsd_time)
@@ -180,6 +140,7 @@ void StageManager::Update(float elapsd_time)
 /***************描画******************/
 void StageManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const int stageState, DrowShader* srv)
 {
+	VECTOR4F color[2];
 	if (srv == nullptr)
 	{
 		mRender->Begin(context, view, projection);
@@ -187,20 +148,17 @@ void StageManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, co
 		{
 			int state = stage->GetStageData().mColorType + stageState;
 			if (state % 2 == 1)continue;
+			color[0] = stage->GetColor();
 			mRender->Render(context, stage->GetMesh(), stage->GetWorld(), stage->GetColor());
 		}
-		mRender->End(context);
-
-		//pGpuParticleManager.Render(context, view, projection);
-
-		mRender->Begin(context, view, projection);
-
 		for (auto& stage : mStageObjs)
 		{
 			int state = stage->GetStageData().mColorType + stageState;
 			if (state % 2 == 0)continue;
+			color[1] = stage->GetColor();
 			mRender->Render(context, stage->GetMesh(), stage->GetWorld(), stage->GetColor());
 		}
+		mEditor->EditorCreateObjImageRender(context, mMeshs.at(mEditor->GetCreateData().mObjType).get(), mRender.get(), color[mEditor->GetCreateData().mColorType]);
 		mRender->End(context);
 	}
 	else
@@ -212,12 +170,6 @@ void StageManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, co
 			if (state % 2 == 1)continue;
 			mRender->Render(context, srv, stage->GetMesh(), stage->GetWorld(), stage->GetColor());
 		}
-		mRender->End(context);
-
-		//pGpuParticleManager.Render(context, view, projection);
-
-		mRender->Begin(context, view, projection);
-
 		for (auto& stage : mStageObjs)
 		{
 			int state = stage->GetStageData().mColorType + stageState;
@@ -227,7 +179,23 @@ void StageManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, co
 		mRender->End(context);
 
 	}
-	//mDragOperation->Render(context, mRender.get(),view,projection);
+	mRender->Begin(context, view, projection, true);
+	for (auto& stage : mStageObjs)
+	{
+		if (stage->GetStageData().mObjType ==2)
+		{
+			Obj3D obj;
+			obj.SetAngle(stage->GetAngle());
+			obj.SetScale(stage->GetScale()*VECTOR3F(1.5f,3,0.5f));
+			obj.SetPosition(stage->GetPosition()+VECTOR3F(0,obj.GetScale().y,0));
+			obj.CalculateTransform();
+			mRender->Render(context, mMeshs.at(mEditor->GetCreateData().mObjType).get(), obj.GetWorld(), VECTOR4F(1, 1, 1, 1));
+			continue;
+		}
+		mRender->Render(context, mMeshs.at(mEditor->GetCreateData().mObjType).get(), stage->GetWorld(), VECTOR4F(1,1,1,1));
+	}
+	mRender->End(context);
+
 }
 void StageManager::RenderVelocity(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const int stageState)
 {
@@ -260,45 +228,28 @@ void StageManager::RenderVelocity(ID3D11DeviceContext* context, const FLOAT4X4& 
 	}
 	mRender->End(context);
 
-}
-/*******************マウス座標系からワールド座標系に変換**********************/
-void StageManager::ScreeenToWorld(VECTOR3F* worldPosition, const VECTOR3F& screenPosition)
-{
-	float viewportX = 0.0f;
-	float viewportY = 0.0f;
-	float viewportW = static_cast<float>(mWidth);
-	float viewportH = static_cast<float>(mHeight);
-	float viewportMinZ = 0.0f;
-	float viewportMaxZ = 1.0f;
-	// ビュー行列
-	DirectX::XMMATRIX V = DirectX::XMLoadFloat4x4(&pCamera.GetCamera()->GetView());
-	// プロジェクション行列
-	DirectX::XMMATRIX P = DirectX::XMLoadFloat4x4(&pCamera.GetCamera()->GetProjection());
-	// ワールド行列
-	DirectX::XMMATRIX W = DirectX::XMMatrixIdentity();//移動成分はいらないので単位行列を入れておく。
-	// スクリーン座標からNDC座標へ変換
-	DirectX::XMVECTOR NDCPos = DirectX::XMVectorSet(
-		2.0f * (screenPosition.x - viewportX) / viewportW - 1.0f,
-		1.0f - 2.0f * (screenPosition.y - viewportY) / viewportH,
-		(screenPosition.z - viewportMinZ) / (viewportMaxZ - viewportMinZ),
-		1.0f);
-	// NDC座標からワールド座標へ変換
-	DirectX::XMMATRIX WVP = W * V * P;
-	DirectX::XMMATRIX IWVP = DirectX::XMMatrixInverse(nullptr, WVP);
-	DirectX::XMVECTOR WPos = DirectX::XMVector3TransformCoord(NDCPos, IWVP);
-	DirectX::XMStoreFloat3(worldPosition, WPos);
 
 }
-
-void StageManager::MouseToWorld()
+void StageManager::SidoViewRender(ID3D11DeviceContext* context)
 {
-	POINT cursor;
-	GetCursorPos(&cursor);
-	ScreenToClient(Framework::Instance().GetHwnd(), &cursor);
-	VECTOR3F positionNear = VECTOR3F(static_cast<float>(cursor.x), static_cast<float>(cursor.y), 0);
-	VECTOR3F positionFar = VECTOR3F(static_cast<float>(cursor.x), static_cast<float>(cursor.y), 1);
+	if (!mEditor->GetEditorFlag())return;
+	FrameBuffer* frame = mEditor->GetStageSidoViewBuffer();
+	frame->Clear(context, 0.5f, 0.5f, 0.5f, 1);
+	frame->Activate(context);
+	mRender->Begin(context, mEditor->GetCamera()->GetView(), mEditor->GetCamera()->GetProjection());
+	for (auto& stage : mStageObjs)
+	{
+		int state = stage->GetStageData().mColorType;
+		if (state % 2 == 1)continue;
+		mRender->Render(context, stage->GetMesh(), stage->GetWorld(), stage->GetColor());
+	}
 
-	ScreeenToWorld(&mNearMouse, positionNear);
-	ScreeenToWorld(&mFarMouse, positionFar);
-
+	for (auto& stage : mStageObjs)
+	{
+		int state = stage->GetStageData().mColorType;
+		if (state % 2 == 0)continue;
+		mRender->Render(context, stage->GetMesh(), stage->GetWorld(), stage->GetColor());
+	}
+	frame->Deactivate(context);
+	mEditor->SidoViewRender(context);
 }

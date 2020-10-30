@@ -32,6 +32,9 @@ void UIManager::TitleInitialize(ID3D11Device* device)
 
 void UIManager::GameInitialize(ID3D11Device* device)
 {
+	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/number.png", VECTOR2F(63, 100), "count"));
+	mGameMove = std::make_unique<GameUiMove>();
+	mGameMove->SetUI(mUIs);
 	for (auto& ui : mUIs)
 	{
 		mNames.push_back(ui->GetName());
@@ -65,7 +68,7 @@ void UIManager::ImGuiUpdate()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("ui");
-	if (!mMoveStartFlag)
+	if (mUIs.size()!=0)
 	{
 		ImGui::Combo("name", &mUINumber, vector_getter, static_cast<void*>(&mNames), mNames.size());
 		{
@@ -86,6 +89,9 @@ void UIManager::ImGuiUpdate()
 			ImGui::SliderFloat("texture life top y", &data.mTextureLeftTop.y, 0, 1080);
 			ImGui::InputFloat("texture size x", &data.mTextureSize.x, 10);
 			ImGui::InputFloat("texture size y", &data.mTextureSize.y, 10);
+			mUIs[mUINumber]->SetUIData(data);
+
+			ImGui::Separator();
 			if (mSceneName._Equal("title"))
 			{
 				ImGui::Text("title data");
@@ -94,28 +100,44 @@ void UIManager::ImGuiUpdate()
 				ImGui::SliderFloat("start alpha", &titleData[mUINumber].startAlpha, 0, 1);
 				ImGui::SliderFloat("end alpha", &titleData[mUINumber].endAlpha, 0, 1);
 				ImGui::InputFloat("alpha amount", &titleData[mUINumber].alphaAmount, 0.1f);
-				if (ImGui::Button("title save"))
+				if (ImGui::Button("title move data save"))
 				{
 					mTitleMove->Save();
 				}
 				mTitleMove->SetTitleUIMove(titleData);
-				mUIs[mUINumber]->SetUIData(data);
-				for (int i = 0; i < 3; i++)
+				if (ImGui::Button("testMove"))
 				{
-					auto& ui = mUIs[i];
-
-					UI::UIData uiData = ui->GetUIData();
-					TitleUIMove::TitleUIMoveData moveData = mTitleMove->GetTitleUIMove()[i];
-					uiData.mColor.w = titleData[i].startAlpha;
-					ui->SetUIData(uiData);
+					mTitleMove->TextMove(mUIs);
+				}
+			}
+			else if (mSceneName._Equal("game"))
+			{
+				ImGui::Text("game data");
+				GameUiMove::GameUIData gameData = mGameMove->GetGameUIData();
+				ImGui::InputFloat("max time", &gameData.mMaxTime, 1);
+				ImGui::InputFloat("max count", &gameData.mMaxCount, 1);
+				mGameMove->SetGameUIData(gameData);
+				if (!mGameMove->GetTestFlag()&&!mGameMove->GetStartFlag())
+				{
+					mGameMove->SetUI(mUIs);
+					if (ImGui::Button("testMove"))
+					{
+						mGameMove->TestStart();
+					}
+				}
+				else
+				{
+					if (ImGui::Button("reset"))
+					{
+						ResetGameUI();
+					}
 				}
 			}
 
 		}
 
 	}
-	ImGui::Checkbox("move start", &mMoveStartFlag);
-	if (ImGui::Button("save"))
+	if (ImGui::Button("ui data save"))
 	{
 		Save(mSceneName.c_str());
 
@@ -129,19 +151,11 @@ void UIManager::Update(float elapsdTime)
 
 	if (mSceneName._Equal("title"))
 	{
-		if (!mMoveStartFlag)
-		{
-			mTitleMove->ResetTimer();
-			return;
-		}
 		mTitleMove->Update(elapsdTime, mUIs);
 	}
 	else if (mSceneName._Equal("game"))
 	{
-		if (!mMoveStartFlag)
-		{
-			return;
-		}
+		mGameMove->Update(elapsdTime, mUIs);
 	}
 }
 
@@ -160,12 +174,19 @@ void UIManager::Load(const char* scene)
 	fileName += scene;
 	fileName += "UI";
 	fileName += ".bin";
+	int fileSize = 0;
 	if (fopen_s(&fp, fileName.c_str(), "rb") == 0)
 	{
+		//ファイルサイズの取得
+		fseek(fp, 0, SEEK_END);
+
+		fileSize = ftell(fp);
+		//ファイルの先頭に戻す
+		fseek(fp, 0, SEEK_SET);
+
 		UI::UIData data;
-		for (int i=0;i<3;i++)
+		for (int i=0;i< fileSize/sizeof(UI::UIData);i++)
 		{
-			data = mUIs[i]->GetUIData();
 			fread(&data, sizeof(UI::UIData), 1, fp);
 			mUIs[i]->SetUIData(data);
 		}
@@ -182,9 +203,9 @@ void UIManager::Save(const char* scene)
 	fileName += ".bin";
 	fopen_s(&fp, fileName.c_str(), "wb");
 	{
-		for (int i = 0; i < 3; i++)
+		for (auto&ui:mUIs)
 		{
-			UI::UIData data = mUIs[i]->GetUIData();
+			UI::UIData data = ui->GetUIData();
 			fwrite(&data, sizeof(UI::UIData), 1, fp);
 		}
 		fclose(fp);

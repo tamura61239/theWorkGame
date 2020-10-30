@@ -53,7 +53,8 @@ private:
 		}
 	}
 private:
-	void ImGuiUpdate();
+	bool ImGuiUpdate();
+	bool EditorKey();
 	std::unique_ptr<Sprite>test;
 	std::unique_ptr<Sprite>nowLoading;
 	std::unique_ptr<Sprite>siro;
@@ -92,4 +93,6 @@ private:
 	bool stop;
 	int editorNo;
 	bool selectSceneFlag;
+	bool editorFlag;
+	bool testGame;
 };

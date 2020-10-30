@@ -8,6 +8,7 @@ class UI
 {
 public:
 	UI(ID3D11Device* device, const wchar_t* textureName,const VECTOR2F&textureSize,const char*name);
+	UI(){}
 	struct UIData
 	{
 		VECTOR2F mLeftPosition;
@@ -20,11 +21,12 @@ public:
 	//setter
 	void SetUIData(const UIData&data) { mData = data; }
 	//getter
-	const UIData GetUIData() { return mData; }
+	UIData GetUIData() { return mData; }
 	const std::string GetName() { return mUIName; }
+	virtual void Update(){}
 	//•`‰æ
-	void Render(ID3D11DeviceContext* context);
-private:
+	virtual void Render(ID3D11DeviceContext* context);
+protected:
 	UIData mData;
 	std::string mUIName;
 	std::unique_ptr<Sprite>mSprite;

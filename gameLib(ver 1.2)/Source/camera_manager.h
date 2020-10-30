@@ -5,7 +5,7 @@
 class CameraManager
 {
 public:
-	void CreateCamera(ID3D11Device*device);
+	void CreateCamera(ID3D11Device*device, const int scene);
 	void Update(float elapsed_time);
 	//setter
 	void SetDefaultPerspective(float fov, float aspect, float nearZ, float farZ)
@@ -33,4 +33,4 @@ private:
 	float defaultNearZ = 0;
 	float defaultFarZ = 0;
 };
-#define pCamera (CameraManager::GetInctance())
+#define pCameraManager (CameraManager::GetInctance())

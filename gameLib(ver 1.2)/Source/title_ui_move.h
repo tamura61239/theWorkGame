@@ -22,6 +22,18 @@ public:
 		float endAlpha;
 	};
 	const bool GetMoveChangeFlag() { return mMoveChangeFlag; }
+	void TextMove(std::vector<std::shared_ptr<UI>>uis)
+	{
+		mTimer = 0;
+		mMoveChangeFlag = false;
+		for (int i = 0; i < uis.size(); i++)
+		{
+			auto&uiData = uis[i]->GetUIData();
+			auto& data = mDatas[i];
+			uiData.mColor.w = data.startAlpha;
+			uis[i]->SetUIData(uiData);
+		}
+	}
 	std::vector<TitleUIMoveData>GetTitleUIMove() { return mDatas; }
 	void SetTitleUIMove(std::vector<TitleUIMoveData>datas) { mDatas = datas; }
 private:
