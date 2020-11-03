@@ -10,6 +10,7 @@ public:
 		TITLE,
 		SELECT,
 		GAME,
+		RESULT,
 		MAX,
 	};
 	enum class FADE_MODO
@@ -28,7 +29,7 @@ public:
 	//startä÷êî
 	void StartFadeIn()
 	{
-		if (mState == FADE_MODO::NONE)
+		//if (mState == FADE_MODO::NONE)
 		{
 			mState = FADE_MODO::FADEIN;
 			mNowFadeData.mData.mColor.w = 1;

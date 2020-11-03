@@ -36,13 +36,9 @@ int SceneEditor::Editor(bool* editorFlag, const int maxStageNumber)
 				ImGui::EndMenu();
 
 			}
-			if (ImGui::MenuItem("clear"))
+			if (ImGui::MenuItem("result"))
 			{
 				num = 4;
-			}
-			if (ImGui::MenuItem("over"))
-			{
-				num = 5;
 			}
 
 			ImGui::EndMenu();

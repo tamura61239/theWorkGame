@@ -294,9 +294,6 @@
     <ClCompile Include="Source\stage_editor.cpp">
       <Filter>ソース ファイル\Stage</Filter>
     </ClCompile>
-    <ClCompile Include="Source\player.cpp">
-      <Filter>ソース ファイル\Player</Filter>
-    </ClCompile>
     <ClCompile Include="Source\player_ai.cpp">
       <Filter>ソース ファイル\Player</Filter>
     </ClCompile>
@@ -325,6 +322,15 @@
       <Filter>ソース ファイル\Scene</Filter>
     </ClCompile>
     <ClCompile Include="Source\game_ui_move.cpp">
+      <Filter>ソース ファイル\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\scene_result.cpp">
+      <Filter>ソース ファイル\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ranking.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\result_ui_move.cpp">
       <Filter>ソース ファイル\UI</Filter>
     </ClCompile>
   </ItemGroup>
@@ -557,9 +563,6 @@
     <ClInclude Include="Source\stage_editor.h">
       <Filter>ヘッダー ファイル\Stage</Filter>
     </ClInclude>
-    <ClInclude Include="Source\player.h">
-      <Filter>ヘッダー ファイル\Player</Filter>
-    </ClInclude>
     <ClInclude Include="Source\player_ai.h">
       <Filter>ヘッダー ファイル\Player</Filter>
     </ClInclude>
@@ -590,7 +593,13 @@
     <ClInclude Include="Source\game_ui_move.h">
       <Filter>ヘッダー ファイル\UI</Filter>
     </ClInclude>
-    <ClInclude Include="Source\time_ui.h">
+    <ClInclude Include="Source\scene_result.h">
+      <Filter>ヘッダー ファイル\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\ranking.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\result_ui_move.h">
       <Filter>ヘッダー ファイル\UI</Filter>
     </ClInclude>
   </ItemGroup>

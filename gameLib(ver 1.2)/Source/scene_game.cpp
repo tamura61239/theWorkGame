@@ -140,6 +140,7 @@ void SceneGame::Update(float elapsed_time)
 				mStageSelect->SetSelectFlag(true);
 				fadeOut->Clear();
 				fadeOut->SetFadeScene(Fade::FADE_SCENE::GAME);
+				fadeOut->Clear();
 				fadeOut->StartFadeIn();
 				pGpuParticleManager.SetState(GpuParticleManager::STATE::GAME);
 				pCameraManager.GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::PLAY);
@@ -161,21 +162,28 @@ void SceneGame::Update(float elapsed_time)
 			fadeOut->Clear();
 			UIManager::GetInctance().GetGameUIMove()->Start();
 		}
+		else
+		{
+			int a = 0;
+		}
 	}
 	else if (fadeOut->GetFadeScene() == Fade::FADE_MODO::FADEOUT)
 	{
 		if (fadeOut->GetEndFlag())
 		{
 			fadeOut->Clear();
-			pSceneManager.ChangeScene(SCENETYPE::CLEAR);
 			pGpuParticleManager.ClearBuffer();
 			UIManager::GetInctance().Clear();
+			pSceneManager.ChangeScene(SCENETYPE::RESULT);
 
 			return;
 		}
 
 	}
-	UIManager::GetInctance().Update(elapsed_time);
+	if (!player->GetCharacter()->GetGorlFlag())
+	{
+		UIManager::GetInctance().Update(elapsed_time);
+	}
 	if (UIManager::GetInctance().GetGameUIMove()->GetCount() <= 0)
 	{
 		if (UIManager::GetInctance().GetGameUIMove()->GetStartFlag())
@@ -186,7 +194,7 @@ void SceneGame::Update(float elapsed_time)
 
 	mStageOperation->Update(elapsed_time, mSManager.get(), player->GetPlayFlag());
 	player->Update(elapsed_time, mSManager.get(),mStageOperation.get());
-	if (player->GetCharacter()->GetGorlFlag())
+	if (player->GetCharacter()->GetGorlFlag() && !testGame)
 	{
 		fadeOut->StartFadeOut();
 	}
@@ -204,9 +212,9 @@ bool SceneGame::ImGuiUpdate()
 	switch (pSceneManager.GetSceneEditor()->Editor(&editorFlag,StageManager::GetMaxStageCount()))
 	{
 	case 1:
-		pSceneManager.ChangeScene(SCENETYPE::TITLE);
 		pGpuParticleManager.ClearBuffer();
 		UIManager::GetInctance().Clear();
+		pSceneManager.ChangeScene(SCENETYPE::TITLE);
 		return true;
 		break;
 	case 2:
@@ -250,16 +258,10 @@ bool SceneGame::ImGuiUpdate()
 		pCameraManager.GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::PLAY);
 		break;
 	case 4:
-		pSceneManager.ChangeScene(SCENETYPE::CLEAR);
 		pGpuParticleManager.ClearBuffer();
 		UIManager::GetInctance().Clear();
 
-		return true;
-		break;
-	case 5:
-		pSceneManager.ChangeScene(SCENETYPE::OVER);
-		pGpuParticleManager.ClearBuffer();
-		UIManager::GetInctance().Clear();
+		pSceneManager.ChangeScene(SCENETYPE::RESULT);
 
 		return true;
 		break;

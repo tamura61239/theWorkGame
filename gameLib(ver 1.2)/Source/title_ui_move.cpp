@@ -4,6 +4,7 @@ TitleUIMove::TitleUIMove(const int UICount):mMoveChangeFlag(false)
 {
 	mDatas.resize(UICount);
 	Load();
+
 }
 
 void TitleUIMove::Update(float elapsdTime, std::vector<std::shared_ptr<UI>> uis)

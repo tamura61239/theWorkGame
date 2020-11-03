@@ -49,7 +49,7 @@ void Fade::ImGuiUpdate()
 	if (!mTestFlag)
 	{
 		static const int sceneMax = static_cast<int>(FADE_SCENE::MAX);
-		static const char* fadeNames[sceneMax] = { "TITLE","SELECT","GAME" };
+		static const char* fadeNames[sceneMax] = { "TITLE","SELECT","GAME","RESULT" };
 		ImGui::Combo("scene", &mEditorScene, fadeNames, sceneMax);
 		float* color[3] = { &mFadeDatas[mEditorScene].mData.mColor.x,&mFadeDatas[mEditorScene].mData.mColor.y ,&mFadeDatas[mEditorScene].mData.mColor.z };
 		ImGui::ColorEdit3("color", *color);
@@ -69,13 +69,15 @@ void Fade::ImGuiUpdate()
 		int state = static_cast<int>(mState);
 		if (ImGui::RadioButton("in", &state, 1))
 		{
+			mState = FADE_MODO::FADEIN;
 			mCheckFadeData.mData.mColor.w = 1;
 		}
 		if (ImGui::RadioButton("out", &state, 2))
 		{
+			mState = FADE_MODO::FADEOUT;
 			mCheckFadeData.mData.mColor.w = 0;
 		}
-		mState = static_cast<FADE_MODO>(state);
+		//mState = static_cast<FADE_MODO>(state);
 		ImGui::Text("state:%d", state);
 	}
 	int scene = static_cast<int>(mNowFadeData.mScene);
@@ -155,19 +157,13 @@ void Fade::Move(float elapsdTime, FadeScene* scene)
 		scene->mData.mColor.w -= elapsdTime * (1 / scene->mData.mInEndTime);
 		if (scene->mData.mColor.w <= 0)
 		{
-			scene->mData.mColor.w = 0;
 			scene->mEndFlag = true;
-			if (mTestFlag)
-			{
-
-			}
 		}
 		break;
 	case FADE_MODO::FADEOUT:
 		scene->mData.mColor.w += elapsdTime * (1 / scene->mData.mOutEndTime);
 		if (scene->mData.mColor.w >= 1)
 		{
-			scene->mData.mColor.w = 1;
 			scene->mEndFlag = true;
 		}
 		break;

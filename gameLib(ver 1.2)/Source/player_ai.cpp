@@ -110,16 +110,16 @@ void PlayerAI::Update(float elapsd_time, StageManager* manager, StageOperation* 
 		mCharacter->CalculateBoonTransform(0);
 		pCameraManager.GetCameraOperation()->GetPlayCamera()->SetPlayerPosition(mCharacter->GetPosition());
 		operation->Reset(manager);
+		mCharacter->SetAccel(VECTOR3F(0, 0, 0));
 		return;
 	}
+	//ゲーム中のキャラクターの動き
 	VECTOR3F velocity = mCharacter->GetVelocity();
 	VECTOR3F accel = mCharacter->GetAccel();
-	static float gravity = 0;
 	if (mCharacter->GetGroundFlag())
 	{
 		accel.y = 0;
 		velocity.y = 0;
-
 	}
 	accel.y += mParameter.gravity * elapsd_time * 60;
 	switch (mCharacter->GetMoveState())
@@ -148,6 +148,7 @@ void PlayerAI::Update(float elapsd_time, StageManager* manager, StageOperation* 
 		accel.z = mParameter.accel.z;
 		break;
 	}
+	//ゴールした時のキャラクターの動き
 	if (mCharacter->GetGorlFlag())
 	{
 		VECTOR3F angle = mCharacter->GetAngle();
@@ -157,10 +158,15 @@ void PlayerAI::Update(float elapsd_time, StageManager* manager, StageOperation* 
 			mCharacter->SetAngle(angle);
 		}
 		accel.z = -velocity.z * 3.f;
+		accel.y = 0;
+		velocity.y = 0;
 	}
+	//更新したデータのセット
 	mCharacter->SetAccel(accel);
 	mCharacter->SetVelocity(velocity);
+	//座標などの更新
 	mCharacter->Move(elapsd_time);
+	//ゴールについてない時の当たり判定
 	if (!mCharacter->GetGorlFlag())Judgment::Judge(mCharacter.get(), manager);
 	pCameraManager.GetCameraOperation()->GetPlayCamera()->SetPlayerPosition(mCharacter->GetPosition());
 	mCharacter->CalculateBoonTransform(elapsd_time);

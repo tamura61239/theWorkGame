@@ -5,10 +5,13 @@
 
 void UIManager::TitleInitialize(ID3D11Device* device)
 {
-	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/siro.png", VECTOR2F(1024, 1024), "scene"));
+	mDebugUIFrame = std::make_unique<UI>(device, L"Data/image/˜g.png", VECTOR2F(500, 500), "");
 	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/ƒ^ƒCƒgƒ‹.png", VECTOR2F(1000, 200), "title"));
 	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/startKey.png", VECTOR2F(500, 100), "key"));
 	mTitleMove = std::make_unique<TitleUIMove>(mUIs.size());
+	mSceneName = "title";
+	Load(mSceneName.c_str());
+
 	for (int i=0;i< mUIs.size();i++)
 	{
 		auto& ui = mUIs[i];
@@ -19,20 +22,26 @@ void UIManager::TitleInitialize(ID3D11Device* device)
 		data.mColor.w = moveData.startAlpha;
 		ui->SetUIData(data);
 	}
+
 	mUINumber = 0;
-	mSceneName = "title";
+	mDebugUIFrameFlag = false;
 #ifdef USE_IMGUI
 	mMoveStartFlag = false;
 #else
 	mMoveStartFlag = true;
 #endif
-	Load(mSceneName.c_str());
 
 }
 
 void UIManager::GameInitialize(ID3D11Device* device)
 {
-	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/number.png", VECTOR2F(63, 100), "count"));
+	mDebugUIFrame = std::make_unique<UI>(device, L"Data/image/˜g.png", VECTOR2F(500, 500), "");
+
+	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/number.png", VECTOR2F(62.f, 100), "count"));
+	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/number.png", VECTOR2F(62.f, 100), "time1000"));
+	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/number.png", VECTOR2F(62.f, 100), "time100"));
+	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/number.png", VECTOR2F(62.f, 100), "time10"));
+	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/number.png", VECTOR2F(62.f, 100), "time1"));
 	mGameMove = std::make_unique<GameUiMove>();
 	mGameMove->SetUI(mUIs);
 	for (auto& ui : mUIs)
@@ -42,6 +51,26 @@ void UIManager::GameInitialize(ID3D11Device* device)
 	mUINumber = 0;
 	mSceneName = "game";
 	Load(mSceneName.c_str());
+	mDebugUIFrameFlag = false;
+
+}
+
+void UIManager::ResultInitialize(ID3D11Device* device)
+{
+	mDebugUIFrame = std::make_unique<UI>(device, L"Data/image/˜g.png", VECTOR2F(500, 500), "");
+
+	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/retry.png", VECTOR2F(250, 80), "retry"));
+	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/title.png", VECTOR2F(250, 80), "title"));
+
+	mResultMove = std::make_unique<ResultUIMove>();
+	for (auto& ui : mUIs)
+	{
+		mNames.push_back(ui->GetName());
+	}
+	mUINumber = 0;
+	mSceneName = "result";
+	Load(mSceneName.c_str());
+	mDebugUIFrameFlag = false;
 
 }
 
@@ -68,6 +97,7 @@ void UIManager::ImGuiUpdate()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("ui");
+	ImGui::Checkbox("debug ui frame", &mDebugUIFrameFlag);
 	if (mUIs.size()!=0)
 	{
 		ImGui::Combo("name", &mUINumber, vector_getter, static_cast<void*>(&mNames), mNames.size());
@@ -85,15 +115,14 @@ void UIManager::ImGuiUpdate()
 			float* drowSize[2] = { &data.mDrowSize.x ,&data.mDrowSize.y };
 			ImGui::InputFloat2("size", *drowSize);
 			ImGui::Text("texture data");
-			ImGui::SliderFloat("texture life top x", &data.mTextureLeftTop.x, 0, 1920);
-			ImGui::SliderFloat("texture life top y", &data.mTextureLeftTop.y, 0, 1080);
-			ImGui::InputFloat("texture size x", &data.mTextureSize.x, 10);
-			ImGui::InputFloat("texture size y", &data.mTextureSize.y, 10);
-			mUIs[mUINumber]->SetUIData(data);
-
-			ImGui::Separator();
 			if (mSceneName._Equal("title"))
 			{
+				ImGui::SliderFloat("texture life top x", &data.mTextureLeftTop.x, 0, 1920);
+				ImGui::SliderFloat("texture life top y", &data.mTextureLeftTop.y, 0, 1080);
+				ImGui::InputFloat("texture size x", &data.mTextureSize.x, 10);
+				ImGui::InputFloat("texture size y", &data.mTextureSize.y, 10);
+				ImGui::Separator();
+
 				ImGui::Text("title data");
 				std::vector<TitleUIMove::TitleUIMoveData> titleData = mTitleMove->GetTitleUIMove();
 				ImGui::InputFloat("start time", &titleData[mUINumber].startTime, 0.1f);
@@ -112,11 +141,20 @@ void UIManager::ImGuiUpdate()
 			}
 			else if (mSceneName._Equal("game"))
 			{
+				ImGui::SliderFloat("texture life top x", &data.mTextureLeftTop.x, 0, 1920);
+				ImGui::SliderFloat("texture life top y", &data.mTextureLeftTop.y, 0, 1080);
+				ImGui::Separator();
+
 				ImGui::Text("game data");
 				GameUiMove::GameUIData gameData = mGameMove->GetGameUIData();
 				ImGui::InputFloat("max time", &gameData.mMaxTime, 1);
 				ImGui::InputFloat("max count", &gameData.mMaxCount, 1);
 				mGameMove->SetGameUIData(gameData);
+				if (ImGui::Button("game move data save"))
+				{
+					mGameMove->Save();
+				}
+
 				if (!mGameMove->GetTestFlag()&&!mGameMove->GetStartFlag())
 				{
 					mGameMove->SetUI(mUIs);
@@ -133,6 +171,7 @@ void UIManager::ImGuiUpdate()
 					}
 				}
 			}
+			mUIs[mUINumber]->SetUIData(data);
 
 		}
 
@@ -157,6 +196,10 @@ void UIManager::Update(float elapsdTime)
 	{
 		mGameMove->Update(elapsdTime, mUIs);
 	}
+	else if (mSceneName._Equal("result"))
+	{
+		mResultMove->Update(elapsdTime, mUIs);
+	}
 }
 
 void UIManager::Render(ID3D11DeviceContext* context)
@@ -164,6 +207,15 @@ void UIManager::Render(ID3D11DeviceContext* context)
 	for (auto& ui : mUIs)
 	{
 		ui->Render(context);
+#ifdef USE_IMGUI
+		if (!mDebugUIFrameFlag)continue;
+		auto& data = ui->GetUIData();
+		auto& data2 = mDebugUIFrame->GetUIData();
+		data2.mLeftPosition = data.mLeftPosition;
+		data2.mDrowSize = data.mDrowSize;
+		mDebugUIFrame->SetUIData(data2);
+		mDebugUIFrame->Render(context);
+#endif
 	}
 }
 

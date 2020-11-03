@@ -33,6 +33,5 @@ enum SCENETYPE
 {
 	TITLE,
 	GAME,
-	OVER,
-	CLEAR,
+	RESULT,
 };

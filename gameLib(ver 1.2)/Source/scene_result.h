@@ -6,18 +6,16 @@
 #include"sprite.h"
 #include"bloom.h"
 #include"blend_state.h"
-#include"character.h"
-#include"model_renderer.h"
-#include"static_obj.h"
+#include"ranking.h"
 #include"fade.h"
 
-class SceneTitle :public Scene
+class SceneResult :public Scene
 {
 public:
-	SceneTitle(ID3D11Device* device);
+	SceneResult(ID3D11Device* device);
 	void Update(float elapsed_time);
 	void Render(ID3D11DeviceContext* context, float elapsed_time);
-	~SceneTitle();
+	~SceneResult();
 private:
 	//Now Loading
 	std::unique_ptr<std::thread> loading_thread;
@@ -40,19 +38,13 @@ private:
 			loading_thread->join();
 		}
 	}
-private:
 	bool ImGuiUpdate();
-	std::unique_ptr<Sprite>test;
-	std::unique_ptr<BloomRender>bloom;
-	std::unique_ptr<FrameBuffer>frameBuffer;
-	std::unique_ptr<blend_state>blend[2];
-	std::unique_ptr<ModelRenderer>modelRender;
-	std::unique_ptr<Character>character;
-	//std::unique_ptr<ModelRenderer>modelRender;
-	//std::unique_ptr<Character>character;
-	std::unique_ptr<StaticObj>obj;
-	std::unique_ptr<MeshRender>mRender;
-	std::unique_ptr<Fade>mFade;
+private:
+	std::unique_ptr<Sprite>mNumberText;
+	float mNowGameTime;
 	bool mEditorFlag;
-	bool mTestMove;
+	int mEditorNo;
+	std::vector<std::unique_ptr<blend_state>>mBlend;
+	std::unique_ptr<Ranking>mRanking;
+	std::unique_ptr<Fade>mFade;
 };

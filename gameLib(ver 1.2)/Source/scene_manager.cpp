@@ -1,9 +1,9 @@
 #include "scene_manager.h"
 #include"scene_title.h"
 #include"scene_game.h"
-#include"scene_over.h"
-#include"scene_clear.h"
+#include"scene_result.h"
 #include"key_board.h"
+
 #ifdef USE_IMGUI
 #include <imgui.h>
 #endif
@@ -36,11 +36,8 @@ Scene* SceneManager::SceneSelect(const int sceneNum)
 	case SCENETYPE::GAME:
 		return new SceneGame(mDevice);
 		break;
-	case SCENETYPE::OVER:
-		return new SceneOver(mDevice);
-		break;
-	case SCENETYPE::CLEAR:
-		return new SceneClear(mDevice);
+	case SCENETYPE::RESULT:
+		return new SceneResult(mDevice);
 		break;
 	}
 	return nullptr;

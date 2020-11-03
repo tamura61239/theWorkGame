@@ -44,14 +44,9 @@ bool SceneClear::ImGuiUpdate()
 		return true;
 		break;
 	case 4:
-		pSceneManager.ChangeScene(SCENETYPE::CLEAR);
+		pSceneManager.ChangeScene(SCENETYPE::RESULT);
 		return true;
 		break;
-	case 5:
-		pSceneManager.ChangeScene(SCENETYPE::OVER);
-		return true;
-		break;
-
 	}
 	if (!mEditorFlag)return false;
 #endif

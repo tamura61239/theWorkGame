@@ -9,7 +9,7 @@
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
-SceneTitle::SceneTitle(ID3D11Device* device):mEditorFlag(true)
+SceneTitle::SceneTitle(ID3D11Device* device):mEditorFlag(true), mTestMove(false)
 {
 	loading_thread = std::make_unique<std::thread>([&](ID3D11Device* device)
 		{
@@ -32,6 +32,8 @@ SceneTitle::SceneTitle(ID3D11Device* device):mEditorFlag(true)
 			UIManager::GetInctance().TitleInitialize(device);
 			modelRender = std::make_unique<ModelRenderer>(device);
 			pGpuParticleManager.GetTitleTextureParticle()->CreateBuffer(device);
+			mFade = std::make_unique<Fade>(device, Fade::FADE_SCENE::TITLE);
+			mFade->StartFadeIn();
 		}, device);
 	test = std::make_unique<Sprite>(device/*, L"Data/image/change_color.png"*/);
 	blend[0] = std::make_unique<blend_state>(device, BLEND_MODE::ADD);
@@ -47,6 +49,7 @@ void SceneTitle::Update(float elapsed_time)
 	}
 	EndLoading();
 	if (ImGuiUpdate())return;
+	mFade->Update(elapsed_time);
 	UIManager::GetInctance().Update(elapsed_time);
 	pCameraManager.Update(elapsed_time);
 	pGpuParticleManager.GetTitleParticle()->SetChangeFlag(pCameraManager.GetCameraOperation()->GetTitleCamera()->GetTitleSceneChangeFlag());
@@ -91,6 +94,9 @@ void SceneTitle::Render(ID3D11DeviceContext* context, float elapsed_time)
 	test->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 	bloom->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), true);
 	blend[0]->deactivate(context);
+	blend[1]->activate(context);
+	mFade->Render(context);
+	blend[1]->deactivate(context);
 
 }
 
@@ -105,21 +111,15 @@ bool SceneTitle::ImGuiUpdate()
 	{
 	case 2:
 	case 3:
-		pSceneManager.ChangeScene(SCENETYPE::GAME);
 		pGpuParticleManager.ClearBuffer();
 		UIManager::GetInctance().Clear();
+		pSceneManager.ChangeScene(SCENETYPE::GAME);
 		return true;
 		break;
 	case 4:
-		pSceneManager.ChangeScene(SCENETYPE::CLEAR);
 		pGpuParticleManager.ClearBuffer();
 		UIManager::GetInctance().Clear();
-		return true;
-		break;
-	case 5:
-		pSceneManager.ChangeScene(SCENETYPE::OVER);
-		pGpuParticleManager.ClearBuffer();
-		UIManager::GetInctance().Clear();
+		pSceneManager.ChangeScene(SCENETYPE::RESULT);
 		return true;
 		break;
 	}
@@ -131,6 +131,7 @@ bool SceneTitle::ImGuiUpdate()
 	ImGui::RadioButton("GPU PARTICLE", &editorNum, 2);
 	ImGui::RadioButton("CAMERA", &editorNum, 3);
 	ImGui::RadioButton("BLOOM", &editorNum, 4);
+	ImGui::RadioButton("FADE", &editorNum, 5);
 	ImGui::End();
 	switch (editorNum)
 	{
@@ -148,6 +149,9 @@ bool SceneTitle::ImGuiUpdate()
 		break;
 	case 4:
 		bloom->ImGuiUpdate();
+		break;
+	case 5:
+		mFade->ImGuiUpdate();
 		break;
 
 	}
