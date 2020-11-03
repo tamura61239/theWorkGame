@@ -6,27 +6,43 @@
 #include<imgui.h>
 #endif
 
-SceneResult::SceneResult(ID3D11Device* device) :mNowGameTime(UIManager::GetInctance().GetGameUIMove()->GetTime()), mEditorFlag(false), mEditorNo(0)
+SceneResult::SceneResult(ID3D11Device* device) :mNowGameTime(0), mEditorFlag(false), mEditorNo(0),
+mPlayFlag(true)
 {
+	if (UIManager::GetInctance().GetGameUIMove() != nullptr)
+	{
+		mNowGameTime = UIManager::GetInctance().GetGameUIMove()->GetTime();
+	}
 	UIManager::GetInctance().ResultInitialize(device);
 	mBlend.push_back(std::make_unique<blend_state>(device, BLEND_MODE::ALPHA));
 	mRanking = std::make_unique<Ranking>(device, mNowGameTime);
 	mFade = std::make_unique<Fade>(device, Fade::FADE_SCENE::RESULT);
+	
 }
 
 void SceneResult::Update(float elapsed_time)
 {
 	if (ImGuiUpdate())return;
+	mFade->Update(elapsed_time);
 	if (mFade->GetFadeScene() == Fade::FADE_MODO::FADEOUT)
 	{
 		if (mFade->GetEndFlag())
 		{
 			UIManager::GetInctance().Clear();
 			mFade->Clear();
+			switch (UIManager::GetInctance().GetResultUIMove()->GetType())
+			{
+			case 0:
+				pSceneManager.ChangeScene(SCENETYPE::GAME);
+				break;
+			case 1:
+				pSceneManager.ChangeScene(SCENETYPE::TITLE);
+				break;
+			}
 			return;
 		}
 	}
-	mRanking->Update(elapsed_time, false);
+	mRanking->Update(elapsed_time, mPlayFlag);
 	UIManager::GetInctance().Update(elapsed_time);
 	if (UIManager::GetInctance().GetResultUIMove()->GetDecisionFlag())
 	{

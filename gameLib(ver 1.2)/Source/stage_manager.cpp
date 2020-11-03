@@ -5,7 +5,7 @@
 #include"gpu_particle_manager.h"
 int StageManager::mMaxStage = 0;
 /***********************èâä˙âª*************************/
-StageManager::StageManager(ID3D11Device* device, int width, int height) :stageNo(3), mWidth(static_cast<float>(width)), mHeight(static_cast<float>(height)), dragObjNumber(-1)
+StageManager::StageManager(ID3D11Device* device, int width, int height) :mStageNo(3), mWidth(static_cast<float>(width)), mHeight(static_cast<float>(height)), dragObjNumber(-1)
 {
 	mMeshs.push_back(std::make_shared<StaticMesh>(device, "Data/FBX/000_cube.fbx"));
 	mMeshs.push_back(std::make_shared<StaticMesh>(device, "Data/FBX/jumpstand.fbx"));
@@ -59,7 +59,7 @@ void StageManager::Load()
 {
 	FILE* fp;
 	std::string fileName = { "Data/file/stage" };
-	fileName += std::to_string(stageNo) + ".bin";
+	fileName += std::to_string(mStageNo) + ".bin";
 	std::vector<StageData>data;
 	int size = 0;
 	if (fopen_s(&fp, fileName.c_str(), "rb") == 0)
@@ -84,7 +84,7 @@ void StageManager::Save()
 {
 	FILE* fp;
 	std::string fileName = { "Data/file/stage" };
-	fileName += std::to_string(stageNo) + ".bin";
+	fileName += std::to_string(mStageNo) + ".bin";
 	std::vector<StageData>data;
 	int size = mStageObjs.size();
 	fopen_s(&fp, fileName.c_str(), "wb");

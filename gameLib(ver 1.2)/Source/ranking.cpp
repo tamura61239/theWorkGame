@@ -3,11 +3,11 @@
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
-
+/**********************Time用のテクスチャ****************************/
 TimeText::TimeText(float time) :mTime(static_cast<int>(time * 100)), mTextSize(0, 0), mLeftTop(0, 0), mSizeX(0)
 {
 }
-
+//描画
 void TimeText::Render(ID3D11DeviceContext* context, Sprite* sprite)
 {
 	int number = mTime / 1000;
@@ -32,8 +32,9 @@ void TimeText::Render(ID3D11DeviceContext* context, Sprite* sprite)
 	sprite->Render(context, leftTop, size, texLeftTop, VECTOR2F(62, 100), 0);
 
 }
-
-Ranking::Ranking(ID3D11Device* device, float time) :mState(0), mNowPlayTime(time), mTimer(0), mTestFlag(false), mNowPlayRank(0)
+/****************************ランキング*****************************/
+int Ranking::mStageNo = 0;
+Ranking::Ranking(ID3D11Device* device, float time) :mState(0), mNowPlayTime(time), mTimer(0), mTestFlag(false), mNowPlayRank(0), mNewPlayMove(0), mNoRankTextColor(1,1,1,1)
 {
 	mNowPlayTimeText = std::make_unique<TimeText>(0);
 	for (int i = 0; i < 5; i++)
@@ -41,9 +42,10 @@ Ranking::Ranking(ID3D11Device* device, float time) :mState(0), mNowPlayTime(time
 		mRankingTexts.push_back(std::make_unique<TimeText>(0));
 	}
 	mNumberTest = std::make_unique<Sprite>(device, L"Data/image/number.png");
+	mRankTest = std::make_unique<Sprite>(device, L"Data/image/rank.png");
 	Load();
 }
-
+//更新
 void Ranking::Update(float elapsdTime, bool play)
 {
 	if (!mTestFlag && !play)
@@ -61,9 +63,12 @@ void Ranking::Update(float elapsdTime, bool play)
 	case 1:
 		RankingMove(elapsdTime);
 		break;
+	case 2:
+		NewRankingMove(elapsdTime);
+		break;
 	}
 }
-
+//描画
 void Ranking::Render(ID3D11DeviceContext* context)
 {
 	mNowPlayTimeText->Render(context, mNumberTest.get());
@@ -71,8 +76,16 @@ void Ranking::Render(ID3D11DeviceContext* context)
 	{
 		text->Render(context, mNumberTest.get());
 	}
-}
+	for (int i = 0; i < 5; i++)
+	{
+		VECTOR2F leftTop = VECTOR2F(mRankingData.mLeftTop.x-100.f, mRankingData.mLeftTop.y + mRankingData.mIntervalY * i-20);
+		mNumberTest->Render(context, leftTop, VECTOR2F(62, 100), VECTOR2F(62 * (i + 1), 0), VECTOR2F(62, 100), 0);
+	}
+	VECTOR2F leftTop = VECTOR2F(mRankingData.mLeftTop.x - 370, mRankingData.mLeftTop.y + mRankingData.mIntervalY * 5 - 20);
 
+	mRankTest->Render(context,leftTop,VECTOR2F(330,100.f),VECTOR2F(0,0),VECTOR2F(330,100),0, mNoRankTextColor);
+}
+//1秒間に0から今回のスコア(タイム)まで増やす
 void Ranking::ScereMove(float elapsdTime)
 {
 	float time = mTimer;
@@ -84,7 +97,7 @@ void Ranking::ScereMove(float elapsdTime)
 	}
 	mNowPlayTimeText->SetTime(time * mNowPlayTime);
 }
-
+//ランキングのスコア(タイム)を順に表示
 void Ranking::RankingMove(float elapsdTime)
 {
 	for (int i = 0; i < mRankingTexts.size(); i++)
@@ -99,20 +112,74 @@ void Ranking::RankingMove(float elapsdTime)
 			time = min(time / mRankingData.mMoveTime, 1.f);
 			DirectX::XMStoreFloat2(&leftTop, DirectX::XMVectorLerp(DirectX::XMLoadFloat2(&start), DirectX::XMLoadFloat2(&end), time));
 			text->SetLeftTop(leftTop);
-			if (mRankingTexts.size() * mRankingData.mStartTime + 1.f + mRankingData.mMoveTime > mTimer)
+			if (mRankingTexts.size() * mRankingData.mStartTime + 1.f + mRankingData.mMoveTime <= mTimer)
 			{
-				UIManager::GetInctance().GetResultUIMove()->SetMoveFlag(true);
+				mState++;
+				mTimer = 0;
+				mNewPlayMove = 0;
 			}
 		}
 
 	}
 }
+//今回のスコア(タイム)をランキングに組み込む処理
+void Ranking::NewRankingMove(float elapsdTime)
+{
+	if (mNewPlayMove == 0)
+	{
+		float time = min(mTimer / mRankingData.mMoveTime, 1.f);
+		if (mNowPlayRank < 5)
+		{
+			for (int i = mNowPlayRank; i < 5; i++)
+			{
+				auto& text = mRankingTexts.at(i);
+				VECTOR2F leftTop = VECTOR2F(0, 0),
+					start = VECTOR2F(mRankingData.mLeftTop.x, mRankingData.mLeftTop.y + mRankingData.mIntervalY * i),
+					end = VECTOR2F(mRankingData.mLeftTop.x, mRankingData.mLeftTop.y + mRankingData.mIntervalY * (i + 1));
+				DirectX::XMStoreFloat2(&leftTop, DirectX::XMVectorLerp(DirectX::XMLoadFloat2(&start), DirectX::XMLoadFloat2(&end), time));
+				text->SetLeftTop(leftTop);
+			}
+		}
+		if (mTimer >= mRankingData.mMoveTime)
+		{
+			mNewPlayMove++;
+			mRankingTexts.push_back(std::make_unique<TimeText>(mNowPlayTime));
+			mRankingTexts.back()->SetTextSize(mRankingData.mTextSize);
+			mTimer = mRankingData.mMoveTime;
+			VECTOR2F leftTop = VECTOR2F(mRankingData.mStartX, mRankingData.mLeftTop.y + mRankingData.mIntervalY * mNowPlayRank);
+			mRankingTexts.back()->SetLeftTop(leftTop);
+		}
+	}
+	else
+	{
+		float time = min((mTimer- mRankingData.mMoveTime) / mRankingData.mMoveTime, 1.f);
 
+		VECTOR2F leftTop = VECTOR2F(0, 0),
+			start = VECTOR2F(mRankingData.mStartX, mRankingData.mLeftTop.y + mRankingData.mIntervalY * mNowPlayRank),
+			end = VECTOR2F(mRankingData.mLeftTop.x, mRankingData.mLeftTop.y + mRankingData.mIntervalY * mNowPlayRank);
+		DirectX::XMStoreFloat2(&leftTop, DirectX::XMVectorLerp(DirectX::XMLoadFloat2(&start), DirectX::XMLoadFloat2(&end), time));
+		mRankingTexts.back()->SetLeftTop(leftTop);
+		if (time >= 1.f)
+		{
+			if(!mTestFlag)UIManager::GetInctance().GetResultUIMove()->SetMoveFlag(true);
+			mState++;
+		}
+	}
+}
+//editor関数
 void Ranking::ImGuiUpdate()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("rank text");
 	ImGui::Checkbox("testFlag", &mTestFlag);
+	float* color[4] = { &mNoRankTextColor.x,&mNoRankTextColor.y,&mNoRankTextColor.z,&mNoRankTextColor.w };
+	ImGui::ColorEdit4("no rank text color", *color);
+	if (!mTestFlag&& mState<3)
+	{
+		UIManager::GetInctance().GetResultUIMove()->SetMoveFlag(false);
+		mRankingTexts.erase(mRankingTexts.begin() + 5);
+
+	}
 	if (ImGui::CollapsingHeader("now play data"))
 	{
 		float*leftTop[2] = { &mNowPlayScoreTime.mLeftTop.x,&mNowPlayScoreTime.mLeftTop.y };
@@ -141,14 +208,15 @@ void Ranking::ImGuiUpdate()
 	ImGui::End();
 #endif
 }
-
+//ランキングのソート
 void Ranking::RankingTimeSort()
 {
 	int time[6] = { 0 };
 	int nowPlayTime = static_cast<int>(mNowPlayTime * 100);
 	time[5] = nowPlayTime;
+	std::string fileName = "Data/file/ranking" + std::to_string(mStageNo) + ".txt";
 	FILE* fp;
-	if (fopen_s(&fp, "Data/file/ranking.txt", "rt") == 0)
+	if (fopen_s(&fp, fileName.c_str(), "rt") == 0)
 	{
 		fread(&time[0], sizeof(int), 5, fp);
 		fclose(fp);
@@ -161,18 +229,25 @@ void Ranking::RankingTimeSort()
 			mNowPlayRank = i;
 			break;
 		}
+		if (i == 5)
+		{
+			mNowPlayRank = i;
+		}
 	}
-	for (int i = 0; i < 5; i++)
+	int count = 0;
+	for (int i = 0; i < 6; i++)
 	{
-		auto& text = mRankingTexts[i];
+		if (i == mNowPlayRank)continue;
+		auto& text = mRankingTexts[count];
 		text->SetTime(static_cast<float>(time[i])*0.01f);
+		count++;
 	}
-	fopen_s(&fp, "Data/file/ranking.txt", "wt");
+	fopen_s(&fp, fileName.c_str(), "wt");
 	fwrite(&time[0], sizeof(int), 5, fp);
 	fclose(fp);
 
 }
-
+/******************ソート関数**********************/
 void Ranking::SetRankingData()
 {
 	mNowPlayTimeText->SetLeftTop(mNowPlayScoreTime.mLeftTop);
@@ -225,7 +300,7 @@ void Ranking::Swap(int* x, int* y)
 	*x = *y;
 	*y = temp;
 }
-
+/*********************ファイル関数*******************/
 void Ranking::Load()
 {
 	FILE* fp;
@@ -233,6 +308,7 @@ void Ranking::Load()
 	{
 		fread(&mNowPlayScoreTime, sizeof(ScoreData), 1, fp);
 		fread(&mRankingData, sizeof(RankingData), 1, fp);
+		fread(&mNoRankTextColor, sizeof(VECTOR4F), 1, fp);
 		fclose(fp);
 	}
 	else
@@ -249,6 +325,7 @@ void Ranking::Save()
 	fopen_s(&fp, "Data/file/rankingData.bin", "wb");
 	fwrite(&mNowPlayScoreTime, sizeof(ScoreData), 1, fp);
 	fwrite(&mRankingData, sizeof(RankingData), 1, fp);
+	fwrite(&mNoRankTextColor, sizeof(VECTOR4F), 1, fp);
 	fclose(fp);
 
 }

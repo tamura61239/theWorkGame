@@ -44,6 +44,7 @@ private:
 	float mNowGameTime;
 	bool mEditorFlag;
 	int mEditorNo;
+	bool mPlayFlag;
 	std::vector<std::unique_ptr<blend_state>>mBlend;
 	std::unique_ptr<Ranking>mRanking;
 	std::unique_ptr<Fade>mFade;

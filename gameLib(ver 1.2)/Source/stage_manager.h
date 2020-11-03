@@ -16,11 +16,13 @@ public:
 	void Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const int stageState,DrowShader*srv=nullptr);
 	void RenderVelocity(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection,const int stageState);
 	void SidoViewRender(ID3D11DeviceContext* context);
-	void SetStageNo(int no) { stageNo = no; }
+	//setter
+	void SetStageNo(int no) { mStageNo = no; }
 	//getter
 	std::vector<std::shared_ptr<StageObj>>GetStages() { return mStageObjs; }
 	StageEditor* GetStageEditor() { return mEditor.get(); }
 	static const int GetMaxStageCount() { return mMaxStage; }
+	const int GrtStageNo() { return mStageNo; }
 private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbBeforeBuffer;
 	std::unique_ptr<DrowShader>mVelocityShader;
@@ -31,7 +33,7 @@ private:
 	std::vector < std::shared_ptr<StageObj>>mStageObjs;
 	std::unique_ptr<MeshRender>mRender;
 	std::unique_ptr<StageEditor>mEditor;
-	int stageNo;
+	int mStageNo;
 	std::vector<std::shared_ptr<StaticMesh>>mMeshs;
 	//editorïœêî
 	float mWidth;

@@ -14,7 +14,7 @@ void ResultUIMove::Update(float elapsdTime, std::vector<std::shared_ptr<UI>> uis
 		for (auto& ui : uis)
 		{
 			auto& data = ui->GetUIData();
-			data.mColor.w = 0.5f;
+			data.mColor.w = 0.f;
 			ui->SetUIData(data);
 		}
 		return;
@@ -45,7 +45,7 @@ void ResultUIMove::Update(float elapsdTime, std::vector<std::shared_ptr<UI>> uis
 		}
 		else
 		{
-			data.mColor.w = 0.6f;
+			data.mColor.w = 0.35f;
 		}
 		ui->SetUIData(data);
 	}

@@ -10,6 +10,7 @@
 #include"gpu_particle_manager.h"
 #include"framework.h"
 #include"ui_manager.h"
+#include"ranking.h"
 //#ifdef USE_IMGUI
 //#include <imgui.h>
 //#include <imgui_impl_dx11.h>
@@ -174,6 +175,7 @@ void SceneGame::Update(float elapsed_time)
 			fadeOut->Clear();
 			pGpuParticleManager.ClearBuffer();
 			UIManager::GetInctance().Clear();
+			Ranking::SetStageNo(mSManager->GrtStageNo());
 			pSceneManager.ChangeScene(SCENETYPE::RESULT);
 
 			return;

@@ -33,9 +33,12 @@ public:
 	void Update(float elapsdTime,bool play);
 	void Render(ID3D11DeviceContext* context);
 	void ImGuiUpdate();
+	//setter
+	static void SetStageNo(const int stageNo) { mStageNo = stageNo; }
 private:
 	void ScereMove(float elapsdTime);
 	void RankingMove(float elapsdTime);
+	void NewRankingMove(float elapsdTime);
 	void RankingTimeSort();
 	void SetRankingData();
 	void QuickSort(int array[], int left, int right);
@@ -43,7 +46,10 @@ private:
 	void Swap(int* x, int* y);
 	void Load();
 	void Save();
+private:
+	static int mStageNo;
 	std::unique_ptr<Sprite>mNumberTest;
+	std::unique_ptr<Sprite>mRankTest;
 	std::unique_ptr<TimeText>mNowPlayTimeText;
 	std::vector<std::unique_ptr<TimeText>>mRankingTexts;
 	int mState;
@@ -51,6 +57,8 @@ private:
 	float mNowPlayTime;
 	bool mTestFlag;
 	int mNowPlayRank;
+	int mNewPlayMove;
+	VECTOR4F mNoRankTextColor;
 	struct ScoreData
 	{
 		VECTOR2F mLeftTop;
