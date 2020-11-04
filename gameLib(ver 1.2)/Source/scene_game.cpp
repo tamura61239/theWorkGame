@@ -29,6 +29,7 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 			pCameraManager.GetCamera()->SetEye(VECTOR3F(0, 0, -200));
 
 			frameBuffer = std::make_shared<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
+			saveFrameBuffer = std::make_shared<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
 			for (int i = 1; i <= 2; i++)
 			{
 				shrinkBuffer[i - 1] = std::make_unique<FrameBuffer>(device, 1920 >> i, 1080 >> i, true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
@@ -196,9 +197,12 @@ void SceneGame::Update(float elapsed_time)
 
 	mStageOperation->Update(elapsed_time, mSManager.get(), player->GetPlayFlag());
 	player->Update(elapsed_time, mSManager.get(),mStageOperation.get());
-	if (player->GetCharacter()->GetGorlFlag() && !testGame)
+	if (!testGame)
 	{
-		fadeOut->StartFadeOut();
+		if (UIManager::GetInctance().GetGameUIMove()->GetTime() <= 0 || player->GetCharacter()->GetGorlFlag())
+		{
+			if(player->GetPlayFlag())fadeOut->StartFadeOut();
+		}
 	}
 	mSManager->Update(elapsed_time);
 	pCameraManager.Update(elapsed_time);
@@ -250,13 +254,14 @@ bool SceneGame::ImGuiUpdate()
 		{
 			editorNo = 0;
 			selectSceneFlag = false;
+			fadeOut->SetFadeScene(Fade::FADE_SCENE::GAME);
+			pGpuParticleManager.SetState(GpuParticleManager::STATE::GAME);
 		}
 		mSManager->SetStageNo(pSceneManager.GetSceneEditor()->GetStageNo());
 		mSManager->Clear();
 		mSManager->Load();
 		fadeOut->Clear();
-		fadeOut->SetFadeScene(Fade::FADE_SCENE::GAME);
-		pGpuParticleManager.SetState(GpuParticleManager::STATE::GAME);
+		player->SetPlayFlag(false);
 		pCameraManager.GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::PLAY);
 		break;
 	case 4:
@@ -445,28 +450,52 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 		frameBuffer->Activate(context);
 
 		blend[0]->activate(context);
-
+		
 		modelRenderer->Begin(context, viewProjection);
 		modelRenderer->Draw(context, *player->GetCharacter()->GetModel());
 		modelRenderer->End(context);
-		pGpuParticleManager.Render(context, view, projection);
+		if (mSManager->GetStageEditor()->GetEditorFlag())
+		{
+			mSManager->Render(context, view, projection, mStageOperation->GetColorType());
+		}
+		else
+		{
+			pGpuParticleManager.Render(context, view, projection);
 
-		mSManager->Render(context, view, projection, mStageOperation->GetColorType());
-		UIManager::GetInctance().Render(context);
+			mSManager->Render(context, view, projection, mStageOperation->GetColorType());
+			UIManager::GetInctance().Render(context);
+		}
 
 		blend[0]->deactivate(context);
 		frameBuffer->Deactivate(context);
 	}
 	/****************ƒuƒ‹[ƒ€‚ð‚©‚¯‚é******************/
+	if (mSManager->GetStageEditor()->GetEditorFlag())
+	{
+		saveFrameBuffer->Clear(context);
+		saveFrameBuffer->Activate(context);
+	}
 	blend[1]->activate(context);
 	siro->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 	bloom->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), true);
 	blend[1]->deactivate(context);
+	if (mSManager->GetStageEditor()->GetEditorFlag())
+	{
+		saveFrameBuffer->Deactivate(context);
+		siro->Render(context, saveFrameBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+		if (mSManager->GetStageEditor()->GetSceneSaveFlag())
+		{
+			std::wstring fileName = L"Data/image/stage" + std::to_wstring(mSManager->GrtStageNo()) + L"scne_map.dds";
+			saveFrameBuffer->SaveDDSFile(context, fileName.c_str(), saveFrameBuffer->GetRenderTargetShaderResourceView().Get());
+		}
+	}
+
 	blend[0]->activate(context);
 	if (editorNo == 3)mSManager->SidoViewRender(context);
 
 	fadeOut->Render(context);
 	blend[0]->deactivate(context);
+
 	//siro->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 
 }

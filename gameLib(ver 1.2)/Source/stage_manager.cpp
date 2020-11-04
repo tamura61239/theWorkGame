@@ -180,6 +180,8 @@ void StageManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, co
 
 	}
 	mRender->Begin(context, view, projection, true);
+#ifdef USE_IMGUI
+	if (mEditor->GetSceneSaveFlag())return;
 	for (auto& stage : mStageObjs)
 	{
 		if (stage->GetStageData().mObjType ==2)
@@ -195,7 +197,7 @@ void StageManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, co
 		mRender->Render(context, mMeshs.at(mEditor->GetCreateData().mObjType).get(), stage->GetWorld(), VECTOR4F(1,1,1,1));
 	}
 	mRender->End(context);
-
+#endif
 }
 void StageManager::RenderVelocity(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const int stageState)
 {

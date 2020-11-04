@@ -7,7 +7,7 @@ class StageBorad
 public:
 	StageBorad():mPosition(0,0),mScale(1,1),mColor(1,1,1,1),mStageNo(0), mInterval(0), mSize(0,0){}
 	//テキスト生成
-	void CreateText(std::shared_ptr<TextureData>textureData, std::shared_ptr<LocalData>localData,const VECTOR2F&uv);
+	void CreateText(std::shared_ptr<TextureData>textureData, std::shared_ptr<LocalData>localData,const VECTOR2F&uv,const VECTOR4F&color=VECTOR4F(1,1,1,1));
 	//getter
 	std::vector<std::shared_ptr<SelectText>>GetTextes() { return mTexts; }
 	const int GetStageNo() { return mStageNo; }

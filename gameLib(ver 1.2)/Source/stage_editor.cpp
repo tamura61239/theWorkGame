@@ -10,7 +10,7 @@ StageEditor::StageEditor(ID3D11Device* device, int width, int height)
 	:mMousePosition(0, 0), mWorldFarPosition(0, 0, 0), mWorldNearPosition(0, 0, 0)
 	, mStageLeftPosition(0, 0, 0), mStageRightPosition(0, 0, 0), mWidth(width), mHeight(height)
 	, mSidoViewRenderPosition(1344, 756), mSidoViewRenderSize(576, 324), mEditorFlag(false)
-	, mDragObjNo(-1), mFileState(0), mEditorState(0),mCreateFlag(false), mDeleteNum(-1)
+	, mDragObjNo(-1), mFileState(0), mEditorState(0),mCreateFlag(false), mDeleteNum(-1), mSaveSceneFlag(false)
 {
 	mSprite = std::make_unique<Sprite>(device);
 	mStageSidoView = std::make_unique<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
@@ -121,6 +121,11 @@ int StageEditor::Update(std::vector<std::shared_ptr<StageObj>>objs)
 		if (ImGui::Button("load"))
 		{
 			mFileState = 1;
+		}
+		mSaveSceneFlag = false;
+		if (ImGui::Button("scene save"))
+		{
+			mSaveSceneFlag = true;
 		}
 		SetSidoCamera(objs);
 

@@ -100,7 +100,6 @@ void GpuParticleManager::CreateStageObjParticle(std::vector<std::shared_ptr<Stag
 	mStageObjParticle.reset(nullptr);
 	ID3D11Device* device = Framework::Instance().GetDevice().Get();
 	mStageObjParticle = std::make_unique<StageObjParticle>(device);
-	mStageObjParticle->CreateBuffer(device, objs);
 	mStageSceneParticle.reset(nullptr);
 	mStageSceneParticle = std::make_unique<StageSceneParticle>(device);
 }

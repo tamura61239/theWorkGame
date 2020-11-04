@@ -25,6 +25,7 @@ public:
 	const int GetFileState() { return mFileState; }
 	const StageData GetCreateData() { return mCreateData; }
 	const int GetDeleteNo() { return mDeleteNum; }
+	const bool GetSceneSaveFlag() { return mSaveSceneFlag; }
 	//clear
 	void ClearFileState() { mFileState = 0; }
 	//çXêV
@@ -79,4 +80,5 @@ private:
 	int mFileState;
 	int mEditorState;
 	int mDeleteNum;
+	bool mSaveSceneFlag;
 };

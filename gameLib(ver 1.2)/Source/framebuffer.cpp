@@ -147,6 +147,21 @@ void FrameBuffer::SetPsDepth(ID3D11DeviceContext* context, const int number)
 
 }
 
+void FrameBuffer::SaveDDSFile(ID3D11DeviceContext* context, const wchar_t* fileName, ID3D11ShaderResourceView* srv)
+{
+	DirectX::ScratchImage image;
+	Microsoft::WRL::ComPtr<ID3D11Resource> resource;
+	srv->GetResource(resource.GetAddressOf());
+	Microsoft::WRL::ComPtr<ID3D11Device> device;
+	context->GetDevice(device.ReleaseAndGetAddressOf());
+	HRESULT hr = S_OK;
+	hr = CaptureTexture(device.Get(), context, resource.Get(), image);
+	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	hr = SaveToDDSFile(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX::DDS_FLAGS_NONE, fileName);
+	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+}
+
 /*********************************MulltiRenderTargetFunction**********************************/
 
 void MulltiRenderTargetFunction::Clear(ID3D11DeviceContext* context, float r, float g, float b, float a, unsigned int clearFlags, float depth, unsigned char stencil)

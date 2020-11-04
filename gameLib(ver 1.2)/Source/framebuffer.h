@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <memory>
 #include<vector>
-
+#include<DirectXTex.h>
 class FrameBuffer
 {
 public:
@@ -25,6 +25,8 @@ public:
 	D3D11_VIEWPORT GetViewPort() { return viewport; }
 	void SetPsTexture(ID3D11DeviceContext* context, const int number);
 	void SetPsDepth(ID3D11DeviceContext* context, const int number);
+
+	void SaveDDSFile(ID3D11DeviceContext* context, const wchar_t* fileName, ID3D11ShaderResourceView* srv);
 private:
 	//render target view data
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView>mRenderTargetView;

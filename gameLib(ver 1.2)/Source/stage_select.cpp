@@ -21,17 +21,25 @@ StageSelect::StageSelect(ID3D11Device* device, const int maxCount) :mSelectScene
 	hr = load_texture_from_file(device, L"Data/image/number.png", mNumberTexture->mSRV.GetAddressOf(), &mNumberTexture->mDesc);
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	mNumberTexture->mTextureDrowSize = VECTOR2F(63, 100);
-
 	mBoardSize = VECTOR2F(200, 500);
 	//枠のテクスチャ
 	mBackTexture = std::make_shared<TextureData>();
 	hr = load_texture_from_file(device, L"Data/image/siro.png", mBackTexture->mSRV.GetAddressOf(), &mBackTexture->mDesc);
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	for (int i = 0; i < maxCount; i++)
+	{
+		std::wstring fileName = L"Data/image/stage" + std::to_wstring(i) + L"scne_map.dds";
+
+		mStageImageText.push_back(std::make_shared<TextureData>());
+		hr = load_texture_from_file(device, fileName.c_str(), mStageImageText.back()->mSRV.GetAddressOf(), &mStageImageText.back()->mDesc);
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		mStageImageText.back()->mTextureDrowSize = VECTOR2F(1920, 1080);
+	}
 
 	mDrow = std::make_unique<Sprite>(device);
 	//LocalDataの一様の初期化
-	mLocalDatas.resize(4);
-	std::string name[4] = { "front","number","back" ,"tutorial" };
+	mLocalDatas.resize(5);
+	std::string name[5] = { "front","number","back" ,"tutorial","stageImage" };
 	for (int i = 0; i < mLocalDatas.size(); i++)
 	{
 		mLocalDatas[i].mName = name[i];
@@ -55,6 +63,7 @@ StageSelect::StageSelect(ID3D11Device* device, const int maxCount) :mSelectScene
 		uv.y = 0;
 		uv.x = mNumberTexture->mTextureDrowSize.x * i;
 		mStageBoards.back()->CreateText(mNumberTexture, mLocalDatas[1].mData, uv);
+		mStageBoards.back()->CreateText(mStageImageText[i], mLocalDatas[4].mData, VECTOR2F(0,0),VECTOR4F(0.8f,0.8f,0.8f,1));
 		mStageBoards.back()->SetSize(mBoardSize);
 		mStageBoards.back()->SetStageNo(i);
 		mStageBoards.back()->SetInterval(mInterval);
@@ -87,7 +96,7 @@ void StageSelect::ImGuiUpdate()
 			{
 				float* position[2] = { &local->mPosition.x,&local->mPosition.y };
 				std::string name = defName + ":position";
-				ImGui::SliderFloat(name.c_str(), *position, 0, 1);
+				ImGui::SliderFloat2(name.c_str(), *position, 0, 1);
 				name = defName + ":alpha";
 				ImGui::SliderFloat(name.c_str(), &local->mAlpha, 0, 1);
 				name = defName + ":scale.x";
@@ -176,11 +185,21 @@ void StageSelect::Render(ID3D11DeviceContext* context)
 void StageSelect::Load()
 {
 	FILE* fp;
+	int fileSize = 0;
+
 	if (fopen_s(&fp, "Data/file/stage_select_scene.bin", "rb") == 0)
 	{
+		//ファイルサイズの取得
+		fseek(fp, 0, SEEK_END);
+
+		fileSize = ftell(fp);
+		//ファイルの先頭に戻す
+		fseek(fp, 0, SEEK_SET);
+
 		fread(&mBoardSize, sizeof(VECTOR2F), 1, fp);
 		fread(&mInterval, sizeof(float), 1, fp);
-		for (int i = 0; i < 4; i++)
+		fileSize -= sizeof(VECTOR2F) + sizeof(float);
+		for (int i = 0; i < fileSize/sizeof(LocalData); i++)
 		{
 			LocalData data;
 			fread(&data, sizeof(LocalData), 1, fp);
@@ -200,7 +219,7 @@ void StageSelect::Save()
 	{
 		fwrite(&mBoardSize, sizeof(VECTOR2F), 1, fp);
 		fwrite(&mInterval, sizeof(float), 1, fp);
-		for (int i = 0; i < 4; i++)
+		for (int i = 0; i < mLocalDatas.size(); i++)
 		{
 
 			fwrite(mLocalDatas[i].mData.get(), sizeof(LocalData), 1, fp);

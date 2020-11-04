@@ -160,25 +160,28 @@ void BloomRender::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView*
 	}
 	//Ý’è
 	context->VSSetShader(mVSShader.Get(), 0, 0);
-	context->PSSetShader(mPSShader[1].Get(), 0, 0);
 	context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
 	context->RSSetState(mRasterizeState.Get());
 	context->IASetInputLayout(nullptr);
 	context->IASetVertexBuffers(0, 0, 0, 0, 0);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
-	for (int i = 1; i < 5; i++)
 	{
-		mFrameBuffer[i]->Clear(context);
-		if (count < i)continue;
-		mFrameBuffer[i]->Activate(context);
-		D3D11_VIEWPORT viewport = mFrameBuffer[i]->GetViewPort();
-		CalucurateBluer(viewport.Width, viewport.Height, VECTOR2F(mCbuffer.widthBlur, mCbuffer.hightBlur), deviation, multiply);
-		context->UpdateSubresource(mCbBluerbuffer.Get(), 0, 0, &mCbBluer, 0, 0);
+		context->PSSetShader(mPSShader[1].Get(), 0, 0);
 
-		context->PSSetShaderResources(0, 1, mFrameBuffer[i - 1]->GetRenderTargetShaderResourceView().GetAddressOf());
-		context->Draw(4, 0);
-		mFrameBuffer[i]->Deactivate(context);
+		for (int i = 1; i < 5; i++)
+		{
+			mFrameBuffer[i]->Clear(context);
+			if (count < i)continue;
+			mFrameBuffer[i]->Activate(context);
+			D3D11_VIEWPORT viewport = mFrameBuffer[i]->GetViewPort();
+			CalucurateBluer(viewport.Width, viewport.Height, VECTOR2F(mCbuffer.widthBlur, mCbuffer.hightBlur), deviation, multiply);
+			context->UpdateSubresource(mCbBluerbuffer.Get(), 0, 0, &mCbBluer, 0, 0);
+
+			context->PSSetShaderResources(0, 1, mFrameBuffer[i - 1]->GetRenderTargetShaderResourceView().GetAddressOf());
+			context->Draw(4, 0);
+			mFrameBuffer[i]->Deactivate(context);
+		}
 	}
 	if (!render)
 	{
@@ -283,4 +286,11 @@ void BloomRender::CalucurateBluer(const float width, const float hight, const VE
 	{
 		mCbBluer.mOffset[i].z /= totalWeigh;
 	}
+	//for (auto i = 8; i < 15; ++i)
+	//{
+	//	mCbBluer.mOffset[i].x = -mCbBluer.mOffset[i - 7].x;
+	//	mCbBluer.mOffset[i].y = -mCbBluer.mOffset[i - 7].y;
+	//	mCbBluer.mOffset[i].z = mCbBluer.mOffset[i - 7].z;
+	//}
+
 }

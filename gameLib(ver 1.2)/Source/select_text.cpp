@@ -11,8 +11,8 @@ void SelectText::Render(ID3D11DeviceContext* context, Sprite* sprite, const VECT
 {
 	if (mTextureData.expired())return;
 	if (mLocalData.expired())return;
-	VECTOR2F leftTop = position + mLocalData.lock()->mPosition * size* scale;
+	VECTOR2F leftTop = position + mLocalData.lock()->mPosition * size * scale;
 	VECTOR2F textureSize = GetTextureSize();
 	VECTOR2F drowSize = mLocalData.lock()->mScale * textureSize * scale;
-	sprite->Render(context, mTextureData.lock()->mSRV.Get(), leftTop, drowSize, mUV, textureSize, 0, color * VECTOR4F(1, 1, 1, mLocalData.lock()->mAlpha));
+	sprite->Render(context, mTextureData.lock()->mSRV.Get(), leftTop, drowSize, mUV, textureSize, 0, mDefColor * color * VECTOR4F(1, 1, 1, mLocalData.lock()->mAlpha));
 }

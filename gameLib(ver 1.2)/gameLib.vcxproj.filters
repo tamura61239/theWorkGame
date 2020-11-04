@@ -646,17 +646,11 @@
     <None Include="Source\curl_noise.hlsli">
       <Filter>シェーダー</Filter>
     </None>
-    <None Include="Source\run_particle_cs_function.hlsli">
-      <Filter>シェーダー\run_particle</Filter>
-    </None>
     <None Include="Source\stage_scene_particle.hlsli">
       <Filter>シェーダー\stage_scene_particle</Filter>
     </None>
     <None Include="Source\sky_map.hlsli">
       <Filter>gameLib\Shaders</Filter>
-    </None>
-    <None Include="Source\deferred_stage_scene_particle.hlsli">
-      <Filter>シェーダー\stage_scene_particle</Filter>
     </None>
     <None Include="Source\stage_scene_particle_blur.hlsli">
       <Filter>シェーダー\motion_blur</Filter>
@@ -699,6 +693,9 @@
     </None>
     <None Include="Source\particle_render.hlsli">
       <Filter>シェーダー\particle_render</Filter>
+    </None>
+    <None Include="Source\run_particle_cs_function.hlsli">
+      <Filter>シェーダー\run_particle</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -774,22 +771,7 @@
     <FxCompile Include="Source\stage_obj_particle_cs.hlsl">
       <Filter>シェーダー\stage_obj_particle</Filter>
     </FxCompile>
-    <FxCompile Include="Source\stage_obj_particle_gs.hlsl">
-      <Filter>シェーダー\stage_obj_particle</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\stage_obj_particle_ps.hlsl">
-      <Filter>シェーダー\stage_obj_particle</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\stage_obj_particle_vs.hlsl">
-      <Filter>シェーダー\stage_obj_particle</Filter>
-    </FxCompile>
     <FxCompile Include="Source\run_particle_cs.hlsl">
-      <Filter>シェーダー\run_particle</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\run_particle_vs.hlsl">
-      <Filter>シェーダー\run_particle</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\run_particle_gs.hlsl">
       <Filter>シェーダー\run_particle</Filter>
     </FxCompile>
     <FxCompile Include="Source\run_particle_create_cs.hlsl">
@@ -804,23 +786,11 @@
     <FxCompile Include="Source\stage_scene_particle_cs.hlsl">
       <Filter>シェーダー\stage_scene_particle</Filter>
     </FxCompile>
-    <FxCompile Include="Source\stage_scene_particle_vs.hlsl">
-      <Filter>シェーダー\stage_scene_particle</Filter>
-    </FxCompile>
     <FxCompile Include="Source\sky_map_vs.hlsl">
       <Filter>gameLib\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Source\sky_map_ps.hlsl">
       <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\deferred_stage_scene_particle_vs.hlsl">
-      <Filter>シェーダー\stage_scene_particle</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\deferred_stage_scene_particle_gs.hlsl">
-      <Filter>シェーダー\stage_scene_particle</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\deferred_stage_scene_particle_ps.hlsl">
-      <Filter>シェーダー\stage_scene_particle</Filter>
     </FxCompile>
     <FxCompile Include="Source\stage_scene_particle_blur_gs.hlsl">
       <Filter>シェーダー\motion_blur</Filter>
@@ -864,9 +834,6 @@
     <FxCompile Include="Source\deferred_depth_sky_map_ps.hlsl">
       <Filter>シェーダー\被写界深度</Filter>
     </FxCompile>
-    <FxCompile Include="Source\deferred_depth_stage_scene_particle_ps.hlsl">
-      <Filter>シェーダー\被写界深度</Filter>
-    </FxCompile>
     <FxCompile Include="Source\depth_conversion_cs.hlsl">
       <Filter>シェーダー\被写界深度</Filter>
     </FxCompile>
@@ -906,9 +873,6 @@
     <FxCompile Include="Source\title_texture_particle_cs.hlsl">
       <Filter>シェーダー\title_texture_particle</Filter>
     </FxCompile>
-    <FxCompile Include="Source\title_texture_particle_vs.hlsl">
-      <Filter>シェーダー\title_texture_particle</Filter>
-    </FxCompile>
     <FxCompile Include="Source\particle_render_cube_mesh_gs.hlsl">
       <Filter>シェーダー\particle_render</Filter>
     </FxCompile>
@@ -920,6 +884,12 @@
     </FxCompile>
     <FxCompile Include="Source\particle_render_vs.hlsl">
       <Filter>シェーダー\particle_render</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\bloom_height_ps.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\bloom_width_ps.hlsl">
+      <Filter>gameLib\Shaders</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

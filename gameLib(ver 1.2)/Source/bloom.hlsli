@@ -12,5 +12,5 @@ cbuffer Cbuffer:register(b0)
 }
 cbuffer CbBler:register(b1)
 {
-	float4 offset[8];
+	float4 offset[16];
 }

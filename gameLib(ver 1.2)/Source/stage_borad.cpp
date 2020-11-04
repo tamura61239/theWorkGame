@@ -1,11 +1,12 @@
 #include "stage_borad.h"
 
-void StageBorad::CreateText(std::shared_ptr<TextureData> textureData, std::shared_ptr<LocalData> localData, const VECTOR2F& uv)
+void StageBorad::CreateText(std::shared_ptr<TextureData> textureData, std::shared_ptr<LocalData> localData, const VECTOR2F& uv, const VECTOR4F& color)
 {
 	mTexts.push_back(std::make_shared<SelectText>());
 	mTexts.back()->SetLocalData(localData);
 	mTexts.back()->SetTextureData(textureData);
 	mTexts.back()->SetUV(uv);
+	mTexts.back()->SetColor(color);
 }
 
 

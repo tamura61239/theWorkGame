@@ -65,6 +65,7 @@ private:
 	std::unique_ptr<MulltiRenderTargetFunction>mullti;
 	std::unique_ptr<FrameBuffer>shadowMap;
 	std::shared_ptr<FrameBuffer>frameBuffer;
+	std::shared_ptr<FrameBuffer>saveFrameBuffer;
 	std::shared_ptr<FrameBuffer>shrinkBuffer[2];
 	std::shared_ptr<FrameBuffer>velocityBuffer;
 	std::shared_ptr<FrameBuffer>depthBuffer;

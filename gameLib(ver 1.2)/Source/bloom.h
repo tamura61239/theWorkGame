@@ -29,7 +29,7 @@ private:
 	};
 	struct CbBluer
 	{
-		VECTOR4F mOffset[8];
+		VECTOR4F mOffset[16];
 	};
 	float deviation;
 	float multiply;

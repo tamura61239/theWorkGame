@@ -9,8 +9,6 @@ public:
 	void ImGuiUpdate();
 	void Update(float elapsdTime,StageManager*manager);
 	void Select(StageManager* manager);
-	void Move(float elapsdtime);
-	void Mask();
 	void Render(ID3D11DeviceContext* context);
 	const bool GetSelectFlag() { return mSelectSceneFlag; }
 	void SetSelectFlag(const bool flag) { mSelectSceneFlag = flag; }
@@ -21,6 +19,7 @@ private:
 	std::shared_ptr<TextureData>mStageTexture;
 	std::shared_ptr<TextureData>mNumberTexture;
 	std::shared_ptr<TextureData>mBackTexture;
+	std::vector<std::shared_ptr<TextureData>>mStageImageText;
 	std::unique_ptr<Sprite>mDrow;
 	int mSelectNumber;
 	float mInterval;

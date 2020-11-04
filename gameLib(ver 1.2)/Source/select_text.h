@@ -20,7 +20,7 @@ struct LocalData
 class SelectText
 {
 public:
-	SelectText():mUV(0,0){}
+	SelectText():mUV(0,0),mDefColor(1,1,1,1){}
 	//setter
 	void SetLocalData(std::shared_ptr<LocalData>localData)
 	{
@@ -34,6 +34,10 @@ public:
 	{
 		mUV = uv;
 	}
+	void SetColor(const VECTOR4F& color)
+	{
+		mDefColor = color;
+	}
 	//getter
 	const VECTOR2F& GetTextureSize() { return mTextureData.expired() ? VECTOR2F(0, 0):mTextureData.lock()->mTextureDrowSize; }
 	void Render(ID3D11DeviceContext* context, Sprite* sprite, const VECTOR2F& position, const VECTOR2F& scale,const VECTOR2F&size, const VECTOR4F& color);
@@ -41,6 +45,7 @@ private:
 	std::weak_ptr<LocalData>mLocalData;
 	std::weak_ptr<TextureData>mTextureData;
 	VECTOR2F mUV;
+	VECTOR4F mDefColor;
 };
 //struct TextureData
 //{
