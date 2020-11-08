@@ -2,17 +2,23 @@
 #include"shader.h"
 #include"misc.h"
 #include"vector.h"
+#include<string>
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
 
-BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHight) :count(3), deviation(2.5f), multiply(1.0f)
+BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHight, const int nowScene) :mNowEditorNo(0), mNowScene(nowScene)
 {
+	memset(&mEditorData, 0, sizeof(mEditorData));
 	unsigned int wight = static_cast<unsigned int>(screenWidth);
 	unsigned int hight = static_cast<unsigned int>(screenHight);
 	for (int i = 0; i < 5; i++)
 	{
 		mFrameBuffer.emplace_back(std::make_unique<FrameBuffer>(device, static_cast<int>(wight >> i), static_cast<float>(hight >> i), true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R24G8_TYPELESS));
+	}
+	for (int i = 1; i < 5; i++)
+	{
+		mSidoFrameBuffer.emplace_back(std::make_unique<FrameBuffer>(device, static_cast<int>(wight >> i), static_cast<float>(hight >> i), true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R24G8_TYPELESS));
 	}
 	mFrameBuffer.emplace_back(std::make_unique<FrameBuffer>(device, screenWidth, screenHight, true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R24G8_TYPELESS));
 
@@ -29,10 +35,13 @@ BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHi
 	hr = create_ps_from_cso(device, "Data/shader/bloomStart_ps.cso", mPSShader[0].GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-	hr = create_ps_from_cso(device, "Data/shader/bloom_ps.cso", mPSShader[1].GetAddressOf());
+	hr = create_ps_from_cso(device, "Data/shader/combined_bloom.cso", mPSShader[1].GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-	hr = create_ps_from_cso(device, "Data/shader/combined_bloom.cso", mPSShader[2].GetAddressOf());
+	hr = create_ps_from_cso(device, "Data/shader/bloom_blur01_ps.cso", mPSBlurShader[0].GetAddressOf());
+	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+	hr = create_ps_from_cso(device, "Data/shader/bloom_blur02_ps.cso", mPSBlurShader[1].GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 
@@ -109,31 +118,60 @@ BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHi
 		hr = device->CreateBuffer(&desc, nullptr, mCbBluerbuffer.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
-	Load();
+	for (int i = 0; i < 4; i++)
+	{
+		Load(i);
+	}
 }
 
 void BloomRender::ImGuiUpdate()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("bloom");
-	ImGui::SliderInt("filter count", &count, 0, 4);
-	ImGui::SliderFloat("threshold", &mCbuffer.threshold, 0, 10);
-	ImGui::SliderFloat("widthBlur", &mCbuffer.widthBlur, 0, 1);
-	ImGui::SliderFloat("hightBlur", &mCbuffer.hightBlur, 0, 1);
-	ImGui::SliderFloat("devutation", &deviation, 0, 50);
-	ImGui::SliderFloat("multiply", &multiply, 0, 10);
-	int blurCount = static_cast<int>(mCbuffer.blurCount);
-	if (ImGui::SliderInt("blurCount", &blurCount, 1, 8))
+	for (int i = 1; i < 5; i++)
 	{
-		mCbuffer.blurCount = static_cast<float>(blurCount);
+		D3D11_VIEWPORT viewport = mFrameBuffer[i]->GetViewPort();
+		ImVec2 size = ImVec2(192, 108);
+
+		ImGui::Image(mFrameBuffer[i]->GetRenderTargetShaderResourceView().Get(), size);
+		if (i < 4)ImGui::SameLine();
 	}
-	if (ImGui::Button("save"))Save();
+	auto& editorData = mEditorData[mNowScene];
+
+	ImGui::RadioButton("title bloom", &mNowEditorNo, 0); ImGui::SameLine();
+	ImGui::RadioButton("select bloom", &mNowEditorNo, 1); ImGui::SameLine();
+	ImGui::RadioButton("game bloom", &mNowEditorNo, 2); ImGui::SameLine();
+	ImGui::RadioButton("result bloom", &mNowEditorNo, 3);
+	ImGui::RadioButton("blur 01", &editorData.mBlurType, 0); ImGui::SameLine();
+	ImGui::RadioButton("blur 02", &editorData.mBlurType, 1);
+	ImGui::SliderInt("filter count", &editorData.count, 0, 4);
+	ImGui::SliderFloat("threshold", &editorData.threshold, 0, 10);
+	ImGui::SliderFloat("widthBlur", &editorData.widthBlur, 0, 1);
+	ImGui::SliderFloat("hightBlur", &editorData.hightBlur, 0, 1);
+	ImGui::SliderFloat("devutation", &editorData.deviation, 0, 50);
+	ImGui::SliderFloat("multiply", &editorData.multiply, 0, 10);
+	int blurCount = static_cast<int>(editorData.blurCount);
+	if (ImGui::SliderInt("blurCount", &blurCount, 1, 16))
+	{
+		editorData.blurCount = static_cast<float>(blurCount);
+	}
+
+	if (ImGui::Button("save"))Save(mNowEditorNo);
+	if (ImGui::Button("all save"))
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			Save(i);
+		}
+	}
 	ImGui::End();
 #endif
 }
 
 void BloomRender::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView* colorSrv, bool render)
 {
+
+	auto& editorData = mEditorData[mNowScene];
 	ID3D11Buffer* buffer[] =
 	{
 		mCBbuffer.Get(),
@@ -143,21 +181,26 @@ void BloomRender::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView*
 	context->VSSetConstantBuffers(0, 2, buffer);
 	context->PSSetSamplers(0, 1, mSamplerState.GetAddressOf());
 	mFrameBuffer[0]->Clear(context);
-	if (count >= 0)
-	{
-		mFrameBuffer[0]->Activate(context);
-		context->UpdateSubresource(mCBbuffer.Get(), 0, 0, &mCbuffer, 0, 0);
-		context->VSSetShader(mVSShader.Get(), 0, 0);
-		context->PSSetShader(mPSShader[0].Get(), 0, 0);
-		context->PSSetShaderResources(0, 1, &colorSrv);
-		context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
-		context->RSSetState(mRasterizeState.Get());
-		context->IASetInputLayout(nullptr);
-		context->IASetVertexBuffers(0, 0, 0, 0, 0);
-		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-		context->Draw(4, 0);
-		mFrameBuffer[0]->Deactivate(context);
-	}
+	if (editorData.count < 0)return;
+
+	mFrameBuffer[0]->Activate(context);
+	CbBloom cbBloom;
+	cbBloom.blurCount = editorData.blurCount;
+	cbBloom.hightBlur = editorData.hightBlur;
+	cbBloom.threshold = editorData.threshold;
+	cbBloom.widthBlur = editorData.widthBlur;
+	context->UpdateSubresource(mCBbuffer.Get(), 0, 0, &cbBloom, 0, 0);
+	context->VSSetShader(mVSShader.Get(), 0, 0);
+	context->PSSetShader(mPSShader[0].Get(), 0, 0);
+	context->PSSetShaderResources(0, 1, &colorSrv);
+	context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
+	context->RSSetState(mRasterizeState.Get());
+	context->IASetInputLayout(nullptr);
+	context->IASetVertexBuffers(0, 0, 0, 0, 0);
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	context->Draw(4, 0);
+	mFrameBuffer[0]->Deactivate(context);
+
 	//Ý’è
 	context->VSSetShader(mVSShader.Get(), 0, 0);
 	context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
@@ -166,29 +209,21 @@ void BloomRender::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView*
 	context->IASetVertexBuffers(0, 0, 0, 0, 0);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
+	switch (editorData.mBlurType)
 	{
-		context->PSSetShader(mPSShader[1].Get(), 0, 0);
-
-		for (int i = 1; i < 5; i++)
-		{
-			mFrameBuffer[i]->Clear(context);
-			if (count < i)continue;
-			mFrameBuffer[i]->Activate(context);
-			D3D11_VIEWPORT viewport = mFrameBuffer[i]->GetViewPort();
-			CalucurateBluer(viewport.Width, viewport.Height, VECTOR2F(mCbuffer.widthBlur, mCbuffer.hightBlur), deviation, multiply);
-			context->UpdateSubresource(mCbBluerbuffer.Get(), 0, 0, &mCbBluer, 0, 0);
-
-			context->PSSetShaderResources(0, 1, mFrameBuffer[i - 1]->GetRenderTargetShaderResourceView().GetAddressOf());
-			context->Draw(4, 0);
-			mFrameBuffer[i]->Deactivate(context);
-		}
+	case 0:
+		Blur01(context);
+		break;
+	case 1:
+		Blur02(context);
+		break;
 	}
 	if (!render)
 	{
 		mFrameBuffer[5]->Clear(context);
 		mFrameBuffer[5]->Activate(context);
 		context->VSSetShader(mVSShader.Get(), 0, 0);
-		context->PSSetShader(mPSShader[2].Get(), 0, 0);
+		context->PSSetShader(mPSShader[1].Get(), 0, 0);
 		for (int i = 0; i < 5; i++)
 		{
 			context->PSSetShaderResources(i, 1, mFrameBuffer[i]->GetRenderTargetShaderResourceView().GetAddressOf());
@@ -203,7 +238,7 @@ void BloomRender::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView*
 		return;
 	}
 	context->VSSetShader(mVSShader.Get(), 0, 0);
-	context->PSSetShader(mPSShader[2].Get(), 0, 0);
+	context->PSSetShader(mPSShader[1].Get(), 0, 0);
 	context->PSSetShaderResources(0, 1, &colorSrv);
 	for (int i = 0; i < 5; i++)
 	{
@@ -218,45 +253,89 @@ void BloomRender::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView*
 
 }
 
-void BloomRender::Load()
+void BloomRender::Load(const int scene)
 {
 	FILE* fp;
-	if (fopen_s(&fp, "Data/file/bloom.bin", "rb") == 0)
+	std::string fileName = "Data/file/bloom" + std::to_string(scene) + ".bin";
+	if (fopen_s(&fp, fileName.c_str(), "rb") == 0)
 	{
-		//fread(&mCbuffer, sizeof(CbBloom), 1, fp);
-		//fread(&deviation, sizeof(float), 1, fp);
-		//fread(&multiply, sizeof(float), 1, fp);
-		//fclose(fp);
-		int err = static_cast<int>(fread(&mCbuffer, sizeof(CbBloom), 1, fp));
-		assert(err >= 1);
-		err = static_cast<int>(fread(&deviation, sizeof(float), 1, fp));
-		assert(err >= 1);
-		err = static_cast<int>(fread(&multiply, sizeof(float), 1, fp));
-		assert(err >= 1);
-		err = static_cast<int>(fclose(fp));
-		assert(err != EOF);
-
-		return;
+		fread(&mEditorData[scene], sizeof(EditorData), 1, fp);
+		fclose(fp);
 	}
-	mCbuffer.threshold = 0;
-	mCbuffer.widthBlur = 0;
-	mCbuffer.hightBlur = 0;
-	mCbuffer.blurCount = 8;
+}
+
+void BloomRender::Save(const int scene)
+{
+	FILE* fp;
+	std::string fileName = "Data/file/bloom" + std::to_string(scene) + ".bin";
+	fopen_s(&fp, fileName.c_str(), "wb");
+	fwrite(&mEditorData[scene], sizeof(EditorData), 1, fp);
+	fclose(fp);
 
 }
 
-void BloomRender::Save()
+void BloomRender::Blur01(ID3D11DeviceContext* context)
 {
-	FILE* fp;
-	fopen_s(&fp, "Data/file/bloom.bin", "wb");
-	int err = static_cast<int>(fwrite(&mCbuffer, sizeof(CbBloom), 1, fp));
-	assert(err >= 1);
-	err = static_cast<int>(fwrite(&deviation, sizeof(float), 1, fp));
-	assert(err >= 1);
-	err = static_cast<int>(fwrite(&multiply, sizeof(float), 1, fp));
-	assert(err >= 1);
-	err = static_cast<int>(fclose(fp));
-	assert(err != EOF);
+	auto& editorData = mEditorData[mNowScene];
+
+	context->PSSetShader(mPSBlurShader[0].Get(), 0, 0);
+
+	for (int i = 1; i < 5; i++)
+	{
+		if (editorData.count < i)
+		{
+			mFrameBuffer[i]->Clear(context);
+			continue;
+		}
+
+		mFrameBuffer[i]->Clear(context);
+		mFrameBuffer[i]->Activate(context);
+		D3D11_VIEWPORT viewport = mFrameBuffer[i]->GetViewPort();
+		CalucurateBluer(viewport.Width, viewport.Height, VECTOR2F(editorData.widthBlur, editorData.hightBlur), editorData.deviation, editorData.multiply);
+		context->UpdateSubresource(mCbBluerbuffer.Get(), 0, 0, &mCbBluer, 0, 0);
+
+		context->PSSetShaderResources(0, 1, mFrameBuffer[i - 1]->GetRenderTargetShaderResourceView().GetAddressOf());
+		context->Draw(4, 0);
+		mFrameBuffer[i]->Deactivate(context);
+	}
+
+}
+
+void BloomRender::Blur02(ID3D11DeviceContext* context)
+{
+	auto& editorData = mEditorData[mNowScene];
+
+	context->PSSetShader(mPSBlurShader[1].Get(), 0, 0);
+
+	for (int i = 1; i < 5; i++)
+	{
+		if (editorData.count < i)
+		{
+			mFrameBuffer[i]->Clear(context);
+			continue;
+		}
+
+		mSidoFrameBuffer[i - 1]->Clear(context);
+		mSidoFrameBuffer[i - 1]->Activate(context);
+
+		D3D11_VIEWPORT viewport = mSidoFrameBuffer[i - 1]->GetViewPort();
+		CalucurateBluer(viewport.Width, viewport.Height, VECTOR2F(editorData.widthBlur, 0), editorData.deviation, editorData.multiply);
+		context->UpdateSubresource(mCbBluerbuffer.Get(), 0, 0, &mCbBluer, 0, 0);
+
+		context->PSSetShaderResources(0, 1, mFrameBuffer[i - 1]->GetRenderTargetShaderResourceView().GetAddressOf());
+		context->Draw(4, 0);
+
+		mSidoFrameBuffer[i - 1]->Deactivate(context);
+		mFrameBuffer[i]->Clear(context);
+		mFrameBuffer[i]->Activate(context);
+		viewport = mFrameBuffer[i]->GetViewPort();
+		CalucurateBluer(viewport.Width, viewport.Height, VECTOR2F(0, editorData.hightBlur), editorData.deviation, editorData.multiply);
+		context->UpdateSubresource(mCbBluerbuffer.Get(), 0, 0, &mCbBluer, 0, 0);
+
+		context->PSSetShaderResources(0, 1, mSidoFrameBuffer[i - 1]->GetRenderTargetShaderResourceView().GetAddressOf());
+		context->Draw(4, 0);
+		mFrameBuffer[i]->Deactivate(context);
+	}
 
 }
 
@@ -286,11 +365,11 @@ void BloomRender::CalucurateBluer(const float width, const float hight, const VE
 	{
 		mCbBluer.mOffset[i].z /= totalWeigh;
 	}
-	//for (auto i = 8; i < 15; ++i)
-	//{
-	//	mCbBluer.mOffset[i].x = -mCbBluer.mOffset[i - 7].x;
-	//	mCbBluer.mOffset[i].y = -mCbBluer.mOffset[i - 7].y;
-	//	mCbBluer.mOffset[i].z = mCbBluer.mOffset[i - 7].z;
-	//}
+	for (auto i = 8; i < 15; ++i)
+	{
+		mCbBluer.mOffset[i].x = -mCbBluer.mOffset[i - 7].x;
+		mCbBluer.mOffset[i].y = -mCbBluer.mOffset[i - 7].y;
+		mCbBluer.mOffset[i].z = mCbBluer.mOffset[i - 7].z;
+	}
 
 }

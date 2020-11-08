@@ -1,41 +1,49 @@
 #include"stage_scene_particle.hlsli"
 #include"curl_noise.hlsli"
+#include"render_particle_cube.hlsli"
 
 [numthreads(100, 1, 1)]
 void main( uint3 DTid : SV_DispatchThreadID )
 {
-	uint index =  DTid.x+ DTid.y+ DTid.z;
-	uint bufferIndex = index * 19 * FLOAT_SIZE;
+	uint index = DTid.x;
+	uint bufferIndex = index * PARTICLE_MAX;
 
-	Particle p;
-	p.position = asfloat(rwBuffer.Load4(bufferIndex));
-	p.life = asfloat(rwBuffer.Load(bufferIndex + 4 * FLOAT_SIZE));
-	p.scale = asfloat(rwBuffer.Load3((bufferIndex + 5 * FLOAT_SIZE)));
-	p.color = asfloat(rwBuffer.Load4((bufferIndex + 8 * FLOAT_SIZE)));
-	p.velocity = asfloat(rwBuffer.Load3((bufferIndex + 12 * FLOAT_SIZE)));
-	p.maxA = asfloat(rwBuffer.Load((bufferIndex + 15 * FLOAT_SIZE)));
-	p.angle = asfloat(rwBuffer.Load3((bufferIndex + 16 * FLOAT_SIZE)));
+	Particle p = (Particle)0;
 
-	p.velocity += normalize(snoise(p.velocity)) * elapsdTime*15*5;
-	p.position.xyz += p.velocity * elapsdTime;
-	p.angle += angleMovement * elapsdTime;
-	float3 cosf = float3(cos(p.angle.x), cos(p.angle.y), cos(p.angle.z));
-	float3 sinf = float3(sin(p.angle.x), sin(p.angle.y), sin(p.angle.z));
+	ReadParticle(p, bufferIndex);
 
-	//float x = (sinf.x * cosf.y) - (cosf.x * sinf.y * sinf.y - sinf.x * cosf.z);
-	//float z = (cosf.y * sinf.z) - (sinf.x * sinf.y * cosf.z - cosf.x * sinf.z);
-	//p.velocity += float3(x, 0, z) * elapsdTime * 60;
+	p.accel += windDirection * elapsdTime;
+	p.velocity += (normalize(snoise(normalize(p.accel)))*15/* + p.accel*/ + p.accel) * elapsdTime;
+	float speed = length(p.velocity);
+	if (speed > maxSpeed)
+	{
+		float3 vec = normalize(p.velocity);
+		p.velocity = vec * maxSpeed;
+	}
+	p.position += p.velocity* elapsdTime;
+
 	p.life -= elapsdTime;
 
-	//p.color.a = min(maxLife - p.life, 1.5)*0.3;
-	//p.color.a = min(p.life, 1.5)*0.3;
-	p.color.a = lerp(min(maxLife - p.life, 0.6), min(p.life, 0.6), step(maxLife, p.life)) * p.maxA;
+	if (p.life <= 0)
+	{
+		p.position = float3(0, 0, 0);
+		p.velocity = float3(0, 0, 0);
+		p.color = float4(0, 0, 0, 0);
+		p.scale = float3(0, 0, 0);
+	}
+	//更新データの書き出し
+	WriteParticle(p, bufferIndex);
 
-	rwBuffer.Store4(bufferIndex, asuint(p.position));
-	rwBuffer.Store(bufferIndex + 4 * FLOAT_SIZE, asuint(p.life));
-	rwBuffer.Store3(bufferIndex + 5 * FLOAT_SIZE, asuint(p.scale));
-	rwBuffer.Store4(bufferIndex + 8 * FLOAT_SIZE, asuint(p.color));
-	rwBuffer.Store3(bufferIndex + 12 * FLOAT_SIZE, asuint(p.velocity));
-	rwBuffer.Store3(bufferIndex + 16 * FLOAT_SIZE, asuint(p.angle));
+	//描画用データの初期化
+	ParticleRender render = (ParticleRender)0;
+	//描画用データのセット
+	render.position = float4(p.position, 1.0f);
+	render.scale = p.scale;
+	render.color = p.color;
+	render.angle = float3(0,0,0);
+	render.velocity = p.velocity;
+	bufferIndex = index * 17 * 4;
+	//描画用データの書き出し
+	WriteRender(render, bufferIndex);
 
 }

@@ -71,20 +71,20 @@ void GpuParticleManager::CreateGameBuffer(ID3D11Device* device)
 {
 	mState = 0;
 	CreateBuffer(device);
-	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
-	{
-		{"POSITION",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
-		{"LIFE",0,DXGI_FORMAT_R32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
-		{"SCALE",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
-		{"COLOR",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
-		{"VELOCITY",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
-		{"COLORTYPE",0,DXGI_FORMAT_R32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
-		{"ANGLE",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
-	};
-	mSSceneShader = std::make_unique<DrowShader>(device, "Data/shader/stage_scene_particle_vs.cso", "Data/shader/run_particle_gs.cso", "Data/shader/deferred_depth_stage_scene_particle_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
+	//D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
+	//{
+	//	{"POSITION",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
+	//	{"LIFE",0,DXGI_FORMAT_R32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
+	//	{"SCALE",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
+	//	{"COLOR",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
+	//	{"VELOCITY",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
+	//	{"COLORTYPE",0,DXGI_FORMAT_R32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
+	//	{"ANGLE",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
+	//};
+	//mSSceneShader = std::make_unique<DrowShader>(device, "Data/shader/stage_scene_particle_vs.cso", "Data/shader/run_particle_gs.cso", "Data/shader/deferred_depth_stage_scene_particle_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
 	mSelectSceneParticle = std::make_unique<SelectSceneParticle>(device);
 	mRunParticle = std::make_unique<RunParticles>(device);
-
+	mStageSceneParticle = std::make_unique<StageSceneParticle>(device);
 }
 
 void GpuParticleManager::ClearBuffer()
@@ -100,8 +100,7 @@ void GpuParticleManager::CreateStageObjParticle(std::vector<std::shared_ptr<Stag
 	mStageObjParticle.reset(nullptr);
 	ID3D11Device* device = Framework::Instance().GetDevice().Get();
 	mStageObjParticle = std::make_unique<StageObjParticle>(device);
-	mStageSceneParticle.reset(nullptr);
-	mStageSceneParticle = std::make_unique<StageSceneParticle>(device);
+	mStageObjParticle->SetStageData(objs);
 }
 
 void GpuParticleManager::Update(float elapsd_time)
@@ -117,6 +116,7 @@ void GpuParticleManager::Update(float elapsd_time)
 		break;
 	case GAME:
 		if (mRunParticle.get() != nullptr)mRunParticle->Update(context, elapsd_time);
+		mStageObjParticle->Update(context, elapsd_time);
 		mStageSceneParticle->Update(context, elapsd_time);
 		break;
 	}
@@ -173,10 +173,11 @@ void GpuParticleManager::SelectImGui()
 void GpuParticleManager::GameImGui()
 {
 #ifdef USE_IMGUI
-	static bool selects[2] = { false,false };
+	static bool selects[3] = { false,false };
 	ImGui::Begin("game particles");
 	ImGui::Selectable("run particle", &selects[0]);
 	ImGui::Selectable("stage scene particle", &selects[1]);
+	ImGui::Selectable("stage obj particle", &selects[2]);
 	ImGui::End();
 	if (selects[0])
 	{
@@ -185,6 +186,10 @@ void GpuParticleManager::GameImGui()
 	if (selects[1])
 	{
 		mStageSceneParticle->ImGuiUpdate();
+	}
+	if (selects[2])
+	{
+		mStageObjParticle->ImGuiUpdate();
 	}
 
 #endif
@@ -213,7 +218,9 @@ void GpuParticleManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& vi
 		break;
 	case GAME:
 		//mStageSceneParticle->Render(context);
-		if(mRunParticle.get()!=nullptr)mRunParticle->Render(context);
+		if (mRunParticle.get() != nullptr)mRunParticle->Render(context);
+		//mStageObjParticle->Render(context);
+		mStageSceneParticle->Render(context);
 		break;
 	}
 	//if (drowMullti)
@@ -230,18 +237,3 @@ void GpuParticleManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& vi
 	//}
 }
 
-void GpuParticleManager::RenderVelocity(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection)
-{
-	context->OMSetDepthStencilState(mDepth.Get(), 0);
-	context->RSSetState(mRasterizer.Get());
-	context->VSSetConstantBuffers(0, 1, mCbScene.GetAddressOf());
-	context->GSSetConstantBuffers(0, 1, mCbScene.GetAddressOf());
-	context->PSSetConstantBuffers(0, 1, mCbScene.GetAddressOf());
-
-	CbScene cbScene;
-	cbScene.view = view;
-	cbScene.projection = projection;
-	context->UpdateSubresource(mCbScene.Get(), 0, 0, &cbScene, 0, 0);
-	if (mStageSceneParticle.get() != nullptr)mStageSceneParticle->RenderVelocity(context);
-
-}

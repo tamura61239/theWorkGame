@@ -51,6 +51,7 @@ void main(
 	};
 
 	float3 position = (float3)0;
+	[unroll]
 	for (int i = 0; i < 12; i++)
 	{
 		GS_OUT gout;

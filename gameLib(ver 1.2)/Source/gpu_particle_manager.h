@@ -28,11 +28,11 @@ public:
 	TitleTextureParticle* GetTitleTextureParticle() { return mTitleTextureParticle.get(); }
 	TitleParticle* GetTitleParticle() { return mTitleParticle.get(); }
 	RunParticles* GetRunParticle() { return mRunParticle.get(); }
+	StageObjParticle* GetStageObjParticle() { return mStageObjParticle.get(); }
 	//setter
 	void SetState(const int state) { mState = state; }
 	//•`‰æ
 	void Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, bool drowMullti=false);
-	void RenderVelocity(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection);
 	enum STATE
 	{
 		TITLE,

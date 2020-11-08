@@ -47,7 +47,8 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 			player = std::make_unique<PlayerAI>(device, "Data/FBX/new_player_anim.fbx");
 			mSManager = std::make_unique<StageManager>(device, 1920, 1080);
 			modelRenderer = std::make_unique<ModelRenderer>(device);
-			bloom = std::make_unique<BloomRender>(device, 1920, 1080);
+			bloom = std::make_unique<BloomRender>(device, 1920, 1080, 1);
+			//bloom = std::make_unique<BloomRender>(device, 1920, 1080);
 			mStageOperation = std::make_unique<StageOperation>();
 			pHitAreaDrow.CreateObj(device);
 			pLight.CreateLightBuffer(device);
@@ -99,6 +100,7 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 				pGpuParticleManager.SetState(GpuParticleManager::STATE::GAME);
 				pCameraManager.GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::PLAY);
 				fadeOut->StartFadeIn();
+				bloom->SetNowScene(2);
 			}
 			UIManager::GetInctance().GameInitialize(device);
 		}, device);
@@ -146,6 +148,7 @@ void SceneGame::Update(float elapsed_time)
 				fadeOut->StartFadeIn();
 				pGpuParticleManager.SetState(GpuParticleManager::STATE::GAME);
 				pCameraManager.GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::PLAY);
+				bloom->SetNowScene(2);
 				return;
 			}
 		}
@@ -196,6 +199,7 @@ void SceneGame::Update(float elapsed_time)
 	}
 
 	mStageOperation->Update(elapsed_time, mSManager.get(), player->GetPlayFlag());
+	pGpuParticleManager.GetStageObjParticle()->SetParticleData(mStageOperation->GetColorType());
 	player->Update(elapsed_time, mSManager.get(),mStageOperation.get());
 	if (!testGame)
 	{

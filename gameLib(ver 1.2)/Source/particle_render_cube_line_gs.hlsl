@@ -18,6 +18,7 @@ void main(
 		{0.5,-0.5,-0.5},
 	};
 	float3 position = (float3)0;
+	[unroll]
 	for (int i = 0; i < 2; i++)
 	{
 		GS_OUT gout;
@@ -76,6 +77,7 @@ void main(
 		output.RestartStrip();
 
 	}
+	[unroll]
 
 	for (int i = 0; i < 4; i++)
 	{

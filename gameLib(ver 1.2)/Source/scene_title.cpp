@@ -20,7 +20,8 @@ SceneTitle::SceneTitle(ID3D11Device* device):mEditorFlag(true), mTestMove(false)
 			pCameraManager.GetCamera()->SetEye(VECTOR3F(0, 0, -200));
 			pCameraManager.GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::TITLE_CAMERA);
 			pCameraManager.GetCameraOperation()->GetTitleCamera()->Load();
-			bloom = std::make_unique<BloomRender>(device, 1920, 1080);
+			bloom = std::make_unique<BloomRender>(device, 1920, 1080, 0);
+			//bloom = std::make_unique<BloomRender>(device, 1920, 1080);
 			frameBuffer = std::make_unique<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
 			//std::unique_ptr<ModelData>data = std::make_unique<ModelData>("Data/FBX/new_player_anim.fbx");
 			//std::shared_ptr<ModelResource>resouce = std::make_shared<ModelResource>(device, std::move(data));

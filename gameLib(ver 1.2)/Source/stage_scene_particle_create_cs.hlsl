@@ -1,34 +1,22 @@
 #include"stage_scene_particle.hlsli"
+#include"rand_function.hlsli"
 [numthreads(1, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {
-	uint index = startIndex + DTid.x;
-	uint bufferIndex = index * 19 * FLOAT_SIZE;
-	Particle p;
-	uint rIndex = index % 400;
-	uint rBufferIndex = rIndex * 3 * FLOAT_SIZE;
-	float3 rand = asfloat(randBuffer.Load3(rBufferIndex)) * index;
-	rand = rand - floor(rand);
-	rand.x -= 0.5f;
-	p.position.xyz = startPosition + createRange * rand;
-	p.position.w = 1.0f;
-	p.velocity = float3(0, 75, 0);
+	uint index = DTid.x + startIndex;
+	uint bufferIndex = index * PARTICLE_MAX;
+
+	Particle p = (Particle)0;
+
+	p.position = createCentralPosition + normalize(float3(rand_1_normal(float2(index % 325, bufferIndex % 167), 1) - 0.5f, rand_1_normal(float2(index % 231, bufferIndex % 237), 1) - 0.5f, rand_1_normal(float2(bufferIndex % 521, (index + bufferIndex) % 145), 1) - 0.5f))* createArea;
+
+	p.accel = (normalize(float3(rand_1_normal(float2(index % 325, bufferIndex % 167), 1)- randX, rand_1_normal(float2(index % 231, bufferIndex % 237), 1), rand_1_normal(float2(bufferIndex % 521, (index + bufferIndex) % 145), 1)))/*+float3(0,1,0.5f)*/)*10.f+float3(0,2,0);
+
+	p.scale = float3(1, 1, 1)* scale;
+
+	p.color = color;
+
 	p.life = maxLife;
-	p.angle = (float3)0;
-	//p.color = float4(1, 0, 0, 0);
-	p.color.rgb = normalize(float3(index % 19, index % 5, index % 23));
-	p.color.w = 0;
-	p.maxA = rand.x + rand.y + rand.z;
-	p.maxA = p.maxA - floor(p.maxA)+0.2f;
-	p.scale = float3(1 - p.maxA + 0.3f, 1 - p.maxA + 0.3f, 1 - p.maxA + 0.3f)*8;
-	p.maxA *= 0.8f;
 
-	rwBuffer.Store4(bufferIndex, asuint(p.position));
-	rwBuffer.Store(bufferIndex + 4 * FLOAT_SIZE, asuint(p.life));
-	rwBuffer.Store3(bufferIndex + 5 * FLOAT_SIZE, asuint(p.scale));
-	rwBuffer.Store4(bufferIndex + 8 * FLOAT_SIZE, asuint(p.color));
-	rwBuffer.Store3(bufferIndex + 12 * FLOAT_SIZE, asuint(p.velocity));
-	rwBuffer.Store3(bufferIndex + 15 * FLOAT_SIZE, asuint(p.maxA));
-	rwBuffer.Store3(bufferIndex + 16 * FLOAT_SIZE, asuint(p.angle));
-
+	WriteParticle(p, bufferIndex);
 }

@@ -48,7 +48,7 @@ TitleTextureParticle::TitleTextureParticle(ID3D11Device* device) :mMaxCount(0), 
 		{"LIFE",0,DXGI_FORMAT_R32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 	};
 
-	mShader = std::make_unique<DrowShader>(device, "Data/shader/title_texture_particle_vs.cso", "Data/shader/run_particle_gs.cso", "Data/shader/stage_obj_particle_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
+	//mShader = std::make_unique<DrowShader>(device, "Data/shader/title_texture_particle_vs.cso", "Data/shader/run_particle_gs.cso", "Data/shader/stage_obj_particle_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
 }
 
 void TitleTextureParticle::LoadTextureData(const wchar_t* textureName, VECTOR2F leftTop, VECTOR2F size, VECTOR2F textureSize)
@@ -161,16 +161,16 @@ void TitleTextureParticle::Update(float elapsdTime, ID3D11DeviceContext* context
 
 void TitleTextureParticle::Render(ID3D11DeviceContext* context)
 {
-	if (!mStartFlag)return;
-	mShader->Activate(context);
+	//if (!mStartFlag)return;
+	//mShader->Activate(context);
 
-	u_int stride = sizeof(ParticleData);
-	u_int offset = 0;
+	//u_int stride = sizeof(ParticleData);
+	//u_int offset = 0;
 
-	context->IASetVertexBuffers(0, 1, buffer.GetAddressOf(), &stride, &offset);
-	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+	//context->IASetVertexBuffers(0, 1, buffer.GetAddressOf(), &stride, &offset);
+	//context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 
-	context->Draw(mMaxCount, 0);
-	mShader->Deactivate(context);
+	//context->Draw(mMaxCount, 0);
+	//mShader->Deactivate(context);
 
 }

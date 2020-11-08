@@ -4,13 +4,21 @@
 #include<wrl.h>
 #include<vector>
 #include"stage_obj.h"
+#include"drow_shader.h"
 
 class StageObjParticle
 {
 public:
 	StageObjParticle(ID3D11Device* device);
-	void ImGuiUpdate(float elapsdTime);
-	void Update(ID3D11DeviceContext* context, float elapsd_time, const int colorState);
+	//setter
+	void SetParticleData(const int colorType);
+	void SetStageData( std::vector<std::shared_ptr<StageObj>>objs);
+
+	void ImGuiUpdate();
+	void Update(ID3D11DeviceContext* context, float elapsd_time);
 	void Render(ID3D11DeviceContext* context);
+private:
+	void Load();
+	void Save();
 private:
 };

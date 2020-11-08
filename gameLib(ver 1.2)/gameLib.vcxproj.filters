@@ -759,9 +759,6 @@
     <FxCompile Include="Source\bloom_vs.hlsl">
       <Filter>gameLib\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Source\bloom_ps.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="Source\combined_bloom.hlsl">
       <Filter>gameLib\Shaders</Filter>
     </FxCompile>
@@ -885,10 +882,10 @@
     <FxCompile Include="Source\particle_render_vs.hlsl">
       <Filter>シェーダー\particle_render</Filter>
     </FxCompile>
-    <FxCompile Include="Source\bloom_height_ps.hlsl">
+    <FxCompile Include="Source\bloom_blur02_ps.hlsl">
       <Filter>gameLib\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Source\bloom_width_ps.hlsl">
+    <FxCompile Include="Source\bloom_blur01_ps.hlsl">
       <Filter>gameLib\Shaders</Filter>
     </FxCompile>
   </ItemGroup>
