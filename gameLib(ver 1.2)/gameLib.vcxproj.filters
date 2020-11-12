@@ -333,6 +333,9 @@
     <ClCompile Include="Source\result_ui_move.cpp">
       <Filter>ソース ファイル\UI</Filter>
     </ClCompile>
+    <ClCompile Include="Source\hit_area_render.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="External_Libraries\imgui\imconfig.h">
@@ -601,6 +604,12 @@
     </ClInclude>
     <ClInclude Include="Source\result_ui_move.h">
       <Filter>ヘッダー ファイル\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\hit_area_render.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\singleton_class.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -887,6 +896,15 @@
     </FxCompile>
     <FxCompile Include="Source\bloom_blur01_ps.hlsl">
       <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\particle_render_billboard_gs.hlsl">
+      <Filter>シェーダー\particle_render</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\particle_render_text_ps.hlsl">
+      <Filter>シェーダー\particle_render</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\particle_render_point_ps.hlsl">
+      <Filter>シェーダー\particle_render</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

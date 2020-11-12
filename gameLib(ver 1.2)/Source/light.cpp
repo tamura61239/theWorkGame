@@ -125,7 +125,7 @@ void Light::ConstanceLightBufferSetShader(ID3D11DeviceContext* context)
 	memcpy(cbLight.pointLight, pointLight, sizeof(PointLight) * POINTMAX);
 	memcpy(cbLight.spotLight, spotLight, sizeof(SpotLight) * SPOTMAX);
 
-	mDefLight.mEyePosition = VECTOR4F(pCameraManager.GetCamera()->GetEye().x, pCameraManager.GetCamera()->GetEye().y, pCameraManager.GetCamera()->GetEye().z, .0f);
+	mDefLight.mEyePosition = VECTOR4F(pCameraManager->GetCamera()->GetEye().x, pCameraManager->GetCamera()->GetEye().y, pCameraManager->GetCamera()->GetEye().z, .0f);
 	context->UpdateSubresource(mCbLight.Get(), 0, 0, &cbLight, 0, 0);
 	context->UpdateSubresource(mCbDefLight.Get(), 0, 0, &mDefLight, 0, 0);
 }

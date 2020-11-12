@@ -96,4 +96,5 @@ private:
 	bool selectSceneFlag;
 	bool editorFlag;
 	bool testGame;
+	bool hitArea;
 };

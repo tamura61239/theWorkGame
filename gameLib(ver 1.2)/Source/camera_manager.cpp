@@ -9,7 +9,7 @@
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wparam, LPARAM lparam);
 #endif
 
-void CameraManager::CreateCamera(ID3D11Device* device,const int scene)
+void CameraManager::Initialize(ID3D11Device* device,const int scene)
 {
 	mCamera = std::make_shared<Camera>(device);
 	mCameraOperation = std::make_unique<CameraOperation>(mCamera,scene);
@@ -24,6 +24,6 @@ void CameraManager::Update(float elapsed_time)
 
 void CameraManager::DestroyCamera()
 {
-	mCamera.reset();
 	mCameraOperation.reset();
+	//mCamera.reset();
 }

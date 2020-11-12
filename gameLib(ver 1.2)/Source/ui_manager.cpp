@@ -79,6 +79,8 @@ void UIManager::Clear()
 	mUIs.clear();
 	mNames.clear();
 	mTitleMove.reset(nullptr);
+	mGameMove.reset(nullptr);
+	mResultMove.reset(nullptr);
 }
 void UIManager::ClearUI()
 {

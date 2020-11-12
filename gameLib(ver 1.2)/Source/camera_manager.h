@@ -1,11 +1,12 @@
 #pragma once
 #include"camera.h"
 #include"camera_operation.h"
+#include"singleton_class.h"
 
-class CameraManager
+class CameraManager:public Singleton<CameraManager>
 {
 public:
-	void CreateCamera(ID3D11Device*device, const int scene);
+	void Initialize(ID3D11Device*device, const int scene);
 	void Update(float elapsed_time);
 	//setter
 	void SetDefaultPerspective(float fov, float aspect, float nearZ, float farZ)
@@ -19,13 +20,7 @@ public:
 	Camera* GetCamera() { return mCamera.get(); }
 	CameraOperation* GetCameraOperation() { return mCameraOperation.get(); }
 	void DestroyCamera();
-	static CameraManager& GetInctance()
-	{
-		static CameraManager manager;
-		return manager;
-	}
 private:
-	CameraManager(){}
 	std::shared_ptr<Camera>mCamera;
 	std::unique_ptr<CameraOperation>mCameraOperation;
 	float defaultFov = 0;

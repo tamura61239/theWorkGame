@@ -13,7 +13,7 @@ VS_OUT main(
 	for (int i = 0; i < 4; i++)
 	{
 		p += (boneWeights[i] * mul(position, boneTransforms[boneIndices[i]])).xyz;
-		n += (boneWeights[i] * mul(float4(normal.xyz, 1), boneTransforms[boneIndices[i]])).xyz;
+		n += (boneWeights[i] * mul(normal, (float3x3)boneTransforms[boneIndices[i]])).xyz;
 	}
 
 	VS_OUT vout;

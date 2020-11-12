@@ -181,20 +181,17 @@ void RunParticles::Update(ID3D11DeviceContext* context, float elapsd_time)
 		//	mCbCreateData.mStartNumber += bone.boneNumber;
 		//}
 		//mPlayFlag = false;
-		float createAmount = mCreateSize * elapsd_time;
+		mNewIndex += mCreateSize * elapsd_time;
+		float createAmount = mNewIndex - mCbCreateData.mStartNumber;
 		if (createAmount > 0)
 		{
-			if (mNewIndex < mCbCreateData.mStartNumber)
-			{
-				mCbCreateData.mStartNumber = 0;
-			}
-			mNewIndex += createAmount;
 			context->UpdateSubresource(mCbBoneBuffer.Get(), 0, 0, &mCbBone, 0, 0);
 			context->UpdateSubresource(mCbCreateBuffer.Get(), 0, 0, &mCbCreateData, 0, 0);
 			mCbCreateData.mStartNumber = mNewIndex;
 			if (mNewIndex + createAmount > mRenderSize)
 			{
 				mNewIndex = 0;
+				mCbCreateData.mStartNumber = 0;
 			}
 			context->Dispatch(createAmount, 1, 1);
 		}

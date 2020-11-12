@@ -41,6 +41,13 @@ void CameraOperation::ImGuiUpdate()
 		ImGui::RadioButton("stage editor camera", &type, 4);
 		break;
 	}
+	if (mType != static_cast<CAMERA_TYPE>(type))
+	{
+		if (mType == CAMERA_TYPE::DEBUG)
+		{
+			mCamera.lock()->SetUp(VECTOR3F(0, 1, 0));
+		}
+	}
 	mType = static_cast<CAMERA_TYPE>(type);
 	ImGui::Separator();
 	VECTOR3F eye = mCamera.lock()->GetEye();

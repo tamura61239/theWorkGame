@@ -14,12 +14,13 @@ SceneTitle::SceneTitle(ID3D11Device* device):mEditorFlag(true), mTestMove(false)
 	loading_thread = std::make_unique<std::thread>([&](ID3D11Device* device)
 		{
 			std::lock_guard<std::mutex> lock(loading_mutex);
-			pGpuParticleManager.CreateTitleBuffer(device);
-			pGpuParticleManager.SetState(GpuParticleManager::STATE::TITLE);
-			pCameraManager.CreateCamera(device,0);
-			pCameraManager.GetCamera()->SetEye(VECTOR3F(0, 0, -200));
-			pCameraManager.GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::TITLE_CAMERA);
-			pCameraManager.GetCameraOperation()->GetTitleCamera()->Load();
+			GpuParticleManager::Create();
+			pGpuParticleManager->CreateTitleBuffer(device);
+			pGpuParticleManager->SetState(GpuParticleManager::STATE::TITLE);
+			pCameraManager->Initialize(device,0);
+			pCameraManager->GetCamera()->SetEye(VECTOR3F(0, 0, -200));
+			pCameraManager->GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::TITLE_CAMERA);
+			pCameraManager->GetCameraOperation()->GetTitleCamera()->Load();
 			bloom = std::make_unique<BloomRender>(device, 1920, 1080, 0);
 			//bloom = std::make_unique<BloomRender>(device, 1920, 1080);
 			frameBuffer = std::make_unique<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
@@ -30,9 +31,10 @@ SceneTitle::SceneTitle(ID3D11Device* device):mEditorFlag(true), mTestMove(false)
 			//obj = std::make_unique<StaticObj>(device, "Data/FBX/Mr.Incredible/Mr.Incredible.fbx");
 			//mRender = std::make_unique<MeshRender>(device);
 			//character->GetModel()->PlayAnimation(0, true);
-			UIManager::GetInctance().TitleInitialize(device);
+			UIManager::Create();
+			UIManager::GetInctance()->TitleInitialize(device);
 			modelRender = std::make_unique<ModelRenderer>(device);
-			pGpuParticleManager.GetTitleTextureParticle()->CreateBuffer(device);
+			pGpuParticleManager->GetTitleTextureParticle()->CreateBuffer(device);
 			mFade = std::make_unique<Fade>(device, Fade::FADE_SCENE::TITLE);
 			mFade->StartFadeIn();
 		}, device);
@@ -51,24 +53,25 @@ void SceneTitle::Update(float elapsed_time)
 	EndLoading();
 	if (ImGuiUpdate())return;
 	mFade->Update(elapsed_time);
-	UIManager::GetInctance().Update(elapsed_time);
-	pCameraManager.Update(elapsed_time);
-	pGpuParticleManager.GetTitleParticle()->SetChangeFlag(pCameraManager.GetCameraOperation()->GetTitleCamera()->GetTitleSceneChangeFlag());
-	pGpuParticleManager.Update(elapsed_time);
-	if (pCameraManager.GetCameraOperation()->GetTitleCamera()->GetEndTitleFlag())
+	UIManager::GetInctance()->Update(elapsed_time);
+	pCameraManager->Update(elapsed_time);
+	pGpuParticleManager->GetTitleParticle()->SetChangeFlag(pCameraManager->GetCameraOperation()->GetTitleCamera()->GetTitleSceneChangeFlag());
+	pGpuParticleManager->Update(elapsed_time);
+	if (pCameraManager->GetCameraOperation()->GetTitleCamera()->GetEndTitleFlag())
 	{
+		GpuParticleManager::Destroy();
+		UIManager::Destroy();
 		pSceneManager.ChangeScene(SCENETYPE::GAME);
-		pGpuParticleManager.ClearBuffer();
-		UIManager::GetInctance().Clear();
+
 		return;
 	}
-	if (UIManager::GetInctance().GetTitleMoveChangeFlag())
+	if (UIManager::GetInctance()->GetTitleMoveChangeFlag())
 	{
 		if (pKeyBoad.RisingState(KeyLabel::SPACE))
 		{
-			pCameraManager.GetCameraOperation()->GetTitleCamera()->SetTitleSceneChangeFlag(true);
-			pGpuParticleManager.GetTitleTextureParticle()->SetStartFlag(true);
-			UIManager::GetInctance().ClearUI();
+			pCameraManager->GetCameraOperation()->GetTitleCamera()->SetTitleSceneChangeFlag(true);
+			pGpuParticleManager->GetTitleTextureParticle()->SetStartFlag(true);
+			UIManager::GetInctance()->ClearUI();
 		}
 	}
 }
@@ -82,12 +85,12 @@ void SceneTitle::Render(ID3D11DeviceContext* context, float elapsed_time)
 	EndLoading();
 	frameBuffer->Clear(context);
 	frameBuffer->Activate(context);
-	FLOAT4X4 view = pCameraManager.GetCamera()->GetView();
-	FLOAT4X4 projection = pCameraManager.GetCamera()->GetProjection();
+	FLOAT4X4 view = pCameraManager->GetCamera()->GetView();
+	FLOAT4X4 projection = pCameraManager->GetCamera()->GetProjection();
 
-	pGpuParticleManager.Render(context, view, projection);
+	pGpuParticleManager->Render(context, view, projection);
 	blend[1]->activate(context);
-	UIManager::GetInctance().Render(context);
+	UIManager::GetInctance()->Render(context);
 	blend[1]->deactivate(context);
 
 	frameBuffer->Deactivate(context);
@@ -112,14 +115,18 @@ bool SceneTitle::ImGuiUpdate()
 	{
 	case 2:
 	case 3:
-		pGpuParticleManager.ClearBuffer();
-		UIManager::GetInctance().Clear();
+		GpuParticleManager::Destroy();
+		UIManager::GetInctance()->Clear();
+		UIManager::Destroy();
+
 		pSceneManager.ChangeScene(SCENETYPE::GAME);
 		return true;
 		break;
 	case 4:
-		pGpuParticleManager.ClearBuffer();
-		UIManager::GetInctance().Clear();
+		GpuParticleManager::Destroy();
+		UIManager::GetInctance()->Clear();
+		UIManager::Destroy();
+
 		pSceneManager.ChangeScene(SCENETYPE::RESULT);
 		return true;
 		break;
@@ -140,13 +147,13 @@ bool SceneTitle::ImGuiUpdate()
 		pLight.ImGuiUpdate();
 		break;
 	case 1:
-		UIManager::GetInctance().ImGuiUpdate();
+		UIManager::GetInctance()->ImGuiUpdate();
 		break;
 	case 2:
-		pGpuParticleManager.ImGuiUpdate();
+		pGpuParticleManager->ImGuiUpdate();
 		break;
 	case 3:
-		pCameraManager.GetCameraOperation()->ImGuiUpdate();
+		pCameraManager->GetCameraOperation()->ImGuiUpdate();
 		break;
 	case 4:
 		bloom->ImGuiUpdate();

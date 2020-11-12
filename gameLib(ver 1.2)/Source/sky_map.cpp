@@ -109,7 +109,7 @@ void SkyMap::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FL
 	cbScene.view = view;
 	cbScene.projection = projection;
 	Cb cb;
-	cb.color = color;
+	cb.color = color * mPosData->GetColor();
 	cb.world = mPosData->GetWorld();
 	ID3D11Buffer* buffer[] =
 	{

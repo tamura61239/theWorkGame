@@ -7,7 +7,7 @@
 #include<imgui.h>
 #endif
 
-BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHight, const int nowScene) :mNowEditorNo(0), mNowScene(nowScene)
+BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHight, const int nowScene) :mNowEditorNo(nowScene), mNowScene(nowScene)
 {
 	memset(&mEditorData, 0, sizeof(mEditorData));
 	unsigned int wight = static_cast<unsigned int>(screenWidth);
@@ -136,12 +136,14 @@ void BloomRender::ImGuiUpdate()
 		ImGui::Image(mFrameBuffer[i]->GetRenderTargetShaderResourceView().Get(), size);
 		if (i < 4)ImGui::SameLine();
 	}
-	auto& editorData = mEditorData[mNowScene];
 
 	ImGui::RadioButton("title bloom", &mNowEditorNo, 0); ImGui::SameLine();
 	ImGui::RadioButton("select bloom", &mNowEditorNo, 1); ImGui::SameLine();
 	ImGui::RadioButton("game bloom", &mNowEditorNo, 2); ImGui::SameLine();
 	ImGui::RadioButton("result bloom", &mNowEditorNo, 3);
+
+	auto& editorData = mEditorData[mNowEditorNo];
+
 	ImGui::RadioButton("blur 01", &editorData.mBlurType, 0); ImGui::SameLine();
 	ImGui::RadioButton("blur 02", &editorData.mBlurType, 1);
 	ImGui::SliderInt("filter count", &editorData.count, 0, 4);
@@ -181,7 +183,7 @@ void BloomRender::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView*
 	context->VSSetConstantBuffers(0, 2, buffer);
 	context->PSSetSamplers(0, 1, mSamplerState.GetAddressOf());
 	mFrameBuffer[0]->Clear(context);
-	if (editorData.count < 0)return;
+	if (editorData.count <= 0)return;
 
 	mFrameBuffer[0]->Activate(context);
 	CbBloom cbBloom;

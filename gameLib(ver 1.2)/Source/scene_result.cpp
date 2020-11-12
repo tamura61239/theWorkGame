@@ -9,11 +9,11 @@
 SceneResult::SceneResult(ID3D11Device* device) :mNowGameTime(0), mEditorFlag(false), mEditorNo(0),
 mPlayFlag(true)
 {
-	if (UIManager::GetInctance().GetGameUIMove() != nullptr)
+	if (UIManager::GetInctance()->GetGameUIMove() != nullptr)
 	{
-		mNowGameTime = UIManager::GetInctance().GetGameUIMove()->GetTime();
+		mNowGameTime = UIManager::GetInctance()->GetGameUIMove()->GetTime();
 	}
-	UIManager::GetInctance().ResultInitialize(device);
+	UIManager::GetInctance()->ResultInitialize(device);
 	mBlend.push_back(std::make_unique<blend_state>(device, BLEND_MODE::ALPHA));
 	mRanking = std::make_unique<Ranking>(device, mNowGameTime);
 	mFade = std::make_unique<Fade>(device, Fade::FADE_SCENE::RESULT);
@@ -28,9 +28,10 @@ void SceneResult::Update(float elapsed_time)
 	{
 		if (mFade->GetEndFlag())
 		{
-			UIManager::GetInctance().Clear();
+			int type = UIManager::GetInctance()->GetResultUIMove()->GetType();
 			mFade->Clear();
-			switch (UIManager::GetInctance().GetResultUIMove()->GetType())
+			UIManager::Destroy();
+			switch (type)
 			{
 			case 0:
 				pSceneManager.ChangeScene(SCENETYPE::GAME);
@@ -43,8 +44,8 @@ void SceneResult::Update(float elapsed_time)
 		}
 	}
 	mRanking->Update(elapsed_time, mPlayFlag);
-	UIManager::GetInctance().Update(elapsed_time);
-	if (UIManager::GetInctance().GetResultUIMove()->GetDecisionFlag())
+	UIManager::GetInctance()->Update(elapsed_time);
+	if (UIManager::GetInctance()->GetResultUIMove()->GetDecisionFlag())
 	{
 		mFade->StartFadeOut();
 	}
@@ -54,7 +55,7 @@ void SceneResult::Render(ID3D11DeviceContext* context, float elapsed_time)
 {
 	mBlend[0]->activate(context);
 	mRanking->Render(context);
-	UIManager::GetInctance().Render(context);
+	UIManager::GetInctance()->Render(context);
 	mFade->Render(context);
 	mBlend[0]->deactivate(context);
 }
@@ -69,13 +70,17 @@ bool SceneResult::ImGuiUpdate()
 	switch (pSceneManager.GetSceneEditor()->Editor(&mEditorFlag, StageManager::GetMaxStageCount()))
 	{
 	case 1:
-		UIManager::GetInctance().Clear();
+		UIManager::GetInctance()->Clear();
+		UIManager::Destroy();
+
 		pSceneManager.ChangeScene(SCENETYPE::TITLE);
 		return true;
 		break;
 	case 2:
 	case 3:
-		UIManager::GetInctance().Clear();
+		UIManager::GetInctance()->Clear();
+		UIManager::Destroy();
+
 		pSceneManager.ChangeScene(SCENETYPE::GAME);
 		return true;
 		break;
@@ -94,7 +99,7 @@ bool SceneResult::ImGuiUpdate()
 		mRanking->ImGuiUpdate();
 		break;
 	case 2:
-		UIManager::GetInctance().ImGuiUpdate();
+		UIManager::GetInctance()->ImGuiUpdate();
 		break;
 	case 3:
 		mFade->ImGuiUpdate();

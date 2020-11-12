@@ -1,6 +1,7 @@
 #include "player_ai.h"
 #include"camera_manager.h"
 #include"Judgment.h"
+#include"hit_area_render.h"
 
 #ifdef USE_IMGUI
 #include<imgui.h>
@@ -95,9 +96,10 @@ void PlayerAI::Update(float elapsd_time, StageManager* manager, StageOperation* 
 {
 	if (!mPlayFlag)
 	{
-		pCameraManager.GetCameraOperation()->GetPlayCamera()->SetPlayerPosition(mCharacter->GetPosition());
+		pCameraManager->GetCameraOperation()->GetPlayCamera()->SetPlayerPosition(mCharacter->GetPosition());
 		mCharacter->CalculateBoonTransform(0);
 		mCharacter->SetGorlFlag(false);
+		HitAreaRender::GetInctance()->SetObjData(mCharacter->GetPosition() + VECTOR3F(0, 3.3f, 0) * mCharacter->GetScale(), VECTOR3F(1.15f, 3.3f, 1.3f) * mCharacter->GetScale());
 		return;
 	}
 	//pCamera.GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::NORMAL);
@@ -108,7 +110,7 @@ void PlayerAI::Update(float elapsd_time, StageManager* manager, StageOperation* 
 		mCharacter->SetVelocity(VECTOR3F(0, 0, 0));
 		mCharacter->SetAngle(VECTOR3F(0, 0, 0));
 		mCharacter->CalculateBoonTransform(0);
-		pCameraManager.GetCameraOperation()->GetPlayCamera()->SetPlayerPosition(mCharacter->GetPosition());
+		pCameraManager->GetCameraOperation()->GetPlayCamera()->SetPlayerPosition(mCharacter->GetPosition());
 		operation->Reset(manager);
 		mCharacter->SetAccel(VECTOR3F(0, 0, 0));
 		return;
@@ -160,6 +162,7 @@ void PlayerAI::Update(float elapsd_time, StageManager* manager, StageOperation* 
 		accel.z = -velocity.z * 3.f;
 		accel.y = 0;
 		velocity.y = 0;
+		HitAreaRender::GetInctance()->SetObjData(mCharacter->GetPosition() + VECTOR3F(0, 3.3f, 0) * mCharacter->GetScale(), VECTOR3F(1.15f, 3.3f, 1.3f) * mCharacter->GetScale());
 	}
 	//更新したデータのセット
 	mCharacter->SetAccel(accel);
@@ -168,6 +171,6 @@ void PlayerAI::Update(float elapsd_time, StageManager* manager, StageOperation* 
 	mCharacter->Move(elapsd_time);
 	//ゴールについてない時の当たり判定
 	if (!mCharacter->GetGorlFlag())Judgment::Judge(mCharacter.get(), manager);
-	pCameraManager.GetCameraOperation()->GetPlayCamera()->SetPlayerPosition(mCharacter->GetPosition());
+	pCameraManager->GetCameraOperation()->GetPlayCamera()->SetPlayerPosition(mCharacter->GetPosition());
 	mCharacter->CalculateBoonTransform(elapsd_time);
 }

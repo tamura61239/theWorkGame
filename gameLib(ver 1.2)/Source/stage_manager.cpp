@@ -3,6 +3,7 @@
 #include"camera_manager.h"
 #include"key_board.h"
 #include"gpu_particle_manager.h"
+#include"hit_area_render.h"
 int StageManager::mMaxStage = 0;
 /***********************‰Šú‰»*************************/
 StageManager::StageManager(ID3D11Device* device, int width, int height) :mStageNo(3), mWidth(static_cast<float>(width)), mHeight(static_cast<float>(height)), dragObjNumber(-1)
@@ -76,7 +77,7 @@ void StageManager::Load()
 			}
 		}
 		fclose(fp);
-		pGpuParticleManager.CreateStageObjParticle(mStageObjs);
+		pGpuParticleManager->CreateStageObjParticle(mStageObjs);
 	}
 }
 //ƒZ[ƒu
@@ -135,6 +136,18 @@ void StageManager::Update(float elapsd_time)
 	for (auto& stage : mStageObjs)
 	{
 		stage->CalculateTransform();
+		switch (stage->GetStageData().mObjType)
+		{
+		case 0:
+			HitAreaRender::GetInctance()->SetObjData(stage->GetPosition(), stage->GetScale());
+			break;
+		case 1:
+			HitAreaRender::GetInctance()->SetObjData(stage->GetPosition() + VECTOR3F(0, stage->GetScale().y, 0), stage->GetScale());
+			break;
+		case 2:
+			HitAreaRender::GetInctance()->SetObjData(stage->GetPosition() + VECTOR3F(0, stage->GetScale().y*3, 0), stage->GetScale() * VECTOR3F(1.5f, 3, 0.5f));
+			break;
+		}
 	}
 }
 /***************•`‰æ******************/
@@ -179,25 +192,6 @@ void StageManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, co
 		mRender->End(context);
 
 	}
-	mRender->Begin(context, view, projection, true);
-#ifdef USE_IMGUI
-	if (mEditor->GetSceneSaveFlag())return;
-	for (auto& stage : mStageObjs)
-	{
-		if (stage->GetStageData().mObjType ==2)
-		{
-			Obj3D obj;
-			obj.SetAngle(stage->GetAngle());
-			obj.SetScale(stage->GetScale()*VECTOR3F(1.5f,3,0.5f));
-			obj.SetPosition(stage->GetPosition()+VECTOR3F(0,obj.GetScale().y,0));
-			obj.CalculateTransform();
-			mRender->Render(context, mMeshs.at(mEditor->GetCreateData().mObjType).get(), obj.GetWorld(), VECTOR4F(1, 1, 1, 1));
-			continue;
-		}
-		mRender->Render(context, mMeshs.at(mEditor->GetCreateData().mObjType).get(), stage->GetWorld(), VECTOR4F(1,1,1,1));
-	}
-	mRender->End(context);
-#endif
 }
 void StageManager::RenderVelocity(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const int stageState)
 {
@@ -214,7 +208,7 @@ void StageManager::RenderVelocity(ID3D11DeviceContext* context, const FLOAT4X4& 
 	}
 	mRender->End(context);
 
-	//pGpuParticleManager.Render(context, view, projection);
+	//pGpuParticleManager->Render(context, view, projection);
 
 	mRender->Begin(context, view, projection);
 

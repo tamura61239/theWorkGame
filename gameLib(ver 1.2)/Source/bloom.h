@@ -10,7 +10,11 @@ public:
 	void ImGuiUpdate();
 	void Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView* colorSrv, bool render);
 	//setter
-	void SetNowScene(const int nowScene) { mNowScene = nowScene; }
+	void SetNowScene(const int nowScene) 
+	{ 
+		mNowScene = nowScene; 
+		mNowEditorNo = mNowScene;
+	}
 private:
 	void Load(const int scene);
 	void Save(const int scene);

@@ -11,6 +11,7 @@
 #include"framework.h"
 #include"ui_manager.h"
 #include"ranking.h"
+#include"hit_area_render.h"
 //#ifdef USE_IMGUI
 //#include <imgui.h>
 //#include <imgui_impl_dx11.h>
@@ -19,14 +20,13 @@
 //extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wparam, LPARAM lparam);
 //#endif
 
-SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(false), testGame(false)
+SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(false), testGame(false), hitArea(false)
 {
 	loading_thread = std::make_unique<std::thread>([&](ID3D11Device* device)
 		{
 			std::lock_guard<std::mutex> lock(loading_mutex);
-
-			pCameraManager.CreateCamera(device, 1);
-			pCameraManager.GetCamera()->SetEye(VECTOR3F(0, 0, -200));
+			pCameraManager->Initialize(device, 1);
+			pCameraManager->GetCamera()->SetEye(VECTOR3F(0, 0, -200));
 
 			frameBuffer = std::make_shared<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
 			saveFrameBuffer = std::make_shared<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
@@ -34,16 +34,9 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 			{
 				shrinkBuffer[i - 1] = std::make_unique<FrameBuffer>(device, 1920 >> i, 1080 >> i, true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
 			}
-			velocityBuffer = std::make_shared<FrameBuffer>(device, 1920, 1080, true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
-			depthBuffer = std::make_shared<FrameBuffer>(device, 1920, 1080, true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
-			nowFrame = std::make_unique<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
-			oldFrame = std::make_unique<FrameBuffer>(device, 1920, 1080, false, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
-			mullti = std::make_unique<MulltiRenderTargetFunction>();
-			mullti->SetFrameBuffer(frameBuffer);
-			mullti->SetFrameBuffer(depthBuffer);
-			pGpuParticleManager.CreateGameBuffer(device);
-			pGpuParticleManager.SetState(GpuParticleManager::STATE::SELECT);
-			mesh = std::make_unique<StaticMesh>(device, "Data/FBX/anim_data.fbx");
+			GpuParticleManager::Create();
+			pGpuParticleManager->CreateGameBuffer(device);
+			pGpuParticleManager->SetState(GpuParticleManager::STATE::SELECT);
 			player = std::make_unique<PlayerAI>(device, "Data/FBX/new_player_anim.fbx");
 			mSManager = std::make_unique<StageManager>(device, 1920, 1080);
 			modelRenderer = std::make_unique<ModelRenderer>(device);
@@ -52,6 +45,7 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 			mStageOperation = std::make_unique<StageOperation>();
 			pHitAreaDrow.CreateObj(device);
 			pLight.CreateLightBuffer(device);
+			sky = std::make_unique<SkyMap>(device, L"Data/image/mp_totality.dds", MAPTYPE::BOX);
 			{
 				D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
 				{
@@ -87,22 +81,36 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 				staticMeshDepthShader = std::make_unique<DrowShader>(device, "Data/shader/deferred_depth_static_mesh_vs.cso", "", "Data/shader/deferred_depth_static_mesh_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
 			}
 			sky = std::make_unique<SkyMap>(device, L"Data/image/sor_sea.dds", MAPTYPE::BOX);
+			{
+				FILE* fp;
+				if (fopen_s(&fp, "Data/file/game_sky_map.bin", "rb") == 0)
+				{
+					fread(sky->GetPosData(), sizeof(Obj3D), 1, fp);
+					fclose(fp);
+				}
+			}
+
 			motionBlur = std::make_unique<MotionBlur>(device);
 			mStageSelect = std::make_unique<StageSelect>(device, StageManager::GetMaxStageCount());
 			fadeOut = std::make_unique<Fade>(device, Fade::FADE_SCENE::SELECT);
+			HitAreaRender::Create();
+			HitAreaRender::GetInctance()->Initialize(device);
+
 			if(pSceneManager.GetSceneEditor()->GetSceneNo()==3)
 			{
 				mSManager->SetStageNo(pSceneManager.GetSceneEditor()->GetStageNo());
 				mSManager->Load();
+				HitAreaRender::GetInctance()->SetObjSize(mSManager->GetStages().size()+1);
 				selectSceneFlag = false;
 				fadeOut->Clear();
 				fadeOut->SetFadeScene(Fade::FADE_SCENE::GAME);
-				pGpuParticleManager.SetState(GpuParticleManager::STATE::GAME);
-				pCameraManager.GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::PLAY);
+				pGpuParticleManager->SetState(GpuParticleManager::STATE::GAME);
+				pCameraManager->GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::PLAY);
 				fadeOut->StartFadeIn();
 				bloom->SetNowScene(2);
 			}
-			UIManager::GetInctance().GameInitialize(device);
+			UIManager::Create();
+			UIManager::GetInctance()->GameInitialize(device);
 		}, device);
 	test = std::make_unique<Sprite>(device, L"Data/image/ゲームテスト.png");
 	nowLoading = std::make_unique<Sprite>(device, L"Data/image/now.png");
@@ -132,22 +140,23 @@ void SceneGame::Update(float elapsed_time)
 	/**********************SelectSceneの更新*******************************/
 	if (selectSceneFlag)
 	{
-		pCameraManager.Update(elapsed_time);
-		pGpuParticleManager.Update(elapsed_time);
+		pCameraManager->Update(elapsed_time);
+		pGpuParticleManager->Update(elapsed_time);
 		mStageSelect->Update(elapsed_time, mSManager.get());
 		if (fadeOut->GetEndFlag())
 		{
 			if (fadeOut->GetFadeScene() == Fade::FADE_MODO::FADEOUT)
 			{
 				mSManager->Load();
+				HitAreaRender::GetInctance()->SetObjSize(mSManager->GetStages().size()+1);
 				selectSceneFlag = false;
 				mStageSelect->SetSelectFlag(true);
 				fadeOut->Clear();
 				fadeOut->SetFadeScene(Fade::FADE_SCENE::GAME);
 				fadeOut->Clear();
 				fadeOut->StartFadeIn();
-				pGpuParticleManager.SetState(GpuParticleManager::STATE::GAME);
-				pCameraManager.GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::PLAY);
+				pGpuParticleManager->SetState(GpuParticleManager::STATE::GAME);
+				pCameraManager->GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::PLAY);
 				bloom->SetNowScene(2);
 				return;
 			}
@@ -162,14 +171,10 @@ void SceneGame::Update(float elapsed_time)
 	/**********************GameSceneの更新*******************************/
 	if (fadeOut->GetFadeScene() == Fade::FADE_MODO::FADEIN)
 	{
-		if (fadeOut->GetEndFlag() && !editorFlag)
+		if (fadeOut->GetEndFlag())
 		{
 			fadeOut->Clear();
-			UIManager::GetInctance().GetGameUIMove()->Start();
-		}
-		else
-		{
-			int a = 0;
+			if(!editorFlag)UIManager::GetInctance()->GetGameUIMove()->Start();
 		}
 	}
 	else if (fadeOut->GetFadeScene() == Fade::FADE_MODO::FADEOUT)
@@ -177,9 +182,11 @@ void SceneGame::Update(float elapsed_time)
 		if (fadeOut->GetEndFlag())
 		{
 			fadeOut->Clear();
-			pGpuParticleManager.ClearBuffer();
-			UIManager::GetInctance().Clear();
+			GpuParticleManager::Destroy();
+			UIManager::GetInctance()->ClearUI();
 			Ranking::SetStageNo(mSManager->GrtStageNo());
+			HitAreaRender::Destroy();
+
 			pSceneManager.ChangeScene(SCENETYPE::RESULT);
 
 			return;
@@ -188,31 +195,31 @@ void SceneGame::Update(float elapsed_time)
 	}
 	if (!player->GetCharacter()->GetGorlFlag())
 	{
-		UIManager::GetInctance().Update(elapsed_time);
+		UIManager::GetInctance()->Update(elapsed_time);
 	}
-	if (UIManager::GetInctance().GetGameUIMove()->GetCount() <= 0)
+	if (UIManager::GetInctance()->GetGameUIMove()->GetCount() <= 0)
 	{
-		if (UIManager::GetInctance().GetGameUIMove()->GetStartFlag())
+		if (UIManager::GetInctance()->GetGameUIMove()->GetStartFlag())
 		{
 			player->SetPlayFlag(true);
 		}
 	}
-
+	sky->GetPosData()->CalculateTransform();
 	mStageOperation->Update(elapsed_time, mSManager.get(), player->GetPlayFlag());
-	pGpuParticleManager.GetStageObjParticle()->SetParticleData(mStageOperation->GetColorType());
+	pGpuParticleManager->GetStageObjParticle()->SetParticleData(mStageOperation->GetColorType());
 	player->Update(elapsed_time, mSManager.get(),mStageOperation.get());
-	if (!testGame)
+	if (!testGame&& player->GetPlayFlag())
 	{
-		if (UIManager::GetInctance().GetGameUIMove()->GetTime() <= 0 || player->GetCharacter()->GetGorlFlag())
+		if (UIManager::GetInctance()->GetGameUIMove()->GetTime() <= 0 || player->GetCharacter()->GetGorlFlag())
 		{
-			if(player->GetPlayFlag())fadeOut->StartFadeOut();
+				fadeOut->StartFadeOut();
 		}
 	}
 	mSManager->Update(elapsed_time);
-	pCameraManager.Update(elapsed_time);
-	pGpuParticleManager.GetRunParticle()->SetBoneData(player->GetCharacter()->GetModel());
-	pGpuParticleManager.GetRunParticle()->SetPlayerData(player->GetCharacter()->GetVelocity(), true);
-	pGpuParticleManager.Update(elapsed_time);
+	pCameraManager->Update(elapsed_time);
+	pGpuParticleManager->GetRunParticle()->SetBoneData(player->GetCharacter()->GetModel());
+	pGpuParticleManager->GetRunParticle()->SetPlayerData(player->GetCharacter()->GetVelocity(), true);
+	pGpuParticleManager->Update(elapsed_time);
 }
 /**********************Editor*********************/
 bool SceneGame::ImGuiUpdate()
@@ -222,8 +229,10 @@ bool SceneGame::ImGuiUpdate()
 	switch (pSceneManager.GetSceneEditor()->Editor(&editorFlag,StageManager::GetMaxStageCount()))
 	{
 	case 1:
-		pGpuParticleManager.ClearBuffer();
-		UIManager::GetInctance().Clear();
+		GpuParticleManager::Destroy();
+		HitAreaRender::Destroy();
+		UIManager::Destroy();
+
 		pSceneManager.ChangeScene(SCENETYPE::TITLE);
 		return true;
 		break;
@@ -233,10 +242,10 @@ bool SceneGame::ImGuiUpdate()
 			selectSceneFlag = true;
 			fadeOut->Clear();
 			fadeOut->SetFadeScene(Fade::FADE_SCENE::SELECT);
-			pGpuParticleManager.SetState(GpuParticleManager::STATE::SELECT);
-			pCameraManager.GetCamera()->SetEye(VECTOR3F(0, 0, -200));
-			pCameraManager.GetCamera()->SetFocus(VECTOR3F(0, 0, 0));
-			pCameraManager.GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::NORMAL);
+			pGpuParticleManager->SetState(GpuParticleManager::STATE::SELECT);
+			pCameraManager->GetCamera()->SetEye(VECTOR3F(0, 0, -200));
+			pCameraManager->GetCamera()->SetFocus(VECTOR3F(0, 0, 0));
+			pCameraManager->GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::NORMAL);
 			mSManager->Clear();
 			mSManager->GetStageEditor()->Clear();
 			mSManager->GetStageEditor()->ClearFileState();
@@ -248,8 +257,8 @@ bool SceneGame::ImGuiUpdate()
 			player->GetCharacter()->SetVelocity(VECTOR3F(0, 0, 0));
 			player->GetCharacter()->SetGorlFlag(false);
 			player->SetPlayFlag(false);
-			UIManager::GetInctance().GetGameUIMove()->SetStartFlag(false);
-			UIManager::GetInctance().ResetGameUI();
+			UIManager::GetInctance()->GetGameUIMove()->SetStartFlag(false);
+			UIManager::GetInctance()->ResetGameUI();
 
 		}
 		break;
@@ -259,18 +268,21 @@ bool SceneGame::ImGuiUpdate()
 			editorNo = 0;
 			selectSceneFlag = false;
 			fadeOut->SetFadeScene(Fade::FADE_SCENE::GAME);
-			pGpuParticleManager.SetState(GpuParticleManager::STATE::GAME);
+			pGpuParticleManager->SetState(GpuParticleManager::STATE::GAME);
 		}
 		mSManager->SetStageNo(pSceneManager.GetSceneEditor()->GetStageNo());
 		mSManager->Clear();
 		mSManager->Load();
+		HitAreaRender::GetInctance()->ClearData();
+		HitAreaRender::GetInctance()->SetObjSize(mSManager->GetStages().size() + 1);
 		fadeOut->Clear();
 		player->SetPlayFlag(false);
-		pCameraManager.GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::PLAY);
+		pCameraManager->GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::PLAY);
 		break;
 	case 4:
-		pGpuParticleManager.ClearBuffer();
-		UIManager::GetInctance().Clear();
+		GpuParticleManager::Destroy();
+		UIManager::GetInctance()->ClearUI();
+		HitAreaRender::Destroy();
 
 		pSceneManager.ChangeScene(SCENETYPE::RESULT);
 
@@ -287,6 +299,7 @@ bool SceneGame::ImGuiUpdate()
 	/*******************Editor****************/
 	ImGui::Begin(editorName.c_str());
 	ImGui::Checkbox("stop", &stop);
+	ImGui::Checkbox("hitArea", &hitArea);
 
 	if (selectSceneFlag)
 	{
@@ -299,7 +312,11 @@ bool SceneGame::ImGuiUpdate()
 			if (ImGui::Button("testGame"))
 			{
 				testGame = true;
-				UIManager::GetInctance().GetGameUIMove()->Start();
+				UIManager::GetInctance()->GetGameUIMove()->Start();
+			}
+			if (ImGui::Button("playGame"))
+			{
+				UIManager::GetInctance()->GetGameUIMove()->Start();
 			}
 		}
 		else
@@ -313,8 +330,8 @@ bool SceneGame::ImGuiUpdate()
 				player->GetCharacter()->SetVelocity(VECTOR3F(0, 0, 0));
 				player->GetCharacter()->SetGorlFlag(false);
 				player->SetPlayFlag(false);
-				UIManager::GetInctance().GetGameUIMove()->SetStartFlag(false);
-				UIManager::GetInctance().ResetGameUI();
+				UIManager::GetInctance()->GetGameUIMove()->SetStartFlag(false);
+				UIManager::GetInctance()->ResetGameUI();
 
 			}
 
@@ -328,6 +345,7 @@ bool SceneGame::ImGuiUpdate()
 		ImGui::RadioButton("STAGE", &editorNo, 3);
 		ImGui::RadioButton("PLAYER", &editorNo, 4);
 		ImGui::RadioButton("UI", &editorNo, 9);
+		ImGui::RadioButton("SKY MAP", &editorNo, 10);
 	}
 	ImGui::RadioButton("PARTICLE", &editorNo, 5);
 	ImGui::RadioButton("CAMERA", &editorNo, 6);
@@ -341,7 +359,7 @@ bool SceneGame::ImGuiUpdate()
 		{
 			if (beforeEditorNo != editorNo)
 			{
-				pCameraManager.GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::PLAY);
+				pCameraManager->GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::PLAY);
 			}
 		}
 	}
@@ -363,10 +381,10 @@ bool SceneGame::ImGuiUpdate()
 		player->ImGuiUpdate();
 		break;
 	case 5:
-		pGpuParticleManager.ImGuiUpdate();
+		pGpuParticleManager->ImGuiUpdate();
 		break;
 	case 6:
-		pCameraManager.GetCameraOperation()->ImGuiUpdate();
+		pCameraManager->GetCameraOperation()->ImGuiUpdate();
 		break;
 	case 7:
 		bloom->ImGuiUpdate();
@@ -375,9 +393,27 @@ bool SceneGame::ImGuiUpdate()
 		fadeOut->ImGuiUpdate();
 		break;
 	case 9:
-		UIManager::GetInctance().ImGuiUpdate();
+		UIManager::GetInctance()->ImGuiUpdate();
 		break;
 
+	}
+	if (editorNo == 10)
+	{
+		ImGui::Begin("sky map");
+		float* position[3] = { &sky->GetPosData()->GetPosition().x,&sky->GetPosData()->GetPosition().y ,&sky->GetPosData()->GetPosition().z };
+		ImGui::DragFloat3("position", *position, 10);
+		float* scale[3] = { &sky->GetPosData()->GetScale().x,&sky->GetPosData()->GetScale().y ,&sky->GetPosData()->GetScale().z };
+		ImGui::DragFloat3("scale", *scale, 10);
+		float* color[4] = { &sky->GetPosData()->GetColor().x,&sky->GetPosData()->GetColor().y ,&sky->GetPosData()->GetColor().z ,&sky->GetPosData()->GetColor().w };
+		ImGui::ColorEdit4("color", *color);
+		if (ImGui::Button("save"))
+		{
+			FILE* fp;
+			fopen_s(&fp, "Data/file/game_sky_map.bin", "wb");
+			fwrite(sky->GetPosData(), sizeof(Obj3D), 1, fp);
+			fclose(fp);
+		}
+		ImGui::End();
 	}
 #endif
 	return false;
@@ -425,15 +461,15 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	}
 	EndLoading();
 	//view projection行列の取得
-	FLOAT4X4 view = pCameraManager.GetCamera()->GetView();
-	FLOAT4X4 projection = pCameraManager.GetCamera()->GetProjection();
+	FLOAT4X4 view = pCameraManager->GetCamera()->GetView();
+	FLOAT4X4 projection = pCameraManager->GetCamera()->GetProjection();
 
 	/*****************SelectSceneの描画 ******************/
 	if (selectSceneFlag)
 	{
 		frameBuffer->Clear(context);
 		frameBuffer->Activate(context);
-		pGpuParticleManager.Render(context, view, projection);
+		pGpuParticleManager->Render(context, view, projection);
 
 		blend[0]->activate(context);
 
@@ -454,9 +490,8 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 		frameBuffer->Activate(context);
 
 		blend[0]->activate(context);
-		
 		modelRenderer->Begin(context, viewProjection);
-		modelRenderer->Draw(context, *player->GetCharacter()->GetModel());
+		modelRenderer->Draw(context, *player->GetCharacter()->GetModel(),VECTOR4F(0.5,0.5,0.5,1));
 		modelRenderer->End(context);
 		if (mSManager->GetStageEditor()->GetEditorFlag())
 		{
@@ -464,10 +499,12 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 		}
 		else
 		{
-			pGpuParticleManager.Render(context, view, projection);
+			pGpuParticleManager->Render(context, view, projection);
+			sky->Render(context, view, projection);
 
 			mSManager->Render(context, view, projection, mStageOperation->GetColorType());
-			UIManager::GetInctance().Render(context);
+			if(hitArea)HitAreaRender::GetInctance()->Render(context,view,projection);
+			UIManager::GetInctance()->Render(context);
 		}
 
 		blend[0]->deactivate(context);
@@ -506,7 +543,8 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 
 SceneGame::~SceneGame()
 {
-	pCameraManager.DestroyCamera();
+	pCameraManager->DestroyCamera();
+
 }
 
 

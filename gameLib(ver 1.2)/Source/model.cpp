@@ -130,7 +130,7 @@ void Model::CalculateLocalTransform()
 				0, 0, 1, 0,
 				0, 0, 0, 1
 			);
-			local = C*scale * rotate * translate;
+			local = scale * rotate * translate*C;
 			lFlag = true;
 		}
 		else

@@ -1,7 +1,7 @@
 #include "Judgment.h"
 #include"collision.h"
 #include"camera_manager.h"
-#include"hit_area_drow.h"
+#include"hit_area_render.h"
 
 void Judgment::Judge(PlayerCharacter* player, StageManager* manager)
 {
@@ -27,6 +27,8 @@ void Judgment::Judge(PlayerCharacter* player, StageManager* manager)
 	{
 		playerMin.y = playerBefore.y;
 	}
+	VECTOR3F size = playerMax - playerMin;
+	HitAreaRender::GetInctance()->SetObjData(playerMin + size*0.5f, size * 0.5f);
 	bool groundFlaf = false;
 	for (auto& stage : manager->GetStages())
 		//auto stage = manager->GetStages()[0];
@@ -95,7 +97,6 @@ void Judgment::Judge(PlayerCharacter* player, StageManager* manager)
 			break;
 		}
 	}
-	pHitAreaDrow.SetCube(playerMin, playerMax);
 	player->SetPosition(playerPosition);
 	player->SetGroundFlag(groundFlaf);
 	if (player->GetMoveState()==PlayerCharacter::MOVESTATE::MOVE && !groundFlaf)

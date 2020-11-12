@@ -20,7 +20,7 @@ private:
 	//シェーダー
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSCreateShader;
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSShader;
-	std::unique_ptr<DrowShader>mShader;
+	std::vector<std::unique_ptr<DrowShader>>mShader;
 	//UAV
 	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mParticleUAV;
 	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mRenderUAV;
@@ -28,6 +28,11 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mRenderBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbCreateBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbUpdateBuffer;
+	//SRV
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>mTextureSRV;
+	//
+	Microsoft::WRL::ComPtr<ID3D11SamplerState>mSamplerState;
+
 	struct Particle
 	{
 		VECTOR3F position;
@@ -54,7 +59,8 @@ private:
 		VECTOR4F color;
 		float maxLife;
 		float scale;
-		VECTOR2F dummy;
+		VECTOR2F colorRatio;
+		VECTOR4F color2;
 	};
 	struct CbUpdate
 	{
@@ -75,6 +81,9 @@ private:
 		float maxLife;
 		float scale;
 		float maxSpeed;
+		VECTOR2F colorRatio;
+		VECTOR4F color2;
+		int shaderType;
 	};
 	float mIndexCount;
 	float mBeforeIndex;

@@ -4,15 +4,11 @@
 #include"title_ui_move.h"
 #include"game_ui_move.h"
 #include"result_ui_move.h"
+#include"singleton_class.h"
 
-class UIManager
+class UIManager:public Singleton<UIManager>
 {
 public:
-	static UIManager&GetInctance()
-	{
-		static UIManager uiManager;
-		return uiManager;
-	}
 	//èâä˙âª
 	void TitleInitialize(ID3D11Device* device);
 	void GameInitialize(ID3D11Device* device);
@@ -34,7 +30,6 @@ public:
 	GameUiMove* GetGameUIMove() { return mGameMove.get(); }
 	ResultUIMove* GetResultUIMove() { return mResultMove.get(); }
 private:
-	UIManager(){}
 	std::vector<std::shared_ptr<UI>>mUIs;
 	std::vector<std::string>mNames;
 	std::unique_ptr<TitleUIMove>mTitleMove;

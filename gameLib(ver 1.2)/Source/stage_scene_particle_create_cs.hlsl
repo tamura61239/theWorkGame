@@ -14,7 +14,8 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
 	p.scale = float3(1, 1, 1)* scale;
 
-	p.color = color;
+	float ratio = rand_1_normal(float2(index % 64, bufferIndex % 37), 1);
+	p.color = lerp(color, color2, step(colorRatio.x, ratio));
 
 	p.life = maxLife;
 

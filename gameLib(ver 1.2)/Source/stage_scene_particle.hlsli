@@ -16,7 +16,8 @@ cbuffer CbCreate:register(b0)
 	float4 color;
 	float maxLife;
 	float scale;
-	float2 dummy;
+	float2 colorRatio;
+	float4 color2;
 }
 cbuffer CbUpdate : register(b1)
 {

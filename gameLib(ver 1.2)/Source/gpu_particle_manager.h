@@ -6,16 +6,12 @@
 #include"title_particle.h"
 #include"title_texture_particle.h"
 #include"select_scene_particle.h"
+#include"singleton_class.h"
 #include<memory>
 
-class GpuParticleManager
+class GpuParticleManager:public Singleton<GpuParticleManager>
 {
 public:
-	static GpuParticleManager& GetInctance()
-	{
-		static GpuParticleManager manager;
-		return manager;
-	}
 	void CreateTitleBuffer(ID3D11Device* device);
 	void CreateGameBuffer(ID3D11Device* device);
 	void ClearBuffer();
@@ -44,7 +40,6 @@ private:
 	void SelectImGui();
 	void GameImGui();
 	void CreateBuffer(ID3D11Device* device);
-	GpuParticleManager(){}
 	std::unique_ptr<StageObjParticle>mStageObjParticle;
 	std::unique_ptr<RunParticles>mRunParticle;
 	std::unique_ptr<StageSceneParticle>mStageSceneParticle;

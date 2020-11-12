@@ -1,6 +1,7 @@
 #include "stage_scene_particle.h"
 #include"misc.h"
 #include"shader.h"
+#include"texture.h"
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
@@ -64,7 +65,7 @@ StageSceneParticle::StageSceneParticle(ID3D11Device* device) :mMaxCount(100000),
 		hr = device->CreateUnorderedAccessView(mRenderBuffer.Get(), &desc, mRenderUAV.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
-
+	//シェーダーの読み込み
 	hr = create_cs_from_cso(device, "Data/shader/stage_scene_particle_create_cs.cso", mCSCreateShader.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	hr = create_cs_from_cso(device, "Data/shader/stage_scene_particle_cs.cso", mCSShader.GetAddressOf());
@@ -78,7 +79,29 @@ StageSceneParticle::StageSceneParticle(ID3D11Device* device) :mMaxCount(100000),
 		{"VELOCITY",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 		{"SCALE",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 	};
-	mShader = std::make_unique<DrowShader>(device, "Data/shader/particle_render_vs.cso", "Data/shader/particle_render_cube_mesh_gs.cso", "Data/shader/particle_render_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
+	mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/particle_render_vs.cso", "Data/shader/particle_render_cube_mesh_gs.cso", "Data/shader/particle_render_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc)));
+	mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/particle_render_vs.cso", "Data/shader/particle_render_billboard_gs.cso", "Data/shader/particle_render_text_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc)));
+	mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/particle_render_vs.cso", "", "Data/shader/particle_render_point_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc)));
+	//テクスチャの読み込み
+	hr = load_texture_from_file(device, L"Data/image/○.png", mTextureSRV.GetAddressOf());
+	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	//SamplerStateの生成
+	{
+		D3D11_SAMPLER_DESC desc;
+		ZeroMemory(&desc, sizeof(desc));
+		desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+		desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+		desc.MinLOD = -FLT_MAX;
+		desc.MaxLOD = FLT_MAX;
+		desc.MaxAnisotropy = 16;
+		memcpy(desc.BorderColor, &VECTOR4F(1.0f, 1.0f, 1.0f, 1.0f), sizeof(VECTOR4F));
+		hr = device->CreateSamplerState(&desc, mSamplerState.GetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	}
+
 	Load();
 }
 
@@ -96,9 +119,21 @@ void StageSceneParticle::ImGuiUpdate()
 	ImGui::DragFloat3("create area", *createArea, 10);
 	float* color[4] = { &mEditorData.color.x,&mEditorData.color.y,&mEditorData.color.z,&mEditorData.color.w };
 	ImGui::ColorEdit4("color", *color);
+	float* color2[4] = { &mEditorData.color2.x,&mEditorData.color2.y,&mEditorData.color2.z,&mEditorData.color2.w };
+	ImGui::ColorEdit4("color2", *color2);
+	ImGui::SliderFloat("ratio", &mEditorData.colorRatio.y, 0, 1);
+	
+	mEditorData.colorRatio.x = 1 - mEditorData.colorRatio.y;
+	
+	ImGui::Text("colorRatio %f:%f", mEditorData.colorRatio.x, mEditorData.colorRatio.y);
+
 	ImGui::InputFloat("max life", &mEditorData.maxLife, 1);
 	ImGui::InputFloat("max speed", &mEditorData.maxSpeed, 1);
 	ImGui::InputFloat("scale", &mEditorData.scale, 0.1f);
+
+	ImGui::RadioButton("cube", &mEditorData.shaderType, 0); ImGui::SameLine();
+	ImGui::RadioButton("texe", &mEditorData.shaderType, 1); ImGui::SameLine();
+	ImGui::RadioButton("point", &mEditorData.shaderType, 2);
 	if (ImGui::Button("save"))
 	{
 		Save();
@@ -132,6 +167,8 @@ void StageSceneParticle::Update(ID3D11DeviceContext* context, float elapsdTime)
 		create.color = mEditorData.color;
 		create.maxLife = mEditorData.maxLife;
 		create.scale = mEditorData.scale;
+		create.colorRatio = mEditorData.colorRatio;
+		create.color2 = mEditorData.color2;
 		context->UpdateSubresource(mCbCreateBuffer.Get(), 0, 0, &create, 0, 0);
 		int count = static_cast<int>(size);
 		if (create.startIndex + count >= mMaxCount)
@@ -168,8 +205,10 @@ void StageSceneParticle::Update(ID3D11DeviceContext* context, float elapsdTime)
 
 void StageSceneParticle::Render(ID3D11DeviceContext* context)
 {
-	mShader->Activate(context);
+	mShader[mEditorData.shaderType]->Activate(context);
 
+	context->PSSetShaderResources(0, 1, mTextureSRV.GetAddressOf());
+	context->PSSetSamplers(0,1,mSamplerState.GetAddressOf());
 	u_int stride = sizeof(RenderParticle);
 	u_int offset = 0;
 
@@ -177,7 +216,13 @@ void StageSceneParticle::Render(ID3D11DeviceContext* context)
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 
 	context->Draw(mMaxCount, 0);
-	mShader->Deactivate(context);
+	mShader[mEditorData.shaderType]->Deactivate(context);
+
+	ID3D11ShaderResourceView* srv = nullptr;
+	ID3D11SamplerState* sample = nullptr;
+	context->PSSetShaderResources(0, 1, &srv);
+	context->PSSetSamplers(0, 1, &sample);
+
 }
 
 void StageSceneParticle::Render(ID3D11DeviceContext* context, DrowShader* shader)

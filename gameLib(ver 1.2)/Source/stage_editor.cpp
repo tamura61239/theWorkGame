@@ -22,7 +22,7 @@ StageEditor::StageEditor(ID3D11Device* device, int width, int height)
 void StageEditor::ClearCreateData()
 {
 	mCreateData.mAngle = VECTOR3F(0, 0, 0);
-	mCreateData.mPosition = pCameraManager.GetCamera()->GetFocus();
+	mCreateData.mPosition = pCameraManager->GetCamera()->GetFocus();
 	mCreateData.mScale = VECTOR3F(1, 1, 1);
 	mCreateData.mColorType = 0;
 	mCreateData.mObjType = 0;
@@ -44,7 +44,7 @@ int StageEditor::Update(std::vector<std::shared_ptr<StageObj>>objs)
 	if (ImGui::CollapsingHeader("editor mode"))
 	{
 		mEditorFlag = true;
-		pCameraManager.GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::STAGE_EDITOR);
+		pCameraManager->GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::STAGE_EDITOR);
 		//左クリックをしたとき
 		if (pKeyBoad.RisingState(VK_LBUTTON))
 		{
@@ -58,7 +58,7 @@ int StageEditor::Update(std::vector<std::shared_ptr<StageObj>>objs)
 			}
 		}
 		//StageEditorの操作中のカメラ
-		pCameraManager.GetCameraOperation()->ImGuiUpdate();
+		pCameraManager->GetCameraOperation()->ImGuiUpdate();
 		//ドラッグするオブジェクトの操作
 		if (mDragObjNo != -1)
 		{
@@ -110,7 +110,7 @@ int StageEditor::Update(std::vector<std::shared_ptr<StageObj>>objs)
 			}
 			else
 			{
-				mObj->SetPosition(pCameraManager.GetCamera()->GetFocus());
+				mObj->SetPosition(pCameraManager->GetCamera()->GetFocus());
 			}
 		}
 		ImGui::Separator();
@@ -134,9 +134,9 @@ int StageEditor::Update(std::vector<std::shared_ptr<StageObj>>objs)
 	{
 		mEditorFlag = false;
 		mEditorState = 0;
-		if (pCameraManager.GetCameraOperation()->GetCameraType() == CameraOperation::CAMERA_TYPE::STAGE_EDITOR)
+		if (pCameraManager->GetCameraOperation()->GetCameraType() == CameraOperation::CAMERA_TYPE::STAGE_EDITOR)
 		{
-			pCameraManager.GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::PLAY);
+			pCameraManager->GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::PLAY);
 		}
 	}
 	ImGui::Text("particle %d", objs.size());
@@ -227,8 +227,8 @@ void StageEditor::SetSidoCamera(std::vector<std::shared_ptr<StageObj>>objs)
 	float rY = maxY - minY;
 	r = (rZ > rY) ? rZ : rY;
 	r *= 0.5f;
-	float fov = pCameraManager.GetCamera()->GetFov();
-	float aspect = pCameraManager.GetCamera()->GetAspect();
+	float fov = pCameraManager->GetCamera()->GetFov();
+	float aspect = pCameraManager->GetCamera()->GetAspect();
 
 	float theta = (aspect >= 1.0f) ? fov : fov * aspect;
 	//カメラの距離計算
@@ -244,7 +244,7 @@ void StageEditor::SearchStageObj(std::vector<std::shared_ptr<StageObj>>objs)
 {
 	if (mDragObjNo == -1)
 	{
-		MouseToWorld(pCameraManager.GetCamera(), mMousePosition);
+		MouseToWorld(pCameraManager->GetCamera(), mMousePosition);
 		mDragObjNo = NewDragObj(objs);
 
 	}
@@ -285,7 +285,7 @@ int StageEditor::NewDragObj(std::vector<std::shared_ptr<StageObj>>objs)
 
 void StageEditor::NewCameraPosition()
 {
-	if (pCameraManager.GetCameraOperation()->GetStageEditorCamera()->GetMoveFlag())return;
+	if (pCameraManager->GetCameraOperation()->GetStageEditorCamera()->GetMoveFlag())return;
 	VECTOR2F textMagnification = VECTOR2F(mWidth, mHeight) / mSidoViewRenderSize;
 	VECTOR2F textPosition = mMousePosition - mSidoViewRenderPosition;
 	VECTOR2F position = textPosition * textMagnification;
@@ -298,7 +298,7 @@ void StageEditor::NewCameraPosition()
 	float z = 0 - mWorldNearPosition.x;
 	float length = (z / vec.x);
 
-	pCameraManager.GetCameraOperation()->GetStageEditorCamera()->SetNewPosition(mWorldNearPosition + vec * length);
+	pCameraManager->GetCameraOperation()->GetStageEditorCamera()->SetNewPosition(mWorldNearPosition + vec * length);
 
 
 }

@@ -161,7 +161,7 @@ void Ranking::NewRankingMove(float elapsdTime)
 		mRankingTexts.back()->SetLeftTop(leftTop);
 		if (time >= 1.f)
 		{
-			if(!mTestFlag)UIManager::GetInctance().GetResultUIMove()->SetMoveFlag(true);
+			if(!mTestFlag)UIManager::GetInctance()->GetResultUIMove()->SetMoveFlag(true);
 			mState++;
 		}
 	}
@@ -176,7 +176,7 @@ void Ranking::ImGuiUpdate()
 	ImGui::ColorEdit4("no rank text color", *color);
 	if (!mTestFlag&& mState<3)
 	{
-		UIManager::GetInctance().GetResultUIMove()->SetMoveFlag(false);
+		UIManager::GetInctance()->GetResultUIMove()->SetMoveFlag(false);
 		mRankingTexts.erase(mRankingTexts.begin() + 5);
 
 	}
