@@ -38,7 +38,8 @@ private:
 		VECTOR4F color;
 		float scale;
 		float mStartNumber;
-		VECTOR2F dummy;
+		float speed;
+		float dummy;
 	};
 	struct CbUpdate
 	{
@@ -62,9 +63,19 @@ private:
 		VECTOR3F velocity;
 		VECTOR3F scale;
 	};
+	struct EditorData
+	{
+		float maxLife;
+		VECTOR4F color;
+		float scale;
+		float mCreateSize;
+		float speed;
+
+	};
 	int mRenderSize;
 	bool mPlayFlag;
-	float mCreateSize;
+	bool mTestFlag;
+	VECTOR3F mTestVelocity;
 	float mNewIndex;
 	//Meshé¸ÇË
 	std::vector<CbeBone>mCbBones;
@@ -82,6 +93,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCreateShader;
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mUpdateShader;
 	CbCreateData mCbCreateData;
+	EditorData mEditorData;
 	//ÉtÉ@ÉCÉãëÄçÏä÷êî
 	void Load();
 	void Save();

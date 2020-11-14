@@ -37,7 +37,6 @@ void HitAreaRender::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, c
 		mRender->Render(context, mMesh.get(), obj->GetWorld());
 	}
 	mRender->End(context);
-	mCount = 0;
 }
 
 void HitAreaRender::ClearData()

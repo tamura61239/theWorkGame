@@ -67,10 +67,7 @@ private:
 	std::shared_ptr<FrameBuffer>frameBuffer;
 	std::shared_ptr<FrameBuffer>saveFrameBuffer;
 	std::shared_ptr<FrameBuffer>shrinkBuffer[2];
-	std::shared_ptr<FrameBuffer>velocityBuffer;
-	std::shared_ptr<FrameBuffer>depthBuffer;
-	std::unique_ptr<FrameBuffer>nowFrame;
-	std::unique_ptr<FrameBuffer>oldFrame;
+	std::shared_ptr<FrameBuffer>frameBuffer2;
 	std::unique_ptr<RenderEffects>renderEffects;
 	std::unique_ptr<PlayerAI>player;
 	std::unique_ptr<ModelRenderer>modelRenderer;
@@ -80,14 +77,7 @@ private:
 	std::unique_ptr<blend_state> blend[3];
 	std::unique_ptr<StageObjParticle>run;
 	std::unique_ptr<SkyMap>sky;
-	std::unique_ptr<DrowShader>motionShader;
-	std::unique_ptr<DrowShader>skyBlurShader;
-	std::unique_ptr<DrowShader>modelBlurShader;
-	std::unique_ptr<DrowShader>modelDepthShader;
-	std::unique_ptr<DrowShader>staticMeshDepthShader;
-	std::unique_ptr<DrowShader>depthShader;
 	std::unique_ptr<DrowShader>blurShader;
-	std::unique_ptr<MotionBlur>motionBlur;
 	std::unique_ptr<DepthOfField>depthOfField;
 	std::unique_ptr<StageSelect>mStageSelect;
 	std::unique_ptr<Fade>fadeOut;

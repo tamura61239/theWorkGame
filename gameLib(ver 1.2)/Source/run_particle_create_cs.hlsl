@@ -19,10 +19,10 @@ void main(uint3 DTid : SV_DispatchThreadID)
 	y += 1.f;
 	//èâä˙âª
 	p.position = boneWorld[boneNo].xyz + float3(x, y, z)*3;
-	p.velocity = float3(0, 0, -300) + float3(x, y, z) * 30* rand_1_normal(float2(bufferIndex % 275, bufferIndex % 666), 0.3f);
-	p.life = 111;
-	p.lifeAmount = 1 / 0.005f;
-	p.color = float4(0, 1, 0, 1);
-	p.scale = 0.2f;
+	p.velocity = velocity + float3(x, y-1, (z-2)*0.25f) * speed * rand_1_normal(float2(bufferIndex % 275, bufferIndex % 666), 0.3f);
+	p.life = 1;
+	p.lifeAmount = 1 / maxLife;
+	p.color = color;
+	p.scale = scale;
 	WriteParticle(p, bufferIndex);
 }

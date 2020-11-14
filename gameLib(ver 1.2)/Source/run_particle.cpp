@@ -6,7 +6,7 @@
 #endif
 
 
-RunParticles::RunParticles(ID3D11Device* device): mRenderSize(0),mPlayFlag(true), mNewIndex(0),mCreateSize(100)
+RunParticles::RunParticles(ID3D11Device* device): mRenderSize(0),mPlayFlag(false), mNewIndex(0), mTestFlag(false)
 {
 	std::vector<Particle>particles;
 	std::vector<RenderParticle>renderParticles;
@@ -80,6 +80,8 @@ RunParticles::RunParticles(ID3D11Device* device): mRenderSize(0),mPlayFlag(true)
 	};
 	mShader = std::make_unique<DrowShader>(device, "Data/shader/particle_render_vs.cso", "Data/shader/particle_render_cube_mesh_gs.cso", "Data/shader/particle_render_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
 	mCbCreateData.mStartNumber = 0;
+	memset(&mEditorData, 0, sizeof(mEditorData));
+	Load();
 }
 
 
@@ -88,9 +90,28 @@ void RunParticles::ImGuiUpdate()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("run");
-	ImGui::Checkbox("new", &mPlayFlag);
-	ImGui::InputFloat("CreateSize", &mCreateSize, 10);
+	ImGui::Checkbox("new", &mTestFlag);
+	if (!mTestFlag && !mPlayFlag)
+	{
+		mCbCreateData.mStartNumber = 0;
+		mNewIndex = 0;
+	}
+	ImGui::InputFloat("CreateSize", &mEditorData.mCreateSize, 10);
+	ImGui::InputFloat("max life", &mEditorData.maxLife, 1);
+	ImGui::InputFloat("scale", &mEditorData.scale, 1);
+	ImGui::InputFloat("speed", &mEditorData.speed, 10);
+	float* color[4] = { &mEditorData.color.x,&mEditorData.color.y ,&mEditorData.color.z ,&mEditorData.color.w };
+	ImGui::ColorEdit4("color", *color);
+	if (mTestFlag)
+	{
+		float* velocity[3] = { &mTestVelocity.x,&mTestVelocity.y,&mTestVelocity.z };
+		ImGui::DragFloat3("testVelocity", *velocity);
+	}
 	ImGui::Text("%f", mCbCreateData.mStartNumber);
+	if (ImGui::Button("save"))
+	{
+		Save();
+	}
 	ImGui::End();
 #endif
 }
@@ -102,28 +123,6 @@ void RunParticles::SetBoneData(Model* model)
 	mCbBones.clear();
 	for (const ModelResource::Mesh& mesh:model->GetModelResource()->GetMeshes())
 	{
-		//CbeBone bone;
-		//::memset(&bone, 0, sizeof(&bone));
-		//bone.boneNumber = mesh.node_indices.size();
-		//// メッシュ用定数バッファ更新
-		//if (mesh.node_indices.size() > 0)
-		//{
-		//	for (size_t i = 0; i < bone.boneNumber; ++i)
-		//	{
-		//		//DirectX::XMMATRIX inverse_transform = DirectX::XMLoadFloat4x4(mesh.inverse_transforms.at(i));
-		//		//DirectX::XMMATRIX world_transform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.node_indices.at(i)).world_transform);
-		//		//DirectX::XMMATRIX bone_transform = inverse_transform * world_transform;
-		//		//DirectX::XMStoreFloat4x4(&mVertexDatas[j].mCbBone.bone_transforms[i], bone_transform);
-		//		FLOAT4X4 world = nodes.at(mesh.node_indices.at(i)).world_transform;
-		//		bone.boneWorld[i] = VECTOR4F(world._41, world._42, world._43,world._44);
-		//	}
-		//}
-		//else
-		//{
-		//	FLOAT4X4 world = nodes.at(0).world_transform;
-		//	bone.boneWorld[0] = VECTOR4F(world._41, world._42, world._43, world._44);
-		//}
-		//mCbBones.push_back(bone);
 		::memset(&mCbBone, 0, sizeof(&mCbBone));
 		mCbBone.boneNumber = nodes.size();
 		for (int i = 0; i < mCbBone.boneNumber; i++)
@@ -139,8 +138,8 @@ void RunParticles::SetBoneData(Model* model)
 
 void RunParticles::SetPlayerData(const VECTOR3F& velocity, const bool playFlag)
 {
-	mCbCreateData.velocity = velocity;
-	//mPlayFlag = playFlag;
+	mCbCreateData.velocity = -velocity*0.0f;
+	mPlayFlag = playFlag;
 }
 
 void RunParticles::Update(ID3D11DeviceContext* context, float elapsd_time)
@@ -154,7 +153,7 @@ void RunParticles::Update(ID3D11DeviceContext* context, float elapsd_time)
 	context->CSSetConstantBuffers(0, ARRAYSIZE(cbBuffer), cbBuffer);
 	context->CSSetUnorderedAccessViews(0, 1, mParticleUAV.GetAddressOf(), 0);
 	context->CSSetUnorderedAccessViews(2, 1, mRenderUAV.GetAddressOf(), 0);
-	if (mPlayFlag)
+	if (mPlayFlag|| mTestFlag)
 	{
 		context->CSSetShader(mCreateShader.Get(), nullptr, 0);
 		//for (auto& data : mVertexDatas)
@@ -181,10 +180,15 @@ void RunParticles::Update(ID3D11DeviceContext* context, float elapsd_time)
 		//	mCbCreateData.mStartNumber += bone.boneNumber;
 		//}
 		//mPlayFlag = false;
-		mNewIndex += mCreateSize * elapsd_time;
+		mNewIndex += mEditorData.mCreateSize * elapsd_time;
 		float createAmount = mNewIndex - mCbCreateData.mStartNumber;
 		if (createAmount > 0)
 		{
+			if (mTestFlag)mCbCreateData.velocity = mTestVelocity;
+			mCbCreateData.maxLife = mEditorData.maxLife;
+			mCbCreateData.color = mEditorData.color;
+			mCbCreateData.scale = mEditorData.scale;
+			mCbCreateData.speed = mEditorData.speed;
 			context->UpdateSubresource(mCbBoneBuffer.Get(), 0, 0, &mCbBone, 0, 0);
 			context->UpdateSubresource(mCbCreateBuffer.Get(), 0, 0, &mCbCreateData, 0, 0);
 			mCbCreateData.mStartNumber = mNewIndex;
@@ -235,8 +239,24 @@ void RunParticles::Render(ID3D11DeviceContext* context)
 
 void RunParticles::Load()
 {
+	FILE* fp;
+	if (fopen_s(&fp, "Data/file/run_paricte_data.bin", "rb") == 0)
+	{
+		fseek(fp, 0, SEEK_END);
+		long size = ftell(fp);
+		fseek(fp, 0, SEEK_SET);
+
+		fread(&mEditorData, size, 1, fp);
+		fclose(fp);
+
+	}
+
 }
 
 void RunParticles::Save()
 {
+	FILE* fp;
+	fopen_s(&fp, "Data/file/run_paricte_data.bin", "wb");
+	fwrite(&mEditorData, sizeof(mEditorData), 1, fp);
+	fclose(fp);
 }

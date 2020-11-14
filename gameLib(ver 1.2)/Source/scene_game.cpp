@@ -30,6 +30,7 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 
 			frameBuffer = std::make_shared<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
 			saveFrameBuffer = std::make_shared<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
+			frameBuffer2 = std::make_shared<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
 			for (int i = 1; i <= 2; i++)
 			{
 				shrinkBuffer[i - 1] = std::make_unique<FrameBuffer>(device, 1920 >> i, 1080 >> i, true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
@@ -41,7 +42,6 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 			mSManager = std::make_unique<StageManager>(device, 1920, 1080);
 			modelRenderer = std::make_unique<ModelRenderer>(device);
 			bloom = std::make_unique<BloomRender>(device, 1920, 1080, 1);
-			//bloom = std::make_unique<BloomRender>(device, 1920, 1080);
 			mStageOperation = std::make_unique<StageOperation>();
 			pHitAreaDrow.CreateObj(device);
 			pLight.CreateLightBuffer(device);
@@ -54,31 +54,7 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 					{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 
 				};
-				motionShader = std::make_unique<DrowShader>(device, "Data/shader/sprite_vs.cso", "", "Data/shader/motionblur_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc));
-				depthShader = std::make_unique<DrowShader>(device, "Data/shader/sprite_vs.cso", "", "Data/shader/depth_of_field_synthetic_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc));
-				blurShader = std::make_unique<DrowShader>(device, "Data/shader/sprite_vs.cso", "", "Data/shader/gaussian_blur_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc));
-			}
-			{
-				D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
-				{
-					{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-					{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-					{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-					{ "WEIGHTS",  0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-					{ "BONES",    0, DXGI_FORMAT_R32G32B32A32_UINT,  0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-				};
-				modelBlurShader = std::make_unique<DrowShader>(device, "Data/shader/model_blur_vs.cso", "", "Data/shader/model_blur_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc));
-				modelDepthShader = std::make_unique<DrowShader>(device, "Data/shader/model_vs.cso", "", "Data/shader/deferred_depth_model_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc));
-
-			}
-			{
-				D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
-				{
-					{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-					{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-					{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-				};
-				staticMeshDepthShader = std::make_unique<DrowShader>(device, "Data/shader/deferred_depth_static_mesh_vs.cso", "", "Data/shader/deferred_depth_static_mesh_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
+				blurShader = std::make_unique<DrowShader>(device, "Data/shader/sprite_vs.cso", "", "Data/shader/zoom_blur_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc));
 			}
 			sky = std::make_unique<SkyMap>(device, L"Data/image/sor_sea.dds", MAPTYPE::BOX);
 			{
@@ -90,17 +66,16 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 				}
 			}
 
-			motionBlur = std::make_unique<MotionBlur>(device);
 			mStageSelect = std::make_unique<StageSelect>(device, StageManager::GetMaxStageCount());
 			fadeOut = std::make_unique<Fade>(device, Fade::FADE_SCENE::SELECT);
 			HitAreaRender::Create();
 			HitAreaRender::GetInctance()->Initialize(device);
 
-			if(pSceneManager.GetSceneEditor()->GetSceneNo()==3)
+			if (pSceneManager.GetSceneEditor()->GetSceneNo() == 3)
 			{
 				mSManager->SetStageNo(pSceneManager.GetSceneEditor()->GetStageNo());
 				mSManager->Load();
-				HitAreaRender::GetInctance()->SetObjSize(mSManager->GetStages().size()+1);
+				HitAreaRender::GetInctance()->SetObjSize(mSManager->GetStages().size() + 1);
 				selectSceneFlag = false;
 				fadeOut->Clear();
 				fadeOut->SetFadeScene(Fade::FADE_SCENE::GAME);
@@ -148,7 +123,7 @@ void SceneGame::Update(float elapsed_time)
 			if (fadeOut->GetFadeScene() == Fade::FADE_MODO::FADEOUT)
 			{
 				mSManager->Load();
-				HitAreaRender::GetInctance()->SetObjSize(mSManager->GetStages().size()+1);
+				HitAreaRender::GetInctance()->SetObjSize(mSManager->GetStages().size() + 1);
 				selectSceneFlag = false;
 				mStageSelect->SetSelectFlag(true);
 				fadeOut->Clear();
@@ -169,16 +144,19 @@ void SceneGame::Update(float elapsed_time)
 
 	}
 	/**********************GameSceneの更新*******************************/
+	//フェートインの時
 	if (fadeOut->GetFadeScene() == Fade::FADE_MODO::FADEIN)
 	{
 		if (fadeOut->GetEndFlag())
 		{
 			fadeOut->Clear();
-			if(!editorFlag)UIManager::GetInctance()->GetGameUIMove()->Start();
+			if (!editorFlag)UIManager::GetInctance()->GetGameUIMove()->Start();
 		}
 	}
+	//フェートインの時
 	else if (fadeOut->GetFadeScene() == Fade::FADE_MODO::FADEOUT)
 	{
+
 		if (fadeOut->GetEndFlag())
 		{
 			fadeOut->Clear();
@@ -193,32 +171,43 @@ void SceneGame::Update(float elapsed_time)
 		}
 
 	}
-	if (!player->GetCharacter()->GetGorlFlag())
+	//フェートインでもフェードアウトでもない時
+	else
 	{
-		UIManager::GetInctance()->Update(elapsed_time);
-	}
-	if (UIManager::GetInctance()->GetGameUIMove()->GetCount() <= 0)
-	{
-		if (UIManager::GetInctance()->GetGameUIMove()->GetStartFlag())
+		//ゴールしてない時
+		if (!player->GetCharacter()->GetGorlFlag())
 		{
-			player->SetPlayFlag(true);
+			UIManager::GetInctance()->Update(elapsed_time);
 		}
+		//カウントが0かつStartFlagがtrueの時
+		if (UIManager::GetInctance()->GetGameUIMove()->GetCount() <= 0)
+		{
+			if (UIManager::GetInctance()->GetGameUIMove()->GetStartFlag())
+			{
+				if (!player->GetPlayFlag())player->SetPlayFlag(true);
+			}
+		}
+
 	}
-	sky->GetPosData()->CalculateTransform();
-	mStageOperation->Update(elapsed_time, mSManager.get(), player->GetPlayFlag());
-	pGpuParticleManager->GetStageObjParticle()->SetParticleData(mStageOperation->GetColorType());
-	player->Update(elapsed_time, mSManager.get(),mStageOperation.get());
-	if (!testGame&& player->GetPlayFlag())
+	if (player->GetPlayFlag())
 	{
 		if (UIManager::GetInctance()->GetGameUIMove()->GetTime() <= 0 || player->GetCharacter()->GetGorlFlag())
 		{
-				fadeOut->StartFadeOut();
+			if (!testGame) fadeOut->StartFadeOut();
+			elapsed_time *= 0.3f;
 		}
 	}
+	mStageOperation->Update(elapsed_time, mSManager.get(), player->GetPlayFlag());
+
+	sky->GetPosData()->CalculateTransform();
+	pGpuParticleManager->GetStageObjParticle()->SetParticleData(mStageOperation->GetColorType());
+	player->Update(elapsed_time, mSManager.get(), mStageOperation.get());
+
+
 	mSManager->Update(elapsed_time);
 	pCameraManager->Update(elapsed_time);
 	pGpuParticleManager->GetRunParticle()->SetBoneData(player->GetCharacter()->GetModel());
-	pGpuParticleManager->GetRunParticle()->SetPlayerData(player->GetCharacter()->GetVelocity(), true);
+	pGpuParticleManager->GetRunParticle()->SetPlayerData(player->GetCharacter()->GetVelocity(), player->GetPlayFlag());
 	pGpuParticleManager->Update(elapsed_time);
 }
 /**********************Editor*********************/
@@ -226,7 +215,7 @@ bool SceneGame::ImGuiUpdate()
 {
 #ifdef USE_IMGUI
 	/********************Sceneの選択結果処理***************************/
-	switch (pSceneManager.GetSceneEditor()->Editor(&editorFlag,StageManager::GetMaxStageCount()))
+	switch (pSceneManager.GetSceneEditor()->Editor(&editorFlag, StageManager::GetMaxStageCount()))
 	{
 	case 1:
 		GpuParticleManager::Destroy();
@@ -491,7 +480,7 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 
 		blend[0]->activate(context);
 		modelRenderer->Begin(context, viewProjection);
-		modelRenderer->Draw(context, *player->GetCharacter()->GetModel(),VECTOR4F(0.5,0.5,0.5,1));
+		modelRenderer->Draw(context, *player->GetCharacter()->GetModel(), VECTOR4F(0.5, 0.5, 0.5, 1));
 		modelRenderer->End(context);
 		if (mSManager->GetStageEditor()->GetEditorFlag())
 		{
@@ -503,7 +492,7 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 			sky->Render(context, view, projection);
 
 			mSManager->Render(context, view, projection, mStageOperation->GetColorType());
-			if(hitArea)HitAreaRender::GetInctance()->Render(context,view,projection);
+			if (hitArea)HitAreaRender::GetInctance()->Render(context, view, projection);
 			UIManager::GetInctance()->Render(context);
 		}
 
@@ -511,23 +500,29 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 		frameBuffer->Deactivate(context);
 	}
 	/****************ブルームをかける******************/
-	if (mSManager->GetStageEditor()->GetEditorFlag())
-	{
-		saveFrameBuffer->Clear(context);
-		saveFrameBuffer->Activate(context);
-	}
+	frameBuffer2->Clear(context);
+	frameBuffer2->Activate(context);
 	blend[1]->activate(context);
 	siro->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 	bloom->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), true);
 	blend[1]->deactivate(context);
+	frameBuffer2->Deactivate(context);
+	if (player->GetCharacter()->GetGorlFlag())
+	{
+		siro->Render(context, blurShader.get(), frameBuffer2->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+
+	}
+	else
+	{
+		siro->Render(context, frameBuffer2->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+
+	}
 	if (mSManager->GetStageEditor()->GetEditorFlag())
 	{
-		saveFrameBuffer->Deactivate(context);
-		siro->Render(context, saveFrameBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 		if (mSManager->GetStageEditor()->GetSceneSaveFlag())
 		{
 			std::wstring fileName = L"Data/image/stage" + std::to_wstring(mSManager->GrtStageNo()) + L"scne_map.dds";
-			saveFrameBuffer->SaveDDSFile(context, fileName.c_str(), saveFrameBuffer->GetRenderTargetShaderResourceView().Get());
+			frameBuffer2->SaveDDSFile(context, fileName.c_str(), frameBuffer2->GetRenderTargetShaderResourceView().Get());
 		}
 	}
 
@@ -538,7 +533,7 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	blend[0]->deactivate(context);
 
 	//siro->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
-
+	HitAreaRender::GetInctance()->ClearCount();
 }
 
 SceneGame::~SceneGame()

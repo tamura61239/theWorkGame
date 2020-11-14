@@ -38,6 +38,10 @@ public:
 	void Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection);
 	//clear
 	void ClearData();
+	void ClearCount()
+	{
+		mCount = 0;
+	}
 private:
 	std::unique_ptr<MeshRender>mRender;
 	std::vector<std::unique_ptr<Obj3D>>mObjData;

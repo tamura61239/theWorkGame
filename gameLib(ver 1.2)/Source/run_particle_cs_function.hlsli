@@ -22,7 +22,8 @@ cbuffer CbCreate : register(b1)
 	float4 color;
 	float scale;
 	float startNumber;
-	float2 dummy3;
+	float speed;
+	float dummy3;
 }
 cbuffer CbUpdate : register(b2)
 {

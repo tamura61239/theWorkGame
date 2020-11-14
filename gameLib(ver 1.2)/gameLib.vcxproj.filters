@@ -58,12 +58,6 @@
     <Filter Include="シェーダー\stage_scene_particle">
       <UniqueIdentifier>{f8b9c1ea-ac49-43ea-bb3f-23d4d164c53d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="シェーダー\motion_blur">
-      <UniqueIdentifier>{d7c7f7b4-2fd1-4214-a05f-3854700f952b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="シェーダー\被写界深度">
-      <UniqueIdentifier>{5c4b093c-eff3-4ad4-bd87-f61c9ab1753e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="シェーダー\title_particle">
       <UniqueIdentifier>{abd5f4ef-594c-4472-85be-d52e9ba2b8f8}</UniqueIdentifier>
     </Filter>
@@ -93,6 +87,18 @@
     </Filter>
     <Filter Include="ヘッダー ファイル\Camera">
       <UniqueIdentifier>{a26b2fc9-c19c-4e12-9ef1-6a00d10fc4b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="シェーダー\postEffect">
+      <UniqueIdentifier>{357487a3-b7db-4ca4-8928-250ef21b2331}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="シェーダー\postEffect\motion_blur">
+      <UniqueIdentifier>{d7c7f7b4-2fd1-4214-a05f-3854700f952b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="シェーダー\postEffect\被写界深度">
+      <UniqueIdentifier>{5c4b093c-eff3-4ad4-bd87-f61c9ab1753e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="シェーダー\postEffect\ズームブラー">
+      <UniqueIdentifier>{a2649372-6ce1-4358-bf60-9d423dfd4b40}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -662,25 +668,25 @@
       <Filter>gameLib\Shaders</Filter>
     </None>
     <None Include="Source\stage_scene_particle_blur.hlsli">
-      <Filter>シェーダー\motion_blur</Filter>
+      <Filter>シェーダー\postEffect\motion_blur</Filter>
     </None>
     <None Include="Source\motionblur.hlsli">
-      <Filter>シェーダー\motion_blur</Filter>
+      <Filter>シェーダー\postEffect\motion_blur</Filter>
     </None>
     <None Include="Source\static_mesh_blur.hlsli">
-      <Filter>シェーダー\motion_blur</Filter>
+      <Filter>シェーダー\postEffect\motion_blur</Filter>
     </None>
     <None Include="Source\sky_map_blur.hlsli">
-      <Filter>シェーダー\motion_blur</Filter>
+      <Filter>シェーダー\postEffect\motion_blur</Filter>
     </None>
     <None Include="Source\model_blur.hlsli">
-      <Filter>シェーダー\motion_blur</Filter>
+      <Filter>シェーダー\postEffect\motion_blur</Filter>
     </None>
     <None Include="Source\depth_of_field_data.hlsli">
-      <Filter>シェーダー\被写界深度</Filter>
+      <Filter>シェーダー\postEffect\被写界深度</Filter>
     </None>
     <None Include="Source\deferred_depth_static_mesh.hlsli">
-      <Filter>シェーダー\被写界深度</Filter>
+      <Filter>シェーダー\postEffect\被写界深度</Filter>
     </None>
     <None Include="Source\title_psrticle_compute.hlsli">
       <Filter>シェーダー\title_particle</Filter>
@@ -799,58 +805,58 @@
       <Filter>gameLib\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Source\stage_scene_particle_blur_gs.hlsl">
-      <Filter>シェーダー\motion_blur</Filter>
+      <Filter>シェーダー\postEffect\motion_blur</Filter>
     </FxCompile>
     <FxCompile Include="Source\stage_scene_particle_blur_ps.hlsl">
-      <Filter>シェーダー\motion_blur</Filter>
+      <Filter>シェーダー\postEffect\motion_blur</Filter>
     </FxCompile>
     <FxCompile Include="Source\stage_scene_particle_blur_vs.hlsl">
-      <Filter>シェーダー\motion_blur</Filter>
+      <Filter>シェーダー\postEffect\motion_blur</Filter>
     </FxCompile>
     <FxCompile Include="Source\motionblur_cs.hlsl">
-      <Filter>シェーダー\motion_blur</Filter>
+      <Filter>シェーダー\postEffect\motion_blur</Filter>
     </FxCompile>
     <FxCompile Include="Source\motionblur_ps.hlsl">
-      <Filter>シェーダー\motion_blur</Filter>
+      <Filter>シェーダー\postEffect\motion_blur</Filter>
     </FxCompile>
     <FxCompile Include="Source\static_mesh_blur_ps.hlsl">
-      <Filter>シェーダー\motion_blur</Filter>
+      <Filter>シェーダー\postEffect\motion_blur</Filter>
     </FxCompile>
     <FxCompile Include="Source\static_mesh_blur_vs.hlsl">
-      <Filter>シェーダー\motion_blur</Filter>
+      <Filter>シェーダー\postEffect\motion_blur</Filter>
     </FxCompile>
     <FxCompile Include="Source\sky_map_blur_vs.hlsl">
-      <Filter>シェーダー\motion_blur</Filter>
+      <Filter>シェーダー\postEffect\motion_blur</Filter>
     </FxCompile>
     <FxCompile Include="Source\sky_map_blur_ps.hlsl">
-      <Filter>シェーダー\motion_blur</Filter>
+      <Filter>シェーダー\postEffect\motion_blur</Filter>
     </FxCompile>
     <FxCompile Include="Source\model_blur_vs.hlsl">
-      <Filter>シェーダー\motion_blur</Filter>
+      <Filter>シェーダー\postEffect\motion_blur</Filter>
     </FxCompile>
     <FxCompile Include="Source\model_blur_ps.hlsl">
-      <Filter>シェーダー\motion_blur</Filter>
+      <Filter>シェーダー\postEffect\motion_blur</Filter>
     </FxCompile>
     <FxCompile Include="Source\deferred_depth_static_mesh_ps.hlsl">
-      <Filter>シェーダー\被写界深度</Filter>
+      <Filter>シェーダー\postEffect\被写界深度</Filter>
     </FxCompile>
     <FxCompile Include="Source\deferred_depth_model_ps.hlsl">
-      <Filter>シェーダー\被写界深度</Filter>
+      <Filter>シェーダー\postEffect\被写界深度</Filter>
     </FxCompile>
     <FxCompile Include="Source\deferred_depth_sky_map_ps.hlsl">
-      <Filter>シェーダー\被写界深度</Filter>
+      <Filter>シェーダー\postEffect\被写界深度</Filter>
     </FxCompile>
     <FxCompile Include="Source\depth_conversion_cs.hlsl">
-      <Filter>シェーダー\被写界深度</Filter>
+      <Filter>シェーダー\postEffect\被写界深度</Filter>
     </FxCompile>
     <FxCompile Include="Source\depth_of_field_synthetic_ps.hlsl">
-      <Filter>シェーダー\被写界深度</Filter>
+      <Filter>シェーダー\postEffect\被写界深度</Filter>
     </FxCompile>
     <FxCompile Include="Source\gaussian_blur_ps.hlsl">
-      <Filter>シェーダー\被写界深度</Filter>
+      <Filter>シェーダー\postEffect\被写界深度</Filter>
     </FxCompile>
     <FxCompile Include="Source\deferred_depth_static_mesh_vs.hlsl">
-      <Filter>シェーダー\被写界深度</Filter>
+      <Filter>シェーダー\postEffect\被写界深度</Filter>
     </FxCompile>
     <FxCompile Include="Source\title_particle_cs.hlsl">
       <Filter>シェーダー\title_particle</Filter>
@@ -905,6 +911,9 @@
     </FxCompile>
     <FxCompile Include="Source\particle_render_point_ps.hlsl">
       <Filter>シェーダー\particle_render</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\zoom_blur_ps.hlsl">
+      <Filter>シェーダー\postEffect\ズームブラー</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

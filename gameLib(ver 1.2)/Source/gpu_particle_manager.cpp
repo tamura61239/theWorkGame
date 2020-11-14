@@ -116,7 +116,7 @@ void GpuParticleManager::Update(float elapsd_time)
 		break;
 	case GAME:
 		if (mRunParticle.get() != nullptr)mRunParticle->Update(context, elapsd_time);
-		mStageObjParticle->Update(context, elapsd_time);
+		//mStageObjParticle->Update(context, elapsd_time);
 		mStageSceneParticle->Update(context, elapsd_time);
 		break;
 	}
