@@ -10,7 +10,7 @@ RunParticles::RunParticles(ID3D11Device* device): mRenderSize(0),mPlayFlag(false
 {
 	std::vector<Particle>particles;
 	std::vector<RenderParticle>renderParticles;
-	renderParticles.resize(30000);
+	renderParticles.resize(100000);
 	mRenderSize = renderParticles.size();
 	particles.resize(mRenderSize);
 	Microsoft::WRL::ComPtr<ID3D11Buffer>particleBuffer;
@@ -115,15 +115,13 @@ void RunParticles::ImGuiUpdate()
 	ImGui::End();
 #endif
 }
+#if (RUNPARTICLE_TYPE==0)
 
 void RunParticles::SetBoneData(Model* model)
 {
 	const ModelResource* model_resource = model->GetModelResource();
 	const std::vector<Model::Node>& nodes = model->GetNodes();
-	mCbBones.clear();
-	for (const ModelResource::Mesh& mesh:model->GetModelResource()->GetMeshes())
-	{
-		::memset(&mCbBone, 0, sizeof(&mCbBone));
+	::memset(&mCbBone, 0, sizeof(&mCbBone));
 		mCbBone.boneNumber = nodes.size();
 		for (int i = 0; i < mCbBone.boneNumber; i++)
 		{
@@ -131,9 +129,123 @@ void RunParticles::SetBoneData(Model* model)
 			FLOAT4X4 world = node.world_transform;
 			mCbBone.boneWorld[i] = VECTOR4F(world._41, world._42, world._43, world._44);
 		}
-	}
 
 }
+#elif (RUNPARTICLE_TYPE==1)
+
+void RunParticles::SetBoneData(Model* model)
+{
+	const ModelResource* model_resource = model->GetModelResource();
+	const std::vector<Model::Node>& nodes = model->GetNodes();
+	::memset(&mCbBone, 0, sizeof(&mCbBone));
+	int boneSize = 0;
+	std::vector<int>noIndexs;
+	noIndexs.resize(model->GetModelResource()->GetMeshes().size());
+	for (int i = 0; i < model->GetModelResource()->GetMeshes().size(); i++)
+	{
+		const auto& mesh = model->GetModelResource()->GetMeshes()[i];
+		if (mesh.node_indices.size() > 0)
+		{
+			for (size_t i = 0; i < mesh.node_indices.size(); ++i)
+			{
+				DirectX::XMMATRIX inverse_transform = DirectX::XMLoadFloat4x4(mesh.inverse_transforms.at(i));
+				DirectX::XMMATRIX world_transform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.node_indices.at(i)).world_transform);
+				DirectX::XMMATRIX bone_transform = inverse_transform * world_transform;
+				DirectX::XMStoreFloat4x4(&mCbBone.boneTransform[i + boneSize], bone_transform);
+
+			}
+			boneSize = mesh.node_indices.size();
+			noIndexs.at(i) = -1;
+		}
+		else
+		{
+			mCbBone.boneTransform[boneSize] = nodes.at(mesh.node_index).world_transform;
+			noIndexs.at(i) = boneSize;
+			boneSize++;
+		}
+	}
+}
+void RunParticles::SetMeshData(Model* model, ID3D11Device* device)
+{
+	const ModelResource* model_resource = model->GetModelResource();
+	const std::vector<Model::Node>& nodes = model->GetNodes();
+
+	int boneSize = 0;
+	std::vector<int>noIndexs;
+	noIndexs.resize(model->GetModelResource()->GetMeshes().size());
+	for (int i = 0; i < model->GetModelResource()->GetMeshes().size(); i++)
+	{
+		const auto& mesh = model->GetModelResource()->GetMeshes()[i];
+		if (mesh.node_indices.size() > 0)
+		{
+			boneSize = mesh.node_indices.size();
+			noIndexs.at(i) = -1;
+		}
+		else
+		{
+			noIndexs.at(i) = boneSize;
+			boneSize++;
+		}
+	}
+
+	std::vector<Vertex>vertices;
+	for (int i = 0; i < model->GetModelResource()->GetMeshDatas().size(); i++)
+	{
+		const auto& mesh = model->GetModelResource()->GetMeshDatas()[i];
+
+
+		for (const auto& index : mesh.indices)
+		{
+			auto& vertex = mesh.vertices[index];
+			Vertex v;
+			v.position = vertex.position;
+			v.normal = vertex.normal;
+			v.bone_index = vertex.bone_index;
+			if (noIndexs.at(i) > -1)
+			{
+				v.bone_index.x = noIndexs.at(i);
+			}
+			v.bone_weight = vertex.bone_weight;
+			vertices.push_back(v);
+		}
+	}
+	Microsoft::WRL::ComPtr<ID3D11Buffer>buffer;
+	HRESULT hr;
+
+	{
+		D3D11_BUFFER_DESC desc;
+		ZeroMemory(&desc, sizeof(desc));
+		desc.Usage = D3D11_USAGE_DEFAULT;//ステージの入出力はOK。GPUの入出力OK。
+		desc.BindFlags =  D3D11_BIND_SHADER_RESOURCE;
+		desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED; // 構造化バッファ
+		desc.StructureByteStride = sizeof(Vertex);
+		desc.ByteWidth = sizeof(Vertex) * vertices.size();
+		D3D11_SUBRESOURCE_DATA data;
+		ZeroMemory(&data, sizeof(data));
+		data.pSysMem = &vertices[0];
+		hr = device->CreateBuffer(&desc, &data, buffer.GetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	}
+	{
+		D3D11_SHADER_RESOURCE_VIEW_DESC DescSRV;
+		ZeroMemory(&DescSRV, sizeof(DescSRV));
+		DescSRV.Format = DXGI_FORMAT_UNKNOWN;
+		DescSRV.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+
+		DescSRV.Buffer.ElementWidth = sizeof(vertices)/4; // データ数
+
+		//----------------------------------------------------------------------
+		hr = device->CreateShaderResourceView(buffer.Get(), &DescSRV, mMeshSRV.GetAddressOf());
+
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		mMeshSize = vertices.size()/3;
+	}
+	mCreateTimeCount = 0;
+
+}
+
+#endif
+
 
 
 void RunParticles::SetPlayerData(const VECTOR3F& velocity, const bool playFlag)
@@ -180,6 +292,7 @@ void RunParticles::Update(ID3D11DeviceContext* context, float elapsd_time)
 		//	mCbCreateData.mStartNumber += bone.boneNumber;
 		//}
 		//mPlayFlag = false;
+#if (RUNPARTICLE_TYPE==0)
 		mNewIndex += mEditorData.mCreateSize * elapsd_time;
 		float createAmount = mNewIndex - mCbCreateData.mStartNumber;
 		if (createAmount > 0)
@@ -199,6 +312,29 @@ void RunParticles::Update(ID3D11DeviceContext* context, float elapsd_time)
 			}
 			context->Dispatch(createAmount, 1, 1);
 		}
+#elif (RUNPARTICLE_TYPE==1)
+		mNewIndex += mEditorData.mCreateSize * elapsd_time;
+		float createAmount = mNewIndex - mCbCreateData.mStartNumber;
+		mCreateTimeCount += elapsd_time;
+		if (createAmount > 0)
+		{
+			mCbCreateData.maxLife = mEditorData.maxLife;
+			mCbCreateData.color = mEditorData.color;
+			mCbCreateData.scale = mEditorData.scale;
+			mCbCreateData.speed = mEditorData.speed;
+			mCbCreateData.meshSize = mMeshSize;
+			context->UpdateSubresource(mCbBoneBuffer.Get(), 0, 0, &mCbBone, 0, 0);
+			context->UpdateSubresource(mCbCreateBuffer.Get(), 0, 0, &mCbCreateData, 0, 0);
+			context->CSSetShaderResources(0, 1, mMeshSRV.GetAddressOf());
+			mCbCreateData.mStartNumber = mNewIndex;
+			if (mNewIndex + createAmount > mRenderSize)
+			{
+				mNewIndex = 0;
+				mCbCreateData.mStartNumber = 0;
+			}
+			context->Dispatch(createAmount, 1, 1);
+		}
+#endif
 	}
 	CbUpdate cbUpdate;
 	cbUpdate.elapsdTime = elapsd_time;
@@ -235,6 +371,7 @@ void RunParticles::Render(ID3D11DeviceContext* context)
 	context->Draw(mRenderSize, 0);
 	mShader->Deactivate(context);
 }
+
 
 
 void RunParticles::Load()

@@ -34,7 +34,6 @@ SceneTitle::SceneTitle(ID3D11Device* device):mEditorFlag(true), mTestMove(false)
 			UIManager::Create();
 			UIManager::GetInctance()->TitleInitialize(device);
 			modelRender = std::make_unique<ModelRenderer>(device);
-			pGpuParticleManager->GetTitleTextureParticle()->CreateBuffer(device);
 			mFade = std::make_unique<Fade>(device, Fade::FADE_SCENE::TITLE);
 			mFade->StartFadeIn();
 		}, device);
@@ -70,7 +69,7 @@ void SceneTitle::Update(float elapsed_time)
 		if (pKeyBoad.RisingState(KeyLabel::SPACE))
 		{
 			pCameraManager->GetCameraOperation()->GetTitleCamera()->SetTitleSceneChangeFlag(true);
-			pGpuParticleManager->GetTitleTextureParticle()->SetStartFlag(true);
+			pGpuParticleManager->GetTitleTextureParticle()->SetSceneDrowFlag(true);
 			UIManager::GetInctance()->ClearUI();
 		}
 	}
@@ -87,9 +86,9 @@ void SceneTitle::Render(ID3D11DeviceContext* context, float elapsed_time)
 	frameBuffer->Activate(context);
 	FLOAT4X4 view = pCameraManager->GetCamera()->GetView();
 	FLOAT4X4 projection = pCameraManager->GetCamera()->GetProjection();
-
+blend[1]->activate(context);
 	pGpuParticleManager->Render(context, view, projection);
-	blend[1]->activate(context);
+	
 	UIManager::GetInctance()->Render(context);
 	blend[1]->deactivate(context);
 

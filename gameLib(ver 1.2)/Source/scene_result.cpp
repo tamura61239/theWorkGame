@@ -9,9 +9,16 @@
 SceneResult::SceneResult(ID3D11Device* device) :mNowGameTime(0), mEditorFlag(false), mEditorNo(0),
 mPlayFlag(true)
 {
-	if (UIManager::GetInctance()->GetGameUIMove() != nullptr)
+	if (UIManager::GetInctance() != nullptr)
 	{
-		mNowGameTime = UIManager::GetInctance()->GetGameUIMove()->GetTime();
+		if (UIManager::GetInctance()->GetGameUIMove() != nullptr)
+		{
+			mNowGameTime = UIManager::GetInctance()->GetGameUIMove()->GetTime();
+		}
+	}
+	else
+	{
+		UIManager::Create();
 	}
 	UIManager::GetInctance()->ResultInitialize(device);
 	mBlend.push_back(std::make_unique<blend_state>(device, BLEND_MODE::ALPHA));

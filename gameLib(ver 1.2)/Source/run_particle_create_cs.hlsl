@@ -17,9 +17,10 @@ void main(uint3 DTid : SV_DispatchThreadID)
 	float x = sqrt(1 - z * z) * cos(angle);
 	float y = sqrt(1 - z * z) * sin(angle);
 	y += 1.f;
+
 	//èâä˙âª
-	p.position = boneWorld[boneNo].xyz + float3(x, y, z)*3;
-	p.velocity = velocity + float3(x, y-1, (z-2)*0.25f) * speed * rand_1_normal(float2(bufferIndex % 275, bufferIndex % 666), 0.3f);
+	p.position = boneWorld[boneNo].xyz + float3(x, y, z) * 3;
+	p.velocity = velocity + float3(x, (y - 0.45f)*0.65f, (z - 1) * 0.15f) * speed * rand_1_normal(float2(bufferIndex % 275, bufferIndex % 666), 0.3f);
 	p.life = 1;
 	p.lifeAmount = 1 / maxLife;
 	p.color = color;

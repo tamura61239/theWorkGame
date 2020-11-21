@@ -1,4 +1,5 @@
 #include "ui_manager.h"
+#include"gpu_particle_manager.h"
 #ifdef USE_IMGUI
 #include"imgui.h"
 #endif
@@ -22,6 +23,8 @@ void UIManager::TitleInitialize(ID3D11Device* device)
 		data.mColor.w = moveData.startAlpha;
 		ui->SetUIData(data);
 	}
+	pGpuParticleManager->GetTitleTextureParticle()->LoadTexture(device, L"Data/image/ƒ^ƒCƒgƒ‹.png", mUIs[0]->GetUIData().mLeftPosition, mUIs[0]->GetUIData().mDrowSize, mUIs[0]->GetUIData().mTextureLeftTop, mUIs[0]->GetUIData().mTextureSize);
+	pGpuParticleManager->GetTitleTextureParticle()->LoadTexture(device, L"Data/image/startKey.png", mUIs[1]->GetUIData().mLeftPosition, mUIs[1]->GetUIData().mDrowSize, mUIs[1]->GetUIData().mTextureLeftTop, mUIs[1]->GetUIData().mTextureSize);
 
 	mUINumber = 0;
 	mDebugUIFrameFlag = false;

@@ -7,6 +7,7 @@
 #include"drow_shader.h"
 #include"static_mesh.h"
 
+#define RUNPARTICLE_TYPE 0
 
 class RunParticles
 {
@@ -18,13 +19,7 @@ public:
 	void Update(ID3D11DeviceContext* context, float elapsd_time);
 	void Render(ID3D11DeviceContext* context);
 private:
-	struct Vertex
-	{
-		VECTOR3F	position;
-		VECTOR3F	normal;
-		VECTOR4F	bone_weight;
-		VECTOR4F	bone_index;
-	};
+#if (RUNPARTICLE_TYPE==0)
 	struct CbeBone
 	{
 		VECTOR4F boneWorld[32];
@@ -39,8 +34,37 @@ private:
 		float scale;
 		float mStartNumber;
 		float speed;
-		float dummy;
+		float maxY;
 	};
+#elif (RUNPARTICLE_TYPE==1)
+public:
+	void SetMeshData(Model* model, ID3D11Device* device);
+private:
+	struct Vertex
+	{
+		VECTOR3F	position;
+		VECTOR3F	normal;
+		VECTOR4F	bone_weight;
+		UVECTOR4	bone_index;
+	};
+	struct CbeBone
+	{
+		FLOAT4X4 boneTransform[32];
+	};
+	struct CbCreateData
+	{
+		VECTOR3F velocity;
+		float maxLife;
+		VECTOR4F color;
+		float scale;
+		float mStartNumber;
+		float speed;
+		float meshSize;
+	};
+	int mMeshSize;
+	float mCreateTimeCount;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>mMeshSRV;
+#endif
 	struct CbUpdate
 	{
 		float elapsdTime;

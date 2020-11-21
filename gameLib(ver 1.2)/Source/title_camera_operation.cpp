@@ -7,6 +7,7 @@ TitleCameraOperation::TitleCameraOperation(std::shared_ptr<Camera> camera)
 	: mTitleSceneChangeFlag(false), mTime(0), mEndTitleFlag(false), mLerpMovement(0)
 {
 	mCamera = camera;
+	mTitleData.mEye = camera->GetEye();
 }
 
 void TitleCameraOperation::ImGuiUpdate()

@@ -23,7 +23,7 @@ void GpuParticleManager::CreateBuffer(ID3D11Device* device)
 	{
 		D3D11_RASTERIZER_DESC desc = {};
 		desc.FillMode = D3D11_FILL_SOLID; //D3D11_FILL_WIREFRAME, D3D11_FILL_SOLID
-		desc.CullMode = D3D11_CULL_BACK; //D3D11_CULL_NONE, D3D11_CULL_FRONT, D3D11_CULL_BACK   
+		desc.CullMode = D3D11_CULL_NONE; //D3D11_CULL_NONE, D3D11_CULL_FRONT, D3D11_CULL_BACK   
 		desc.FrontCounterClockwise = FALSE;
 		desc.DepthBias = 0;
 		desc.DepthBiasClamp = 0;
@@ -110,13 +110,14 @@ void GpuParticleManager::Update(float elapsd_time)
 	{
 	case TITLE:
 		mTitleParticle->Update(elapsd_time, context);
+		mTitleTextureParticle->Update(elapsd_time, context);
 		break;
 	case SELECT:
 		mSelectSceneParticle->Update(elapsd_time, context);
 		break;
 	case GAME:
 		if (mRunParticle.get() != nullptr)mRunParticle->Update(context, elapsd_time);
-		//mStageObjParticle->Update(context, elapsd_time);
+		mStageObjParticle->Update(context, elapsd_time);
 		mStageSceneParticle->Update(context, elapsd_time);
 		break;
 	}
@@ -150,6 +151,11 @@ void GpuParticleManager::TitleImGui()
 	{
 		mTitleParticle->ImGuiUpdate();
 	}
+	if (selects[1])
+	{
+		mTitleTextureParticle->ImGuiUpdate();
+	}
+
 #endif
 
 }
@@ -212,6 +218,7 @@ void GpuParticleManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& vi
 	{
 	case TITLE:
 		mTitleParticle->Render(context);
+		mTitleTextureParticle->Render(context);
 		break;
 	case SELECT:
 		mSelectSceneParticle->Render(context);

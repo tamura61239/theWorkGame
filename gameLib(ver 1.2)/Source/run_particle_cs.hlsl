@@ -8,11 +8,11 @@ void main(uint3 DTid : SV_DispatchThreadID)
 	uint bufferIndex = index * MAX;
 	Particle p;
 	ReadParticle(p, bufferIndex);
-
+	//p.velocity += p.velocity * elapsdTime;
 	p.position += p.velocity * elapsdTime;
 	//p.scale += scaleAmount * elapsdTime;
 	p.life -= p.lifeAmount * elapsdTime;
-	p.color.a = p.life;
+	p.color.a = sqrt(sin(p.life*3.14f));
 	if (p.life <= 0)
 	{
 		p.position = (float3)0;

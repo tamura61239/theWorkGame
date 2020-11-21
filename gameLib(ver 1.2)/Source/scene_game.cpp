@@ -39,6 +39,9 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 			pGpuParticleManager->CreateGameBuffer(device);
 			pGpuParticleManager->SetState(GpuParticleManager::STATE::SELECT);
 			player = std::make_unique<PlayerAI>(device, "Data/FBX/new_player_anim.fbx");
+#if (RUNPARTICLE_TYPE==1)
+			pGpuParticleManager->GetRunParticle()->SetMeshData(player->GetCharacter()->GetModel(), device);
+#endif
 			mSManager = std::make_unique<StageManager>(device, 1920, 1080);
 			modelRenderer = std::make_unique<ModelRenderer>(device);
 			bloom = std::make_unique<BloomRender>(device, 1920, 1080, 1);
