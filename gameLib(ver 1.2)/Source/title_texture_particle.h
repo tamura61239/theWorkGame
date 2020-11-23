@@ -76,26 +76,38 @@ private:
 
 		VECTOR3F dummy;
 	};
-	struct CbCamera
+	struct CbCreate
 	{
-		FLOAT4X4 inverseVP;
-		float ndcZ;
-		VECTOR3F dummy;
+		VECTOR2F leftTop;
+		VECTOR2F uvSize;
+		FLOAT4X4 world;
+		float screenSplit;
+		int startIndex;
+
+		VECTOR2F dummy;
 	};
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbBuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbCameraBuffer;
+	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbCreateBuffer;
+	struct Board
+	{
+		VECTOR3F position;
+		VECTOR3F scale;
+	};
 	//エディタ
 	struct EditorData
 	{
 		float scale;
 		float speed;
-		float ndcZ;
-		VECTOR2F spiralRatio;
+		float screenSplit;
 
 	};
+	std::vector<Board>boards;
 	EditorData mEditorData;
 	bool mSceneDrowFlag;
 	bool mParticleFlag;
+	bool mTestFlag;
 	int mMaxParticle;
 	std::unique_ptr<blend_state>blend;
+	void Load();
+	void Save();
 };

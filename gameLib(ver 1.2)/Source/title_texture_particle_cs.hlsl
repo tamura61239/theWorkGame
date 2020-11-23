@@ -8,7 +8,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 
 	Particle p = particleBuffer[index];
 	float z = p.position.z;
-	float3 vec = float3(0, 0, z) - p.position;
+	float3 vec = float3(0, 0, 0) - p.position;
 	float l = length(vec);
 	vec = normalize(vec);
 	float3 u = float3(0, 0, -1);

@@ -6,11 +6,13 @@ struct Particle
 	float speed;
 };
 
-cbuffer CbCamera:register(b0)
+cbuffer CbCreate:register(b0)
 {
-	row_major float4x4 inverseViewProjection;
-	float ndcZ;
-
+	float2 uv;
+	float2 uvSize;
+	row_major float4x4 world;
+	float screenSplit;
+	int startIndex;
 }
 cbuffer CbUpdate : register(b1)
 {
