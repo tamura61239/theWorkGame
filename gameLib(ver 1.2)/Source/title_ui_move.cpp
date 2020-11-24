@@ -20,8 +20,9 @@ void TitleUIMove::Update(float elapsdTime, std::vector<std::shared_ptr<UI>> uis)
 			{
 				UI::UIData uiData = ui->GetUIData();
 				uiData.mColor.w += data.alphaAmount * elapsdTime;
-				if (sqrtf((uiData.mColor.w - data.endAlpha)*(uiData.mColor.w - data.endAlpha)) <= sqrtf(data.alphaAmount * elapsdTime* data.alphaAmount * elapsdTime))
+				if ((data.startAlpha-uiData.mColor.w)* (data.startAlpha - uiData.mColor.w)>= (data.startAlpha - data.endAlpha)* (data.startAlpha - data.endAlpha))
 				{
+					uiData.mColor.w = data.endAlpha;
 					if (ui->GetName() == name)
 					{
 						mMoveChangeFlag = true;

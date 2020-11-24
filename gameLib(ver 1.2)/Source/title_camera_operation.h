@@ -19,6 +19,7 @@ public:
 	//getter
 	const bool GetTitleSceneChangeFlag() { return mTitleSceneChangeFlag; }
 	const bool GetEndTitleFlag() { return mEndTitleFlag; }
+	const bool GetMoveFlag() { return mTime >= mTitleData.startTime ? true : false; }
 
 private:
 	std::weak_ptr<Camera>mCamera;

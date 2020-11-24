@@ -111,6 +111,7 @@ void UIManager::ImGuiUpdate()
 			ImGui::Text("drow data");
 			float* color[3] = { &data.mColor.x,&data.mColor.y ,&data.mColor.z };
 			ImGui::ColorEdit3("color", *color);
+			ImGui::InputFloat("alpha", &data.mColor.w);
 			ImGui::SliderFloat("left position x", &data.mLeftPosition.x, 0, 1920);
 			ImGui::SliderFloat("left position y", &data.mLeftPosition.y, 0, 1080);
 			float* leftPosition[2] = { &data.mLeftPosition.x ,&data.mLeftPosition.y };
@@ -119,6 +120,7 @@ void UIManager::ImGuiUpdate()
 			ImGui::SliderFloat("size y", &data.mDrowSize.y, 0, 1080);
 			float* drowSize[2] = { &data.mDrowSize.x ,&data.mDrowSize.y };
 			ImGui::InputFloat2("size", *drowSize);
+
 			ImGui::Text("texture data");
 			if (mSceneName._Equal("title"))
 			{
@@ -127,6 +129,7 @@ void UIManager::ImGuiUpdate()
 				ImGui::InputFloat("texture size x", &data.mTextureSize.x, 10);
 				ImGui::InputFloat("texture size y", &data.mTextureSize.y, 10);
 				ImGui::Separator();
+				mUIs[mUINumber]->SetUIData(data);
 
 				ImGui::Text("title data");
 				std::vector<TitleUIMove::TitleUIMoveData> titleData = mTitleMove->GetTitleUIMove();
@@ -149,6 +152,7 @@ void UIManager::ImGuiUpdate()
 				ImGui::SliderFloat("texture life top x", &data.mTextureLeftTop.x, 0, 1920);
 				ImGui::SliderFloat("texture life top y", &data.mTextureLeftTop.y, 0, 1080);
 				ImGui::Separator();
+				mUIs[mUINumber]->SetUIData(data);
 
 				ImGui::Text("game data");
 				GameUiMove::GameUIData gameData = mGameMove->GetGameUIData();
@@ -176,7 +180,6 @@ void UIManager::ImGuiUpdate()
 					}
 				}
 			}
-			mUIs[mUINumber]->SetUIData(data);
 
 		}
 

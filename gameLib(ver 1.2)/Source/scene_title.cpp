@@ -23,7 +23,8 @@ SceneTitle::SceneTitle(ID3D11Device* device):mEditorFlag(true), mTestMove(false)
 			pCameraManager->GetCameraOperation()->GetTitleCamera()->Load();
 			bloom = std::make_unique<BloomRender>(device, 1920, 1080, 0);
 			//bloom = std::make_unique<BloomRender>(device, 1920, 1080);
-			frameBuffer = std::make_unique<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
+			frameBuffer[0] = std::make_unique<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
+			frameBuffer[1] = std::make_unique<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
 			//std::unique_ptr<ModelData>data = std::make_unique<ModelData>("Data/FBX/new_player_anim.fbx");
 			//std::shared_ptr<ModelResource>resouce = std::make_shared<ModelResource>(device, std::move(data));
 			pLight.CreateLightBuffer(device);
@@ -36,6 +37,15 @@ SceneTitle::SceneTitle(ID3D11Device* device):mEditorFlag(true), mTestMove(false)
 			modelRender = std::make_unique<ModelRenderer>(device);
 			mFade = std::make_unique<Fade>(device, Fade::FADE_SCENE::TITLE);
 			mFade->StartFadeIn();
+			D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
+			{
+				{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+				{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+				{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+
+			};
+			mBluer = std::make_unique<DrowShader>(device, "Data/shader/sprite_vs.cso", "", "Data/shader/zoom_blur_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc));
+
 		}, device);
 	test = std::make_unique<Sprite>(device/*, L"Data/image/change_color.png"*/);
 	blend[0] = std::make_unique<blend_state>(device, BLEND_MODE::ADD);
@@ -64,10 +74,11 @@ void SceneTitle::Update(float elapsed_time)
 
 		return;
 	}
-	if (UIManager::GetInctance()->GetTitleMoveChangeFlag())
+	if (UIManager::GetInctance()->GetTitleUIMove()->GetMoveChangeFlag())
 	{
 		if (pKeyBoad.RisingState(KeyLabel::SPACE))
 		{
+			UIManager::GetInctance()->GetTitleUIMove()->SetMoveChangeFlag(false);
 			pCameraManager->GetCameraOperation()->GetTitleCamera()->SetTitleSceneChangeFlag(true);
 			pGpuParticleManager->GetTitleTextureParticle()->SetSceneDrowFlag(true);
 			UIManager::GetInctance()->ClearUI();
@@ -82,22 +93,38 @@ void SceneTitle::Render(ID3D11DeviceContext* context, float elapsed_time)
 		return;
 	}
 	EndLoading();
-	frameBuffer->Clear(context);
-	frameBuffer->Activate(context);
+	frameBuffer[0]->Clear(context);
+	frameBuffer[0]->Activate(context);
 	FLOAT4X4 view = pCameraManager->GetCamera()->GetView();
 	FLOAT4X4 projection = pCameraManager->GetCamera()->GetProjection();
-blend[1]->activate(context);
+    blend[1]->activate(context);
 	pGpuParticleManager->Render(context, view, projection);
 	
 	UIManager::GetInctance()->Render(context);
 	blend[1]->deactivate(context);
 
-	frameBuffer->Deactivate(context);
+	frameBuffer[0]->Deactivate(context);
+
+	frameBuffer[1]->Clear(context);
+	frameBuffer[1]->Activate(context);
+
 	blend[0]->activate(context);
-	test->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
-	bloom->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), true);
+	test->Render(context, frameBuffer[0]->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+	bloom->Render(context, frameBuffer[0]->GetRenderTargetShaderResourceView().Get(), true);
 	blend[0]->deactivate(context);
+	frameBuffer[1]->Deactivate(context);
+
 	blend[1]->activate(context);
+	if (pCameraManager->GetCameraOperation()->GetTitleCamera()->GetMoveFlag())
+	{
+		test->Render(context,mBluer.get(), frameBuffer[1]->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+
+	}
+	else
+	{
+		test->Render(context, frameBuffer[1]->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+
+	}
 	mFade->Render(context);
 	blend[1]->deactivate(context);
 

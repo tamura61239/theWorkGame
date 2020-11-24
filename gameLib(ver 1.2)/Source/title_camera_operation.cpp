@@ -24,7 +24,6 @@ void TitleCameraOperation::ImGuiUpdate()
 	ImGui::SliderFloat("lerpMax", &mTitleData.mMaxLerp, 0, 1);
 	ImGui::InputFloat("startTime", &mTitleData.startTime, 0.1f);
 	ImGui::SliderFloat("lerp change amount", &mTitleData.mLerpChangeAmount, 0, 1);
-	ImGui::Checkbox("start flag", &mTitleSceneChangeFlag);
 	if (!mTitleSceneChangeFlag)
 	{
 		mCamera.lock()->SetEye(mTitleData.mEye);

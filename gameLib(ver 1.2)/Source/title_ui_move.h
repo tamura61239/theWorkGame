@@ -22,6 +22,7 @@ public:
 		float endAlpha;
 	};
 	const bool GetMoveChangeFlag() { return mMoveChangeFlag; }
+	void SetMoveChangeFlag(const bool flag) { mMoveChangeFlag = flag; }
 	void TextMove(std::vector<std::shared_ptr<UI>>uis)
 	{
 		mTimer = 0;

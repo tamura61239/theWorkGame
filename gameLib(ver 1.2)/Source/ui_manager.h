@@ -26,7 +26,7 @@ public:
 	void Update(float elapsdTime);
 	void Render(ID3D11DeviceContext* context);
 	//getter
-	const bool GetTitleMoveChangeFlag() { return mTitleMove->GetMoveChangeFlag(); }
+	TitleUIMove* GetTitleUIMove() { return mTitleMove.get(); }
 	GameUiMove* GetGameUIMove() { return mGameMove.get(); }
 	ResultUIMove* GetResultUIMove() { return mResultMove.get(); }
 private:

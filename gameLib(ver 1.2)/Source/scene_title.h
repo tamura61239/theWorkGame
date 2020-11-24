@@ -44,7 +44,7 @@ private:
 	bool ImGuiUpdate();
 	std::unique_ptr<Sprite>test;
 	std::unique_ptr<BloomRender>bloom;
-	std::unique_ptr<FrameBuffer>frameBuffer;
+	std::unique_ptr<FrameBuffer>frameBuffer[2];
 	std::unique_ptr<blend_state>blend[2];
 	std::unique_ptr<ModelRenderer>modelRender;
 	std::unique_ptr<Character>character;
@@ -53,6 +53,7 @@ private:
 	std::unique_ptr<StaticObj>obj;
 	std::unique_ptr<MeshRender>mRender;
 	std::unique_ptr<Fade>mFade;
+	std::unique_ptr<DrowShader>mBluer;
 	bool mEditorFlag;
 	bool mTestMove;
 };
