@@ -915,5 +915,11 @@
     <FxCompile Include="Source\zoom_blur_ps.hlsl">
       <Filter>シェーダー\postEffect\ズームブラー</Filter>
     </FxCompile>
+    <FxCompile Include="Source\titile_texture_change_creat_cs.hlsl">
+      <Filter>シェーダー\title_texture_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\title_texture_scene_change_cs.hlsl">
+      <Filter>シェーダー\title_texture_particle</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

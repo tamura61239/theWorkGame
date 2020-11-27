@@ -62,6 +62,7 @@ void UIManager::ResultInitialize(ID3D11Device* device)
 {
 	mDebugUIFrame = std::make_unique<UI>(device, L"Data/image/òg.png", VECTOR2F(500, 500), "");
 
+	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/Åõ.png", VECTOR2F(800, 800), "frame"));
 	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/retry.png", VECTOR2F(250, 80), "retry"));
 	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/title.png", VECTOR2F(250, 80), "title"));
 
@@ -179,6 +180,19 @@ void UIManager::ImGuiUpdate()
 						ResetGameUI();
 					}
 				}
+			}
+			else
+			{
+				
+				mUIs[mUINumber]->SetUIData(data);
+				auto& resultData = mResultMove->GetResultUIData();
+				ImGui::SliderFloat("frame alpth", &resultData.frameAlpth, 0, 1);
+				ImGui::SliderFloat("alpth difference", &resultData.alpthDifference, 0, 1);
+				if (ImGui::Button("save"))
+				{
+					mResultMove->Save();
+				}
+				mResultMove->SetResultUIData(resultData);
 			}
 
 		}

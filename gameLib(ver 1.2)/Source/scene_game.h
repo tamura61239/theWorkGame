@@ -54,7 +54,6 @@ private:
 	}
 private:
 	bool ImGuiUpdate();
-	bool EditorKey();
 	std::unique_ptr<Sprite>test;
 	std::unique_ptr<Sprite>nowLoading;
 	std::unique_ptr<Sprite>siro;
@@ -87,4 +86,7 @@ private:
 	bool editorFlag;
 	bool testGame;
 	bool hitArea;
+	bool screenShot;
+	bool target[6];
+	int textureNo;
 };

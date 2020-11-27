@@ -116,7 +116,7 @@ void Fade::Render(ID3D11DeviceContext* context)
 	{
 		mSprite->Render(context, VECTOR2F(0, 0), VECTOR2F(viewport.Width, viewport.Height), VECTOR2F(0, 0), VECTOR2F(1024, 1024), 0, mCheckFadeData.mData.mColor);
 	}
-	else
+	else if(mState!=FADE_MODO::NONE)
 	{
 		mSprite->Render(context, VECTOR2F(0, 0), VECTOR2F(viewport.Width, viewport.Height), VECTOR2F(0, 0), VECTOR2F(1024, 1024), 0, mNowFadeData.mData.mColor);
 	}

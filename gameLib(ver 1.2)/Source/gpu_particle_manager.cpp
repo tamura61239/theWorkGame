@@ -230,6 +230,7 @@ void GpuParticleManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& vi
 		mStageSceneParticle->Render(context);
 		break;
 	}
+
 	//if (drowMullti)
 	//{
 	//	if (mStageSceneParticle.get() != nullptr)mStageSceneParticle->Render(context, mSSceneShader.get());

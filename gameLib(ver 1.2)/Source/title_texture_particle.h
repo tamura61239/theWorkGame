@@ -17,13 +17,12 @@ public:
 	void ImGuiUpdate();
 	void LoadTexture(ID3D11Device* device,std::wstring name, const VECTOR2F& leftTop, const VECTOR2F& size, const VECTOR2F& uv, const VECTOR2F& uvSize);
 	void SetParticleFlag(const bool flag) { mParticleFlag = flag; }
-	void SetSceneDrowFlag(const bool flag) { mSceneDrowFlag = flag; }
+	void SetFullDrowFlag(const bool flag) { mFullCreateFlag = flag; }
 	void Update(float elapsdTime, ID3D11DeviceContext*context);
 	void Render(ID3D11DeviceContext* context);
 private:
-	//シーンに写ってるTextureの情報を取得するための変数
-	std::unique_ptr<FrameBuffer>mArrangementSceneTexture;
-	std::unique_ptr<Sprite>mRender;
+	void TitleSceneUpdate(float elapsdTime, ID3D11DeviceContext* context);
+	void SceneChangeUpdate(float elapsdTime, ID3D11DeviceContext* context);
 	//パーティクルにするTextureのデータ
 	struct TextureData
 	{
@@ -63,8 +62,9 @@ private:
 	//UAV
 	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mRenderUAV;
 	//シェーダー
-	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCreateCSShader;
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSShader;
+	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mSceneChangeCreateCSShader;
+
 	std::unique_ptr<DrowShader>mShader;
 	//定数
 	struct CbUpdate
@@ -103,10 +103,12 @@ private:
 	};
 	std::vector<Board>boards;
 	EditorData mEditorData;
-	bool mSceneDrowFlag;
+	bool mFullCreateFlag;
 	bool mParticleFlag;
 	bool mTestFlag;
 	int mMaxParticle;
+	float mSceneParticleIndex;
+	int mChangeMaxParticle;
 	std::unique_ptr<blend_state>blend;
 	void Load();
 	void Save();

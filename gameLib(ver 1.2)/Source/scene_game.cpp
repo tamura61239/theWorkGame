@@ -12,15 +12,12 @@
 #include"ui_manager.h"
 #include"ranking.h"
 #include"hit_area_render.h"
-//#ifdef USE_IMGUI
-//#include <imgui.h>
-//#include <imgui_impl_dx11.h>
-//#include <imgui_impl_win32.h>
-//#include <imgui_internal.h>
-//extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wparam, LPARAM lparam);
-//#endif
+#include <codecvt>
+#include <locale>
+#include"screen_size.h"
 
-SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(false), testGame(false), hitArea(false)
+
+SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(false), testGame(false), hitArea(false), screenShot(false)
 {
 	loading_thread = std::make_unique<std::thread>([&](ID3D11Device* device)
 		{
@@ -28,9 +25,9 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 			pCameraManager->Initialize(device, 1);
 			pCameraManager->GetCamera()->SetEye(VECTOR3F(0, 0, -200));
 
-			frameBuffer = std::make_shared<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
-			saveFrameBuffer = std::make_shared<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
-			frameBuffer2 = std::make_shared<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
+			frameBuffer = std::make_shared<FrameBuffer>(device, SCREEN_WIDTH, SCREEN_HEIGHT, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
+			saveFrameBuffer = std::make_shared<FrameBuffer>(device, SCREEN_WIDTH, SCREEN_HEIGHT, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
+			frameBuffer2 = std::make_shared<FrameBuffer>(device, SCREEN_WIDTH, SCREEN_HEIGHT, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
 			for (int i = 1; i <= 2; i++)
 			{
 				shrinkBuffer[i - 1] = std::make_unique<FrameBuffer>(device, 1920 >> i, 1080 >> i, true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
@@ -42,9 +39,9 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 #if (RUNPARTICLE_TYPE==1)
 			pGpuParticleManager->GetRunParticle()->SetMeshData(player->GetCharacter()->GetModel(), device);
 #endif
-			mSManager = std::make_unique<StageManager>(device, 1920, 1080);
+			mSManager = std::make_unique<StageManager>(device, SCREEN_WIDTH, SCREEN_HEIGHT);
 			modelRenderer = std::make_unique<ModelRenderer>(device);
-			bloom = std::make_unique<BloomRender>(device, 1920, 1080, 1);
+			bloom = std::make_unique<BloomRender>(device, SCREEN_WIDTH, SCREEN_HEIGHT, 1);
 			mStageOperation = std::make_unique<StageOperation>();
 			pHitAreaDrow.CreateObj(device);
 			pLight.CreateLightBuffer(device);
@@ -98,6 +95,7 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 	blend[2] = std::make_unique<blend_state>(device, BLEND_MODE::NONE);
 	stop = false;
 	editorNo = 0;
+	textureNo = 0;
 }
 /***************************************************************/
 //                          XV
@@ -224,7 +222,6 @@ bool SceneGame::ImGuiUpdate()
 		GpuParticleManager::Destroy();
 		HitAreaRender::Destroy();
 		UIManager::Destroy();
-
 		pSceneManager.ChangeScene(SCENETYPE::TITLE);
 		return true;
 		break;
@@ -289,16 +286,40 @@ bool SceneGame::ImGuiUpdate()
 	std::string editorName = { "scene game" };
 	if (selectSceneFlag)editorName = "scene seletc";
 	/*******************Editor****************/
+	screenShot = false;
 	ImGui::Begin(editorName.c_str());
 	ImGui::Checkbox("stop", &stop);
 	ImGui::Checkbox("hitArea", &hitArea);
 
 	if (selectSceneFlag)
 	{
+		if (ImGui::CollapsingHeader("screen shot"))
+		{
+			ImGui::InputInt("No", &textureNo, 1);
+			if (ImGui::Button("photograph"))
+			{
+				screenShot = true;
+			}
+		}
+
 		ImGui::RadioButton("SELECT_SCENE", &editorNo, 1);
 	}
 	else
 	{
+		if (ImGui::CollapsingHeader("screen shot"))
+		{
+			ImGui::Selectable("player", &target[0]);
+			ImGui::Selectable("stage", &target[1]);
+			ImGui::Selectable("particle", &target[2]);
+			ImGui::Selectable("ui", &target[3]);
+			ImGui::Selectable("hitarea", &target[4]);
+			ImGui::Selectable("sky map", &target[5]);
+			ImGui::InputInt("No", &textureNo, 1);
+			if (ImGui::Button("photograph"))
+			{
+				screenShot = true;
+			}
+		}
 		if (!testGame)
 		{
 			if (ImGui::Button("testGame"))
@@ -411,7 +432,6 @@ bool SceneGame::ImGuiUpdate()
 	return false;
 }
 
-
 /***************************************************************/
 //                          •`‰æ
 /***************************************************************/
@@ -461,11 +481,19 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	{
 		frameBuffer->Clear(context);
 		frameBuffer->Activate(context);
-		pGpuParticleManager->Render(context, view, projection);
-
 		blend[0]->activate(context);
+		if (screenShot)
+		{
+			pGpuParticleManager->Render(context, view, projection);
+		}
+		else
+		{
+			pGpuParticleManager->Render(context, view, projection);
 
-		mStageSelect->Render(context);
+
+			mStageSelect->Render(context);
+
+		}
 		blend[0]->deactivate(context);
 		frameBuffer->Deactivate(context);
 	}
@@ -482,23 +510,43 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 		frameBuffer->Activate(context);
 
 		blend[0]->activate(context);
-		modelRenderer->Begin(context, viewProjection);
-		modelRenderer->Draw(context, *player->GetCharacter()->GetModel(), VECTOR4F(0.5, 0.5, 0.5, 1));
-		modelRenderer->End(context);
-		if (mSManager->GetStageEditor()->GetEditorFlag())
+		if (screenShot) 
 		{
-			mSManager->Render(context, view, projection, mStageOperation->GetColorType());
+			if (target[0])
+			{
+				modelRenderer->Begin(context, viewProjection);
+				modelRenderer->Draw(context, *player->GetCharacter()->GetModel(), VECTOR4F(0.5, 0.5, 0.5, 1));
+				modelRenderer->End(context);
+			}
+			
+			if (target[5])sky->Render(context, view, projection);
+			if (target[2])pGpuParticleManager->Render(context, view, projection);
+
+			if(target[1])mSManager->Render(context, view, projection, mStageOperation->GetColorType());
+			if (target[4])if (hitArea)HitAreaRender::GetInctance()->Render(context, view, projection);
+			if (target[3])UIManager::GetInctance()->Render(context);
+
 		}
 		else
 		{
-			pGpuParticleManager->Render(context, view, projection);
-			sky->Render(context, view, projection);
+			modelRenderer->Begin(context, viewProjection);
+			modelRenderer->Draw(context, *player->GetCharacter()->GetModel(), VECTOR4F(0.5, 0.5, 0.5, 1));
+			modelRenderer->End(context);
+			if (mSManager->GetStageEditor()->GetEditorFlag())
+			{
+				mSManager->Render(context, view, projection, mStageOperation->GetColorType());
+			}
+			else
+			{
+				sky->Render(context, view, projection);
+				pGpuParticleManager->Render(context, view, projection);
 
-			mSManager->Render(context, view, projection, mStageOperation->GetColorType());
-			if (hitArea)HitAreaRender::GetInctance()->Render(context, view, projection);
-			UIManager::GetInctance()->Render(context);
+				mSManager->Render(context, view, projection, mStageOperation->GetColorType());
+				if (hitArea)HitAreaRender::GetInctance()->Render(context, view, projection);
+				UIManager::GetInctance()->Render(context);
+			}
+
 		}
-
 		blend[0]->deactivate(context);
 		frameBuffer->Deactivate(context);
 	}
@@ -520,7 +568,12 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 		siro->Render(context, frameBuffer2->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 
 	}
-	if (mSManager->GetStageEditor()->GetEditorFlag())
+	if (screenShot)
+	{
+		std::wstring fileName = L"Data/image/screen_shot/screenShot"+std::to_wstring(textureNo)+L".dds";
+		frameBuffer2->SaveDDSFile(context, fileName.c_str(), frameBuffer2->GetRenderTargetShaderResourceView().Get());
+	}
+	else if (mSManager->GetStageEditor()->GetEditorFlag())
 	{
 		if (mSManager->GetStageEditor()->GetSceneSaveFlag())
 		{
@@ -528,7 +581,8 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 			frameBuffer2->SaveDDSFile(context, fileName.c_str(), frameBuffer2->GetRenderTargetShaderResourceView().Get());
 		}
 	}
-
+	
+	
 	blend[0]->activate(context);
 	if (editorNo == 3)mSManager->SidoViewRender(context);
 
@@ -541,7 +595,6 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 
 SceneGame::~SceneGame()
 {
-	pCameraManager->DestroyCamera();
 
 }
 

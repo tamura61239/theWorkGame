@@ -6,6 +6,7 @@
 #include"light.h"
 #include"ui_manager.h"
 #include"stage_manager.h"
+#include"screen_size.h"
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
@@ -21,10 +22,11 @@ SceneTitle::SceneTitle(ID3D11Device* device):mEditorFlag(true), mTestMove(false)
 			pCameraManager->GetCamera()->SetEye(VECTOR3F(0, 0, -200));
 			pCameraManager->GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::TITLE_CAMERA);
 			pCameraManager->GetCameraOperation()->GetTitleCamera()->Load();
-			bloom = std::make_unique<BloomRender>(device, 1920, 1080, 0);
+			bloom = std::make_unique<BloomRender>(device, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
 			//bloom = std::make_unique<BloomRender>(device, 1920, 1080);
-			frameBuffer[0] = std::make_unique<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
-			frameBuffer[1] = std::make_unique<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
+			frameBuffer[0] = std::make_unique<FrameBuffer>(device, SCREEN_WIDTH, SCREEN_HEIGHT, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
+			frameBuffer[1] = std::make_unique<FrameBuffer>(device, SCREEN_WIDTH, SCREEN_HEIGHT, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
+			frameBuffer[2] = std::make_unique<FrameBuffer>(device, SCREEN_WIDTH, SCREEN_HEIGHT, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
 			//std::unique_ptr<ModelData>data = std::make_unique<ModelData>("Data/FBX/new_player_anim.fbx");
 			//std::shared_ptr<ModelResource>resouce = std::make_shared<ModelResource>(device, std::move(data));
 			pLight.CreateLightBuffer(device);
@@ -50,17 +52,22 @@ SceneTitle::SceneTitle(ID3D11Device* device):mEditorFlag(true), mTestMove(false)
 	test = std::make_unique<Sprite>(device/*, L"Data/image/change_color.png"*/);
 	blend[0] = std::make_unique<blend_state>(device, BLEND_MODE::ADD);
 	blend[1] = std::make_unique<blend_state>(device, BLEND_MODE::ALPHA);
-
+	mLoading = true;
+	screenShot = false;
+	textureNo = 0;
+	stop = false;
 }
 
 void SceneTitle::Update(float elapsed_time)
 {
-	if (IsNowLoading())
+	mLoading = IsNowLoading();
+	if (mLoading)
 	{
 		return;
 	}
 	EndLoading();
 	if (ImGuiUpdate())return;
+	if (stop) elapsed_time = 0;
 	mFade->Update(elapsed_time);
 	UIManager::GetInctance()->Update(elapsed_time);
 	pCameraManager->Update(elapsed_time);
@@ -70,6 +77,7 @@ void SceneTitle::Update(float elapsed_time)
 	{
 		GpuParticleManager::Destroy();
 		UIManager::Destroy();
+
 		pSceneManager.ChangeScene(SCENETYPE::GAME);
 
 		return;
@@ -80,7 +88,7 @@ void SceneTitle::Update(float elapsed_time)
 		{
 			UIManager::GetInctance()->GetTitleUIMove()->SetMoveChangeFlag(false);
 			pCameraManager->GetCameraOperation()->GetTitleCamera()->SetTitleSceneChangeFlag(true);
-			pGpuParticleManager->GetTitleTextureParticle()->SetSceneDrowFlag(true);
+			pGpuParticleManager->GetTitleTextureParticle()->SetFullDrowFlag(true);
 			UIManager::GetInctance()->ClearUI();
 		}
 	}
@@ -88,11 +96,11 @@ void SceneTitle::Update(float elapsed_time)
 
 void SceneTitle::Render(ID3D11DeviceContext* context, float elapsed_time)
 {
-	if (IsNowLoading())
+	if (mLoading)
 	{
 		return;
 	}
-	EndLoading();
+	//EndLoading();
 	frameBuffer[0]->Clear(context);
 	frameBuffer[0]->Activate(context);
 	FLOAT4X4 view = pCameraManager->GetCamera()->GetView();
@@ -100,7 +108,7 @@ void SceneTitle::Render(ID3D11DeviceContext* context, float elapsed_time)
     blend[1]->activate(context);
 	pGpuParticleManager->Render(context, view, projection);
 	
-	UIManager::GetInctance()->Render(context);
+	if(!screenShot)UIManager::GetInctance()->Render(context);
 	blend[1]->deactivate(context);
 
 	frameBuffer[0]->Deactivate(context);
@@ -111,10 +119,9 @@ void SceneTitle::Render(ID3D11DeviceContext* context, float elapsed_time)
 	blend[0]->activate(context);
 	test->Render(context, frameBuffer[0]->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 	bloom->Render(context, frameBuffer[0]->GetRenderTargetShaderResourceView().Get(), true);
-	blend[0]->deactivate(context);
 	frameBuffer[1]->Deactivate(context);
-
-	blend[1]->activate(context);
+	frameBuffer[2]->Clear(context);
+	frameBuffer[2]->Activate(context);
 	if (pCameraManager->GetCameraOperation()->GetTitleCamera()->GetMoveFlag())
 	{
 		test->Render(context,mBluer.get(), frameBuffer[1]->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
@@ -125,13 +132,24 @@ void SceneTitle::Render(ID3D11DeviceContext* context, float elapsed_time)
 		test->Render(context, frameBuffer[1]->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 
 	}
+	frameBuffer[2]->Deactivate(context);
+	test->Render(context, frameBuffer[2]->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+	if (screenShot)
+	{
+		std::wstring fileName = L"Data/image/screen_shot/screenShot" + std::to_wstring(textureNo) + L".dds";
+		frameBuffer[2]->SaveDDSFile(context, fileName.c_str(), frameBuffer[2]->GetRenderTargetShaderResourceView().Get());
+
+	}
 	mFade->Render(context);
-	blend[1]->deactivate(context);
+	blend[0]->deactivate(context);
+	context->OMSetDepthStencilState(nullptr, 0);
+	context->RSSetState(nullptr);
 
 }
 
 SceneTitle::~SceneTitle()
 {
+
 }
 
 bool SceneTitle::ImGuiUpdate()
@@ -158,7 +176,18 @@ bool SceneTitle::ImGuiUpdate()
 		break;
 	}
 	if (!mEditorFlag)return false;
+	screenShot = false;
 	ImGui::Begin("scene title");
+	ImGui::Checkbox("stop", &stop);
+	if (ImGui::CollapsingHeader("screen shot"))
+	{
+		ImGui::InputInt("No", &textureNo, 1);
+		if (ImGui::Button("photograph"))
+		{
+			screenShot = true;
+		}
+
+	}
 	static int editorNum = 1;
 	ImGui::RadioButton("LIGHT", &editorNum, 0);
 	ImGui::RadioButton("UI", &editorNum, 1);

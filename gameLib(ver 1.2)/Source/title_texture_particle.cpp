@@ -11,10 +11,9 @@
 #endif
 
 
-TitleTextureParticle::TitleTextureParticle(ID3D11Device* device) :mSceneDrowFlag(false), mParticleFlag(false), mMaxParticle(1920 * 1080), mTestFlag(false)
+TitleTextureParticle::TitleTextureParticle(ID3D11Device* device) :mFullCreateFlag(false), mParticleFlag(false), mMaxParticle(1920 * 1080), mTestFlag(false)
+,mSceneParticleIndex(0),mChangeMaxParticle(0)
 {
-	mRender = std::make_unique<Sprite>(device);
-	mArrangementSceneTexture = std::make_unique<FrameBuffer>(device, 1920, 1080, true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
 	HRESULT hr;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>buffer;
 	//Buffer
@@ -82,8 +81,9 @@ TitleTextureParticle::TitleTextureParticle(ID3D11Device* device) :mSceneDrowFlag
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 	}
-	create_cs_from_cso(device, "Data/shader/title_texture_particle_create_cs.cso", mCreateCSShader.GetAddressOf());
-	create_cs_from_cso(device, "Data/shader/title_texture_particle_cs.cso", mCSShader.GetAddressOf());
+	create_cs_from_cso(device, "Data/shader/titile_texture_change_creat_cs.cso", mSceneChangeCreateCSShader.GetAddressOf());
+	create_cs_from_cso(device, "Data/shader/title_texture_scene_change_cs.cso", mCSShader.GetAddressOf());
+
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
 	{
 		{"POSITION",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
@@ -115,11 +115,7 @@ void TitleTextureParticle::ImGuiUpdate()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("title texture particle");
-	ImGui::Image(mArrangementSceneTexture->GetRenderTargetShaderResourceView().Get(), ImVec2(1920 / 5, 1080 / 5));
-	if (ImGui::Checkbox("create", &mSceneDrowFlag))
-	{
-		mMaxParticle = 0;
-	}
+	ImGui::Checkbox("create", &mFullCreateFlag);
 	ImGui::Checkbox("move", &mParticleFlag);
 
 	ImGui::Checkbox("test", &mTestFlag);
@@ -164,22 +160,99 @@ void TitleTextureParticle::LoadTexture(ID3D11Device* device, std::wstring name, 
 		boards.back().scale = VECTOR3F(0, 0, 0);
 	}
 }
-
+/**************************************************/
+//       更新
+/**************************************************/
 void TitleTextureParticle::Update(float elapsdTime, ID3D11DeviceContext* context)
 {
 	context->CSSetUnorderedAccessViews(0, 1, mParticleUAV.GetAddressOf(), nullptr);
 
-	if (mSceneDrowFlag || mTestFlag)
+	//TitleSceneUpdate(elapsdTime, context);
+	SceneChangeUpdate(elapsdTime, context);
+	mMaxParticle = mChangeMaxParticle;
+	if (mMaxParticle <= 0)return;
+	context->CSSetShader(mCSShader.Get(), nullptr, 0);
+	context->CSSetConstantBuffers(1, 1, mCbBuffer.GetAddressOf());
+	CbUpdate cbUpdate;
+	cbUpdate.elapsdTime = elapsdTime;
+	cbUpdate.scale = mEditorData.scale;
+	cbUpdate.speed = mEditorData.speed;
+	context->UpdateSubresource(mCbBuffer.Get(), 0, 0, &cbUpdate, 0, 0);
+	context->CSSetUnorderedAccessViews(2, 1, mRenderUAV.GetAddressOf(), nullptr);
+	context->Dispatch(mMaxParticle / 100, 1, 1);
+	ID3D11ShaderResourceView* srv = nullptr;
+	ID3D11UnorderedAccessView* uav = nullptr;
+	context->CSSetShaderResources(0, 1, &srv);
+	context->CSSetUnorderedAccessViews(0, 1, &uav, nullptr);
+	context->CSSetUnorderedAccessViews(2, 1, &uav, nullptr);
+	context->CSSetShader(nullptr, nullptr, 0);
+
+}
+
+//void TitleTextureParticle::TitleSceneUpdate(float elapsdTime, ID3D11DeviceContext* context)
+//{
+//	if (mParticleFlag|| mFullCreateFlag)return;
+//	context->CSSetConstantBuffers(0, 1, mCbCreateBuffer.GetAddressOf());
+//
+//	context->CSSetShader(mCreateCSShader.Get(), nullptr, 0);
+//	FLOAT4X4 view = pCameraManager->GetCamera()->GetView();
+//	view._41 = view._42 = view._43 = 0.0f;
+//	view._44 = 1.0f;
+//
+//	for (int i = 0; i < mTextures.size(); i++)
+//	{
+//		auto& texture = mTextures.at(i);
+//		auto& board = boards.at(i);
+//		context->CSSetShaderResources(0, 1, texture.mSRV.GetAddressOf());
+//
+//		CbCreate cbCreate;
+//		cbCreate.uvSize = texture.data.mUVSize;
+//		cbCreate.screenSplit = mEditorData.screenSplit;
+//		cbCreate.startIndex = mSceneParticleIndex;
+//		float aspect = texture.data.mUVSize.x / texture.data.mUVSize.y;
+//		DirectX::XMMATRIX W;
+//		{
+//			DirectX::XMMATRIX S, T;
+//			S = DirectX::XMMatrixScaling(board.scale.x * aspect, board.scale.y, 0);
+//			T = DirectX::XMMatrixTranslation(board.position.x, board.position.y, board.position.z);
+//			W = S * T;
+//
+//		}
+//
+//		DirectX::XMStoreFloat4x4(&cbCreate.world, DirectX::XMLoadFloat4x4(&view) * W);
+//		context->UpdateSubresource(mCbCreateBuffer.Get(), 0, 0, &cbCreate, 0, 0);
+//		float drowCount = elapsdTime * (static_cast<float>(mEditorData.mSceneMaxParticle) / 2.f);
+//
+//		mSceneParticleIndex += drowCount;
+//		if (mSceneParticleIndex >= mEditorData.mSceneMaxParticle)
+//		{
+//			drowCount -= mSceneParticleIndex - mEditorData.mSceneMaxParticle;
+//			mSceneParticleIndex = 0;
+//		}
+//		context->Dispatch(drowCount, 1, 1);
+//	}
+//
+//
+//	context->CSSetShader(nullptr, nullptr, 0);
+//
+//}
+//シーンが変わる時のパーティクルの生成
+void TitleTextureParticle::SceneChangeUpdate(float elapsdTime, ID3D11DeviceContext* context)
+{
+
+	if (mFullCreateFlag || mTestFlag)
 	{
-		if (mTestFlag)mMaxParticle = 0;
-		else
-		{
-			mSceneDrowFlag = false;
+		if (mTestFlag)mChangeMaxParticle = 0;
+		else {
+			mFullCreateFlag = false;
 			mParticleFlag = true;
 			mTestFlag = false;
+
 		}
-		context->CSSetShader(mCreateCSShader.Get(), nullptr, 0);
 		context->CSSetConstantBuffers(0, 1, mCbCreateBuffer.GetAddressOf());
+		//context->CSSetShader(mCreateCSShader.Get(), nullptr, 0);
+
+		context->CSSetShader(mSceneChangeCreateCSShader.Get(), nullptr, 0);
 		FLOAT4X4 view = pCameraManager->GetCamera()->GetView();
 		view._41 = view._42 = view._43 = 0.0f;
 		view._44 = 1.0f;
@@ -211,31 +284,21 @@ void TitleTextureParticle::Update(float elapsdTime, ID3D11DeviceContext* context
 
 			context->Dispatch(newParticle, 1, 1);
 		}
-		mMaxParticle += particleCount;
+		mChangeMaxParticle += particleCount;
 	}
-	if (!mParticleFlag && !mTestFlag)return;
-	context->CSSetShader(mCSShader.Get(), nullptr, 0);
-	context->CSSetConstantBuffers(1, 1, mCbBuffer.GetAddressOf());
-	CbUpdate cbUpdate;
-	if (!mTestFlag)cbUpdate.elapsdTime = elapsdTime;
-	else cbUpdate.elapsdTime = 0;
-	cbUpdate.scale = mEditorData.scale;
-	cbUpdate.speed = mEditorData.speed;
-	context->UpdateSubresource(mCbBuffer.Get(), 0, 0, &cbUpdate, 0, 0);
-	context->CSSetUnorderedAccessViews(2, 1, mRenderUAV.GetAddressOf(), nullptr);
-	context->Dispatch(mMaxParticle / 100, 1, 1);
-	ID3D11ShaderResourceView* srv = nullptr;
-	ID3D11UnorderedAccessView* uav = nullptr;
-	context->CSSetShaderResources(0, 1, &srv);
-	context->CSSetUnorderedAccessViews(0, 1, &uav, nullptr);
-	context->CSSetUnorderedAccessViews(2, 1, &uav, nullptr);
-	context->CSSetShader(nullptr, nullptr, 0);
+	else if(!mParticleFlag)
+	{
+		mChangeMaxParticle = 0;
+	}
 
 }
 
+/****************************************************/
+//    描画
+/****************************************************/
 void TitleTextureParticle::Render(ID3D11DeviceContext* context)
 {
-	//if (!mParticleFlag && !mSceneDrowFlag)return;
+	if (!mParticleFlag && !mFullCreateFlag)return;
 	mShader->Activate(context);
 
 	u_int stride = sizeof(RenderParticle);
@@ -250,6 +313,7 @@ void TitleTextureParticle::Render(ID3D11DeviceContext* context)
 	context->PSSetShaderResources(0, 1, &srv);
 
 }
+
 
 void TitleTextureParticle::Load()
 {

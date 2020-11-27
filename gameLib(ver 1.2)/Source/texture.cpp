@@ -7,7 +7,7 @@
 #include <map>
 #include<string>
 
-HRESULT load_texture_from_file(ID3D11Device* device, const wchar_t* file_name, ID3D11ShaderResourceView** shader_resource_view, D3D11_TEXTURE2D_DESC* texture2d_desc)
+HRESULT load_texture_from_file(ID3D11Device* device, const wchar_t* file_name, ID3D11ShaderResourceView** shader_resource_view, D3D11_TEXTURE2D_DESC* texture2d_desc, bool mise)
 {
 	HRESULT hr = S_OK;
 	Microsoft::WRL::ComPtr<ID3D11Resource> resource;
@@ -26,22 +26,18 @@ HRESULT load_texture_from_file(ID3D11Device* device, const wchar_t* file_name, I
 		DirectX::ScratchImage image;
 		std::wstring extension = PathFindExtensionW(file_name);
 		std::transform(extension.begin(), extension.end(), extension.begin(), ::towlower);
-		bool mise = false;
 		if (L".png" == extension || L".jpeg" == extension || L".jpg" == extension || L".jpe" == extension || L".gif" == extension || L".tiff" == extension || L".tif" == extension || L".bmp" == extension)
 		{
-			mise = true;
 			hr = DirectX::LoadFromWICFile(file_name, 0, &metadata, image);
 			_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		}
 		else if (L".dds" == extension)
 		{
-			mise = true;
 			hr = DirectX::LoadFromDDSFile(file_name, 0, &metadata, image);
 			_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		}
 		else if (L".tga" == extension || L".vda" == extension || L".icb" == extension || L".vst" == extension)
 		{
-			mise = true;
 			hr = DirectX::LoadFromTGAFile(file_name, &metadata, image);
 			_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		}

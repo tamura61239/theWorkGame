@@ -6,7 +6,6 @@ struct ParticleRender
 	float3 velocity;
 	float3 scale;
 };
-RWByteAddressBuffer numberBuffer:register(u1);
 RWByteAddressBuffer renderBuffer:register(u2);
 
 void WriteRender(in ParticleRender render, in uint bufferIndex)

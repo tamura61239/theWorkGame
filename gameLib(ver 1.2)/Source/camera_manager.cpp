@@ -24,6 +24,6 @@ void CameraManager::Update(float elapsed_time)
 
 void CameraManager::DestroyCamera()
 {
-	mCameraOperation.reset();
+	mCameraOperation.reset(nullptr);
 	//mCamera.reset();
 }

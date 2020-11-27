@@ -1,13 +1,14 @@
 #include"title_texture_particle.hlsli"
 #include"rand_function.hlsli"
-
 [numthreads(1, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {
+	float num = rand_1_normal(float2(DTid.x % 152, DTid.x % 231), 1) * ((uvSize.x / screenSplit) * (uvSize.y / screenSplit));
+	uint index = (uint)num % ((uvSize.x / screenSplit) * (uvSize.y / screenSplit));
 	//uv座標を求める
 	float2 texcoord;
-	texcoord.x = DTid.x % (uvSize.x / screenSplit);
-	texcoord.y = DTid.x / (uvSize.x / screenSplit);
+	texcoord.x = index % (uvSize.x / screenSplit);
+	texcoord.y = index / (uvSize.x / screenSplit);
 
 	Particle p = (Particle)0;
 	//テクスチャから色を取得
@@ -21,10 +22,10 @@ void main(uint3 DTid : SV_DispatchThreadID)
 	float4 worldPosition = mul(localPosition, world);
 
 	p.position = worldPosition.xyz;
-	p.speed = rand_1_normal(float2(DTid.x % 666, DTid.x % 294), 1) +0.2f;
-	float l = -length(float3(0, 0, 0) - p.position);
-	l = (l + 200)*1.25f;
-	p.speed *= l;
-	particleBuffer[startIndex+DTid.x] = p;
+	p.speed = 40.f;
+	float3 v = normalize(mul((float3)localPosition, (float3x3)world));
+	p.velocity = v;
+	uint bufferIndex = startIndex + DTid.x;
+	particleBuffer[bufferIndex] = p;
 	
 }
