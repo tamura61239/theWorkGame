@@ -8,6 +8,7 @@ class CameraManager:public Singleton<CameraManager>
 public:
 	void Initialize(ID3D11Device*device, const int scene);
 	void Update(float elapsed_time);
+	void ImGuiUpdate();
 	//setter
 	void SetDefaultPerspective(float fov, float aspect, float nearZ, float farZ)
 	{
@@ -21,7 +22,7 @@ public:
 	CameraOperation* GetCameraOperation() { return mCameraOperation.get(); }
 	void DestroyCamera();
 private:
-	std::shared_ptr<Camera>mCamera;
+	std::unique_ptr<Camera>mCamera;
 	std::unique_ptr<CameraOperation>mCameraOperation;
 	float defaultFov = 0;
 	float defaultAspect = 0;

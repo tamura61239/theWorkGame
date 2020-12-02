@@ -3,14 +3,12 @@
 #include<imgui.h>
 #endif
 
-TitleCameraOperation::TitleCameraOperation(std::shared_ptr<Camera> camera)
+TitleCameraOperation::TitleCameraOperation()
 	: mTitleSceneChangeFlag(false), mTime(0), mEndTitleFlag(false), mLerpMovement(0)
 {
-	mCamera = camera;
-	mTitleData.mEye = camera->GetEye();
 }
 
-void TitleCameraOperation::ImGuiUpdate()
+void TitleCameraOperation::ImGuiUpdate(Camera* camera)
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("title camera");
@@ -24,12 +22,6 @@ void TitleCameraOperation::ImGuiUpdate()
 	ImGui::SliderFloat("lerpMax", &mTitleData.mMaxLerp, 0, 1);
 	ImGui::InputFloat("startTime", &mTitleData.startTime, 0.1f);
 	ImGui::SliderFloat("lerp change amount", &mTitleData.mLerpChangeAmount, 0, 1);
-	if (!mTitleSceneChangeFlag)
-	{
-		mCamera.lock()->SetEye(mTitleData.mEye);
-		mCamera.lock()->SetFocus(mTitleData.mEye + mTitleData.mFront);
-		mTime = 0;
-	}
 	if (ImGui::Button("save"))
 	{
 		Save();
@@ -39,14 +31,20 @@ void TitleCameraOperation::ImGuiUpdate()
 #endif
 }
 
-void TitleCameraOperation::Update(float elapsedTime)
+void TitleCameraOperation::Update(Camera* camera, float elapsedTime)
 {
-	if (!mTitleSceneChangeFlag)return;//spaceキーが押されたかどうか
+	if (!mTitleSceneChangeFlag)
+	{
+		camera->SetEye(mTitleData.mEye);
+		camera->SetFocus(mTitleData.mEye + mTitleData.mFront);
+
+		return;//spaceキーが押されたかどうか
+	}
 	mTime += elapsedTime;
 	//押されてから一定時間がたったかどうか
 	if (mTime >= mTitleData.startTime)
 	{
-		VECTOR3F eye = mCamera.lock()->GetEye();
+		VECTOR3F eye = camera->GetEye();
 		DirectX::XMVECTOR eyeVecc = DirectX::XMLoadFloat3(&eye);
 		DirectX::XMVECTOR endPosVecc = DirectX::XMLoadFloat3(&mTitleData.endPosition);
 		float length = 0;
@@ -56,8 +54,8 @@ void TitleCameraOperation::Update(float elapsedTime)
 		//カメラのeye座標からendPosition(最終座標)までの距離を測る
 		DirectX::XMStoreFloat(&length, DirectX::XMVector3Length(DirectX::XMVectorSubtract(eyeVecc, endPosVecc)));
 		DirectX::XMStoreFloat3(&eye, eyeVecc);
-		mCamera.lock()->SetEye(eye);
-		mCamera.lock()->SetFocus(eye + mTitleData.mFront);
+		camera->SetEye(eye);
+		camera->SetFocus(eye + mTitleData.mFront);
 		//距離が一定以下かどうか
 		if (length <= 20)
 		{
@@ -67,7 +65,7 @@ void TitleCameraOperation::Update(float elapsedTime)
 
 }
 
-void TitleCameraOperation::Load()
+void TitleCameraOperation::Load(Camera* camera)
 {
 	FILE* fp;
 	if (fopen_s(&fp, "Data/file/Title_camera.bin", "rb") == 0)
@@ -77,13 +75,11 @@ void TitleCameraOperation::Load()
 	}
 	else
 	{
-		mTitleData.mEye = mCamera.lock()->GetEye();
-		VECTOR3F front = mCamera.lock()->GetFocus() - mTitleData.mEye;
+		mTitleData.mEye = camera->GetEye();
+		VECTOR3F front = camera->GetFocus() - mTitleData.mEye;
 		DirectX::XMStoreFloat3(&mTitleData.mFront, DirectX::XMVector3Normalize(DirectX::XMLoadFloat3(&front)));
 		mTitleData.endPosition = VECTOR3F(0, 0, 100);
 	}
-	mCamera.lock()->SetEye(mTitleData.mEye);
-	mCamera.lock()->SetFocus(mTitleData.mEye + mTitleData.mFront);
 
 }
 

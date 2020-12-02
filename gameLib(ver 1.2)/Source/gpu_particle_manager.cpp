@@ -87,6 +87,12 @@ void GpuParticleManager::CreateGameBuffer(ID3D11Device* device)
 	mStageSceneParticle = std::make_unique<StageSceneParticle>(device);
 }
 
+void GpuParticleManager::CreateResultBuffer(ID3D11Device* device)
+{
+	CreateBuffer(device);
+	mFireworksParticle = std::make_unique<FireworksParticle>(device);
+}
+
 void GpuParticleManager::ClearBuffer()
 {
 	mRunParticle.reset();
@@ -120,6 +126,9 @@ void GpuParticleManager::Update(float elapsd_time)
 		mStageObjParticle->Update(context, elapsd_time);
 		mStageSceneParticle->Update(context, elapsd_time);
 		break;
+	case RESULT:
+		mFireworksParticle->Update(elapsd_time, context);
+		break;
 	}
 }
 
@@ -136,6 +145,9 @@ void GpuParticleManager::ImGuiUpdate()
 		break;
 	case GAME:
 		GameImGui();
+		break;
+	case RESULT:
+		ResultImGui();
 		break;
 	}
 }
@@ -202,6 +214,11 @@ void GpuParticleManager::GameImGui()
 
 }
 
+void GpuParticleManager::ResultImGui()
+{
+	mFireworksParticle->ImGuiUpdate();
+}
+
 void GpuParticleManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, bool drowMullti)
 {
 	context->OMSetDepthStencilState(mDepth.Get(), 0);
@@ -229,7 +246,16 @@ void GpuParticleManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& vi
 		//mStageObjParticle->Render(context);
 		mStageSceneParticle->Render(context);
 		break;
+	case RESULT:
+		mFireworksParticle->Render(context);
+		break;
 	}
+	context->OMSetDepthStencilState(nullptr, 0);
+	context->RSSetState(nullptr);
+	ID3D11Buffer* buffer = nullptr;
+	context->VSSetConstantBuffers(0, 1, &buffer);
+	context->GSSetConstantBuffers(0, 1, &buffer);
+	context->PSSetConstantBuffers(0, 1, &buffer);
 
 	//if (drowMullti)
 	//{

@@ -31,6 +31,7 @@ public:
 	void Render(ID3D11DeviceContext* context, float elapsed_time);
 	~SceneGame();
 private:
+	void Relese();
 	//Now Loading
 	std::unique_ptr<std::thread> loading_thread;
 	std::mutex loading_mutex;
@@ -89,4 +90,5 @@ private:
 	bool screenShot;
 	bool target[6];
 	int textureNo;
+	bool mNowLoading;
 };

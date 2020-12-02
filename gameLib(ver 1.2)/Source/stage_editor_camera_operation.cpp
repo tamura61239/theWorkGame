@@ -6,19 +6,18 @@
 #include<imgui.h>
 #endif
 
-StageEditorCameraOperation::StageEditorCameraOperation(std::shared_ptr<Camera> camera)
+StageEditorCameraOperation::StageEditorCameraOperation(Camera* camera)
 	:mNewPosition(camera->GetFocus()), mMoveFlag(false)
 {
-	mCamera = camera;
 	mData.mAngleX = DirectX::XMConvertToRadians(10);
 	mData.mAngleY = DirectX::XMConvertToRadians(90);
 	mData.r = 100;
 }
 
-void StageEditorCameraOperation::ImGuiUpdate()
+void StageEditorCameraOperation::ImGuiUpdate(Camera* camera)
 {
 #ifdef USE_IMGUI
-	VECTOR3F focus = mCamera.lock()->GetFocus();
+	VECTOR3F focus = camera->GetFocus();
 	ImGui::Begin("stage editor camera");
 	ImGui::SliderFloat("angle y", &mData.mAngleY,-3.14f,3.14f);
 	ImGui::SliderFloat("angle x", &mData.mAngleX, -1.5f, 1.5f);
@@ -27,14 +26,14 @@ void StageEditorCameraOperation::ImGuiUpdate()
 	ImGui::InputFloat("focus y", &focus.y, 1);
 	ImGui::End();
 	if (mMoveFlag)return;
-	mCamera.lock()->SetFocus(focus);
+	camera->SetFocus(focus);
 #endif
 }
 
-void StageEditorCameraOperation::Update(float elapsedTime)
+void StageEditorCameraOperation::Update(Camera* camera,float elapsedTime)
 {
-	VECTOR3F eye = mCamera.lock()->GetEye();
-	VECTOR3F focus = mCamera.lock()->GetFocus();
+	VECTOR3F eye = camera->GetEye();
+	VECTOR3F focus = camera->GetFocus();
 
 
 	if (mMoveFlag)
@@ -88,7 +87,7 @@ void StageEditorCameraOperation::Update(float elapsedTime)
 	DirectX::XMVECTOR up = DirectX::XMVector3Cross(right, front);
 	DirectX::XMStoreFloat3(&vec, front);
 	eye = focus + vec * mData.r;
-	mCamera.lock()->SetEye(eye);
-	mCamera.lock()->SetFocus(focus);
+	camera->SetEye(eye);
+	camera->SetFocus(focus);
 }
 

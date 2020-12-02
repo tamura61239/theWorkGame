@@ -6,10 +6,10 @@
 class CameraOperation
 {
 public:
-	CameraOperation(std::shared_ptr<Camera>camera,int scene);
-	void ImGuiUpdate();
-	void Update(float elapsedTime);
-	void DebugCamera();
+	CameraOperation(Camera*camera,int scene);
+	void ImGuiUpdate(Camera* camera);
+	void Update(Camera* camera, float elapsedTime);
+	void DebugCamera(Camera* camera);
 	TitleCameraOperation* GetTitleCamera() { return mTitleCamera.get(); }
 	PlayCameraOperation* GetPlayCamera() { return mPlayCamera.get(); }
 	StageEditorCameraOperation* GetStageEditorCamera(){ return mStageEditorCamera.get(); }
@@ -29,7 +29,6 @@ private:
 	std::unique_ptr<TitleCameraOperation>mTitleCamera;
 	std::unique_ptr<PlayCameraOperation>mPlayCamera;
 	std::unique_ptr<StageEditorCameraOperation>mStageEditorCamera;
-	std::weak_ptr<Camera>mCamera;
 	CAMERA_TYPE mType;
 	//DebugCamera
 	VECTOR2F oldCursor;

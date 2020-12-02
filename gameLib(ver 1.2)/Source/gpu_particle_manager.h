@@ -7,6 +7,7 @@
 #include"title_texture_particle.h"
 #include"select_scene_particle.h"
 #include"singleton_class.h"
+#include"fireworks_particle.h"
 #include<memory>
 
 class GpuParticleManager:public Singleton<GpuParticleManager>
@@ -14,6 +15,7 @@ class GpuParticleManager:public Singleton<GpuParticleManager>
 public:
 	void CreateTitleBuffer(ID3D11Device* device);
 	void CreateGameBuffer(ID3D11Device* device);
+	void CreateResultBuffer(ID3D11Device* device);
 	void ClearBuffer();
 	//パーティクル生成関数
 	void CreateStageObjParticle(std::vector<std::shared_ptr<StageObj>>objs);
@@ -34,11 +36,13 @@ public:
 		TITLE,
 		SELECT,
 		GAME,
+		RESULT,
 	};
 private:
 	void TitleImGui();
 	void SelectImGui();
 	void GameImGui();
+	void ResultImGui();
 	void CreateBuffer(ID3D11Device* device);
 	std::unique_ptr<StageObjParticle>mStageObjParticle;
 	std::unique_ptr<RunParticles>mRunParticle;
@@ -46,6 +50,7 @@ private:
 	std::unique_ptr<TitleParticle>mTitleParticle;
 	std::unique_ptr<TitleTextureParticle>mTitleTextureParticle;
 	std::unique_ptr<SelectSceneParticle>mSelectSceneParticle;
+	std::unique_ptr<FireworksParticle>mFireworksParticle;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState>mDepth;
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState>mRasterizer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbScene;

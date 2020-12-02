@@ -8,11 +8,14 @@ class Singleton
 public:
 	static void Create()
 	{
-		if(!ref())ref() = std::make_unique<T>();
+		if (!ref())
+		{
+			ref() = std::make_unique<T>();
+		}
 	}
 	static void Destroy()
 	{
-		ref().reset();
+		if(ref())ref().reset();
 	}
 	static const std::unique_ptr<T>& GetInctance()
 	{

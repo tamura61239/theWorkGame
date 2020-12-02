@@ -11,19 +11,24 @@ extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wparam
 
 void CameraManager::Initialize(ID3D11Device* device,const int scene)
 {
-	mCamera = std::make_shared<Camera>(device);
-	mCameraOperation = std::make_unique<CameraOperation>(mCamera,scene);
+	mCamera = std::make_unique<Camera>(device);
+	mCameraOperation = std::make_unique<CameraOperation>(mCamera.get(),scene);
 	mCamera->SetPerspective(defaultFov, defaultAspect, defaultNearZ, defaultFarZ);
 }
 
 void CameraManager::Update(float elapsed_time)
 {
-	mCameraOperation->Update(elapsed_time);
+	mCameraOperation->Update(mCamera.get(),elapsed_time);
 	mCamera->CalculateMatrix();
+}
+
+void CameraManager::ImGuiUpdate()
+{
+	mCameraOperation->ImGuiUpdate(mCamera.get());
 }
 
 void CameraManager::DestroyCamera()
 {
 	mCameraOperation.reset(nullptr);
-	//mCamera.reset();
+	mCamera.reset(nullptr);
 }

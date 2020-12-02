@@ -6,10 +6,10 @@
 class PlayCameraOperation
 {
 public:
-	PlayCameraOperation(std::shared_ptr<Camera>camera);
+	PlayCameraOperation();
 	//更新
 	void ImGuiUpdate();
-	void Update(float elapsedTime);
+	void Update(Camera* camera,float elapsedTime);
 	//ファイル操作
 	void Load();
 	void Save();
@@ -26,7 +26,6 @@ private:
 	};
 	CameraParameter mParameter;
 	CameraParameter mStartParameter;
-	std::weak_ptr<Camera>mCamera;
 	bool mStartProduction;
 	VECTOR3F mPlayerPosition;
 };

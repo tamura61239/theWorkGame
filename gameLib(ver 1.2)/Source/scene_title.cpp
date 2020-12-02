@@ -21,7 +21,7 @@ SceneTitle::SceneTitle(ID3D11Device* device):mEditorFlag(true), mTestMove(false)
 			pCameraManager->Initialize(device,0);
 			pCameraManager->GetCamera()->SetEye(VECTOR3F(0, 0, -200));
 			pCameraManager->GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::TITLE_CAMERA);
-			pCameraManager->GetCameraOperation()->GetTitleCamera()->Load();
+			pCameraManager->GetCameraOperation()->GetTitleCamera()->Load(pCameraManager->GetCamera());
 			bloom = std::make_unique<BloomRender>(device, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
 			//bloom = std::make_unique<BloomRender>(device, 1920, 1080);
 			frameBuffer[0] = std::make_unique<FrameBuffer>(device, SCREEN_WIDTH, SCREEN_HEIGHT, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
@@ -60,8 +60,8 @@ SceneTitle::SceneTitle(ID3D11Device* device):mEditorFlag(true), mTestMove(false)
 
 void SceneTitle::Update(float elapsed_time)
 {
-	mLoading = IsNowLoading();
-	if (mLoading)
+	//mLoading = IsNowLoading();
+	if (IsNowLoading())
 	{
 		return;
 	}
@@ -77,7 +77,7 @@ void SceneTitle::Update(float elapsed_time)
 	{
 		GpuParticleManager::Destroy();
 		UIManager::Destroy();
-
+		pCameraManager->DestroyCamera();
 		pSceneManager.ChangeScene(SCENETYPE::GAME);
 
 		return;
@@ -96,11 +96,11 @@ void SceneTitle::Update(float elapsed_time)
 
 void SceneTitle::Render(ID3D11DeviceContext* context, float elapsed_time)
 {
-	if (mLoading)
+	if (IsNowLoading())
 	{
 		return;
 	}
-	//EndLoading();
+	EndLoading();
 	frameBuffer[0]->Clear(context);
 	frameBuffer[0]->Activate(context);
 	FLOAT4X4 view = pCameraManager->GetCamera()->GetView();
@@ -208,7 +208,7 @@ bool SceneTitle::ImGuiUpdate()
 		pGpuParticleManager->ImGuiUpdate();
 		break;
 	case 3:
-		pCameraManager->GetCameraOperation()->ImGuiUpdate();
+		pCameraManager->ImGuiUpdate();
 		break;
 	case 4:
 		bloom->ImGuiUpdate();

@@ -170,7 +170,8 @@ void SelectSceneParticle::Update(float elapsdTime, ID3D11DeviceContext* context)
 	context->CSSetShader(nullptr, nullptr, 0);
 	ID3D11UnorderedAccessView* uav[3] = { nullptr,nullptr,nullptr };
 	context->CSSetUnorderedAccessViews(0, 3, uav, nullptr);
-
+	ID3D11Buffer* buffers[] = { nullptr,nullptr };
+	context->CSSetConstantBuffers(0, 2, buffers);
 
 }
 

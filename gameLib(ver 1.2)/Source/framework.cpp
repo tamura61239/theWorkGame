@@ -25,7 +25,7 @@ bool Framework::Initialize(HWND hwnd)
 
 
 		DXGI_SWAP_CHAIN_DESC    desc = {};
-		//ZeroMemory(&desc, sizeof(DXGI_SWAP_CHAIN_DESC));
+		ZeroMemory(&desc, sizeof(DXGI_SWAP_CHAIN_DESC));
 		desc.BufferCount = 1;					// バッファの数
 		desc.BufferDesc.Width = SCREEN_WIDTH;	// バッファの横幅
 		desc.BufferDesc.Height = SCREEN_HEIGHT;	// バッファの縦幅

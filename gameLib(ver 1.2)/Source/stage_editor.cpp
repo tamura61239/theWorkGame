@@ -58,7 +58,7 @@ int StageEditor::Update(std::vector<std::shared_ptr<StageObj>>objs)
 			}
 		}
 		//StageEditorの操作中のカメラ
-		pCameraManager->GetCameraOperation()->ImGuiUpdate();
+		pCameraManager->ImGuiUpdate();
 		//ドラッグするオブジェクトの操作
 		if (mDragObjNo != -1)
 		{

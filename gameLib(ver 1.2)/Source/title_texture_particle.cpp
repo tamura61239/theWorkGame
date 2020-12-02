@@ -186,6 +186,8 @@ void TitleTextureParticle::Update(float elapsdTime, ID3D11DeviceContext* context
 	context->CSSetUnorderedAccessViews(0, 1, &uav, nullptr);
 	context->CSSetUnorderedAccessViews(2, 1, &uav, nullptr);
 	context->CSSetShader(nullptr, nullptr, 0);
+	ID3D11Buffer* buffers[] = { nullptr };
+	context->CSSetConstantBuffers(0, 1, buffers);
 
 }
 

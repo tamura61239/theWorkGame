@@ -100,6 +100,9 @@
     <Filter Include="シェーダー\postEffect\ズームブラー">
       <UniqueIdentifier>{a2649372-6ce1-4358-bf60-9d423dfd4b40}</UniqueIdentifier>
     </Filter>
+    <Filter Include="シェーダー\fireworks_particle">
+      <UniqueIdentifier>{178ff16b-fb10-4f9d-8832-ff4677e0d606}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="External_Libraries\imgui\imgui.cpp">
@@ -341,6 +344,9 @@
     </ClCompile>
     <ClCompile Include="Source\hit_area_render.cpp">
       <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\fireworks_particle.cpp">
+      <Filter>ソース ファイル\GPU</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -617,6 +623,12 @@
     <ClInclude Include="Source\singleton_class.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="Source\fireworks_particle.h">
+      <Filter>ヘッダー ファイル\GPU</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Easing.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\board.hlsli">
@@ -711,6 +723,9 @@
     </None>
     <None Include="Source\run_particle_cs_function.hlsli">
       <Filter>シェーダー\run_particle</Filter>
+    </None>
+    <None Include="Source\fireworks_particle.hlsli">
+      <Filter>シェーダー\fireworks_particle</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -920,6 +935,12 @@
     </FxCompile>
     <FxCompile Include="Source\title_texture_scene_change_cs.hlsl">
       <Filter>シェーダー\title_texture_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\fireworks_particle_create_cs.hlsl">
+      <Filter>シェーダー\fireworks_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\fireworks_particle_cs.hlsl">
+      <Filter>シェーダー\fireworks_particle</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

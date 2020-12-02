@@ -5,10 +5,10 @@
 class StageEditorCameraOperation
 {
 public:
-	StageEditorCameraOperation(std::shared_ptr<Camera>camera);
+	StageEditorCameraOperation(Camera* camera);
 	//çXêV
-	void ImGuiUpdate();
-	void Update(float elapsedTime);
+	void ImGuiUpdate(Camera* camera);
+	void Update(Camera* camera,float elapsedTime);
 	//setter
 	void SetNewPosition(const VECTOR3F& position) 
 	{ 
@@ -25,7 +25,6 @@ private:
 		float r;
 	};
 	CameraData mData;
-	std::weak_ptr<Camera>mCamera;
 	VECTOR3F mNewPosition;
 	bool mMoveFlag;
 };

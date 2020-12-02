@@ -352,7 +352,10 @@ void RunParticles::Update(ID3D11DeviceContext* context, float elapsd_time)
 		nullptr
 	};
 	context->CSSetUnorderedAccessViews(0, ARRAYSIZE(uavs), uavs, 0);
-
+	cbBuffer[0] = nullptr;
+	cbBuffer[1] = nullptr;
+	cbBuffer[2] = nullptr;
+	context->CSSetConstantBuffers(0, ARRAYSIZE(cbBuffer), cbBuffer);
 }
 
 void RunParticles::Render(ID3D11DeviceContext* context)

@@ -17,7 +17,7 @@
 #include"screen_size.h"
 
 
-SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(false), testGame(false), hitArea(false), screenShot(false)
+SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(false), testGame(false), hitArea(false), screenShot(false), mNowLoading(true)
 {
 	loading_thread = std::make_unique<std::thread>([&](ID3D11Device* device)
 		{
@@ -45,7 +45,7 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 			mStageOperation = std::make_unique<StageOperation>();
 			pHitAreaDrow.CreateObj(device);
 			pLight.CreateLightBuffer(device);
-			sky = std::make_unique<SkyMap>(device, L"Data/image/mp_totality.dds", MAPTYPE::BOX);
+			//sky = std::make_unique<SkyMap>(device, L"Data/image/mp_totality.dds", MAPTYPE::BOX);
 			{
 				D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
 				{
@@ -102,6 +102,7 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 /***************************************************************/
 void SceneGame::Update(float elapsed_time)
 {
+	//mNowLoading = IsNowLoading();
 	if (IsNowLoading())
 	{
 		return;
@@ -161,10 +162,9 @@ void SceneGame::Update(float elapsed_time)
 		if (fadeOut->GetEndFlag())
 		{
 			fadeOut->Clear();
-			GpuParticleManager::Destroy();
 			UIManager::GetInctance()->ClearUI();
 			Ranking::SetStageNo(mSManager->GrtStageNo());
-			HitAreaRender::Destroy();
+			Relese();
 
 			pSceneManager.ChangeScene(SCENETYPE::RESULT);
 
@@ -219,10 +219,10 @@ bool SceneGame::ImGuiUpdate()
 	switch (pSceneManager.GetSceneEditor()->Editor(&editorFlag, StageManager::GetMaxStageCount()))
 	{
 	case 1:
-		GpuParticleManager::Destroy();
-		HitAreaRender::Destroy();
 		UIManager::Destroy();
+		Relese();
 		pSceneManager.ChangeScene(SCENETYPE::TITLE);
+
 		return true;
 		break;
 	case 2:
@@ -269,10 +269,9 @@ bool SceneGame::ImGuiUpdate()
 		pCameraManager->GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::PLAY);
 		break;
 	case 4:
-		GpuParticleManager::Destroy();
 		UIManager::GetInctance()->ClearUI();
-		HitAreaRender::Destroy();
-
+		Ranking::SetStageNo(mSManager->GrtStageNo());
+		Relese();
 		pSceneManager.ChangeScene(SCENETYPE::RESULT);
 
 		return true;
@@ -397,7 +396,7 @@ bool SceneGame::ImGuiUpdate()
 		pGpuParticleManager->ImGuiUpdate();
 		break;
 	case 6:
-		pCameraManager->GetCameraOperation()->ImGuiUpdate();
+		pCameraManager->ImGuiUpdate();
 		break;
 	case 7:
 		bloom->ImGuiUpdate();
@@ -472,6 +471,7 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 		return;
 	}
 	EndLoading();
+
 	//view projections—ñ‚ÌŽæ“¾
 	FLOAT4X4 view = pCameraManager->GetCamera()->GetView();
 	FLOAT4X4 projection = pCameraManager->GetCamera()->GetProjection();
@@ -558,6 +558,8 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	bloom->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), true);
 	blend[1]->deactivate(context);
 	frameBuffer2->Deactivate(context);
+	blend[0]->activate(context);
+
 	if (player->GetCharacter()->GetGorlFlag())
 	{
 		siro->Render(context, blurShader.get(), frameBuffer2->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
@@ -583,7 +585,6 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	}
 	
 	
-	blend[0]->activate(context);
 	if (editorNo == 3)mSManager->SidoViewRender(context);
 
 	fadeOut->Render(context);
@@ -596,6 +597,14 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 SceneGame::~SceneGame()
 {
 
+
+}
+
+void SceneGame::Relese()
+{
+	pCameraManager->DestroyCamera();
+	HitAreaRender::Destroy();
+	GpuParticleManager::Destroy();
 }
 
 

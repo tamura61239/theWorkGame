@@ -4,9 +4,8 @@
 #include<imgui.h>
 #endif
 
-PlayCameraOperation::PlayCameraOperation(std::shared_ptr<Camera> camera)
+PlayCameraOperation::PlayCameraOperation()
 {
-	mCamera = camera;
 	Load();
 }
 
@@ -27,10 +26,10 @@ void PlayCameraOperation::ImGuiUpdate()
 #endif
 }
 
-void PlayCameraOperation::Update(float elapsedTime)
+void PlayCameraOperation::Update(Camera* camera,float elapsedTime)
 {
-	mCamera.lock()->SetFocus(mPlayerPosition);
-	mCamera.lock()->SetEye(mPlayerPosition+VECTOR3F(sinf(mParameter.angle) * mParameter.length,mParameter.y,cosf(mParameter.angle) * mParameter.length)*gameObjScale);
+	camera->SetFocus(mPlayerPosition);
+	camera->SetEye(mPlayerPosition+VECTOR3F(sinf(mParameter.angle) * mParameter.length,mParameter.y,cosf(mParameter.angle) * mParameter.length)*gameObjScale);
 }
 
 void PlayCameraOperation::Load()

@@ -5,9 +5,8 @@
 #include <imgui.h>
 #endif
 
-CameraOperation::CameraOperation(std::shared_ptr<Camera> camera, int scene) :mType(CAMERA_TYPE::NORMAL), mScene(scene)
+CameraOperation::CameraOperation(Camera* camera, int scene) :mType(CAMERA_TYPE::NORMAL), mScene(scene)
 {
-	mCamera = camera;
 	VECTOR3F focusF = camera->GetFocus();
 	VECTOR3F eyeF = camera->GetEye();
 	VECTOR3F l = focusF - eyeF;
@@ -15,16 +14,16 @@ CameraOperation::CameraOperation(std::shared_ptr<Camera> camera, int scene) :mTy
 	switch (mScene)
 	{
 	case 0:
-		mTitleCamera = std::make_unique<TitleCameraOperation>(camera);
+		mTitleCamera = std::make_unique<TitleCameraOperation>();
 		break;
 	case 1:
-		mPlayCamera = std::make_unique<PlayCameraOperation>(camera);
+		mPlayCamera = std::make_unique<PlayCameraOperation>();
 		mStageEditorCamera = std::make_unique<StageEditorCameraOperation>(camera);
 		break;
 	}
 }
 //エディタ関数
-void CameraOperation::ImGuiUpdate()
+void CameraOperation::ImGuiUpdate(Camera* camera)
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("camera");
@@ -45,14 +44,14 @@ void CameraOperation::ImGuiUpdate()
 	{
 		if (mType == CAMERA_TYPE::DEBUG)
 		{
-			mCamera.lock()->SetUp(VECTOR3F(0, 1, 0));
+			camera->SetUp(VECTOR3F(0, 1, 0));
 		}
 	}
 	mType = static_cast<CAMERA_TYPE>(type);
 	ImGui::Separator();
-	VECTOR3F eye = mCamera.lock()->GetEye();
-	VECTOR3F focus = mCamera.lock()->GetFocus();
-	VECTOR3F up = mCamera.lock()->GetUp();
+	VECTOR3F eye = camera->GetEye();
+	VECTOR3F focus = camera->GetFocus();
+	VECTOR3F up = camera->GetUp();
 	ImGui::Text("[eye] x:%f y:%f z:%f", eye.x, eye.y, eye.z);
 	ImGui::Text("[focus] x:%f y:%f z:%f", focus.x, focus.y, focus.z);
 	ImGui::Text("[up] x:%f y:%f z:%f", up.x, up.y, up.z);
@@ -64,13 +63,13 @@ void CameraOperation::ImGuiUpdate()
 	case CAMERA_TYPE::DEBUG:
 		break;
 	case CAMERA_TYPE::TITLE_CAMERA:
-		mTitleCamera->ImGuiUpdate();
+		mTitleCamera->ImGuiUpdate(camera);
 		break;
 	case CAMERA_TYPE::PLAY:
 		mPlayCamera->ImGuiUpdate();
 		break;
 	case CAMERA_TYPE::STAGE_EDITOR:
-		mStageEditorCamera->ImGuiUpdate();
+		mStageEditorCamera->ImGuiUpdate(camera);
 		break;
 	}
 	ImGui::End();
@@ -78,32 +77,32 @@ void CameraOperation::ImGuiUpdate()
 
 }
 
-void CameraOperation::Update(float elapsedTime)
+void CameraOperation::Update(Camera* camera,float elapsedTime)
 {
 
 	switch (mType)
 	{
 	case CAMERA_TYPE::DEBUG:
-		DebugCamera();
+		DebugCamera(camera);
 		break;
 	case CAMERA_TYPE::TITLE_CAMERA:
-		mTitleCamera->Update(elapsedTime);
+		mTitleCamera->Update(camera,elapsedTime);
 		break;
 	case CAMERA_TYPE::PLAY:
-		mPlayCamera->Update(elapsedTime);
+		mPlayCamera->Update(camera,elapsedTime);
 		break;
 	case CAMERA_TYPE::STAGE_EDITOR:
-		mStageEditorCamera->Update(elapsedTime);
+		mStageEditorCamera->Update(camera,elapsedTime);
 		break;
 	}
 }
 //デバックカメラ
-void CameraOperation::DebugCamera()
+void CameraOperation::DebugCamera(Camera* camera)
 {
-	VECTOR3F focusF = mCamera.lock()->GetFocus();
-	VECTOR3F upF = mCamera.lock()->GetUp();
-	VECTOR3F rightF = mCamera.lock()->GetRight();
-	VECTOR3F eyeF = mCamera.lock()->GetEye();
+	VECTOR3F focusF = camera->GetFocus();
+	VECTOR3F upF = camera->GetUp();
+	VECTOR3F rightF = camera->GetRight();
+	VECTOR3F eyeF = camera->GetEye();
 	POINT cursor;
 	::GetCursorPos(&cursor);
 
@@ -175,8 +174,8 @@ void CameraOperation::DebugCamera()
 		DirectX::XMVECTOR eye = DirectX::XMVectorSubtract(focus, DirectX::XMVectorMultiply(front, distance));
 		DirectX::XMStoreFloat3(&eyeF, eye);
 		DirectX::XMStoreFloat3(&upF, up);
-		mCamera.lock()->SetEye(eyeF);
-		mCamera.lock()->SetFocus(focusF);
-		mCamera.lock()->SetUp(upF);
+		camera->SetEye(eyeF);
+		camera->SetFocus(focusF);
+		camera->SetUp(upF);
 	}
 }

@@ -6,12 +6,12 @@
 class TitleCameraOperation
 {
 public:
-	TitleCameraOperation(std::shared_ptr<Camera>camera);
+	TitleCameraOperation();
 	//更新
-	void ImGuiUpdate();
-	void Update(float elapsedTime);
+	void ImGuiUpdate(Camera* camera);
+	void Update(Camera*camera,float elapsedTime);
 	//ファイル操作
-	void Load();
+	void Load(Camera* camera);
 	void Save();
 	//setter
 	void SetEndPosition(const VECTOR3F& end) { mTitleData.endPosition = end; }
@@ -22,7 +22,6 @@ public:
 	const bool GetMoveFlag() { return mTime >= mTitleData.startTime ? true : false; }
 
 private:
-	std::weak_ptr<Camera>mCamera;
 	struct TitleCameraData
 	{
 		VECTOR3F mEye;
