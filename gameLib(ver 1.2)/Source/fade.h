@@ -76,4 +76,5 @@ private:
 	int mEditorScene;
 	FadeScene mFadeDatas[static_cast<int>(FADE_SCENE::MAX)];
 	std::unique_ptr<Sprite>mSprite;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>mSRV;
 };

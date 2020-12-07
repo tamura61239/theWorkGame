@@ -221,9 +221,10 @@ void Ranking::RankingTimeSort()
 	time[5] = nowPlayTime;
 	std::string fileName = "Data/file/ranking" + std::to_string(mStageNo) + ".txt";
 	FILE* fp;
-	if (fopen_s(&fp, fileName.c_str(), "rt") == 0)
+	if (fopen_s(&fp, fileName.c_str(), "rb") == 0)
 	{
-		fread(&time[0], sizeof(int), 5, fp);
+		fscanf_s(fp, "%d,%d,%d,%d,%d", &time[0], &time[1], &time[2], &time[3], &time[4]);
+		//fread(&time[0], sizeof(int), 5, fp);
 		fclose(fp);
 	}
 	QuickSort(time, 0, 5);
@@ -247,8 +248,9 @@ void Ranking::RankingTimeSort()
 		text->SetTime(static_cast<float>(time[i])*0.01f);
 		count++;
 	}
-	fopen_s(&fp, fileName.c_str(), "wt");
-	fwrite(&time[0], sizeof(int), 5, fp);
+	fopen_s(&fp, fileName.c_str(), "wb");
+	//fwrite(&time[0], sizeof(int), 5, fp);
+	fprintf_s(fp, "%d,%d,%d,%d,%d", time[0], time[1], time[2], time[3], time[4]);
 	fclose(fp);
 
 }

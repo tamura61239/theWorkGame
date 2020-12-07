@@ -39,7 +39,8 @@ mPlayFlag(true), nowLoading(true)
 			mRanking = std::make_unique<Ranking>(device, mNowGameTime);
 			mFade = std::make_unique<Fade>(device, Fade::FADE_SCENE::RESULT);
 			frameBuffer = std::make_unique<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
-			mRenderScene = std::make_unique<Sprite>(device);
+			frameBuffer2 = std::make_unique<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
+			mRenderScene = std::make_unique<Sprite>(device,L"Data/image/siro.png");
 			mBloom = std::make_unique<BloomRender>(device, 1920, 1080, 3);
 			//sky = std::make_unique<SkyMap>(device, L"Data/AllSkyFree/Cold Night/ColdNight.dds", MAPTYPE::BOX);
 			//sky = std::make_unique<SkyMap>(device, L"Data/image/mp_totality.dds", MAPTYPE::BOX);
@@ -147,9 +148,9 @@ void SceneResult::Render(ID3D11DeviceContext* context, float elapsed_time)
 	pGpuParticleManager->Render(context, view, projection);
 
 #endif
+	UIManager::GetInctance()->Render(context);
 
 	mRanking->Render(context);
-	UIManager::GetInctance()->Render(context);
 
 	mBlend[0]->deactivate(context);
 

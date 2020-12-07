@@ -57,6 +57,7 @@ private:
 	std::unique_ptr<Sprite>test;
 	std::unique_ptr<Sprite>nowLoading;
 	std::unique_ptr<Sprite>siro;
+	std::unique_ptr<Sprite>pushKey;
 	std::unique_ptr<StaticMesh>mesh;
 	std::vector<std::unique_ptr<StaticMesh>>meshs;
 	std::vector<std::unique_ptr<StaticObj>>staticObjs;
@@ -89,4 +90,5 @@ private:
 	bool target[6];
 	int textureNo;
 	bool mNowLoading;
+	bool mLoadEnd;
 };

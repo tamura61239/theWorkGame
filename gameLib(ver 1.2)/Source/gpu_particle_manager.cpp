@@ -22,6 +22,7 @@ void GpuParticleManager::CreateBuffer(ID3D11Device* device)
 	//ラスタライザーステート
 	{
 		D3D11_RASTERIZER_DESC desc = {};
+		ZeroMemory(&desc, sizeof(D3D11_RASTERIZER_DESC));
 		desc.FillMode = D3D11_FILL_SOLID; //D3D11_FILL_WIREFRAME, D3D11_FILL_SOLID
 		desc.CullMode = D3D11_CULL_NONE; //D3D11_CULL_NONE, D3D11_CULL_FRONT, D3D11_CULL_BACK   
 		desc.FrontCounterClockwise = FALSE;
@@ -30,7 +31,7 @@ void GpuParticleManager::CreateBuffer(ID3D11Device* device)
 		desc.SlopeScaledDepthBias = 0;
 		desc.DepthClipEnable = true;
 		desc.ScissorEnable = FALSE;
-		desc.MultisampleEnable = false;
+		desc.MultisampleEnable = true;
 		desc.AntialiasedLineEnable = FALSE;
 		hr = device->CreateRasterizerState(&desc, mRasterizer.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
@@ -39,9 +40,10 @@ void GpuParticleManager::CreateBuffer(ID3D11Device* device)
 	//深度ステンシル
 	{
 		D3D11_DEPTH_STENCIL_DESC desc = {};
+		ZeroMemory(&desc, sizeof(desc));
 		desc.DepthEnable = TRUE;
 		desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-		desc.DepthFunc = D3D11_COMPARISON_LESS;
+		desc.DepthFunc = D3D11_COMPARISON_NOT_EQUAL;
 		desc.StencilEnable = FALSE;
 		desc.StencilReadMask = 0xFF;
 		desc.StencilWriteMask = 0xFF;
@@ -253,12 +255,12 @@ void GpuParticleManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& vi
 #endif
 		break;
 	}
-	context->OMSetDepthStencilState(nullptr, 0);
-	context->RSSetState(nullptr);
-	ID3D11Buffer* buffer = nullptr;
-	context->VSSetConstantBuffers(0, 1, &buffer);
-	context->GSSetConstantBuffers(0, 1, &buffer);
-	context->PSSetConstantBuffers(0, 1, &buffer);
+	//context->OMSetDepthStencilState(nullptr, 0);
+	//context->RSSetState(nullptr);
+	//ID3D11Buffer* buffer = nullptr;
+	//context->VSSetConstantBuffers(0, 1, &buffer);
+	//context->GSSetConstantBuffers(0, 1, &buffer);
+	//context->PSSetConstantBuffers(0, 1, &buffer);
 
 	//if (drowMullti)
 	//{

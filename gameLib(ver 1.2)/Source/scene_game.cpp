@@ -17,7 +17,7 @@
 #include"screen_size.h"
 
 
-SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(false), testGame(false), hitArea(false), screenShot(false), mNowLoading(true)
+SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(false), testGame(false), hitArea(false), screenShot(false), mNowLoading(true), mLoadEnd(false)
 {
 	loading_thread = std::make_unique<std::thread>([&](ID3D11Device* device)
 		{
@@ -87,9 +87,10 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 			UIManager::Create();
 			UIManager::GetInctance()->GameInitialize(device);
 		}, device);
-	test = std::make_unique<Sprite>(device, L"Data/image/ゲームテスト.png");
+	test = std::make_unique<Sprite>(device, L"Data/image/操作説明.png");
 	nowLoading = std::make_unique<Sprite>(device, L"Data/image/now.png");
 	siro = std::make_unique<Sprite>(device, L"Data/image/siro.png");
+	pushKey = std::make_unique<Sprite>(device, L"Data/image/push key.png");
 	blend[0] = std::make_unique<blend_state>(device, BLEND_MODE::ALPHA);
 	blend[1] = std::make_unique<blend_state>(device, BLEND_MODE::ADD);
 	blend[2] = std::make_unique<blend_state>(device, BLEND_MODE::NONE);
@@ -102,10 +103,14 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 /***************************************************************/
 void SceneGame::Update(float elapsed_time)
 {
-	mNowLoading = IsNowLoading();
 	if (mNowLoading)
 	{
-		return;
+
+		if (!IsNowLoading() && pKeyBoad.RisingState(KeyLabel::SPACE))
+		{
+			mLoadEnd = true;
+		}
+			return;
 	}
 	EndLoading();
 	/********************Editor************************/
@@ -442,6 +447,7 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 
 	if (mNowLoading)
 	{
+		if (mLoadEnd)mNowLoading = false;
 		static float loadTimer = 0;
 
 		VECTOR4F color;
@@ -464,7 +470,9 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 		}
 		loadTimer += elapsed_time;
 		blend[0]->activate(context);
-		nowLoading->Render(context, VECTOR2F(1300, 900), VECTOR2F(600, 100), VECTOR2F(0, 0), VECTOR2F(600, 100), 0, color);
+		test->Render(context, VECTOR2F(0, 0), VECTOR2F(viewport.Width, viewport.Height), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+		if (IsNowLoading())nowLoading->Render(context, VECTOR2F(1300, 900), VECTOR2F(600, 100), VECTOR2F(0, 0), VECTOR2F(600, 100), 0, color);
+		else pushKey->Render(context, VECTOR2F(1300, 900), VECTOR2F(575, 90), VECTOR2F(0, 0), VECTOR2F(230, 36), 0, color);
 		blend[0]->deactivate(context);
 
 		return;

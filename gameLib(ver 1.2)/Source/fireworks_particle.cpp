@@ -365,6 +365,8 @@ void FireworksParticle::Update(float elapsdTime, ID3D11DeviceContext* context)
 	context->CSSetUnorderedAccessViews(0, 1, &uav, nullptr);
 
 	context->CSSetShader(nullptr, nullptr, 0);
+	ID3D11Buffer* buffer[] = { nullptr,nullptr };
+	context->CSSetConstantBuffers(0, 2, buffer);
 
 }
 /*******************************•`‰æ*********************************/

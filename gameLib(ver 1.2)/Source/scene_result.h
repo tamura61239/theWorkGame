@@ -51,6 +51,7 @@ private:
 	bool nowLoading;
 	std::vector<std::unique_ptr<blend_state>>mBlend;
 	std::unique_ptr<FrameBuffer>frameBuffer;
+	std::unique_ptr<FrameBuffer>frameBuffer2;
 	std::unique_ptr<BloomRender>mBloom;
 	std::unique_ptr<Sprite>mRenderScene;
 	std::unique_ptr<Ranking>mRanking;

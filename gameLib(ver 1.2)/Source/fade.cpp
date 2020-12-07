@@ -1,5 +1,6 @@
 #include "fade.h"
 #include<string>
+#include"texture.h"
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
@@ -33,6 +34,7 @@ Fade::Fade(ID3D11Device* device, FADE_SCENE scene)
 	StartLoad();
 	mNowFadeData = mFadeDatas[mEditorScene];
 	mSprite = std::make_unique<Sprite>(device, L"Data/image/siro.png");
+	load_texture_from_file(device, L"Data/image/siro.png", mSRV.GetAddressOf());
 }
 
 void Fade::SetFadeScene(FADE_SCENE scene)
@@ -114,11 +116,11 @@ void Fade::Render(ID3D11DeviceContext* context)
 	context->RSGetViewports(&num_viewports, &viewport);
 	if (mTestFlag)
 	{
-		mSprite->Render(context, VECTOR2F(0, 0), VECTOR2F(viewport.Width, viewport.Height), VECTOR2F(0, 0), VECTOR2F(1024, 1024), 0, mCheckFadeData.mData.mColor);
+		mSprite->Render(context, mSRV.Get(), VECTOR2F(0, 0), VECTOR2F(1920,1080), VECTOR2F(0, 0), VECTOR2F(1024, 1024), 0, mCheckFadeData.mData.mColor);
 	}
 	else if(mState!=FADE_MODO::NONE)
 	{
-		mSprite->Render(context, VECTOR2F(0, 0), VECTOR2F(viewport.Width, viewport.Height), VECTOR2F(0, 0), VECTOR2F(1024, 1024), 0, mNowFadeData.mData.mColor);
+		mSprite->Render(context, mSRV.Get(),VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1024, 1024), 0, mNowFadeData.mData.mColor);
 	}
 }
 
