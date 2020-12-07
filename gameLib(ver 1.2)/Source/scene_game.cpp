@@ -102,8 +102,8 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 /***************************************************************/
 void SceneGame::Update(float elapsed_time)
 {
-	//mNowLoading = IsNowLoading();
-	if (IsNowLoading())
+	mNowLoading = IsNowLoading();
+	if (mNowLoading)
 	{
 		return;
 	}
@@ -201,7 +201,6 @@ void SceneGame::Update(float elapsed_time)
 	mStageOperation->Update(elapsed_time, mSManager.get(), player->GetPlayFlag());
 
 	sky->GetPosData()->CalculateTransform();
-	pGpuParticleManager->GetStageObjParticle()->SetParticleData(mStageOperation->GetColorType());
 	player->Update(elapsed_time, mSManager.get(), mStageOperation.get());
 
 
@@ -441,7 +440,7 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	UINT num_viewports = 1;
 	context->RSGetViewports(&num_viewports, &viewport);
 
-	if (IsNowLoading())
+	if (mNowLoading)
 	{
 		static float loadTimer = 0;
 
@@ -470,7 +469,6 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 
 		return;
 	}
-	EndLoading();
 
 	//view projections—ñ‚ÌŽæ“¾
 	FLOAT4X4 view = pCameraManager->GetCamera()->GetView();

@@ -35,6 +35,7 @@ public:
 	void ImGuiUpdate();
 	//setter
 	static void SetStageNo(const int stageNo) { mStageNo = stageNo; }
+	static int GetStageNo() { return mStageNo; }
 private:
 	void ScereMove(float elapsdTime);
 	void RankingMove(float elapsdTime);

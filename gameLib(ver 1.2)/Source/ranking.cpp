@@ -1,5 +1,9 @@
 #include "ranking.h"
 #include"ui_manager.h"
+#include"gpu_particle_manager.h"
+#include <cassert>
+#include <algorithm>
+#include <functional>
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
@@ -109,7 +113,7 @@ void Ranking::RankingMove(float elapsdTime)
 			VECTOR2F start = leftTop + VECTOR2F(mRankingData.mStartX, 0);
 			VECTOR2F end = leftTop + VECTOR2F(mRankingData.mLeftTop.x, 0);
 			float time = mTimer - (mRankingData.mStartTime * i + 1.f);
-			time = min(time / mRankingData.mMoveTime, 1.f);
+			time = std::min(time / mRankingData.mMoveTime, 1.f);
 			DirectX::XMStoreFloat2(&leftTop, DirectX::XMVectorLerp(DirectX::XMLoadFloat2(&start), DirectX::XMLoadFloat2(&end), time));
 			text->SetLeftTop(leftTop);
 			if (mRankingTexts.size() * mRankingData.mStartTime + 1.f + mRankingData.mMoveTime <= mTimer)
@@ -117,6 +121,7 @@ void Ranking::RankingMove(float elapsdTime)
 				mState++;
 				mTimer = 0;
 				mNewPlayMove = 0;
+				pGpuParticleManager->GetFireworksParticle()->CreateEmitor(mNowPlayRank);
 			}
 		}
 
@@ -127,7 +132,7 @@ void Ranking::NewRankingMove(float elapsdTime)
 {
 	if (mNewPlayMove == 0)
 	{
-		float time = min(mTimer / mRankingData.mMoveTime, 1.f);
+		float time = std::min(mTimer / mRankingData.mMoveTime, 1.f);
 		if (mNowPlayRank < 5)
 		{
 			for (int i = mNowPlayRank; i < 5; i++)
@@ -152,7 +157,7 @@ void Ranking::NewRankingMove(float elapsdTime)
 	}
 	else
 	{
-		float time = min((mTimer- mRankingData.mMoveTime) / mRankingData.mMoveTime, 1.f);
+		float time = std::min((mTimer- mRankingData.mMoveTime) / mRankingData.mMoveTime, 1.f);
 
 		VECTOR2F leftTop = VECTOR2F(0, 0),
 			start = VECTOR2F(mRankingData.mStartX, mRankingData.mLeftTop.y + mRankingData.mIntervalY * mNowPlayRank),

@@ -9,6 +9,8 @@
 #include"ranking.h"
 #include"fade.h"
 #include"sky_map.h"
+#include"stage_manager.h"
+
 
 class SceneResult :public Scene
 {
@@ -54,5 +56,5 @@ private:
 	std::unique_ptr<Ranking>mRanking;
 	std::unique_ptr<Fade>mFade;
 	std::unique_ptr<SkyMap>sky;
-
+	std::unique_ptr<StageManager>mSManager;
 };

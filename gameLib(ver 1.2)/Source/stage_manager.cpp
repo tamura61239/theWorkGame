@@ -77,7 +77,6 @@ void StageManager::Load()
 			}
 		}
 		fclose(fp);
-		pGpuParticleManager->CreateStageObjParticle(mStageObjs);
 	}
 }
 //ÉZÅ[Éu

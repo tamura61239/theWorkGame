@@ -4,7 +4,7 @@
 #include"vector.h"
 #include<vector>
 
-
+#define RESULT_TYPE 0
 class FireworksParticle
 {
 public:
@@ -12,7 +12,29 @@ public:
 	void ImGuiUpdate();
 	void Update(float elapsdTime, ID3D11DeviceContext* context);
 	void Render(ID3D11DeviceContext* context);
+	void CreateEmitor(const int ranking)
+	{
+		mCreateFlag = true;
+		mEmitorTimer = 0;
+		mEmitors.resize(mStartEmitorData.size());
+		mCreateCount.resize(mStartEmitorData.size());
+		memset(&mCreateCount[0], 0, sizeof(int) * mCreateCount.size());
+		mIndex = 0;
+		mState = 0;
+		mNowPlayRanking = ranking;
+		SetStartList((5 - mNowPlayRanking) * mOneRankEmitorCount+ mOneRankEmitorCount/2);
+	}
+	void ClearEmitor()
+	{
+		mCreateFlag = false;
+		mEmitorTimer = 0;
+		mEmitors.clear();
+		mCreateCount.clear();
+		mIndex = 0;
+		mState = 0;
+	}
 private:
+	/****************************変数*******************************/
 	//シェーダー
 	std::unique_ptr<DrowShader>mShader;
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSCreate1Shader;
@@ -30,19 +52,22 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mParticleUAV;
 	struct EmitorData
 	{
+		EmitorData() :position(0, 0, 0), velocity(0, 0, 0), type(0), maxLife(0), speed(0), emitorStartTime(0) {}
+
 		VECTOR3F position;
 		VECTOR3F velocity;
-		float maxTime;
+		float maxLife;
 		float speed;
+		float emitorStartTime;
+		int type;
 	};
 	struct Emitor
 	{
-		Emitor() :position(0, 0, 0), velocity(0, 0, 0),type(0),timer(0),maxTime(0) {}
+		Emitor() :position(0, 0, 0), velocity(0, 0, 0), type(-1), life(0) {}
 		VECTOR3F position;
 		VECTOR3F velocity;
 		int type;
-		float timer;
-		float maxTime;
+		float life;
 	};
 	struct Particle
 	{
@@ -92,15 +117,43 @@ private:
 	struct CbCreate
 	{
 		CreateData createData[30];
+		int startIndex;
+		VECTOR3F dummy2;
+
 	};
 	struct CbUpdate
 	{
 		float elapsdime;
 		VECTOR3F dummy;
 	};
-	std::vector<Emitor>mEmitors;
-	EmitorData mEmitorData;
-	FireworksData mFireworkData;
-	bool createFlag;
+	/************editorParameter*************/
+	std::vector<EmitorData>mEmitorData;
+	std::vector<EmitorData>mStartEmitorData;
+	std::vector<FireworksData>mFireworkDatas;
+	float mMaxEmitorTime;
+	float mStartMaxTime;
+	int mOneRankEmitorCount;
+	//セーブしない変数
+	bool mParameterEditFlag;
+	bool mCreateFlag;
+	int mDefRanking;
+	int mDefStartState;
+
+	//updataParameter
 	int mMaxParticle;
+	float mEmitorTimer;
+	int mIndex;
+	int mNowPlayRanking;
+	int mState;
+	int mFireworksCount;
+	std::vector<Emitor>mEmitors;
+	std::vector<int>mCreateCount;
+	std::vector<int>mStartCreateNumberList;
+	/****************************関数********************************/
+	void Load();
+	void Save();
+	void StartFireworksEmitorUpdate(float elapsdTime, CbCreate* smokeConstant, CbCreate* fireworksConstant, int& emitorCount, int& fireworksCount);
+	void LoopFireworksEmitorUpdate(float elapsdTime, CbCreate* smokeConstant, CbCreate* fireworksConstant, int& emitorCount, int& fireworksCount);
+	void SetStartList(const int size);
+
 };

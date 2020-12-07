@@ -14,7 +14,6 @@
 #include"stage_manager.h"
 #include"stage_operation.h"
 #include"blend_state.h"
-#include"stage_obj_particle.h"
 #include"sky_map.h"
 #include"drow_shader.h"
 #include"motionblur.h"
@@ -75,7 +74,6 @@ private:
 	std::unique_ptr<StageManager>mSManager;
 	std::unique_ptr<StageOperation>mStageOperation;
 	std::unique_ptr<blend_state> blend[3];
-	std::unique_ptr<StageObjParticle>run;
 	std::unique_ptr<SkyMap>sky;
 	std::unique_ptr<DrowShader>blurShader;
 	std::unique_ptr<DepthOfField>depthOfField;

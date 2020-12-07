@@ -35,10 +35,12 @@ struct CreateData
 cbuffer CbCreate:register(b0)
 {
 	CreateData createData[30];
+    int startIndex;
+    float3 dummy2;
 };
 cbuffer CbUpdate:register(b1)
 {
 	float elapsdTime;
-	float3 dummy;
+	float3 dummy3;
 };
 RWStructuredBuffer< Particle>particleBuffer:register(u0);

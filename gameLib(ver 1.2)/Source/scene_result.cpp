@@ -1,9 +1,10 @@
 #include "scene_result.h"
 #include"ui_manager.h"
 #include"scene_manager.h"
-#include"stage_manager.h"
 #include"camera_manager.h"
 #include"gpu_particle_manager.h"
+#include"stage_operation.h"
+#include"light.h"
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
@@ -40,7 +41,10 @@ mPlayFlag(true), nowLoading(true)
 			frameBuffer = std::make_unique<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
 			mRenderScene = std::make_unique<Sprite>(device);
 			mBloom = std::make_unique<BloomRender>(device, 1920, 1080, 3);
-			sky = std::make_unique<SkyMap>(device, L"Data/AllSkyFree/Epic_BlueSunset/Epic_BlueSunset.dds", MAPTYPE::BOX);
+			//sky = std::make_unique<SkyMap>(device, L"Data/AllSkyFree/Cold Night/ColdNight.dds", MAPTYPE::BOX);
+			//sky = std::make_unique<SkyMap>(device, L"Data/image/mp_totality.dds", MAPTYPE::BOX);
+#if (RESULT_TYPE==0)
+			sky = std::make_unique<SkyMap>(device, L"Data/AllSkyFree/Cold Night/ColdNight.dds", MAPTYPE::BOX);
 			{
 				FILE* fp;
 				if (fopen_s(&fp, "Data/file/result_sky_map.bin", "rb") == 0)
@@ -49,7 +53,26 @@ mPlayFlag(true), nowLoading(true)
 					fclose(fp);
 				}
 			}
+#else
+			sky = std::make_unique<SkyMap>(device, L"Data/image/sor_sea.dds", MAPTYPE::BOX);
+			{
+				FILE* fp;
+				if (fopen_s(&fp, "Data/file/game_sky_map.bin", "rb") == 0)
+				{
+					fread(sky->GetPosData(), sizeof(Obj3D), 1, fp);
+					fclose(fp);
+				}
+			}
+			mSManager = std::make_unique<StageManager>(device, 1902, 1080);
+			mSManager->SetStageNo(Ranking::GetStageNo());
+			mSManager->Load();
+			mRenderScene->Load(device, L"Data/image/siro.png");
+			std::unique_ptr<StageOperation>stageOperation;
+			stageOperation = std::make_unique<StageOperation>();
+			stageOperation->Update(0, mSManager.get(), false);
+			pLight.CreateLightBuffer(device);
 
+#endif
 		}, device);
 
 }
@@ -64,6 +87,7 @@ void SceneResult::Update(float elapsed_time)
 	EndLoading();
 	if (ImGuiUpdate())return;
 	mFade->Update(elapsed_time);
+	//ƒV[ƒ“Ø‚è‘Ö‚¦
 	if (mFade->GetFadeScene() == Fade::FADE_MODO::FADEOUT)
 	{
 		if (mFade->GetEndFlag())
@@ -72,6 +96,7 @@ void SceneResult::Update(float elapsed_time)
 			mFade->Clear();
 			UIManager::Destroy();
 			pCameraManager->DestroyCamera();
+			GpuParticleManager::Destroy();
 			switch (type)
 			{
 			case 0:
@@ -88,6 +113,10 @@ void SceneResult::Update(float elapsed_time)
 	mRanking->Update(elapsed_time, mPlayFlag);
 	UIManager::GetInctance()->Update(elapsed_time);
 	pCameraManager->Update(elapsed_time);
+#if (RESULT_TYPE==1)
+
+	mSManager->Update(elapsed_time);
+#endif
 	pGpuParticleManager->Update(elapsed_time);
 	if (UIManager::GetInctance()->GetResultUIMove()->GetDecisionFlag())
 	{
@@ -101,6 +130,7 @@ void SceneResult::Render(ID3D11DeviceContext* context, float elapsed_time)
 	{
 		return;
 	}
+	pLight.ConstanceLightBufferSetShader(context);
 	frameBuffer->Clear(context);
 	frameBuffer->Activate(context);
 	mBlend[0]->activate(context);
@@ -108,7 +138,15 @@ void SceneResult::Render(ID3D11DeviceContext* context, float elapsed_time)
 	FLOAT4X4 projection = pCameraManager->GetCamera()->GetProjection();
 
 	sky->Render(context, view, projection);
+	//mRenderScene->Render(context, VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0, VECTOR4F(0.6f, 0.6f, 0.6f, 1));
+#if (RESULT_TYPE==1)
+
+	mSManager->Render(context, view, projection, 0);
 	pGpuParticleManager->Render(context, view, projection);
+#else
+	pGpuParticleManager->Render(context, view, projection);
+
+#endif
 
 	mRanking->Render(context);
 	UIManager::GetInctance()->Render(context);
@@ -126,7 +164,6 @@ void SceneResult::Render(ID3D11DeviceContext* context, float elapsed_time)
 
 SceneResult::~SceneResult()
 {
-	
 }
 
 bool SceneResult::ImGuiUpdate()
@@ -138,6 +175,8 @@ bool SceneResult::ImGuiUpdate()
 		UIManager::GetInctance()->Clear();
 		UIManager::Destroy();
 		pCameraManager->DestroyCamera();
+		GpuParticleManager::Destroy();
+
 		pSceneManager.ChangeScene(SCENETYPE::TITLE);
 		return true;
 		break;
@@ -146,6 +185,8 @@ bool SceneResult::ImGuiUpdate()
 		UIManager::GetInctance()->Clear();
 		UIManager::Destroy();
 		pCameraManager->DestroyCamera();
+		GpuParticleManager::Destroy();
+
 		pSceneManager.ChangeScene(SCENETYPE::GAME);
 		return true;
 		break;
@@ -190,6 +231,8 @@ bool SceneResult::ImGuiUpdate()
 		ImGui::DragFloat3("position", *position, 10);
 		float* scale[3] = { &sky->GetPosData()->GetScale().x,&sky->GetPosData()->GetScale().y ,&sky->GetPosData()->GetScale().z };
 		ImGui::DragFloat3("scale", *scale, 10);
+		float* angle[3] = { &sky->GetPosData()->GetAngle().x,&sky->GetPosData()->GetAngle().y ,&sky->GetPosData()->GetAngle().z };
+		ImGui::SliderFloat3("angle", *angle, -3.14, 3.14);
 		float* color[4] = { &sky->GetPosData()->GetColor().x,&sky->GetPosData()->GetColor().y ,&sky->GetPosData()->GetColor().z ,&sky->GetPosData()->GetColor().w };
 		ImGui::ColorEdit4("color", *color);
 		if (ImGui::Button("save"))

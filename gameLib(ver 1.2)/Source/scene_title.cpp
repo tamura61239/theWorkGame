@@ -60,8 +60,8 @@ SceneTitle::SceneTitle(ID3D11Device* device):mEditorFlag(true), mTestMove(false)
 
 void SceneTitle::Update(float elapsed_time)
 {
-	//mLoading = IsNowLoading();
-	if (IsNowLoading())
+	mLoading = IsNowLoading();
+	if (mLoading)
 	{
 		return;
 	}
@@ -96,11 +96,10 @@ void SceneTitle::Update(float elapsed_time)
 
 void SceneTitle::Render(ID3D11DeviceContext* context, float elapsed_time)
 {
-	if (IsNowLoading())
+	if (mLoading)
 	{
 		return;
 	}
-	EndLoading();
 	frameBuffer[0]->Clear(context);
 	frameBuffer[0]->Activate(context);
 	FLOAT4X4 view = pCameraManager->GetCamera()->GetView();
@@ -142,8 +141,6 @@ void SceneTitle::Render(ID3D11DeviceContext* context, float elapsed_time)
 	}
 	mFade->Render(context);
 	blend[0]->deactivate(context);
-	context->OMSetDepthStencilState(nullptr, 0);
-	context->RSSetState(nullptr);
 
 }
 

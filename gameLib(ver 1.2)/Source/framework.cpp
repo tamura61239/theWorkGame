@@ -5,6 +5,7 @@
 #include"camera_manager.h"
 #include"stage_manager.h"
 #include"gamepad.h"
+#include<time.h>
 Framework* Framework::inst = nullptr;
 
 bool Framework::Initialize(HWND hwnd)
@@ -159,6 +160,7 @@ void Framework::Update(float elapsed_time)
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 #endif
+	srand((unsigned int)time(NULL));
 	//cameraOperation->Update(elapsed_time);
 	//camera->CalculateMatrix();
 	//model->UpdateAnimation(elapsed_time);

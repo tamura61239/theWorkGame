@@ -90,24 +90,22 @@ void GpuParticleManager::CreateGameBuffer(ID3D11Device* device)
 void GpuParticleManager::CreateResultBuffer(ID3D11Device* device)
 {
 	CreateBuffer(device);
+#if (RESULT_TYPE==0)
+
 	mFireworksParticle = std::make_unique<FireworksParticle>(device);
+#else
+	mStageSceneParticle = std::make_unique<StageSceneParticle>(device);
+#endif
 }
 
 void GpuParticleManager::ClearBuffer()
 {
 	mRunParticle.reset();
 	mTitleParticle.reset();
-	mStageObjParticle.reset();
 	mStageSceneParticle.reset();
+	mFireworksParticle.reset();
 }
 
-void GpuParticleManager::CreateStageObjParticle(std::vector<std::shared_ptr<StageObj>> objs)
-{
-	mStageObjParticle.reset(nullptr);
-	ID3D11Device* device = Framework::Instance().GetDevice().Get();
-	mStageObjParticle = std::make_unique<StageObjParticle>(device);
-	mStageObjParticle->SetStageData(objs);
-}
 
 void GpuParticleManager::Update(float elapsd_time)
 {
@@ -123,11 +121,14 @@ void GpuParticleManager::Update(float elapsd_time)
 		break;
 	case GAME:
 		if (mRunParticle.get() != nullptr)mRunParticle->Update(context, elapsd_time);
-		mStageObjParticle->Update(context, elapsd_time);
 		mStageSceneParticle->Update(context, elapsd_time);
 		break;
 	case RESULT:
+#if (RESULT_TYPE==0)
 		mFireworksParticle->Update(elapsd_time, context);
+#else
+		mStageSceneParticle->Update(context, elapsd_time);
+#endif
 		break;
 	}
 }
@@ -191,11 +192,10 @@ void GpuParticleManager::SelectImGui()
 void GpuParticleManager::GameImGui()
 {
 #ifdef USE_IMGUI
-	static bool selects[3] = { false,false };
+	static bool selects[2] = { false,false };
 	ImGui::Begin("game particles");
 	ImGui::Selectable("run particle", &selects[0]);
 	ImGui::Selectable("stage scene particle", &selects[1]);
-	ImGui::Selectable("stage obj particle", &selects[2]);
 	ImGui::End();
 	if (selects[0])
 	{
@@ -205,10 +205,6 @@ void GpuParticleManager::GameImGui()
 	{
 		mStageSceneParticle->ImGuiUpdate();
 	}
-	if (selects[2])
-	{
-		mStageObjParticle->ImGuiUpdate();
-	}
 
 #endif
 
@@ -216,7 +212,10 @@ void GpuParticleManager::GameImGui()
 
 void GpuParticleManager::ResultImGui()
 {
+#if (RESULT_TYPE==0)
 	mFireworksParticle->ImGuiUpdate();
+#else
+#endif
 }
 
 void GpuParticleManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, bool drowMullti)
@@ -247,7 +246,11 @@ void GpuParticleManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& vi
 		mStageSceneParticle->Render(context);
 		break;
 	case RESULT:
+#if (RESULT_TYPE==0)
 		mFireworksParticle->Render(context);
+#else
+		mStageSceneParticle->Render(context);
+#endif
 		break;
 	}
 	context->OMSetDepthStencilState(nullptr, 0);

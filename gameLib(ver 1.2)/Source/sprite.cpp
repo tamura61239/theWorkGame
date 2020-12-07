@@ -284,6 +284,12 @@ void Sprite::Render(ID3D11DeviceContext* context, const VECTOR2F& position, cons
 
 	context->Draw(4, 0);
 	mShader->Deactivate(context);
+	context->OMSetDepthStencilState(nullptr, 0);
+	context->RSSetState(nullptr);
+	ID3D11ShaderResourceView* defSRV = nullptr;
+	ID3D11SamplerState* defSampler = nullptr;
+	context->PSSetShaderResources(0, 1, &defSRV);
+	context->PSSetSamplers(0, 1, &defSampler);
 
 }
 
@@ -365,6 +371,12 @@ void Sprite::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView* srv,
 
 	context->Draw(4, 0);
 	mShader->Deactivate(context);
+	context->OMSetDepthStencilState(nullptr, 0);
+	context->RSSetState(nullptr);
+	ID3D11ShaderResourceView* defSRV = nullptr;
+	ID3D11SamplerState* defSampler = nullptr;
+	context->PSSetShaderResources(0, 1, &defSRV);
+	context->PSSetSamplers(0, 1, &defSampler);
 
 }
 
@@ -439,7 +451,12 @@ void Sprite::Render(ID3D11DeviceContext* context, DrowShader* shader, const VECT
 
 	context->Draw(4, 0);
 	shader->Deactivate(context);
-
+	context->OMSetDepthStencilState(nullptr, 0);
+	context->RSSetState(nullptr);
+	ID3D11ShaderResourceView*defSRV = nullptr;
+	ID3D11SamplerState* defSampler = nullptr;
+	context->PSSetShaderResources(0, 1, &defSRV);
+	context->PSSetSamplers(0, 1, &defSampler);
 }
 
 void Sprite::Render(ID3D11DeviceContext* context, DrowShader* shader, ID3D11ShaderResourceView* srv, const VECTOR2F& position, const VECTOR2F& size, const VECTOR2F& texPosition, const VECTOR2F& texSize, float angle, const VECTOR4F& color)
@@ -520,5 +537,11 @@ void Sprite::Render(ID3D11DeviceContext* context, DrowShader* shader, ID3D11Shad
 
 	context->Draw(4, 0);
 	shader->Deactivate(context);
+	context->OMSetDepthStencilState(nullptr, 0);
+	context->RSSetState(nullptr);
+	ID3D11ShaderResourceView* defSRV = nullptr;
+	ID3D11SamplerState* defSampler = nullptr;
+	context->PSSetShaderResources(0, 1, &defSRV);
+	context->PSSetSamplers(0, 1, &defSampler);
 
 }

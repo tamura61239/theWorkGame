@@ -1,5 +1,4 @@
 #pragma once
-#include"stage_obj_particle.h"
 #include"stage_obj.h"
 #include"run_particle.h"
 #include"stage_scene_particle.h"
@@ -17,8 +16,6 @@ public:
 	void CreateGameBuffer(ID3D11Device* device);
 	void CreateResultBuffer(ID3D11Device* device);
 	void ClearBuffer();
-	//パーティクル生成関数
-	void CreateStageObjParticle(std::vector<std::shared_ptr<StageObj>>objs);
 	//更新
 	void Update(float elapsd_time);
 	void ImGuiUpdate();
@@ -26,7 +23,7 @@ public:
 	TitleTextureParticle* GetTitleTextureParticle() { return mTitleTextureParticle.get(); }
 	TitleParticle* GetTitleParticle() { return mTitleParticle.get(); }
 	RunParticles* GetRunParticle() { return mRunParticle.get(); }
-	StageObjParticle* GetStageObjParticle() { return mStageObjParticle.get(); }
+	FireworksParticle* GetFireworksParticle() { return mFireworksParticle.get(); }
 	//setter
 	void SetState(const int state) { mState = state; }
 	//描画
@@ -44,7 +41,6 @@ private:
 	void GameImGui();
 	void ResultImGui();
 	void CreateBuffer(ID3D11Device* device);
-	std::unique_ptr<StageObjParticle>mStageObjParticle;
 	std::unique_ptr<RunParticles>mRunParticle;
 	std::unique_ptr<StageSceneParticle>mStageSceneParticle;
 	std::unique_ptr<TitleParticle>mTitleParticle;

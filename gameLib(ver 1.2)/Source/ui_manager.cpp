@@ -1,5 +1,6 @@
 #include "ui_manager.h"
 #include"gpu_particle_manager.h"
+#include"vector_combo.h"
 #ifdef USE_IMGUI
 #include"imgui.h"
 #endif
@@ -91,13 +92,6 @@ void UIManager::ClearUI()
 	mUIs.clear();
 	mNames.clear();
 }
-static auto vector_getter = [](void* vec, int idx, const char** out_text)
-{
-	auto& vector = *static_cast<std::vector<std::string>*>(vec);
-	if (idx < 0 || idx >= static_cast<int>(vector.size())) { return false; }
-	*out_text = vector.at(idx).c_str();
-	return true;
-};
 
 void UIManager::ImGuiUpdate()
 {
