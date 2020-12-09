@@ -54,7 +54,7 @@ void main(
 	[unroll]
 	for (int i = 0; i < 12; i++)
 	{
-		GS_OUT gout;
+        GS_OUT gout = (GS_OUT) 0;
 		position = input[0].worldPosition.xyz + mul(triangleBox[index[i * 3]] * input[0].scale, input[0].rotateMatrix);
 		gout.position = mul(float4(position, 1), view);
 		gout.position = mul(gout.position, projection);

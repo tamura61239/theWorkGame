@@ -8,16 +8,10 @@ struct VS_OUT
 };
 struct GS_OUT
 {
-	float4 position:SV_POSITION;
-	float4 color:COLOR;
+    float4 position : SV_POSITION;
+    float4 color : COLOR;
+    float2 texcoord : TEXCOORD;
 };
-struct GS_OUT2
-{
-	float4 position:SV_POSITION;
-	float4 color:COLOR;
-	float2 texcoord : TEXCOORD;
-};
-
 cbuffer CbScene:register(b0)
 {
 	row_major float4x4 view;

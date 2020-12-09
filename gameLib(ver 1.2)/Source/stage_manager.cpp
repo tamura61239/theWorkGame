@@ -30,8 +30,6 @@ StageManager::StageManager(ID3D11Device* device, int width, int height) :mStageN
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
-	mVelocityShader = std::make_unique<DrowShader>(device, "Data/shader/static_mesh_blur_vs.cso", "", "Data/shader/static_mesh_blur_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
-	mDeferredShader = std::make_unique<DrowShader>(device, "Data/shader/static_mesh_vs.cso", "", "Data/shader/deferred_depth_static_mesh_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
 	mEditor = std::make_unique<StageEditor>(device, 1920, 1080);
 }
 void StageManager::StageCount()

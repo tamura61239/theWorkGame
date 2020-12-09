@@ -6,7 +6,7 @@
 void main( uint3 DTid : SV_DispatchThreadID )
 {
     uint index = DTid.x + DTid.y + DTid.z;
-    uint count = 0, maxCount = 0;
+    uint count = 0;
     uint emitorNumber = index / 100;
     uint totalIndex = 0;
     [unroll]
@@ -19,13 +19,11 @@ void main( uint3 DTid : SV_DispatchThreadID )
         //割った値が1以上ならカウントを増やす
         emitorNumber +=  saturate(anser);
         count = lerp(count, totalIndex-index, saturate(anser+1));
-        maxCount = lerp(maxCount, createData[i].firework.maxCount, saturate(anser+1));
-
     }
 
     Particle p = (Particle) 0;
-    p.position = createData[emitorNumber].position - createData[emitorNumber].velocity * (count / maxCount);
-    p.startColor = createData[emitorNumber].firework.color;
+    p.position = createData[emitorNumber].position - createData[emitorNumber].velocity * (count / createData[emitorNumber].firework.maxCount);
+    p.startColor = float4(1,1,1,1);
     p.endTimer = createData[emitorNumber].firework.endTimer;
     p.scale = createData[emitorNumber].firework.scale;
 

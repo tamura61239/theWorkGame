@@ -21,7 +21,7 @@ void main(
 	[unroll]
 	for (int i = 0; i < 2; i++)
 	{
-		GS_OUT gout;
+        GS_OUT gout = (GS_OUT)0;
 		//
 		position = input[0].worldPosition.xyz + mul(lineBox[0 + i * 4] * input[0].scale, input[0].rotateMatrix);
 		gout.position = mul(float4(position, 1), view);
@@ -81,7 +81,7 @@ void main(
 
 	for (int i = 0; i < 4; i++)
 	{
-		GS_OUT gout;
+        GS_OUT gout = (GS_OUT) 0;
 		position = input[0].worldPosition.xyz + mul(lineBox[i] * input[0].scale, input[0].rotateMatrix);
 		gout.position = mul(float4(position, 1), view);
 		gout.position = mul(gout.position, projection);

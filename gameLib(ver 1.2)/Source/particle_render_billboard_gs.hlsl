@@ -3,7 +3,7 @@
 [maxvertexcount(4)]
 void main(
 	point VS_OUT input[1],
-	inout TriangleStream<GS_OUT2 > output
+	inout TriangleStream<GS_OUT > output
 )
 {
 
@@ -24,7 +24,7 @@ void main(
 	[unroll]
 	for (int i = 0; i < 4; i++)
 	{
-		GS_OUT2 gout;
+		GS_OUT gout;
 		gout.position = mul(mul(float4(input[0].worldPosition, 1), view) + texPosition[i] * input[0].scale.x, projection);
 		gout.texcoord = texcoord[i];
 		gout.color = input[0].color;

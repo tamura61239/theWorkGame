@@ -89,7 +89,7 @@ FireworksParticle::FireworksParticle(ID3D11Device* device) :mCreateFlag(false), 
 		{"VELOCITY",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 		{"SCALE",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 	};
-	mShader = std::make_unique<DrowShader>(device, "Data/shader/particle_render_vs.cso", "Data/shader/particle_render_cube_mesh_gs.cso", "Data/shader/particle_render_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
+	mShader = std::make_unique<DrowShader>(device, "Data/shader/particle_render_vs.cso", "Data/shader/particle_render_billboard_gs.cso", "Data/shader/particle_render_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
 	Load();
 }
 /**********************エディタ関数***************************/
@@ -294,7 +294,8 @@ void FireworksParticle::Update(float elapsdTime, ID3D11DeviceContext* context)
 	{
 		context->CSSetConstantBuffers(0, 1, mCbCreateBuffer.GetAddressOf());
 		CbCreate cbCreate, cbCreate2;
-		memset(&cbCreate, 0, sizeof(cbCreate));
+		memset(&cbCreate, 0, sizeof(CbCreate));
+		memset(&cbCreate2, 0, sizeof(CbCreate));
 		/*****************エミッタの更新*********************/
 		int fireworksCount = 0;
 		int emitorCount = 0;
@@ -333,7 +334,6 @@ void FireworksParticle::Update(float elapsdTime, ID3D11DeviceContext* context)
 		if (emitorCount > 0)
 		{
 			context->CSSetShader(mCSCreate2Shader.Get(), nullptr, 0);
-			cbCreate2.startIndex = mIndex;
 			int count = 0;
 			for (int i = 0; i < emitorCount; i++)
 			{
@@ -343,7 +343,14 @@ void FireworksParticle::Update(float elapsdTime, ID3D11DeviceContext* context)
 				data.firework.maxCount = static_cast<int>(length / 0.05f);
 				count += data.firework.maxCount;
 			}
+			if (mIndex + count >= mMaxParticle)
+			{
+				mIndex = 0;
+			}
+			cbCreate2.startIndex = mIndex;
+
 			context->UpdateSubresource(mCbCreateBuffer.Get(), 0, 0, &cbCreate2, 0, 0);
+
 			context->Dispatch(count, 1, 1);
 
 			mIndex += count;
@@ -478,7 +485,7 @@ void FireworksParticle::StartFireworksEmitorUpdate(float elapsdTime, CbCreate* s
 			smokeConstant->createData[emitorCount].velocity = emitor.velocity * elapsdTime;
 			smokeConstant->createData[emitorCount].firework.color = VECTOR4F(1, 1, 1, 1);
 			smokeConstant->createData[emitorCount].firework.endTimer = 0.25f;
-			smokeConstant->createData[emitorCount].firework.scale = 1;
+			smokeConstant->createData[emitorCount].firework.scale = 0.5f;
 			emitorCount++;
 		}
 
@@ -523,7 +530,6 @@ void FireworksParticle::LoopFireworksEmitorUpdate(float elapsdTime, CbCreate* sm
 			fireworksConstant->createData[fireworksCount].firework = mFireworkDatas[emitor.type];
 			emitor.type = -1;
 			fireworksCount++;
-			mFireworksCount++;
 		}
 		else
 		{
@@ -531,7 +537,7 @@ void FireworksParticle::LoopFireworksEmitorUpdate(float elapsdTime, CbCreate* sm
 			smokeConstant->createData[emitorCount].velocity = emitor.velocity * elapsdTime;
 			smokeConstant->createData[emitorCount].firework.color = VECTOR4F(1, 1, 1, 1);
 			smokeConstant->createData[emitorCount].firework.endTimer = 0.25f;
-			smokeConstant->createData[emitorCount].firework.scale = 1;
+			smokeConstant->createData[emitorCount].firework.scale = 0.5f;
 			
 			emitorCount++;
 		}
