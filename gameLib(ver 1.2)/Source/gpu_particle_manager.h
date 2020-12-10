@@ -28,6 +28,7 @@ public:
 	void SetState(const int state) { mState = state; }
 	//•`‰æ
 	void Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, bool drowMullti=false);
+	void VelocityRender(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection);
 	enum STATE
 	{
 		TITLE,

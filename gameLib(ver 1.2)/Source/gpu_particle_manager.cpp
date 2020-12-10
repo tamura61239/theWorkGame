@@ -59,6 +59,15 @@ void GpuParticleManager::CreateBuffer(ID3D11Device* device)
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 	}
+	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
+	{
+		{"POSITION",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
+		{"ANGLE",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
+		{"COLOR",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
+		{"VELOCITY",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
+		{"SCALE",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
+	};
+	mSSceneShader = std::make_unique<DrowShader>(device, "Data/shader/particle_motion_data_render_vs.cso", "Data/shader/particle_motion_data_render_gs.cso", "Data/shader/particle_motion_data_render_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
 
 }
 
@@ -92,6 +101,7 @@ void GpuParticleManager::CreateGameBuffer(ID3D11Device* device)
 void GpuParticleManager::CreateResultBuffer(ID3D11Device* device)
 {
 	CreateBuffer(device);
+
 #if (RESULT_TYPE==0)
 
 	mFireworksParticle = std::make_unique<FireworksParticle>(device);
@@ -206,7 +216,7 @@ void GpuParticleManager::GameImGui()
 	if (selects[1])
 	{
 		mStageSceneParticle->ImGuiUpdate();
-	}
+}
 
 #endif
 
@@ -274,5 +284,43 @@ void GpuParticleManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& vi
 		//if (mStageObjParticle.get() != nullptr)mStageObjParticle->Render(context);
 		//if (mRunParticle.get() != nullptr)mRunParticle->Render(context);
 	//}
+}
+
+void GpuParticleManager::VelocityRender(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection)
+{
+	context->OMSetDepthStencilState(mDepth.Get(), 0);
+	context->RSSetState(mRasterizer.Get());
+	context->VSSetConstantBuffers(0, 1, mCbScene.GetAddressOf());
+	context->GSSetConstantBuffers(0, 1, mCbScene.GetAddressOf());
+	context->PSSetConstantBuffers(0, 1, mCbScene.GetAddressOf());
+
+	CbScene cbScene;
+	cbScene.view = view;
+	cbScene.projection = projection;
+	context->UpdateSubresource(mCbScene.Get(), 0, 0, &cbScene, 0, 0);
+	switch (mState)
+	{
+	//case TITLE:
+	//	mTitleParticle->Render(context);
+	//	mTitleTextureParticle->Render(context);
+	//	break;
+	case SELECT:
+		mSelectSceneParticle->Render(context);
+		break;
+	case GAME:
+		//mStageSceneParticle->Render(context);
+		if (mRunParticle.get() != nullptr)mRunParticle->Render(context);
+		//mStageObjParticle->Render(context);
+		mStageSceneParticle->Render(context);
+		break;
+	case RESULT:
+#if (RESULT_TYPE==0)
+		mFireworksParticle->Render(context,mSSceneShader.get());
+#else
+		mStageSceneParticle->Render(context);
+#endif
+		break;
+	}
+
 }
 

@@ -94,6 +94,18 @@
     <Filter Include="シェーダー\fireworks_particle">
       <UniqueIdentifier>{178ff16b-fb10-4f9d-8832-ff4677e0d606}</UniqueIdentifier>
     </Filter>
+    <Filter Include="シェーダー\postEffect\モーションブラー">
+      <UniqueIdentifier>{fd507f5c-4470-49c5-88ea-9f2ad911dd74}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="シェーダー\postEffect\モーションブラー\速度マップ%28particle%29">
+      <UniqueIdentifier>{f846d226-2e93-4afc-b8e3-782db5404b65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="シェーダー\postEffect\モーションブラー\速度マップ%28model%29">
+      <UniqueIdentifier>{4a5190b5-a999-4b41-aa66-11bd339d5a43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="シェーダー\postEffect\モーションブラー\速度マップ%28static_mesh%29">
+      <UniqueIdentifier>{def0f882-d026-4d24-9439-fa0f2ed1d634}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="External_Libraries\imgui\imgui.cpp">
@@ -664,6 +676,15 @@
     <None Include="Source\fireworks_particle.hlsli">
       <Filter>シェーダー\fireworks_particle</Filter>
     </None>
+    <None Include="Source\before_camera_view_data.hlsli">
+      <Filter>シェーダー\postEffect\モーションブラー</Filter>
+    </None>
+    <None Include="Source\particle_motiom_data_render.hlsli">
+      <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28particle%29</Filter>
+    </None>
+    <None Include="Source\static_mesh_motion_data.hlsli">
+      <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28static_mesh%29</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\board_ps.hlsl">
@@ -821,6 +842,24 @@
     </FxCompile>
     <FxCompile Include="Source\fireworks_smoke_particle_create.hlsl">
       <Filter>シェーダー\fireworks_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\motion_blur_ps.hlsl">
+      <Filter>シェーダー\postEffect\モーションブラー</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\particle_motion_data_render_vs.hlsl">
+      <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28particle%29</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\particle_motion_data_render_gs.hlsl">
+      <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28particle%29</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\particle_motion_data_render_ps.hlsl">
+      <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28particle%29</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\particle_motion_data_render_text_ps.hlsl">
+      <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28particle%29</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\particle_motiom_blur_gs.hlsl">
+      <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28particle%29</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

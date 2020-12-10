@@ -38,12 +38,23 @@ mPlayFlag(true), nowLoading(true)
 			mBlend.push_back(std::make_unique<blend_state>(device, BLEND_MODE::ALPHA));
 			mRanking = std::make_unique<Ranking>(device, mNowGameTime);
 			mFade = std::make_unique<Fade>(device, Fade::FADE_SCENE::RESULT);
-			frameBuffer = std::make_unique<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
+
+			frameBuffer = std::make_shared<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
 			frameBuffer2 = std::make_unique<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
+			velocityBuffer = std::make_shared<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R16G16B16A16_FLOAT);
+
 			mRenderScene = std::make_unique<Sprite>(device,L"Data/image/siro.png");
 			mBloom = std::make_unique<BloomRender>(device, 1920, 1080, 3);
 			//sky = std::make_unique<SkyMap>(device, L"Data/AllSkyFree/Cold Night/ColdNight.dds", MAPTYPE::BOX);
 			//sky = std::make_unique<SkyMap>(device, L"Data/image/mp_totality.dds", MAPTYPE::BOX);
+			D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
+			{
+				{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+				{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+				{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+
+			};
+			mMotionBlurShader = std::make_unique<DrowShader>(device, "Data/shader/sprite_vs.cso", "", "Data/shader/motion_blur_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc));
 #if (RESULT_TYPE==0)
 			sky = std::make_unique<SkyMap>(device, L"Data/AllSkyFree/Cold Night/ColdNight.dds", MAPTYPE::BOX);
 			{
@@ -155,10 +166,24 @@ void SceneResult::Render(ID3D11DeviceContext* context, float elapsed_time)
 	mBlend[0]->deactivate(context);
 
 	frameBuffer->Deactivate(context);
-	mBlend[0]->activate(context);
 
+	//velocityBuffer->Clear(context);
+	//velocityBuffer->Activate(context);
+	//pCameraManager->GetCamera()->ShaderSetBeforeBuffer(context, 5);
+
+	//pGpuParticleManager->VelocityRender(context, view, projection);
+	//velocityBuffer->Deactivate(context);
+
+
+	//frameBuffer2->Clear(context);
+	//frameBuffer2->Activate(context);
+	mBlend[0]->activate(context);
 	mRenderScene->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 	mBloom->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), true);
+	//frameBuffer2->Deactivate(context);
+	//velocityBuffer->SetPsTexture(context, 1);
+	//mRenderScene->Render(context, mMotionBlurShader.get(), frameBuffer2->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+
 	mFade->Render(context);
 	mBlend[0]->deactivate(context);
 }
@@ -194,6 +219,9 @@ bool SceneResult::ImGuiUpdate()
 	}
 	if (!mEditorFlag)return false;
 	ImGui::Begin("scene result");
+	ImVec2 view = ImVec2(192 * 3, 108 * 3);
+	ImGui::Image(frameBuffer->GetRenderTargetShaderResourceView().Get(), view); ImGui::SameLine();
+	ImGui::Image(velocityBuffer->GetRenderTargetShaderResourceView().Get(), view);
 	ImGui::RadioButton("NONE", &mEditorNo, 0);
 	ImGui::RadioButton("RANKING", &mEditorNo, 1);
 	ImGui::RadioButton("UI", &mEditorNo, 2);

@@ -41,7 +41,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	render.scale = p.scale;
 	render.color = p.color;
 	render.angle = float3(0,0,0);
-	render.velocity = p.velocity;
+    render.velocity = p.velocity * elapsdTime;
 	bufferIndex = index * 17 * 4;
 	//描画用データの書き出し
 	WriteRender(render, bufferIndex);

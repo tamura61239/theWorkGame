@@ -12,6 +12,7 @@ public:
 	void ImGuiUpdate();
 	void Update(float elapsdTime, ID3D11DeviceContext* context);
 	void Render(ID3D11DeviceContext* context);
+	void Render(ID3D11DeviceContext* context,DrowShader*shader);
 	void CreateEmitor(const int ranking)
 	{
 		mCreateFlag = true;

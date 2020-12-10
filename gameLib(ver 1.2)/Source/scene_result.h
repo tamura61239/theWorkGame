@@ -50,12 +50,15 @@ private:
 	bool mPlayFlag;
 	bool nowLoading;
 	std::vector<std::unique_ptr<blend_state>>mBlend;
-	std::unique_ptr<FrameBuffer>frameBuffer;
+	std::shared_ptr<FrameBuffer>frameBuffer;
 	std::unique_ptr<FrameBuffer>frameBuffer2;
+	std::shared_ptr<FrameBuffer>velocityBuffer;
+	std::unique_ptr<MulltiRenderTargetFunction>mulltiRenderTarget;
 	std::unique_ptr<BloomRender>mBloom;
 	std::unique_ptr<Sprite>mRenderScene;
 	std::unique_ptr<Ranking>mRanking;
 	std::unique_ptr<Fade>mFade;
 	std::unique_ptr<SkyMap>sky;
 	std::unique_ptr<StageManager>mSManager;
+	std::unique_ptr<DrowShader>mMotionBlurShader;
 };
