@@ -17,6 +17,7 @@ public:
 		float* outLength//ƒŒƒC‚ª“–‚½‚Á‚½–Ê‚Ü‚Å‚Ì‹——£
 	);
 	StaticMesh* GetMesh() { return mMesh.get(); }
+	
 private:
 	std::shared_ptr<StaticMesh>mMesh;
 };

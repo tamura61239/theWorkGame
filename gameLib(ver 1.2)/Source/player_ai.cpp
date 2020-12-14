@@ -113,6 +113,7 @@ void PlayerAI::Update(float elapsd_time, StageManager* manager, StageOperation* 
 		pCameraManager->GetCameraOperation()->GetPlayCamera()->SetPlayerPosition(mCharacter->GetPosition());
 		operation->Reset(manager);
 		mCharacter->SetAccel(VECTOR3F(0, 0, 0));
+		pCameraManager->Update(elapsd_time);
 		return;
 	}
 	//ゲーム中のキャラクターの動き

@@ -31,7 +31,7 @@ float4 main(VS_OUT pin) : SV_TARGET
 	for (int i = 0;i < POINTMAX;i++)
 	{
 		//ポイントライト
-		LV = pin.worldPosition - pointLight[i].position.xyz;
+		LV = pin.worldPosition.xyz - pointLight[i].position.xyz;
 		float d = length(LV);
 		float r = pointLight[i].range;
 		float s = step(r, d);
@@ -44,7 +44,7 @@ float4 main(VS_OUT pin) : SV_TARGET
 		LS += BlinnPhongSpcular(pin.worldNormal, -LV, LC, E, Ks, 20) * influence * influence;
 		
 		//スポットライト
-		LV = pin.worldPosition - spotLight[i].position.xyz;
+		LV = pin.worldPosition.xyz - spotLight[i].position.xyz;
 		d = length(LV);
 		r = spotLight[i].range;
 		float3 SFront = normalize(spotLight[i].dir.xyz);

@@ -1,6 +1,9 @@
 #include "render_effects.h"
 #include"shader.h"
 #include"misc.h"
+#ifdef USE_IMGUI
+#include<imgui.h>
+#endif
 
 RenderEffects::RenderEffects(ID3D11Device* device)
 {
@@ -132,6 +135,17 @@ RenderEffects::RenderEffects(ID3D11Device* device)
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
 
+}
+
+void RenderEffects::ImGuiUpdate()
+{
+#ifdef USE_IMGUI
+	ImGui::Begin("shadow map data");
+	float* color[3] = { &mCbScene.shadowColor.x,&mCbScene.shadowColor.y,&mCbScene.shadowColor.z };
+	ImGui::ColorEdit3("shadow color", *color);
+	ImGui::InputFloat("shadow bisa", &mCbScene.shadowbisa);
+	ImGui::End();
+#endif
 }
 
 void RenderEffects::ShadowRender(ID3D11DeviceContext* context, ID3D11ShaderResourceView* colorMapSRV, ID3D11ShaderResourceView* depthMapSRV, ID3D11ShaderResourceView* shadowMapSRV

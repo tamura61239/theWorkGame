@@ -14,7 +14,7 @@ void UIManager::TitleInitialize(ID3D11Device* device)
 	mSceneName = "title";
 	Load(mSceneName.c_str());
 
-	for (int i=0;i< mUIs.size();i++)
+	for (int i=0;i< static_cast<int>(mUIs.size());i++)
 	{
 		auto& ui = mUIs[i];
 		
@@ -253,7 +253,7 @@ void UIManager::Load(const char* scene)
 		fseek(fp, 0, SEEK_SET);
 
 		UI::UIData data;
-		for (int i=0;i< fileSize/sizeof(UI::UIData);i++)
+		for (int i=0;i< static_cast<int>(fileSize/sizeof(UI::UIData));i++)
 		{
 			fread(&data, sizeof(UI::UIData), 1, fp);
 			mUIs[i]->SetUIData(data);

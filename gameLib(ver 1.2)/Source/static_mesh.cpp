@@ -538,6 +538,7 @@ MeshRender::MeshRender(ID3D11Device* device)
 		//create_vs_from_cso(device, "Data/shader/static_mesh_shadow_vs.cso", mShadowVSShader.GetAddressOf(), input.GetAddressOf(), inputElementDesc, ARRAYSIZE(inputElementDesc));
 		mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/static_mesh_vs.cso", "", "Data/shader/static_mesh_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc)));
 		mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/static_mesh_normal_vs.cso", "", "Data/shader/static_mesh_normal_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc)));
+		mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/static_mesh_motion_data_vs.cso", "Data/shader/static_mesh_motion_data_gs.cso", "Data/shader/static_mesh_motion_data_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc)));
 		mShadowShader = std::make_unique<DrowShader>(device, "Data/shader/static_mesh_shadow_vs.cso", "", "");
 	}
 
@@ -605,6 +606,11 @@ MeshRender::MeshRender(ID3D11Device* device)
 		bufferDesc.ByteWidth = sizeof(CbObj);
 
 		hr = device->CreateBuffer(&bufferDesc, nullptr, mCbObj.GetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+		bufferDesc.ByteWidth = sizeof(FLOAT4X4);
+
+		hr = device->CreateBuffer(&bufferDesc, nullptr, mCbBeforeObj.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 	}
@@ -791,4 +797,68 @@ void MeshRender::Render(ID3D11DeviceContext* context, DrowShader* shader, Static
 
 void MeshRender::End(ID3D11DeviceContext* context)
 {
+}
+/*****************************************************/
+//  速度マップの描画
+/*****************************************************/
+void MeshRender::VelocityBegin(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const bool w)
+{
+	mShader[2]->Activate(context);
+	ID3D11Buffer* constant_buffers[] =
+	{
+		mCbScene.Get(),
+		mCbObj.Get(),
+		mCbBeforeObj.Get(),
+	};
+	context->VSSetConstantBuffers(0, ARRAYSIZE(constant_buffers), constant_buffers);
+	context->PSSetConstantBuffers(0, ARRAYSIZE(constant_buffers), constant_buffers);
+
+	context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
+	if (!w)context->RSSetState(mRasterizerState.Get());
+	else context->RSSetState(mShadowRasterizerState.Get());
+
+	CbScene cbScene;
+
+	cbScene.view = view;
+	cbScene.projection = projection;
+	context->UpdateSubresource(mCbScene.Get(), 0, 0, &cbScene, 0, 0);
+
+}
+
+void MeshRender::VelocityRender(ID3D11DeviceContext* context, StaticMesh* obj, const FLOAT4X4& world, const FLOAT4X4& beforeWorld, const VECTOR4F color)
+{
+	for (StaticMesh::Mesh& mesh : obj->meshes)
+	{
+		u_int stride = sizeof(StaticMesh::Vertex);
+		u_int offset = 0;
+		context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &stride, &offset);
+		context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		CbObj data;
+
+		DirectX::XMStoreFloat4x4(&data.world, DirectX::XMLoadFloat4x4(&mesh.globalTransform) * DirectX::XMLoadFloat4x4(&world));
+
+		FLOAT4X4 beforeData;
+		DirectX::XMStoreFloat4x4(&beforeData, DirectX::XMLoadFloat4x4(&mesh.globalTransform) * DirectX::XMLoadFloat4x4(&beforeWorld));
+
+		for (StaticMesh::Subset& subset : mesh.subsets)
+		{
+			data.color.x = subset.diffuse.color.x * color.x;
+			data.color.y = subset.diffuse.color.y * color.y;
+			data.color.z = subset.diffuse.color.z * color.z;
+			data.color.w = color.w;
+			context->UpdateSubresource(mCbObj.Get(), 0, 0, &data, 0, 0);
+			context->UpdateSubresource(mCbBeforeObj.Get(), 0, 0, &beforeData, 0, 0);
+
+			context->DrawIndexed(subset.indexCount, subset.indexStart, 0);
+		}
+	}
+
+}
+
+void MeshRender::VelocityEnd(ID3D11DeviceContext* context)
+{
+	mShader[2]->Deactivate(context);
+
 }

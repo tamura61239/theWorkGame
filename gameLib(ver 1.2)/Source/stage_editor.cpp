@@ -15,7 +15,7 @@ StageEditor::StageEditor(ID3D11Device* device, int width, int height)
 	mSprite = std::make_unique<Sprite>(device);
 	mStageSidoView = std::make_unique<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
 	mSidoCamera = std::make_unique<Camera>(device);
-	mSidoCamera->SetPerspective(30 * (3.14f / 180.f), mWidth / mHeight, 0.1f, 100000);
+	mSidoCamera->SetPerspective(30 * (3.14f / 180.f), static_cast<float>(mWidth) / static_cast<float>(mHeight), 0.1f, 100000);
 	mObj = std::make_unique<Obj3D>();
 	ClearCreateData();
 }
@@ -152,7 +152,7 @@ void StageEditor::UpdateMouseData()
 	GetCursorPos(&cursor);
 
 	ScreenToClient(Framework::Instance().GetHwnd(), &cursor);
-	mMousePosition = VECTOR2F(cursor.x, cursor.y);
+	mMousePosition = VECTOR2F(static_cast<float>(cursor.x), static_cast<float>(cursor.y));
 	mMousePosition.x += 10;
 	mMousePosition.y += 10;
 }
@@ -266,7 +266,7 @@ int StageEditor::NewDragObj(std::vector<std::shared_ptr<StageObj>>objs)
 {
 	float length = FLT_MAX;
 	int objNo = -1;
-	for (int i = 0; i < objs.size(); i++)
+	for (int i = 0; i < static_cast<int>(objs.size()); i++)
 	{
 		auto& obj = objs[i];
 		VECTOR3F position, normal;
@@ -286,7 +286,7 @@ int StageEditor::NewDragObj(std::vector<std::shared_ptr<StageObj>>objs)
 void StageEditor::NewCameraPosition()
 {
 	if (pCameraManager->GetCameraOperation()->GetStageEditorCamera()->GetMoveFlag())return;
-	VECTOR2F textMagnification = VECTOR2F(mWidth, mHeight) / mSidoViewRenderSize;
+	VECTOR2F textMagnification = VECTOR2F(static_cast<float>(mWidth), static_cast<float>(mHeight)) / mSidoViewRenderSize;
 	VECTOR2F textPosition = mMousePosition - mSidoViewRenderPosition;
 	VECTOR2F position = textPosition * textMagnification;
 	MouseToWorld(mSidoCamera.get(), position);

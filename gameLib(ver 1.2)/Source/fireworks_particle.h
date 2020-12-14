@@ -3,8 +3,6 @@
 #include<memory>
 #include"vector.h"
 #include<vector>
-
-#define RESULT_TYPE 0
 class FireworksParticle
 {
 public:

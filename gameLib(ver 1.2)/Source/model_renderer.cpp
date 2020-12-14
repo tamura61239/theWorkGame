@@ -26,7 +26,8 @@ ModelRenderer::ModelRenderer(ID3D11Device* device)
 
 	mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/model_vs.cso", "", "Data/shader/model_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc)));
 	mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/model_normal_vs.cso", "", "Data/shader/model_normal_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc)));
-	mShadowShader = std::make_unique<DrowShader>(device, "Data/shader/model_shadow_vs.cso", "", "");
+	mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/model_motion_data_vs.cso", "Data/shader/model_motion_data_gs.cso", "Data/shader/model_motion_data_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc)));
+	mShadowShader = std::make_unique<DrowShader>(device, "Data/shader/model_shadow_vs.cso", "", "", input_element_desc, ARRAYSIZE(input_element_desc));
 	// 定数バッファ
 	{
 		// シーン用バッファ
@@ -175,7 +176,7 @@ ModelRenderer::ModelRenderer(ID3D11Device* device)
 // 描画開始
 void ModelRenderer::Begin(ID3D11DeviceContext* context, const FLOAT4X4& view_projection)
 {
-	
+
 	ID3D11Buffer* constant_buffers[] =
 	{
 		m_cb_scene.Get(),
@@ -197,7 +198,7 @@ void ModelRenderer::Begin(ID3D11DeviceContext* context, const FLOAT4X4& view_pro
 }
 
 // 描画
-void ModelRenderer::Draw(ID3D11DeviceContext* context, Model& model, const VECTOR4F&color)
+void ModelRenderer::Draw(ID3D11DeviceContext* context, Model& model, const VECTOR4F& color)
 {
 	const ModelResource* model_resource = model.GetModelResource();
 	const std::vector<Model::Node>& nodes = model.GetNodes();
@@ -229,7 +230,7 @@ void ModelRenderer::Draw(ID3D11DeviceContext* context, Model& model, const VECTO
 			cb_mesh.bone_transforms[0] = nodes.at(mesh.node_index).world_transform;
 		}
 		context->UpdateSubresource(m_cb_mesh.Get(), 0, 0, &cb_mesh, 0, 0);
-		
+
 		UINT stride = sizeof(ModelData::Vertex);
 		UINT offset = 0;
 		context->IASetVertexBuffers(0, 1, mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
@@ -239,7 +240,7 @@ void ModelRenderer::Draw(ID3D11DeviceContext* context, Model& model, const VECTO
 		for (const ModelResource::Subset& subset : mesh.subsets)
 		{
 			CbSubset cb_subset;
-			cb_subset.material_color = VECTOR4F(subset.diffuse->color.x*color.x, subset.diffuse->color.y*color.y, subset.diffuse->color.z*color.z, subset.diffuse->color.w*color.w);
+			cb_subset.material_color = VECTOR4F(subset.diffuse->color.x * color.x, subset.diffuse->color.y * color.y, subset.diffuse->color.z * color.z, subset.diffuse->color.w * color.w);
 			context->UpdateSubresource(m_cb_subset.Get(), 0, 0, &cb_subset, 0, 0);
 			context->PSSetShaderResources(0, 1, subset.diffuse->shader_resource_view.Get() ? subset.diffuse->shader_resource_view.GetAddressOf() : m_dummy_srv.GetAddressOf());
 			if (shaderType == SHADER_TYPE::NORMAL)
@@ -262,8 +263,6 @@ void ModelRenderer::Draw(ID3D11DeviceContext* context, DrowShader* shader, Model
 	shader->Activate(context);
 	context->PSSetSamplers(0, 1, m_sampler_state[0].GetAddressOf());
 
-	context->VSSetConstantBuffers(6, 1, mCbBeforeMesh.GetAddressOf());
-	context->PSSetConstantBuffers(6, 1, mCbBeforeMesh.GetAddressOf());
 	if (shaderType == SHADER_TYPE::NORMAL)
 	{
 		context->PSSetSamplers(1, 1, m_sampler_state[1].GetAddressOf());
@@ -272,7 +271,6 @@ void ModelRenderer::Draw(ID3D11DeviceContext* context, DrowShader* shader, Model
 	{
 		// メッシュ用定数バッファ更新
 		CbMesh cb_mesh;
-		CbMesh cbBeforeMesh;
 		::memset(&cb_mesh, 0, sizeof(cb_mesh));
 		if (mesh.node_indices.size() > 0)
 		{
@@ -283,17 +281,14 @@ void ModelRenderer::Draw(ID3D11DeviceContext* context, DrowShader* shader, Model
 				DirectX::XMMATRIX bone_transform = inverse_transform * world_transform;
 				DirectX::XMStoreFloat4x4(&cb_mesh.bone_transforms[i], bone_transform);
 				DirectX::XMMATRIX beforeWorldTransform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.node_indices.at(i)).beforeWorldTransform);
-				DirectX::XMStoreFloat4x4(&cbBeforeMesh.bone_transforms[i], inverse_transform * beforeWorldTransform);
 
 			}
 		}
 		else
 		{
 			cb_mesh.bone_transforms[0] = nodes.at(mesh.node_index).world_transform;
-			cbBeforeMesh.bone_transforms[0] = nodes.at(mesh.node_index).beforeWorldTransform;
 		}
 		context->UpdateSubresource(m_cb_mesh.Get(), 0, 0, &cb_mesh, 0, 0);
-		context->UpdateSubresource(mCbBeforeMesh.Get(), 0, 0, &cbBeforeMesh, 0, 0);
 
 		UINT stride = sizeof(ModelData::Vertex);
 		UINT offset = 0;
@@ -324,7 +319,9 @@ void ModelRenderer::End(ID3D11DeviceContext* context)
 {
 	//context->GSSetShader(d_m_g_shader.Get(), 0, 0);
 }
-//影の描画
+/*********************************************************************/
+//    影の描画
+/*********************************************************************/
 void ModelRenderer::ShadowBegin(ID3D11DeviceContext* context, const FLOAT4X4& view_projection)
 {
 	mShadowShader->Activate(context);
@@ -395,5 +392,83 @@ void ModelRenderer::ShadowDraw(ID3D11DeviceContext* context, Model& model, const
 void ModelRenderer::ShadowEnd(ID3D11DeviceContext* context)
 {
 	mShadowShader->Deactivate(context);
+
+}
+/*********************************************************************/
+//    速度マップの描画
+/*********************************************************************/
+
+void ModelRenderer::VelocityBegin(ID3D11DeviceContext* context, const FLOAT4X4& viewProjection)
+{
+	mShader[2]->Activate(context);
+	ID3D11Buffer* constant_buffers[] =
+	{
+		m_cb_scene.Get(),
+		m_cb_mesh.Get(),
+		mCbBeforeMesh.Get()
+	};
+	context->VSSetConstantBuffers(0, ARRAYSIZE(constant_buffers), constant_buffers);
+	context->PSSetConstantBuffers(0, ARRAYSIZE(constant_buffers), constant_buffers);
+
+	const float blend_factor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	context->OMSetDepthStencilState(m_depth_stencil_state.Get(), 0);
+	context->RSSetState(m_rasterizer_state.Get());
+
+	// シーン用定数バッファ更新
+	CbScene cb_scene;
+	cb_scene.view_projection = viewProjection;
+
+	context->UpdateSubresource(m_cb_scene.Get(), 0, 0, &cb_scene, 0, 0);
+
+}
+
+void ModelRenderer::VelocityDraw(ID3D11DeviceContext* context, Model& model)
+{
+	const ModelResource* model_resource = model.GetModelResource();
+	const std::vector<Model::Node>& nodes = model.GetNodes();
+	for (const ModelResource::Mesh& mesh : model_resource->GetMeshes())
+	{
+		// メッシュ用定数バッファ更新
+		CbMesh cb_mesh, cbBeforeMesh;
+		::memset(&cb_mesh, 0, sizeof(cb_mesh));
+		if (mesh.node_indices.size() > 0)
+		{
+			for (size_t i = 0; i < mesh.node_indices.size(); ++i)
+			{
+				DirectX::XMMATRIX inverse_transform = DirectX::XMLoadFloat4x4(mesh.inverse_transforms.at(i));
+				DirectX::XMMATRIX world_transform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.node_indices.at(i)).world_transform);
+				DirectX::XMMATRIX bone_transform = inverse_transform * world_transform;
+				DirectX::XMStoreFloat4x4(&cb_mesh.bone_transforms[i], bone_transform);
+				DirectX::XMMATRIX beforeWorldTransform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.node_indices.at(i)).beforeWorldTransform);
+				bone_transform = inverse_transform * beforeWorldTransform;
+				DirectX::XMStoreFloat4x4(&cbBeforeMesh.bone_transforms[i], bone_transform);
+
+			}
+		}
+		else
+		{
+			cb_mesh.bone_transforms[0] = nodes.at(mesh.node_index).world_transform;
+			cbBeforeMesh.bone_transforms[0] = nodes.at(mesh.node_index).beforeWorldTransform;
+		}
+		context->UpdateSubresource(m_cb_mesh.Get(), 0, 0, &cb_mesh, 0, 0);
+		context->UpdateSubresource(mCbBeforeMesh.Get(), 0, 0, &cbBeforeMesh, 0, 0);
+
+		UINT stride = sizeof(ModelData::Vertex);
+		UINT offset = 0;
+		context->IASetVertexBuffers(0, 1, mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
+		context->IASetIndexBuffer(mesh.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		for (const ModelResource::Subset& subset : mesh.subsets)
+		{
+			context->DrawIndexed(subset.index_count, subset.start_index, 0);
+		}
+	}
+
+}
+
+void ModelRenderer::VelocityEnd(ID3D11DeviceContext* context)
+{
+	mShader[2]->Deactivate(context);
 
 }

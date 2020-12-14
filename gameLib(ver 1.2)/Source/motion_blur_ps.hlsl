@@ -1,4 +1,5 @@
 #include "sprite.hlsli"   
+#include"rand_function.hlsli"
 Texture2D diffuse_map : register(t0);
 Texture2D velocity_map : register(t1);
 SamplerState diffuse_map_sampler_state : register(s0);
@@ -13,11 +14,11 @@ float4 main(VS_OUT pin) : SV_TARGET
 {
 #if 0
     float2 vec = velocity_map.Sample(diffuse_map_sampler_state, pin.texcoord).xy;
-    float4 color = (float4) 0;
+    float4 color = diffuse_map.Sample(diffuse_map_sampler_state, pin.texcoord);
     float rand = rand2(vec);
     float total = 0;
     float nFrag = 1.0f / 20.0f;
-    for (int i = 0; i < 20; i++)
+    for (int i = 1; i < 20; i++)
     {
         float percent = (i + rand) * nFrag;
         float weight = percent - percent * percent;
@@ -26,29 +27,23 @@ float4 main(VS_OUT pin) : SV_TARGET
         total += weight;
         color += diffuse_map.Sample(diffuse_map_sampler_state, uv) * pin.color * weight;
     }
-    color.w = 1.0f;
+    color.w = min(1.0f,color.w);
     color.rgb /= total;
     return color;
 #else
-    //	ピクセルサイズを算出
-    uint width, height;
-    diffuse_map.GetDimensions(width, height);
-    const float2 uvPerPix = float2(0.5f / (float) width, 0.5f / (float) height);
-    	//	ブラー方向の算出
+   //	ブラー方向の算出
     const float4 velocityMap = velocity_map.Sample(diffuse_map_sampler_state, pin.texcoord);
     const float2 velocity = velocityMap.xy;
-    const float depth = velocityMap.z;
 
 	//	ブラー部分を潰すための係数
     float2 jitter = 1.0f - (rand2(velocityMap.xy) - 0.5f);
 
 	//	速度ベクトルを元にしてブラーをかける
-    float4 color = diffuse_map.Sample(diffuse_map_sampler_state, pin.texcoord);
+    float4 color = float4(0,0,0,0);
     int loop = 8 / 2;
+    
     for (int ii = -loop; ii <= loop; ++ii)
     {
-        if (ii == 0)
-            continue;
         float2 uv = pin.texcoord + ii * ((velocity * jitter) / 8);
         color += diffuse_map.Sample(diffuse_map_sampler_state, uv);
     }

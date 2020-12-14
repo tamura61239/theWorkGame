@@ -11,7 +11,7 @@ void TitleUIMove::Update(float elapsdTime, std::vector<std::shared_ptr<UI>> uis)
 {
 	if (mMoveChangeFlag)return;
 	mTimer += elapsdTime;
-	for (int i = 0; i < uis.size(); i++)
+	for (int i = 0; i < static_cast<int>(uis.size()); i++)
 	{
 		auto& ui = uis[i];
 		auto& data = mDatas[i];

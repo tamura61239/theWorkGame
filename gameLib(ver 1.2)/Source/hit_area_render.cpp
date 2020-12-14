@@ -18,7 +18,7 @@ void HitAreaRender::SetObjSize(const int size)
 
 void HitAreaRender::SetObjData(const VECTOR3F& position, const VECTOR3F& scale)
 {
-	if (mCount >= mObjData.size())
+	if (mCount >= static_cast<int>(mObjData.size()))
 	{
 		mObjData.push_back(std::make_unique<Obj3D>());
 	}

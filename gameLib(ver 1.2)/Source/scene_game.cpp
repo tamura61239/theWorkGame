@@ -26,12 +26,14 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 			pCameraManager->GetCamera()->SetEye(VECTOR3F(0, 0, -200));
 
 			frameBuffer = std::make_shared<FrameBuffer>(device, SCREEN_WIDTH, SCREEN_HEIGHT, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
+			frameBuffer3 = std::make_shared<FrameBuffer>(device, SCREEN_WIDTH, SCREEN_HEIGHT, true, 8, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R32_TYPELESS);
+			velocityMap= std::make_shared<FrameBuffer>(device, SCREEN_WIDTH, SCREEN_HEIGHT, true, 8, DXGI_FORMAT_R16G16B16A16_FLOAT);
 			saveFrameBuffer = std::make_shared<FrameBuffer>(device, SCREEN_WIDTH, SCREEN_HEIGHT, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
 			frameBuffer2 = std::make_shared<FrameBuffer>(device, SCREEN_WIDTH, SCREEN_HEIGHT, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
-			for (int i = 1; i <= 2; i++)
-			{
-				shrinkBuffer[i - 1] = std::make_unique<FrameBuffer>(device, 1920 >> i, 1080 >> i, true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
-			}
+			shadowMap = std::make_unique<FrameBuffer>(device, SCREEN_WIDTH, SCREEN_HEIGHT, false, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
+			shadowRenderBuffer = std::make_shared<FrameBuffer>(device, SCREEN_WIDTH, SCREEN_HEIGHT, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
+
+			renderEffects = std::make_unique<RenderEffects>(device);
 			GpuParticleManager::Create();
 			pGpuParticleManager->CreateGameBuffer(device);
 			pGpuParticleManager->SetState(GpuParticleManager::STATE::SELECT);
@@ -55,6 +57,7 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 
 				};
 				blurShader = std::make_unique<DrowShader>(device, "Data/shader/sprite_vs.cso", "", "Data/shader/zoom_blur_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc));
+				motionBlurShader = std::make_unique<DrowShader>(device, "Data/shader/sprite_vs.cso", "", "Data/shader/motion_blur_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc));
 			}
 			sky = std::make_unique<SkyMap>(device, L"Data/image/sor_sea.dds", MAPTYPE::BOX);
 			{
@@ -86,6 +89,7 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 			}
 			UIManager::Create();
 			UIManager::GetInctance()->GameInitialize(device);
+			lightCamera = std::make_unique<Camera>(device);
 		}, device);
 	test = std::make_unique<Sprite>(device, L"Data/image/操作説明.png");
 	nowLoading = std::make_unique<Sprite>(device, L"Data/image/now.png");
@@ -354,8 +358,8 @@ bool SceneGame::ImGuiUpdate()
 		}
 
 		ImVec2 view = ImVec2(192 * 3, 108 * 3);
-		ImGui::Image(frameBuffer->GetRenderTargetShaderResourceView().Get(), view); ImGui::SameLine();
-		ImGui::Image(frameBuffer->GetDepthStencilShaderResourceView().Get(), view);
+		ImGui::Image(shadowMap->GetDepthStencilShaderResourceView().Get(), view); ImGui::SameLine();
+		ImGui::Image(frameBuffer3->GetDepthStencilShaderResourceView().Get(), view);
 
 		ImGui::RadioButton("LIGHT", &editorNo, 2);
 		ImGui::RadioButton("STAGE", &editorNo, 3);
@@ -431,6 +435,7 @@ bool SceneGame::ImGuiUpdate()
 		}
 		ImGui::End();
 	}
+	renderEffects->ImGuiUpdate();
 #endif
 	return false;
 }
@@ -512,47 +517,109 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 		pLight.ConstanceLightBufferSetShader(context);
 		/************************カラーマップテクスチャの作成***********************/
 
-		frameBuffer->Clear(context);
-		frameBuffer->Activate(context);
-
+		frameBuffer3->Clear(context);
+		frameBuffer3->Activate(context);
 		blend[0]->activate(context);
-		if (screenShot) 
+
+		modelRenderer->Begin(context, viewProjection);
+		modelRenderer->Draw(context, *player->GetCharacter()->GetModel(), VECTOR4F(0.5, 0.5, 0.5, 1));
+		modelRenderer->End(context);
+		if (mSManager->GetStageEditor()->GetEditorFlag())
 		{
-			if (target[0])
-			{
-				modelRenderer->Begin(context, viewProjection);
-				modelRenderer->Draw(context, *player->GetCharacter()->GetModel(), VECTOR4F(0.5, 0.5, 0.5, 1));
-				modelRenderer->End(context);
-			}
-			
-			if (target[5])sky->Render(context, view, projection);
-			if (target[2])pGpuParticleManager->Render(context, view, projection);
-
-			if(target[1])mSManager->Render(context, view, projection, mStageOperation->GetColorType());
-			if (target[4])if (hitArea)HitAreaRender::GetInctance()->Render(context, view, projection);
-			if (target[3])UIManager::GetInctance()->Render(context);
-
+			mSManager->Render(context, view, projection, mStageOperation->GetColorType());
 		}
 		else
 		{
-			modelRenderer->Begin(context, viewProjection);
-			modelRenderer->Draw(context, *player->GetCharacter()->GetModel(), VECTOR4F(0.5, 0.5, 0.5, 1));
-			modelRenderer->End(context);
-			if (mSManager->GetStageEditor()->GetEditorFlag())
-			{
-				mSManager->Render(context, view, projection, mStageOperation->GetColorType());
-			}
-			else
-			{
-				sky->Render(context, view, projection);
-				pGpuParticleManager->Render(context, view, projection);
+			sky->Render(context, view, projection);
+			pGpuParticleManager->Render(context, view, projection);
 
-				mSManager->Render(context, view, projection, mStageOperation->GetColorType());
-				if (hitArea)HitAreaRender::GetInctance()->Render(context, view, projection);
-				UIManager::GetInctance()->Render(context);
-			}
-
+			mSManager->Render(context, view, projection, mStageOperation->GetColorType());
+			if (hitArea)HitAreaRender::GetInctance()->Render(context, view, projection);
 		}
+		frameBuffer3->Deactivate(context);
+
+		/************************速度マップテクスチャの作成***********************/
+		velocityMap->Clear(context);
+		velocityMap->Activate(context);
+		pCameraManager->GetCamera()->ShaderSetBeforeBuffer(context, 5);
+		modelRenderer->VelocityBegin(context, viewProjection);
+		modelRenderer->VelocityDraw(context, *player->GetCharacter()->GetModel());
+		modelRenderer->VelocityEnd(context);
+		pGpuParticleManager->VelocityRender(context, view, projection);
+
+		mSManager->RenderVelocity(context, view, projection, mStageOperation->GetColorType());
+
+		velocityMap->Deactivate(context);
+		/************************シャドウマップテクスチャの作成***********************/
+		shadowMap->Clear(context);
+		shadowMap->Activate(context);
+
+		lightCamera->SetParallelPerspective(viewport.Width/10.f , viewport.Height/10.f , 0.1f, 100);
+		VECTOR3F lightDir = VECTOR3F(pLight.GetLightDirection().x, pLight.GetLightDirection().y, pLight.GetLightDirection().z);
+		lightCamera->SetFocus(player->GetCharacter()->GetPosition());
+		lightCamera->SetEye(player->GetCharacter()->GetPosition() + lightDir * 30.f);
+		lightCamera->SetUp(VECTOR3F(0, 1, 0));
+		lightCamera->CalculateParallelMatrix();
+
+		FLOAT4X4 lightVP;
+		DirectX::XMStoreFloat4x4(&lightVP, DirectX::XMLoadFloat4x4(&lightCamera->GetView())* DirectX::XMLoadFloat4x4(&lightCamera->GetProjection()));
+		modelRenderer->ShadowBegin(context, lightVP);
+		modelRenderer->ShadowDraw(context, *player->GetCharacter()->GetModel());
+		modelRenderer->ShadowEnd(context);
+
+
+		shadowMap->Deactivate(context);
+
+		shadowRenderBuffer->Clear(context);
+		shadowRenderBuffer->Activate(context);
+		renderEffects->ShadowRender(context, frameBuffer3->GetRenderTargetShaderResourceView().Get(), frameBuffer3->GetDepthStencilShaderResourceView().Get(), shadowMap->GetDepthStencilShaderResourceView().Get()
+			, view, projection, lightCamera->GetView(), lightCamera->GetProjection());
+		shadowRenderBuffer->Deactivate(context);
+
+		frameBuffer->Clear(context);
+		frameBuffer->Activate(context);
+		velocityMap->SetPsTexture(context, 1);
+		siro->Render(context, motionBlurShader.get(), shadowRenderBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+
+		//if (screenShot) 
+		//{
+		//	if (target[0])
+		//	{
+		//		modelRenderer->Begin(context, viewProjection);
+		//		modelRenderer->Draw(context, *player->GetCharacter()->GetModel(), VECTOR4F(0.5, 0.5, 0.5, 1));
+		//		modelRenderer->End(context);
+		//	}
+		//	
+		//	if (target[5])sky->Render(context, view, projection);
+		//	if (target[2])pGpuParticleManager->Render(context, view, projection);
+
+		//	if(target[1])mSManager->Render(context, view, projection, mStageOperation->GetColorType());
+		//	if (target[4])if (hitArea)HitAreaRender::GetInctance()->Render(context, view, projection);
+		//	if (target[3])UIManager::GetInctance()->Render(context);
+
+		//}
+		//else
+		//{
+		//	modelRenderer->Begin(context, viewProjection);
+		//	modelRenderer->Draw(context, *player->GetCharacter()->GetModel(), VECTOR4F(0.5, 0.5, 0.5, 1));
+		//	modelRenderer->End(context);
+		//	if (mSManager->GetStageEditor()->GetEditorFlag())
+		//	{
+		//		mSManager->Render(context, view, projection, mStageOperation->GetColorType());
+		//	}
+		//	else
+		//	{
+		//		sky->Render(context, view, projection);
+		//		pGpuParticleManager->Render(context, view, projection);
+
+		//		mSManager->Render(context, view, projection, mStageOperation->GetColorType());
+		//		if (hitArea)HitAreaRender::GetInctance()->Render(context, view, projection);
+		//		UIManager::GetInctance()->Render(context);
+		//	}
+
+		//}
+		UIManager::GetInctance()->Render(context);
+
 		blend[0]->deactivate(context);
 		frameBuffer->Deactivate(context);
 	}

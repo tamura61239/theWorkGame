@@ -81,6 +81,8 @@ StageSceneParticle::StageSceneParticle(ID3D11Device* device) :mMaxCount(100000),
 	};
 	mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/particle_render_vs.cso", "Data/shader/particle_render_cube_mesh_gs.cso", "Data/shader/particle_render_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc)));
 	mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/particle_render_vs.cso", "Data/shader/particle_render_billboard_gs.cso", "Data/shader/particle_render_text_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc)));
+	//	mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/particle_motion_data_render_vs.cso", "Data/shader/particle_motiom_blur_gs.cso", "Data/shader/particle_motion_blur_text_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc)));
+
 	mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/particle_render_vs.cso", "", "Data/shader/particle_render_point_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc)));
 	//テクスチャの読み込み
 	hr = load_texture_from_file(device, L"Data/image/○.png", mTextureSRV.GetAddressOf());
@@ -227,6 +229,24 @@ void StageSceneParticle::Render(ID3D11DeviceContext* context)
 
 void StageSceneParticle::Render(ID3D11DeviceContext* context, DrowShader* shader)
 {
+	shader->Activate(context);
+
+	//context->PSSetShaderResources(0, 1, mTextureSRV.GetAddressOf());
+	//context->PSSetSamplers(0, 1, mSamplerState.GetAddressOf());
+	u_int stride = sizeof(RenderParticle);
+	u_int offset = 0;
+
+	context->IASetVertexBuffers(0, 1, mRenderBuffer.GetAddressOf(), &stride, &offset);
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+
+	context->Draw(mMaxCount, 0);
+	shader->Deactivate(context);
+
+	//ID3D11ShaderResourceView* srv = nullptr;
+	//ID3D11SamplerState* sample = nullptr;
+	//context->PSSetShaderResources(0, 1, &srv);
+	//context->PSSetSamplers(0, 1, &sample);
+
 }
 
 

@@ -65,8 +65,10 @@ private:
 	std::unique_ptr<MulltiRenderTargetFunction>mullti;
 	std::unique_ptr<FrameBuffer>shadowMap;
 	std::shared_ptr<FrameBuffer>frameBuffer;
+	std::shared_ptr<FrameBuffer>frameBuffer3;
+	std::shared_ptr<FrameBuffer>velocityMap;
 	std::shared_ptr<FrameBuffer>saveFrameBuffer;
-	std::shared_ptr<FrameBuffer>shrinkBuffer[2];
+	std::shared_ptr<FrameBuffer>shadowRenderBuffer;
 	std::shared_ptr<FrameBuffer>frameBuffer2;
 	std::unique_ptr<RenderEffects>renderEffects;
 	std::unique_ptr<PlayerAI>player;
@@ -77,9 +79,11 @@ private:
 	std::unique_ptr<blend_state> blend[3];
 	std::unique_ptr<SkyMap>sky;
 	std::unique_ptr<DrowShader>blurShader;
-	std::unique_ptr<DepthOfField>depthOfField;
+	std::unique_ptr<DrowShader>motionBlurShader;
+	std::unique_ptr<DrowShader>skymapMotionShader;
 	std::unique_ptr<StageSelect>mStageSelect;
 	std::unique_ptr<Fade>fadeOut;
+	std::unique_ptr<Camera>lightCamera;
 	bool stop;
 	int editorNo;
 	bool selectSceneFlag;

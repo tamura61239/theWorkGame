@@ -18,6 +18,7 @@ public:
 	void SetPlayerData(const VECTOR3F&velocity,const bool playFlag);
 	void Update(ID3D11DeviceContext* context, float elapsd_time);
 	void Render(ID3D11DeviceContext* context);
+	void Render(ID3D11DeviceContext* context,DrowShader*shader);
 private:
 #if (RUNPARTICLE_TYPE==0)
 	struct CbeBone

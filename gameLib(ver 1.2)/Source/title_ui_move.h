@@ -27,7 +27,7 @@ public:
 	{
 		mTimer = 0;
 		mMoveChangeFlag = false;
-		for (int i = 0; i < uis.size(); i++)
+		for (int i = 0; i < static_cast<int>(uis.size()); i++)
 		{
 			auto&uiData = uis[i]->GetUIData();
 			auto& data = mDatas[i];

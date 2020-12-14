@@ -18,8 +18,9 @@ void main(
 		{0.5,-0.5,-0.5},
 	};
 	float3 position = (float3)0;
+    int i = 0;
 	[unroll]
-	for (int i = 0; i < 2; i++)
+	for (i = 0; i < 2; i++)
 	{
         GS_OUT gout = (GS_OUT)0;
 		//
@@ -79,7 +80,7 @@ void main(
 	}
 	[unroll]
 
-	for (int i = 0; i < 4; i++)
+	for (i = 0; i < 4; i++)
 	{
         GS_OUT gout = (GS_OUT) 0;
 		position = input[0].worldPosition.xyz + mul(lineBox[i] * input[0].scale, input[0].rotateMatrix);

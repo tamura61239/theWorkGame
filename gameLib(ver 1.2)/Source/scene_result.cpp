@@ -55,7 +55,6 @@ mPlayFlag(true), nowLoading(true)
 
 			};
 			mMotionBlurShader = std::make_unique<DrowShader>(device, "Data/shader/sprite_vs.cso", "", "Data/shader/motion_blur_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc));
-#if (RESULT_TYPE==0)
 			sky = std::make_unique<SkyMap>(device, L"Data/AllSkyFree/Cold Night/ColdNight.dds", MAPTYPE::BOX);
 			{
 				FILE* fp;
@@ -65,26 +64,6 @@ mPlayFlag(true), nowLoading(true)
 					fclose(fp);
 				}
 			}
-#else
-			sky = std::make_unique<SkyMap>(device, L"Data/image/sor_sea.dds", MAPTYPE::BOX);
-			{
-				FILE* fp;
-				if (fopen_s(&fp, "Data/file/game_sky_map.bin", "rb") == 0)
-				{
-					fread(sky->GetPosData(), sizeof(Obj3D), 1, fp);
-					fclose(fp);
-				}
-			}
-			mSManager = std::make_unique<StageManager>(device, 1902, 1080);
-			mSManager->SetStageNo(Ranking::GetStageNo());
-			mSManager->Load();
-			mRenderScene->Load(device, L"Data/image/siro.png");
-			std::unique_ptr<StageOperation>stageOperation;
-			stageOperation = std::make_unique<StageOperation>();
-			stageOperation->Update(0, mSManager.get(), false);
-			pLight.CreateLightBuffer(device);
-
-#endif
 		}, device);
 
 }
@@ -125,10 +104,6 @@ void SceneResult::Update(float elapsed_time)
 	mRanking->Update(elapsed_time, mPlayFlag);
 	UIManager::GetInctance()->Update(elapsed_time);
 	pCameraManager->Update(elapsed_time);
-#if (RESULT_TYPE==1)
-
-	mSManager->Update(elapsed_time);
-#endif
 	pGpuParticleManager->Update(elapsed_time);
 	if (UIManager::GetInctance()->GetResultUIMove()->GetDecisionFlag())
 	{
@@ -151,39 +126,46 @@ void SceneResult::Render(ID3D11DeviceContext* context, float elapsed_time)
 
 	sky->Render(context, view, projection);
 	//mRenderScene->Render(context, VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0, VECTOR4F(0.6f, 0.6f, 0.6f, 1));
-#if (RESULT_TYPE==1)
-
-	mSManager->Render(context, view, projection, 0);
-	pGpuParticleManager->Render(context, view, projection);
-#else
+	
+#if 0
 	pGpuParticleManager->Render(context, view, projection);
 
-#endif
-	UIManager::GetInctance()->Render(context);
-
-	mRanking->Render(context);
 
 	mBlend[0]->deactivate(context);
 
 	frameBuffer->Deactivate(context);
 
-	//velocityBuffer->Clear(context);
-	//velocityBuffer->Activate(context);
-	//pCameraManager->GetCamera()->ShaderSetBeforeBuffer(context, 5);
+	velocityBuffer->Clear(context);
+	velocityBuffer->Activate(context);
+	pCameraManager->GetCamera()->ShaderSetBeforeBuffer(context, 5);
 
-	//pGpuParticleManager->VelocityRender(context, view, projection);
-	//velocityBuffer->Deactivate(context);
+	pGpuParticleManager->VelocityRender(context, view, projection);
+	velocityBuffer->Deactivate(context);
 
-
-	//frameBuffer2->Clear(context);
-	//frameBuffer2->Activate(context);
 	mBlend[0]->activate(context);
+
+	frameBuffer2->Clear(context);
+	frameBuffer2->Activate(context);
+	velocityBuffer->SetPsTexture(context, 1);
+	mRenderScene->Render(context, mMotionBlurShader.get(), frameBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+	UIManager::GetInctance()->Render(context);
+
+	mRanking->Render(context);
+
+	frameBuffer2->Deactivate(context);
+	mRenderScene->Render(context, frameBuffer2->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+	mBloom->Render(context, frameBuffer2->GetRenderTargetShaderResourceView().Get(), true);
+#else
+	pGpuParticleManager->Render(context, view, projection);
+	UIManager::GetInctance()->Render(context);
+
+	mRanking->Render(context);
+
+	frameBuffer->Deactivate(context);
 	mRenderScene->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 	mBloom->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), true);
-	//frameBuffer2->Deactivate(context);
-	//velocityBuffer->SetPsTexture(context, 1);
-	//mRenderScene->Render(context, mMotionBlurShader.get(), frameBuffer2->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 
+#endif
 	mFade->Render(context);
 	mBlend[0]->deactivate(context);
 }
@@ -261,7 +243,7 @@ bool SceneResult::ImGuiUpdate()
 		float* scale[3] = { &sky->GetPosData()->GetScale().x,&sky->GetPosData()->GetScale().y ,&sky->GetPosData()->GetScale().z };
 		ImGui::DragFloat3("scale", *scale, 10);
 		float* angle[3] = { &sky->GetPosData()->GetAngle().x,&sky->GetPosData()->GetAngle().y ,&sky->GetPosData()->GetAngle().z };
-		ImGui::SliderFloat3("angle", *angle, -3.14, 3.14);
+		ImGui::SliderFloat3("angle", *angle, -3.14f, 3.14f);
 		float* color[4] = { &sky->GetPosData()->GetColor().x,&sky->GetPosData()->GetColor().y ,&sky->GetPosData()->GetColor().z ,&sky->GetPosData()->GetColor().w };
 		ImGui::ColorEdit4("color", *color);
 		if (ImGui::Button("save"))

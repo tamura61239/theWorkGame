@@ -40,7 +40,7 @@ StageSelect::StageSelect(ID3D11Device* device, const int maxCount) :mSelectScene
 	//LocalDataÇÃàÍólÇÃèâä˙âª
 	mLocalDatas.resize(5);
 	std::string name[5] = { "front","number","back" ,"tutorial","stageImage" };
-	for (int i = 0; i < mLocalDatas.size(); i++)
+	for (int i = 0; i < static_cast<int>(mLocalDatas.size()); i++)
 	{
 		mLocalDatas[i].mName = name[i];
 		mLocalDatas[i].mData = std::make_shared<LocalData>();
@@ -87,7 +87,7 @@ void StageSelect::ImGuiUpdate()
 	mBackTexture->mTextureDrowSize = mBoardSize;
 	if (ImGui::CollapsingHeader("localData"))
 	{
-		for (int i = 0; i < mLocalDatas.size(); i++)
+		for (int i = 0; i < static_cast<int>(mLocalDatas.size()); i++)
 		{
 			auto& local = mLocalDatas[i].mData;
 			std::string defName = std::to_string(i);
@@ -156,7 +156,7 @@ void StageSelect::Update(float elapsdTime, StageManager* manager)
 void StageSelect::Select(StageManager* manager)
 {
 
-	if (pKeyBoad.PressedState(KeyLabel::RIGHT)&& mSelectNumber < mStageBoards.size() - 1)//âEÇ…à⁄ìÆ
+	if (pKeyBoad.PressedState(KeyLabel::RIGHT)&& mSelectNumber < static_cast<int>(mStageBoards.size()) - 1)//âEÇ…à⁄ìÆ
 	{
 		mMoveTimer = 0;
 		mChangeSelect = 1;
@@ -199,7 +199,7 @@ void StageSelect::Load()
 		fread(&mBoardSize, sizeof(VECTOR2F), 1, fp);
 		fread(&mInterval, sizeof(float), 1, fp);
 		fileSize -= sizeof(VECTOR2F) + sizeof(float);
-		for (int i = 0; i < fileSize/sizeof(LocalData); i++)
+		for (int i = 0; i < static_cast<int>(fileSize/sizeof(LocalData)); i++)
 		{
 			LocalData data;
 			fread(&data, sizeof(LocalData), 1, fp);
@@ -219,7 +219,7 @@ void StageSelect::Save()
 	{
 		fwrite(&mBoardSize, sizeof(VECTOR2F), 1, fp);
 		fwrite(&mInterval, sizeof(float), 1, fp);
-		for (int i = 0; i < mLocalDatas.size(); i++)
+		for (int i = 0; i < static_cast<int>(mLocalDatas.size()); i++)
 		{
 
 			fwrite(mLocalDatas[i].mData.get(), sizeof(LocalData), 1, fp);

@@ -18,21 +18,21 @@ void TimeText::Render(ID3D11DeviceContext* context, Sprite* sprite)
 	int time = mTime % 1000;
 	VECTOR2F leftTop = mLeftTop + VECTOR2F(mTextSize.x, 0) * 0;
 	VECTOR2F size = VECTOR2F(mSizeX, mTextSize.y);
-	VECTOR2F texLeftTop = VECTOR2F(62 * number, 0);
+	VECTOR2F texLeftTop = VECTOR2F(62.f * static_cast<float>(number), 0);
 	sprite->Render(context, leftTop, size, texLeftTop, VECTOR2F(62, 100), 0);
 	number = time / 100;
 	time %= 100;
 	leftTop = mLeftTop + VECTOR2F(mTextSize.x, 0) * 0.2f;
-	texLeftTop = VECTOR2F(62 * number, 0);
+	texLeftTop = VECTOR2F(62.f * static_cast<float>(number), 0);
 	sprite->Render(context, leftTop, size, texLeftTop, VECTOR2F(62, 100), 0);
 	number = time / 10;
 	time %= 10;
 	leftTop = mLeftTop + VECTOR2F(mTextSize.x, 0) * 0.6f;
-	texLeftTop = VECTOR2F(62 * number, 0);
+	texLeftTop = VECTOR2F(62.f * static_cast<float>(number), 0);
 	sprite->Render(context, leftTop, size, texLeftTop, VECTOR2F(62, 100), 0);
 	number = time;
 	leftTop = mLeftTop + VECTOR2F(mTextSize.x, 0) * 0.8f;
-	texLeftTop = VECTOR2F(62 * number, 0);
+	texLeftTop = VECTOR2F(62.f * static_cast<float>(number), 0);
 	sprite->Render(context, leftTop, size, texLeftTop, VECTOR2F(62, 100), 0);
 
 }
@@ -83,7 +83,7 @@ void Ranking::Render(ID3D11DeviceContext* context)
 	for (int i = 0; i < 5; i++)
 	{
 		VECTOR2F leftTop = VECTOR2F(mRankingData.mLeftTop.x-100.f, mRankingData.mLeftTop.y + mRankingData.mIntervalY * i-20);
-		mNumberTest->Render(context, leftTop, VECTOR2F(62, 100), VECTOR2F(62 * (i + 1), 0), VECTOR2F(62, 100), 0);
+		mNumberTest->Render(context, leftTop, VECTOR2F(62, 100), VECTOR2F(62 * static_cast<float>((i + 1)), 0), VECTOR2F(62, 100), 0);
 	}
 	VECTOR2F leftTop = VECTOR2F(mRankingData.mLeftTop.x - 370, mRankingData.mLeftTop.y + mRankingData.mIntervalY * 5 - 20);
 
@@ -104,7 +104,7 @@ void Ranking::ScereMove(float elapsdTime)
 //ランキングのスコア(タイム)を順に表示
 void Ranking::RankingMove(float elapsdTime)
 {
-	for (int i = 0; i < mRankingTexts.size(); i++)
+	for (int i = 0; i < static_cast<int>(mRankingTexts.size()); i++)
 	{
 		auto& text = mRankingTexts.at(i);
 		if (mRankingData.mStartTime * i + 1.f <= mTimer)
@@ -259,7 +259,7 @@ void Ranking::SetRankingData()
 {
 	mNowPlayTimeText->SetLeftTop(mNowPlayScoreTime.mLeftTop);
 	mNowPlayTimeText->SetTextSize(mNowPlayScoreTime.mTextSize);
-	for (int i = 0; i < mRankingTexts.size(); i++)
+	for (int i = 0; i < static_cast<int>(mRankingTexts.size()); i++)
 	{
 		auto& text = mRankingTexts.at(i);
 		VECTOR2F leftTop = VECTOR2F(mRankingData.mStartX, mRankingData.mLeftTop.y);

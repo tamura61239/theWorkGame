@@ -10,7 +10,7 @@ RunParticles::RunParticles(ID3D11Device* device): mRenderSize(0),mPlayFlag(false
 {
 	std::vector<Particle>particles;
 	std::vector<RenderParticle>renderParticles;
-	renderParticles.resize(100000);
+	renderParticles.resize(50000);
 	mRenderSize = renderParticles.size();
 	particles.resize(mRenderSize);
 	Microsoft::WRL::ComPtr<ID3D11Buffer>particleBuffer;
@@ -78,7 +78,7 @@ RunParticles::RunParticles(ID3D11Device* device): mRenderSize(0),mPlayFlag(false
 		{"VELOCITY",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 		{"SCALE",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 	};
-	mShader = std::make_unique<DrowShader>(device, "Data/shader/particle_render_vs.cso", "Data/shader/particle_render_cube_mesh_gs.cso", "Data/shader/particle_render_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
+	mShader = std::make_unique<DrowShader>(device, "Data/shader/particle_render_vs.cso", "Data/shader/particle_render_billboard_gs.cso", "Data/shader/particle_render_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
 	mCbCreateData.mStartNumber = 0;
 	memset(&mEditorData, 0, sizeof(mEditorData));
 	Load();
@@ -373,6 +373,24 @@ void RunParticles::Render(ID3D11DeviceContext* context)
 
 	context->Draw(mRenderSize, 0);
 	mShader->Deactivate(context);
+}
+
+void RunParticles::Render(ID3D11DeviceContext* context, DrowShader* shader)
+{
+	if (mRenderBuffer.Get() == nullptr)return;
+	if (shader == nullptr)return;
+
+	shader->Activate(context);
+
+	u_int stride = sizeof(RenderParticle);
+	u_int offset = 0;
+
+	context->IASetVertexBuffers(0, 1, mRenderBuffer.GetAddressOf(), &stride, &offset);
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+
+	context->Draw(mRenderSize, 0);
+	shader->Deactivate(context);
+
 }
 
 

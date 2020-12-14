@@ -151,11 +151,16 @@ public:
 	void Render(ID3D11DeviceContext* context, StaticMesh* obj, const FLOAT4X4& world, const VECTOR4F color = VECTOR4F(1, 1, 1, 1));
 	void Render(ID3D11DeviceContext* context, DrowShader* shader, StaticMesh* obj, const FLOAT4X4& world, const VECTOR4F color = VECTOR4F(1, 1, 1, 1));
 	void End(ID3D11DeviceContext* context);
+	void VelocityBegin(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const bool w = false);
+	void VelocityRender(ID3D11DeviceContext* context, StaticMesh* obj, const FLOAT4X4& world, const FLOAT4X4& beforeWorld, const VECTOR4F color = VECTOR4F(1, 1, 1, 1));
+	void VelocityEnd(ID3D11DeviceContext* context);
+
 private:
 	std::vector<std::unique_ptr<DrowShader>>mShader;
 	std::unique_ptr<DrowShader>mShadowShader;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbScene;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbObj;
+	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbBeforeObj;
 
 
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState>mRasterizerState;

@@ -192,35 +192,13 @@ void StageManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, co
 }
 void StageManager::RenderVelocity(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const int stageState)
 {
-	mRender->Begin(context, view, projection);
+	mRender->VelocityBegin(context, view, projection);
 	for (auto& stage : mStageObjs)
 	{
-		int state = stage->GetStageData().mColorType + stageState;
-		if (state % 2 == 1)continue;
-		context->VSSetConstantBuffers(2, 1, mCbBeforeBuffer.GetAddressOf());
-		context->PSSetConstantBuffers(2, 1, mCbBeforeBuffer.GetAddressOf());
-		context->UpdateSubresource(mCbBeforeBuffer.Get(), 0, 0, &stage->GetBeforeWorld(), 0, 0);
-		mRender->Render(context, mVelocityShader.get(), stage->GetMesh(), stage->GetWorld(), stage->GetColor());
+		mRender->VelocityRender(context, stage->GetMesh(), stage->GetWorld(),stage->GetBeforeWorld(), stage->GetColor());
 		stage->SetBeforeWorld(stage->GetWorld());
 	}
-	mRender->End(context);
-
-	//pGpuParticleManager->Render(context, view, projection);
-
-	mRender->Begin(context, view, projection);
-
-	for (auto& stage : mStageObjs)
-	{
-		int state = stage->GetStageData().mColorType + stageState;
-		if (state % 2 == 0)continue;
-		context->VSSetConstantBuffers(2, 1, mCbBeforeBuffer.GetAddressOf());
-		context->PSSetConstantBuffers(2, 1, mCbBeforeBuffer.GetAddressOf());
-		context->UpdateSubresource(mCbBeforeBuffer.Get(), 0, 0, &stage->GetBeforeWorld(), 0, 0);
-		mRender->Render(context, mVelocityShader.get(), stage->GetMesh(), stage->GetWorld(), stage->GetColor());
-		stage->SetBeforeWorld(stage->GetWorld());
-	}
-	mRender->End(context);
-
+	mRender->VelocityEnd(context);
 
 }
 void StageManager::SidoViewRender(ID3D11DeviceContext* context)

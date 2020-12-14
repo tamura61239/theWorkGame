@@ -1,7 +1,7 @@
 #include"particle_motiom_data_render.hlsli"
 #include"before_camera_view_data.hlsli"
 #define BLUER_TYPE 0
-static const float value = 3.f;
+static const float value = 0.5f;
 [maxvertexcount(4 * 9)]
 void main(
 	point VS_OUT input[1],
