@@ -539,7 +539,7 @@ MeshRender::MeshRender(ID3D11Device* device)
 		mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/static_mesh_vs.cso", "", "Data/shader/static_mesh_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc)));
 		mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/static_mesh_normal_vs.cso", "", "Data/shader/static_mesh_normal_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc)));
 		mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/static_mesh_motion_data_vs.cso", "Data/shader/static_mesh_motion_data_gs.cso", "Data/shader/static_mesh_motion_data_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc)));
-		mShadowShader = std::make_unique<DrowShader>(device, "Data/shader/static_mesh_shadow_vs.cso", "", "");
+		mShadowShader = std::make_unique<DrowShader>(device, "Data/shader/static_mesh_shadow_vs.cso", "", "Data/shader/static_mesh_shadow_ps.cso");
 	}
 
 	// create rasterizer state : solid mode
@@ -670,7 +670,7 @@ void MeshRender::ShadowBegin(ID3D11DeviceContext* context, const FLOAT4X4& view,
 
 }
 
-void MeshRender::ShadowRender(ID3D11DeviceContext* context, StaticMesh* obj, const FLOAT4X4& world)
+void MeshRender::ShadowRender(ID3D11DeviceContext* context, StaticMesh* obj, const FLOAT4X4& world, const VECTOR4F&color)
 {
 
 	for (StaticMesh::Mesh& mesh : obj->meshes)
@@ -682,7 +682,7 @@ void MeshRender::ShadowRender(ID3D11DeviceContext* context, StaticMesh* obj, con
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		CbObj data;
-
+		data.color = color;
 		DirectX::XMStoreFloat4x4(&data.world, DirectX::XMLoadFloat4x4(&mesh.globalTransform) * DirectX::XMLoadFloat4x4(&world));
 		context->UpdateSubresource(mCbObj.Get(), 0, 0, &data, 0, 0);
 		for (StaticMesh::Subset& subset : mesh.subsets)

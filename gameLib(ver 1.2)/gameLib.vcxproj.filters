@@ -336,6 +336,9 @@
     <ClCompile Include="Source\fireworks_particle.cpp">
       <Filter>ソース ファイル\GPU</Filter>
     </ClCompile>
+    <ClCompile Include="Source\light_view.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="External_Libraries\imgui\imconfig.h">
@@ -604,6 +607,9 @@
     </ClInclude>
     <ClInclude Include="Source\vector_combo.h">
       <Filter>gameLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\light_view.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

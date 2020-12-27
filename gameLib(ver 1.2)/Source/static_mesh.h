@@ -145,7 +145,7 @@ class MeshRender
 public:
 	MeshRender(ID3D11Device* device);
 	void ShadowBegin(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection);
-	void ShadowRender(ID3D11DeviceContext* context, StaticMesh* obj, const FLOAT4X4& world);
+	void ShadowRender(ID3D11DeviceContext* context, StaticMesh* obj, const FLOAT4X4& world, const VECTOR4F&color=VECTOR4F(1,1,1,1));
 	void ShadowEnd(ID3D11DeviceContext* context);
 	void Begin(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const bool w = false);
 	void Render(ID3D11DeviceContext* context, StaticMesh* obj, const FLOAT4X4& world, const VECTOR4F color = VECTOR4F(1, 1, 1, 1));

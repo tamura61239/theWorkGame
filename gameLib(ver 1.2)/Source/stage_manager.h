@@ -14,7 +14,8 @@ public:
 	void ImGuiUpdate();
 	void Update(float elapsd_time);
 	void Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const int stageState,DrowShader*srv=nullptr);
-	void RenderVelocity(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection,const int stageState);
+	void RenderVelocity(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const int stageState);
+	void RenderShadow(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection);
 	void SidoViewRender(ID3D11DeviceContext* context);
 	//setter
 	void SetStageNo(int no) { mStageNo = no; }

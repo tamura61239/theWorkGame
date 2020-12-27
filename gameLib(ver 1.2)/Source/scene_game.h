@@ -20,6 +20,7 @@
 #include"depth_of_field.h"
 #include"stage_select.h"
 #include"fade.h"
+#include"light_view.h"
 
 
 class SceneGame :public Scene
@@ -83,7 +84,7 @@ private:
 	std::unique_ptr<DrowShader>skymapMotionShader;
 	std::unique_ptr<StageSelect>mStageSelect;
 	std::unique_ptr<Fade>fadeOut;
-	std::unique_ptr<Camera>lightCamera;
+	std::unique_ptr<LightView>mLightView;
 	bool stop;
 	int editorNo;
 	bool selectSceneFlag;

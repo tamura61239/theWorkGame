@@ -25,14 +25,20 @@ float4 main(VS_OUT pin, uint sample_index: SV_SAMPLEINDEX) : SV_TARGET
 
 	float4 lightViewPosition = mul(worldPosition, lightViewProjection);
 	lightViewPosition /= lightViewPosition.w;
-#if 0
+#if 1
 	if (lightViewPosition.z < 1 && lightViewPosition.z>0)
 	{
+        float maxDepthSlope = max(abs(ddx(lightViewPosition.z)), abs(ddy(lightViewPosition.z)));
+
+        float shadowBias2 = data.shadowBisa + data.slopeScaledBias * maxDepthSlope;
+        shadowBias2 = min(shadowBias2, data.depthBiasClamp);
+
+
 		lightViewPosition.x = lightViewPosition.x * 0.5 + 0.5;
 		lightViewPosition.y = lightViewPosition.y * -0.5 + 0.5;
-		float shadowThreshold = shadow_map.SampleCmpLevelZero(shadow_map_sampler_state, lightViewPosition.xy, lightViewPosition.z - shadowBisa);
+        float shadowThreshold = shadow_map.SampleCmpLevelZero(shadow_map_sampler_state, lightViewPosition.xy, lightViewPosition.z - shadowBias2);
 		
-		shadowThreshold = lerp(shadowColor, float3(1.0f, 1.0f, 1.0f), shadowThreshold).x;
+		shadowThreshold = lerp(data.shadowColor, float3(1.0f, 1.0f, 1.0f), shadowThreshold).x;
 		
 		fragmentColour *= shadowThreshold;
 	}

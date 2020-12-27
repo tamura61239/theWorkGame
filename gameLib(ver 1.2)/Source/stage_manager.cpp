@@ -201,6 +201,17 @@ void StageManager::RenderVelocity(ID3D11DeviceContext* context, const FLOAT4X4& 
 	mRender->VelocityEnd(context);
 
 }
+void StageManager::RenderShadow(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection)
+{
+	mRender->ShadowBegin(context, view, projection);
+	for (auto& stage : mStageObjs)
+	{
+		mRender->ShadowRender(context, stage->GetMesh(), stage->GetWorld(),stage->GetColor());
+		stage->SetBeforeWorld(stage->GetWorld());
+	}
+	mRender->ShadowEnd(context);
+
+}
 void StageManager::SidoViewRender(ID3D11DeviceContext* context)
 {
 	if (!mEditor->GetEditorFlag())return;

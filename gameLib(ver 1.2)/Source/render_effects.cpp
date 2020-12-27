@@ -5,7 +5,7 @@
 #include<imgui.h>
 #endif
 
-RenderEffects::RenderEffects(ID3D11Device* device)
+RenderEffects::RenderEffects(ID3D11Device* device, std::string fileName)
 {
 	HRESULT hr;
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
@@ -134,16 +134,26 @@ RenderEffects::RenderEffects(ID3D11Device* device)
 		hr = device->CreateRasterizerState(&rasterizerDesc, mRasterizerState.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
-
+	Load(fileName);
 }
 
 void RenderEffects::ImGuiUpdate()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("shadow map data");
-	float* color[3] = { &mCbScene.shadowColor.x,&mCbScene.shadowColor.y,&mCbScene.shadowColor.z };
+	float* color[3] = { &mCbScene.data.shadowColor.x,&mCbScene.data.shadowColor.y,&mCbScene.data.shadowColor.z };
 	ImGui::ColorEdit3("shadow color", *color);
-	ImGui::InputFloat("shadow bisa", &mCbScene.shadowbisa);
+	ImGui::InputFloat("shadow bisa", &mCbScene.data.shadowbisa, 0.0001f, 0, "%f");
+	ImGui::InputFloat("slope scale bias", &mCbScene.data.slopeScaledBias, 0.0001f, 0, "%f");
+	ImGui::InputFloat("depth bias clamp", &mCbScene.data.depthBiasClamp,0.0001f,0,"%f");
+	static char name[256] = "";
+	ImGui::InputText("file name", name, 256);
+	if (ImGui::Button("save"))
+	{
+		Save(name);
+		strcpy_s(name, "");
+	}
+
 	ImGui::End();
 #endif
 }
@@ -205,5 +215,30 @@ void RenderEffects::DeferrdShadowRender(ID3D11DeviceContext* context, DrowShader
 	context->Draw(4, 0);
 
 	shader->Deactivate(context);
+
+}
+
+void RenderEffects::Load(std::string fileName)
+{
+	std::string filePas = "Data/file/" + fileName + ".bin";
+
+	FILE* fp;
+	if (fopen_s(&fp, filePas.c_str(), "rb") == 0)
+	{
+		fread(&mCbScene.data, sizeof(SaveData), 1, fp);
+		fclose(fp);
+	}
+}
+
+void RenderEffects::Save(std::string fileName)
+{
+	std::string filePas = "Data/file/" + fileName + ".bin";
+
+	FILE* fp;
+	fopen_s(&fp, filePas.c_str(), "wb");
+	{
+		fwrite(&mCbScene.data, sizeof(SaveData), 1, fp);
+		fclose(fp);
+	}
 
 }
