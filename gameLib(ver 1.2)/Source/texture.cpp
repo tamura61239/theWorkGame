@@ -7,7 +7,7 @@
 #include <map>
 #include<string>
 
-HRESULT load_texture_from_file(ID3D11Device* device, const wchar_t* file_name, ID3D11ShaderResourceView** shader_resource_view, D3D11_TEXTURE2D_DESC* texture2d_desc, bool mise)
+HRESULT LoadTextureFromFile(ID3D11Device* device, const wchar_t* file_name, ID3D11ShaderResourceView** shader_resource_view, D3D11_TEXTURE2D_DESC* texture2d_desc, bool mise)
 {
 	HRESULT hr = S_OK;
 	Microsoft::WRL::ComPtr<ID3D11Resource> resource;
@@ -16,7 +16,7 @@ HRESULT load_texture_from_file(ID3D11Device* device, const wchar_t* file_name, I
 	auto it = cache.find(file_name);
 	if (it != cache.end())
 	{
-		//it->second.Attach(*shader_resource_view);
+		//it->second.Attach(*SRV);
 		*shader_resource_view = it->second.Get();
 		(*shader_resource_view)->AddRef();
 	}
@@ -59,7 +59,7 @@ HRESULT load_texture_from_file(ID3D11Device* device, const wchar_t* file_name, I
 			shader_resource_view);
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-		//hr = DirectX::CreateWICTextureFromFile(device, file_name, resource.GetAddressOf(), shader_resource_view);
+		//hr = DirectX::CreateWICTextureFromFile(device, file_name, resource.GetAddressOf(), SRV);
 		//_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		cache.insert(std::make_pair(file_name, *shader_resource_view));
 	}
@@ -73,7 +73,7 @@ HRESULT load_texture_from_file(ID3D11Device* device, const wchar_t* file_name, I
 	return hr;
 }
 
-HRESULT make_dummy_texture(ID3D11Device* device, ID3D11ShaderResourceView** shader_resource_view)
+HRESULT MakeDummyTexture(ID3D11Device* device, ID3D11ShaderResourceView** shader_resource_view)
 {
 	HRESULT hr = S_OK;
 
@@ -119,7 +119,7 @@ referrer_filename <= L"data/bison.obj"
 referent_filename <= L"/user/textures/bison.png"
 combined_resource_path => L"/data/bison.png"
 */
-void combine_resource_path(wchar_t(&combined_resource_path)[256], const wchar_t* referrer_filename, const wchar_t* referent_filename)
+void CombineResourcePath(wchar_t(&combined_resource_path)[256], const wchar_t* referrer_filename, const wchar_t* referent_filename)
 {
 	const wchar_t delimiters[] = { L'\\', L'/' };
 	// extract directory from obj_filename

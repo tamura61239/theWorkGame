@@ -159,7 +159,7 @@ void FbxLoader::BuildNode(FbxNode* fbx_node, ModelData& data, int parent_node_in
 
 	ModelData::Node node;
 	node.name = fbx_node->GetName();
-	node.parent_index = parent_node_index;
+	node.parentIndex = parent_node_index;
 	node.scale = FbxDouble4ToFloat3(fbx_local_transform.GetS());
 	node.rotate = FbxDouble4ToFloat4(fbx_local_transform.GetQ());
 	node.translate = FbxDouble4ToFloat3(fbx_local_transform.GetT());
@@ -206,7 +206,7 @@ void FbxLoader::BuildMesh(FbxNode* fbx_node, FbxMesh* fbx_mesh, ModelData& data)
 	ModelData::Mesh& mesh = data.meshes.back();
 	mesh.indices.resize(fbx_polygon_count * 3);
 	mesh.subsets.resize(fbx_material_count > 0 ? fbx_material_count : 1);
-	mesh.node_index = FindNodeIndex(data, fbx_node->GetName());
+	mesh.nodeIndex = FindNodeIndex(data, fbx_node->GetName());
 
 	// サブセットのマテリアル設定
 	for (int fbx_material_index = 0; fbx_material_index < fbx_material_count; ++fbx_material_index)
@@ -214,7 +214,7 @@ void FbxLoader::BuildMesh(FbxNode* fbx_node, FbxMesh* fbx_mesh, ModelData& data)
 		const FbxSurfaceMaterial* fbx_surface_material = fbx_node->GetMaterial(fbx_material_index);
 
 		ModelData::Subset& subset = mesh.subsets.at(fbx_material_index);
-		subset.material_index = FindMaterialIndex(fbx_node->GetScene(), fbx_surface_material);
+		subset.materialIndex = FindMaterialIndex(fbx_node->GetScene(), fbx_surface_material);
 	}
 
 	// サブセットの頂点インデックス範囲設定
@@ -223,16 +223,16 @@ void FbxLoader::BuildMesh(FbxNode* fbx_node, FbxMesh* fbx_mesh, ModelData& data)
 		for (int fbx_polygon_index = 0; fbx_polygon_index < fbx_polygon_count; ++fbx_polygon_index)
 		{
 			int fbx_material_index = fbx_mesh->GetElementMaterial()->GetIndexArray().GetAt(fbx_polygon_index);
-			mesh.subsets.at(fbx_material_index).index_count += 3;
+			mesh.subsets.at(fbx_material_index).indexCount += 3;
 		}
 
 		int offset = 0;
 		for (ModelData::Subset& subset : mesh.subsets)
 		{
-			subset.start_index = offset;
-			offset += subset.index_count;
+			subset.startIndex = offset;
+			offset += subset.indexCount;
 
-			subset.index_count = 0;
+			subset.indexCount = 0;
 		}
 	}
 
@@ -301,10 +301,10 @@ void FbxLoader::BuildMesh(FbxNode* fbx_node, FbxMesh* fbx_mesh, ModelData& data)
 					FbxAMatrix fbx_inverse_transform = fbx_bone_space_transform.Inverse() * fbx_mesh_space_transform * fbx_geometric_transform;
 
 					FLOAT4X4 inverse_transform = FbxAMatrixToFloat4x4(fbx_inverse_transform);
-					mesh.inverse_transforms.emplace_back(inverse_transform);
+					mesh.inverseTransforms.emplace_back(inverse_transform);
 
 					int node_index = FindNodeIndex(data, fbx_cluster->GetLink()->GetName());
-					mesh.node_indices.emplace_back(node_index);
+					mesh.nodeIndices.emplace_back(node_index);
 				}
 			}
 		}
@@ -326,7 +326,7 @@ void FbxLoader::BuildMesh(FbxNode* fbx_node, FbxMesh* fbx_mesh, ModelData& data)
 		}
 
 		ModelData::Subset& subset = mesh.subsets.at(fbx_material_index);
-		const int index_offset = subset.start_index + subset.index_count;
+		const int index_offset = subset.startIndex + subset.indexCount;
 
 		for (int fbx_vertex_index = 0; fbx_vertex_index < 3; ++fbx_vertex_index)
 		{
@@ -341,14 +341,14 @@ void FbxLoader::BuildMesh(FbxNode* fbx_node, FbxMesh* fbx_mesh, ModelData& data)
 			// Weight
 			{
 				BoneInfluence& bone_influence = bone_influences.at(fbx_control_point_index);
-				vertex.bone_index.x = bone_influence.indices[0];
-				vertex.bone_index.y = bone_influence.indices[1];
-				vertex.bone_index.z = bone_influence.indices[2];
-				vertex.bone_index.w = bone_influence.indices[3];
-				vertex.bone_weight.x = bone_influence.weights[0];
-				vertex.bone_weight.y = bone_influence.weights[1];
-				vertex.bone_weight.z = bone_influence.weights[2];
-				vertex.bone_weight.w = 1.f - (bone_influence.weights[0] + bone_influence.weights[1] + bone_influence.weights[2]);
+				vertex.boneIndex.x = bone_influence.indices[0];
+				vertex.boneIndex.y = bone_influence.indices[1];
+				vertex.boneIndex.z = bone_influence.indices[2];
+				vertex.boneIndex.w = bone_influence.indices[3];
+				vertex.boneWeight.x = bone_influence.weights[0];
+				vertex.boneWeight.y = bone_influence.weights[1];
+				vertex.boneWeight.z = bone_influence.weights[2];
+				vertex.boneWeight.w = 1.f - (bone_influence.weights[0] + bone_influence.weights[1] + bone_influence.weights[2]);
 			}
 
 			// Normal
@@ -381,7 +381,7 @@ void FbxLoader::BuildMesh(FbxNode* fbx_node, FbxMesh* fbx_mesh, ModelData& data)
 			mesh.vertices.emplace_back(vertex);
 		}
 
-		subset.index_count += 3;
+		subset.indexCount += 3;
 	}
 }
 
@@ -463,7 +463,7 @@ ModelData::Material FbxLoader::BuildMaterial(const char* dirname, FbxSurfaceMate
 				::_makepath_s(filename, 256, nullptr, dirname, textureFileName, nullptr);
 			}
 
-			material.texture_filename = filename;
+			material.textureFilename = filename;
 		}
 	}
 
@@ -541,7 +541,7 @@ void FbxLoader::BuildAnimations(FbxScene* fbx_scene, ModelData& data)
 		traverse(fbx_scene->GetRootNode());
 
 		// アニメーションデータを抽出する
-		animation.seconds_length = frame_count * sampling_time;
+		animation.secondsLength = frame_count * sampling_time;
 		animation.keyframes.resize(frame_count + 1);
 
 		float seconds = 0.0f;
@@ -552,10 +552,10 @@ void FbxLoader::BuildAnimations(FbxScene* fbx_scene, ModelData& data)
 		{
 			// キーフレーム毎の姿勢データを取り出す。
 			keyframe->seconds = seconds;
-			keyframe->node_keys.resize(fbx_node_count);
+			keyframe->nodeKeys.resize(fbx_node_count);
 			for (size_t fbx_node_index = 0; fbx_node_index < fbx_node_count; ++fbx_node_index)
 			{
-				ModelData::NodeKeyData& key_data = keyframe->node_keys.at(fbx_node_index);
+				ModelData::NodeKeyData& key_data = keyframe->nodeKeys.at(fbx_node_index);
 				FbxNode* fbx_node = fbx_nodes.at(fbx_node_index);
 
 				// 指定時間のローカル行列からスケール値、回転値、移動値を取り出す。

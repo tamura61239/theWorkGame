@@ -68,8 +68,8 @@ RunParticles::RunParticles(ID3D11Device* device): mRenderSize(0),mPlayFlag(false
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
 
-	create_cs_from_cso(device, "Data/shader/run_particle_create_cs.cso", mCreateShader.GetAddressOf());
-	create_cs_from_cso(device, "Data/shader/run_particle_cs.cso", mUpdateShader.GetAddressOf());
+	CreateCSFromCso(device, "Data/shader/run_particle_create_cs.cso", mCreateShader.GetAddressOf());
+	CreateCSFromCso(device, "Data/shader/run_particle_cs.cso", mUpdateShader.GetAddressOf());
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
 	{
 		{"POSITION",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
@@ -122,11 +122,11 @@ void RunParticles::SetBoneData(Model* model)
 	const ModelResource* model_resource = model->GetModelResource();
 	const std::vector<Model::Node>& nodes = model->GetNodes();
 	::memset(&mCbBone, 0, sizeof(&mCbBone));
-		mCbBone.boneNumber = nodes.size();
+		mCbBone.boneNumber = static_cast<float>(nodes.size());
 		for (int i = 0; i < mCbBone.boneNumber; i++)
 		{
 			auto& node = nodes.at(i);
-			FLOAT4X4 world = node.world_transform;
+			FLOAT4X4 world = node.worldTransform;
 			mCbBone.boneWorld[i] = VECTOR4F(world._41, world._42, world._43, world._44);
 		}
 
@@ -310,7 +310,7 @@ void RunParticles::Update(ID3D11DeviceContext* context, float elapsd_time)
 				mNewIndex = 0;
 				mCbCreateData.mStartNumber = 0;
 			}
-			context->Dispatch(createAmount, 1, 1);
+			context->Dispatch(static_cast<UINT>(createAmount), 1, 1);
 		}
 #elif (RUNPARTICLE_TYPE==1)
 		mNewIndex += mEditorData.mCreateSize * elapsd_time;

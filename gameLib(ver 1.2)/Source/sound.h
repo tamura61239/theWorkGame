@@ -21,12 +21,12 @@ public:
 	void Stop();
 	void SetVolume(const float volume);
 private:
-	IXAudio2* m_p_xaudio2 = nullptr;
-	IXAudio2MasteringVoice* m_p_mastering_voice = nullptr;
+	IXAudio2* mPXaudio2 = nullptr;
+	IXAudio2MasteringVoice* mPMasteringVoice = nullptr;
 
-	std::unique_ptr<SoundBuffer> sound_buffer;
+	std::unique_ptr<SoundBuffer> mSoundBuffer;
 
-	const char* wav_name;
+	const char* mWavName;
 
 };
 #else

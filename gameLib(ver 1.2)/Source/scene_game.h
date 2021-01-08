@@ -77,7 +77,7 @@ private:
 	std::unique_ptr<BloomRender>bloom;
 	std::unique_ptr<StageManager>mSManager;
 	std::unique_ptr<StageOperation>mStageOperation;
-	std::unique_ptr<blend_state> blend[3];
+	std::unique_ptr<BlendState> blend[3];
 	std::unique_ptr<SkyMap>sky;
 	std::unique_ptr<DrowShader>blurShader;
 	std::unique_ptr<DrowShader>motionBlurShader;

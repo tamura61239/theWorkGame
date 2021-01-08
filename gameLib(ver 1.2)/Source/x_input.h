@@ -10,24 +10,24 @@ class XInput
 	struct State {
 		XINPUT_STATE state;
 
-		float r_trigger;
-		float l_trigger;
+		float rTrigger;
+		float lTrigger;
 
-		VECTOR2F r_stick;
-		VECTOR2F l_stick;
+		VECTOR2F rStick;
+		VECTOR2F lStick;
 
 		bool connected = false;
 	};
 
 	static constexpr float MAX_STICKTILT = 32767.0f;
 	static constexpr float MAX_TRRIGERTILT = 255.0f;
-	int m_id;
+	int mId;
 
-	State m_current_state;
-	State m_previous_state;
+	State mCurrentState;
+	State mPreviousState;
 
-	float m_deadzone_x;
-	float m_deadzone_y;
+	float mDeadzoneX;
+	float mDeadzoneY;
 
 	void StickState();
 	void TriggerState();
@@ -37,14 +37,14 @@ public:
 	~XInput() {};
 
 	void Update();
-	bool ButtonPressedState(int pad) { if (this->m_current_state.state.Gamepad.wButtons & pad)return true; return false; }
-	bool ButtonRisingState(int pad) { if ((this->m_current_state.state.Gamepad.wButtons & pad) && !(this->m_previous_state.state.Gamepad.wButtons & pad))return true; return false; }
-	bool ButtonFallingState(int pad) { if (!(this->m_current_state.state.Gamepad.wButtons & pad) && (this->m_previous_state.state.Gamepad.wButtons & pad))return true; return false; }
+	bool ButtonPressedState(int pad) { if (this->mCurrentState.state.Gamepad.wButtons & pad)return true; return false; }
+	bool ButtonRisingState(int pad) { if ((this->mCurrentState.state.Gamepad.wButtons & pad) && !(this->mPreviousState.state.Gamepad.wButtons & pad))return true; return false; }
+	bool ButtonFallingState(int pad) { if (!(this->mCurrentState.state.Gamepad.wButtons & pad) && (this->mPreviousState.state.Gamepad.wButtons & pad))return true; return false; }
 
-	float StickStateX(bool right) { if (right) return m_current_state.r_stick.x; else return m_current_state.l_stick.x; }
-	float StickStateY(bool right) { if (right) return m_current_state.r_stick.y; else return m_current_state.l_stick.y; }
+	float StickStateX(bool right) { if (right) return mCurrentState.rStick.x; else return mCurrentState.lStick.x; }
+	float StickStateY(bool right) { if (right) return mCurrentState.rStick.y; else return mCurrentState.lStick.y; }
 
-	bool TriggerPressedState(bool right) { if (right) return m_current_state.r_trigger > 0.0f; else return m_current_state.l_trigger > 0.0f; }
-	bool TriggerRisingState(bool right) { if (right) return m_current_state.r_trigger > 0.0f  && m_previous_state.r_trigger == 0.0f; else return m_current_state.l_trigger > 0.0f  && m_previous_state.l_trigger == 0.0f; }
-	bool TriggerFallingState(bool right) { if (right) return m_current_state.r_trigger == 0.0f && m_previous_state.r_trigger > 0.0f;  else return m_current_state.l_trigger == 0.0f && m_previous_state.l_trigger > 0.0f; }
+	bool TriggerPressedState(bool right) { if (right) return mCurrentState.rTrigger > 0.0f; else return mCurrentState.lTrigger > 0.0f; }
+	bool TriggerRisingState(bool right) { if (right) return mCurrentState.rTrigger > 0.0f  && mPreviousState.rTrigger == 0.0f; else return mCurrentState.lTrigger > 0.0f  && mPreviousState.lTrigger == 0.0f; }
+	bool TriggerFallingState(bool right) { if (right) return mCurrentState.rTrigger == 0.0f && mPreviousState.rTrigger > 0.0f;  else return mCurrentState.lTrigger == 0.0f && mPreviousState.lTrigger > 0.0f; }
 };

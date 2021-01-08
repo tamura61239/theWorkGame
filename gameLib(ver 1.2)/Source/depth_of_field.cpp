@@ -8,7 +8,7 @@
 DepthOfField::DepthOfField(ID3D11Device* device):averageFlag(false)
 {
 	HRESULT hr;
-	hr = create_cs_from_cso(device, "Data/shader/depth_conversion_cs.cso", mCSShader.GetAddressOf());
+	hr = CreateCSFromCso(device, "Data/shader/depth_conversion_cs.cso", mCSShader.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	{
 		D3D11_TEXTURE2D_DESC desc;

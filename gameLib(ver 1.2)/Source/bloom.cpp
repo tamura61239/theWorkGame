@@ -14,13 +14,13 @@ BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHi
 	unsigned int hight = static_cast<unsigned int>(screenHight);
 	for (int i = 0; i < 5; i++)
 	{
-		mFrameBuffer.emplace_back(std::make_unique<FrameBuffer>(device, static_cast<int>(wight >> i), static_cast<float>(hight >> i), true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R24G8_TYPELESS));
+		mFrameBuffer.push_back(std::make_unique<FrameBuffer>(device, static_cast<int>(wight >> i), static_cast<int>(hight >> i), true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R24G8_TYPELESS));
 	}
 	for (int i = 1; i < 5; i++)
 	{
-		mSidoFrameBuffer.emplace_back(std::make_unique<FrameBuffer>(device, static_cast<int>(wight >> i), static_cast<float>(hight >> i), true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R24G8_TYPELESS));
+		mSidoFrameBuffer.push_back(std::make_unique<FrameBuffer>(device, static_cast<int>(wight >> i), static_cast<int>(hight >> i), true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R24G8_TYPELESS));
 	}
-	mFrameBuffer.emplace_back(std::make_unique<FrameBuffer>(device, screenWidth, screenHight, true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R24G8_TYPELESS));
+	mFrameBuffer.push_back(std::make_unique<FrameBuffer>(device, static_cast<int>(screenWidth), static_cast<int>(screenHight), true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R24G8_TYPELESS));
 
 	HRESULT hr;
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
@@ -29,19 +29,19 @@ BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHi
 	};
 	Microsoft::WRL::ComPtr<ID3D11InputLayout>input;
 
-	hr = create_vs_from_cso(device, "Data/shader/bloom_vs.cso", mVSShader.GetAddressOf(), input.GetAddressOf(), inputElementDesc, ARRAYSIZE(inputElementDesc));
+	hr = CreateVSFromCso(device, "Data/shader/bloom_vs.cso", mVSShader.GetAddressOf(), input.GetAddressOf(), inputElementDesc, ARRAYSIZE(inputElementDesc));
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-	hr = create_ps_from_cso(device, "Data/shader/bloomStart_ps.cso", mPSShader[0].GetAddressOf());
+	hr = CreatePSFromCso(device, "Data/shader/bloomStart_ps.cso", mPSShader[0].GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-	hr = create_ps_from_cso(device, "Data/shader/combined_bloom.cso", mPSShader[1].GetAddressOf());
+	hr = CreatePSFromCso(device, "Data/shader/combined_bloom.cso", mPSShader[1].GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-	hr = create_ps_from_cso(device, "Data/shader/bloom_blur01_ps.cso", mPSBlurShader[0].GetAddressOf());
+	hr = CreatePSFromCso(device, "Data/shader/bloom_blur01_ps.cso", mPSBlurShader[0].GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-	hr = create_ps_from_cso(device, "Data/shader/bloom_blur02_ps.cso", mPSBlurShader[1].GetAddressOf());
+	hr = CreatePSFromCso(device, "Data/shader/bloom_blur02_ps.cso", mPSBlurShader[1].GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 

@@ -35,7 +35,7 @@ mPlayFlag(true), nowLoading(true)
 			pGpuParticleManager->SetState(GpuParticleManager::STATE::RESULT);
 
 			UIManager::GetInctance()->ResultInitialize(device);
-			mBlend.push_back(std::make_unique<blend_state>(device, BLEND_MODE::ALPHA));
+			mBlend.push_back(std::make_unique<BlendState>(device, BLEND_MODE::ALPHA));
 			mRanking = std::make_unique<Ranking>(device, mNowGameTime);
 			mFade = std::make_unique<Fade>(device, Fade::FADE_SCENE::RESULT);
 
@@ -44,7 +44,7 @@ mPlayFlag(true), nowLoading(true)
 			velocityBuffer = std::make_shared<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R16G16B16A16_FLOAT);
 
 			mRenderScene = std::make_unique<Sprite>(device,L"Data/image/siro.png");
-			mBloom = std::make_unique<BloomRender>(device, 1920, 1080, 3);
+			mBloom = std::make_unique<BloomRender>(device, 1920.f, 1080.f, 3);
 			//sky = std::make_unique<SkyMap>(device, L"Data/AllSkyFree/Cold Night/ColdNight.dds", MAPTYPE::BOX);
 			//sky = std::make_unique<SkyMap>(device, L"Data/image/mp_totality.dds", MAPTYPE::BOX);
 			D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
@@ -91,10 +91,10 @@ void SceneResult::Update(float elapsed_time)
 			switch (type)
 			{
 			case 0:
-				pSceneManager.ChangeScene(SCENETYPE::GAME);
+				pSceneManager.ChangeScene(SceneManager::SCENETYPE::GAME);
 				break;
 			case 1:
-				pSceneManager.ChangeScene(SCENETYPE::TITLE);
+				pSceneManager.ChangeScene(SceneManager::SCENETYPE::TITLE);
 				break;
 			}
 			return;
@@ -185,7 +185,7 @@ bool SceneResult::ImGuiUpdate()
 		pCameraManager->DestroyCamera();
 		GpuParticleManager::Destroy();
 
-		pSceneManager.ChangeScene(SCENETYPE::TITLE);
+		pSceneManager.ChangeScene(SceneManager::SCENETYPE::TITLE);
 		return true;
 		break;
 	case 2:
@@ -195,7 +195,7 @@ bool SceneResult::ImGuiUpdate()
 		pCameraManager->DestroyCamera();
 		GpuParticleManager::Destroy();
 
-		pSceneManager.ChangeScene(SCENETYPE::GAME);
+		pSceneManager.ChangeScene(SceneManager::SCENETYPE::GAME);
 		return true;
 		break;
 	}

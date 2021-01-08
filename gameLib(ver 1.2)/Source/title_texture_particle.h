@@ -109,7 +109,7 @@ private:
 	int mMaxParticle;
 	float mSceneParticleIndex;
 	int mChangeMaxParticle;
-	std::unique_ptr<blend_state>blend;
+	std::unique_ptr<BlendState>blend;
 	void Load();
 	void Save();
 };

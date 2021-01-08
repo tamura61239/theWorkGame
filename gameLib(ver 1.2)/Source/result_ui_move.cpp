@@ -40,7 +40,7 @@ void ResultUIMove::Update(float elapsdTime, std::vector<std::shared_ptr<UI>> uis
 	}
 	VECTOR2F position = VECTOR2F(0, 0);
 	int frameNo = 0;
-	for (int i = 0; i < uis.size(); i++)
+	for (int i = 0; i < static_cast<int>(uis.size()); i++)
 	{
 		auto& ui = uis[i];
 		auto& data = ui->GetUIData();

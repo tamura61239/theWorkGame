@@ -95,12 +95,12 @@ SkyMap::SkyMap(ID3D11Device* device, const wchar_t* textureName, MAPTYPE mapType
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
-	//hr = create_vs_from_cso(device, "Data/shader/sky_map_vs.cso", mVSShader.GetAddressOf(), mInput.GetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
+	//hr = CreateVSFromCso(device, "Data/shader/sky_map_vs.cso", mVSShader.GetAddressOf(), mInput.GetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
 	//_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	//hr = create_ps_from_cso(device, "Data/shader/sky_map_ps.cso", mPSShader.GetAddressOf());
+	//hr = CreatePSFromCso(device, "Data/shader/sky_map_ps.cso", mPSShader.GetAddressOf());
 	//_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	mShader = std::make_unique<DrowShader>(device, "Data/shader/sky_map_vs.cso", "", "Data/shader/sky_map_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc));
-	load_texture_from_file(device, textureName, mSRV.GetAddressOf());
+	LoadTextureFromFile(device, textureName, mSRV.GetAddressOf());
 }
 
 void SkyMap::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const VECTOR4F& color)

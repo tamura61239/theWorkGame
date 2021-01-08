@@ -5,20 +5,20 @@
 
 GamePad::GamePad(const int id, const float deadzone_x, const float deadzone_y, bool xinput, HINSTANCE m_hinstance)
 {
-	m_xinput = xinput;
-	if (m_xinput)
+	mXinput = xinput;
+	if (mXinput)
 	{
-		m_x_pad = std::make_unique<XInput>(id, deadzone_x, deadzone_y);
+		mXPad = std::make_unique<XInput>(id, deadzone_x, deadzone_y);
 	}
 	else
 	{
-		m_d_pad = std::make_unique<DirectInput>(id, deadzone_x, deadzone_y, m_hinstance);
+		mDPad = std::make_unique<DirectInput>(id, deadzone_x, deadzone_y, m_hinstance);
 	}
 }
 
 void GamePad::Update()
 {
-	m_xinput ? m_x_pad->Update() : m_d_pad->Update();
+	mXinput ? mXPad->Update() : mDPad->Update();
 }
 
 

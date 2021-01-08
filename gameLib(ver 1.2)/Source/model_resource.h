@@ -14,13 +14,13 @@ public:
 	struct Material
 	{
 		VECTOR4F color = { 0.8f, 0.8f, 0.8f, 1.0f };
-		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shader_resource_view;
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> SRV;
 	};
 
 	struct Subset
 	{
-		u_int		start_index = 0;
-		u_int		index_count = 0;
+		u_int		startIndex = 0;
+		u_int		indexCount = 0;
 		Material* diffuse;
 		Material* normal;
 		Material* bump;
@@ -28,25 +28,25 @@ public:
 
 	struct Mesh
 	{
-		Microsoft::WRL::ComPtr<ID3D11Buffer>	vertex_buffer;
-		Microsoft::WRL::ComPtr<ID3D11Buffer>	index_buffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>	vertexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>	indexBuffer;
 		std::vector<Subset>						subsets;
 
-		int										node_index;
-		std::vector<int>						node_indices;
-		std::vector<DirectX::XMFLOAT4X4*>		inverse_transforms;
+		int										nodeIndex;
+		std::vector<int>						nodeIndices;
+		std::vector<DirectX::XMFLOAT4X4*>		inverseTransforms;
 	};
 
-	const std::vector<Mesh>& GetMeshes() const { return m_meshes; }
-	const std::vector<ModelData::Node>& GetNodes() const { return m_data->nodes; }
-	const std::vector<ModelData::Animation>& GetAnimations() const { return m_data->animations; }
-	const std::vector<ModelData::Mesh>& GetMeshDatas() const { return m_data->meshes; }
+	const std::vector<Mesh>& GetMeshes() const { return mMeshes; }
+	const std::vector<ModelData::Node>& GetNodes() const { return mData->nodes; }
+	const std::vector<ModelData::Animation>& GetAnimations() const { return mData->animations; }
+	const std::vector<ModelData::Mesh>& GetMeshDatas() const { return mData->meshes; }
 	SHADER_TYPE GetShaderType() const{ return mShaderType; }
 private:
-	std::unique_ptr<ModelData>	m_data;
-	std::vector<Material>	diffuses;
-	std::vector<Material>	normals;
-	std::vector<Material>	bumps;
-	std::vector<Mesh>		m_meshes;
+	std::unique_ptr<ModelData>	mData;
+	std::vector<Material>	mDiffuses;
+	std::vector<Material>	mNormals;
+	std::vector<Material>	mBumps;
+	std::vector<Mesh>		mMeshes;
 	SHADER_TYPE mShaderType;
 };

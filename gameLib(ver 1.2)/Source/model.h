@@ -16,28 +16,28 @@ public:
 		VECTOR3F	scale;
 		VECTOR4F	rotate;
 		VECTOR3F	translate;
-		FLOAT4X4	local_transform;
-		FLOAT4X4	world_transform;
+		FLOAT4X4	localTransform;
+		FLOAT4X4	worldTransform;
 		FLOAT4X4    beforeWorldTransform;
 	};
 
 	// アニメーション
-	bool IsPlayAnimation() const { return m_current_animation >= 0; }
-	void PlayAnimation(int animation_index, bool loop = false);
-	void UpdateAnimation(float elapsed_time);
+	bool IsPlayAnimation() const { return mCurrentAnimation >= 0; }
+	void PlayAnimation(int animationIndex, bool loop = false);
+	void UpdateAnimation(float elapsedTime);
 
 	// 行列計算
 	void CalculateLocalTransform();
-	void CalculateWorldTransform(const DirectX::XMMATRIX& world_transform);
+	void CalculateWorldTransform(const DirectX::XMMATRIX& worldTransform);
 
-	const std::vector<Node>& GetNodes() const { return m_nodes; }
-	const ModelResource* GetModelResource() const { return m_model_resource.get(); }
+	const std::vector<Node>& GetNodes() const { return mNodes; }
+	const ModelResource* GetModelResource() const { return mModelResource.get(); }
 
 private:
-	std::shared_ptr<ModelResource>	m_model_resource;
-	std::vector<Node>				m_nodes;
-	int								m_current_animation = -1;
-	float							m_current_seconds = 0.0f;
-	bool							m_loop_animation = false;
-	bool							m_end_animation = false;
+	std::shared_ptr<ModelResource>	mModelResource;
+	std::vector<Node>				mNodes;
+	int								mCurrentAnimation = -1;
+	float							mCurrentSeconds = 0.0f;
+	bool							mLoopAnimation = false;
+	bool							mEndAnimation = false;
 };

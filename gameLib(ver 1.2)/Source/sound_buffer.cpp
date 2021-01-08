@@ -59,7 +59,7 @@ HRESULT SoundBuffer::Initialize(LPCWSTR szFilename)
 	//
 	// Read in the wave file
 	//
-	hr = LoadWAVAudioFromFile(strFilePath, wavefiles, wavedata);
+	hr = LoadWAVAudioFromFile(strFilePath, mWaveFiles, mWaveData);
 	if (FAILED(hr))
 	{
 		//LOGGER("Failed reading WAV file: %#X (%s)\n", hr, strFilePath);
@@ -71,64 +71,64 @@ HRESULT SoundBuffer::Initialize(LPCWSTR szFilename)
 
 void SoundBuffer::Uninitlize()
 {
-	while (!m_p_source_voices.empty())
+	while (!mPSourceVoices.empty())
 	{
 		// Let the sound playar
-		m_p_source_voices.front()->DestroyVoice();
-		m_p_source_voices.front() = nullptr;
-		m_p_source_voices.erase(m_p_source_voices.begin());
+		mPSourceVoices.front()->DestroyVoice();
+		mPSourceVoices.front() = nullptr;
+		mPSourceVoices.erase(mPSourceVoices.begin());
 	}
 }
 
 void SoundBuffer::Update()
 {
 	XAUDIO2_VOICE_STATE state;
-	if (!m_p_source_voices.empty())
+	if (!mPSourceVoices.empty())
 	{
-		m_p_source_voices.front()->GetState(&state);
+		mPSourceVoices.front()->GetState(&state);
 		if (state.BuffersQueued == 0)
 		{
-			m_p_source_voices.front()->DestroyVoice();
-			m_p_source_voices.front() = nullptr;
-			m_p_source_voices.erase(m_p_source_voices.begin());
+			mPSourceVoices.front()->DestroyVoice();
+			mPSourceVoices.front() = nullptr;
+			mPSourceVoices.erase(mPSourceVoices.begin());
 
 
-			playing = false;
+			mPlaying = false;
 		}
 		else
 		{
-			playing = true;
+			mPlaying = true;
 		}
 	}
 
-	for (size_t i = 1; i < m_p_source_voices.size(); ++i)
+	for (size_t i = 1; i < mPSourceVoices.size(); ++i)
 	{
 		// Let the sound play
-		m_p_source_voices.front()->GetState(&state);
+		mPSourceVoices.front()->GetState(&state);
 	}
 }
 
 bool SoundBuffer::Playing()
 {
-	return playing;
+	return mPlaying;
 }
 
 void SoundBuffer::Stop()
 {
-	m_p_source_voices.front()->Stop();
+	mPSourceVoices.front()->Stop();
 }
 
 void SoundBuffer::Pause()
 {
-	for (size_t i = 0; i < m_p_source_voices.size(); ++i)
+	for (size_t i = 0; i < mPSourceVoices.size(); ++i)
 	{
-		m_p_source_voices.at(i)->Stop(XAUDIO2_PLAY_TAILS);
+		mPSourceVoices.at(i)->Stop(XAUDIO2_PLAY_TAILS);
 	}
 }
 
 void SoundBuffer::Volume(float volume)
 {
-	m_p_source_voices.back()->SetVolume(volume);
+	mPSourceVoices.back()->SetVolume(volume);
 
 }
 
@@ -141,7 +141,7 @@ HRESULT SoundBuffer::PlayWave(IXAudio2* pXaudio2, bool loop)
 	//
 	// Create the source voice
 	IXAudio2SourceVoice* src_voice = nullptr;
-	hr = pXaudio2->CreateSourceVoice(&src_voice, wavedata.wfx);
+	hr = pXaudio2->CreateSourceVoice(&src_voice, mWaveData.wfx);
 	if (FAILED(hr))
 	{
 		//LOGGER("Error %#X creating source voice\n", hr);
@@ -150,14 +150,14 @@ HRESULT SoundBuffer::PlayWave(IXAudio2* pXaudio2, bool loop)
 
 	// Submit the wave sample data using an XAUDIO2_BUFFER structure
 	XAUDIO2_BUFFER buffer = { 0 };
-	buffer.pAudioData = wavedata.startAudio;
+	buffer.pAudioData = mWaveData.startAudio;
 	buffer.Flags = XAUDIO2_END_OF_STREAM;  // tell the source voice not to expect any data after this buffer
-	buffer.AudioBytes = wavedata.audioBytes;
+	buffer.AudioBytes = mWaveData.audioBytes;
 
 	if (loop)
 	{
-		buffer.LoopBegin = wavedata.loopStart;
-		buffer.LoopLength = wavedata.loopLength;
+		buffer.LoopBegin = mWaveData.loopStart;
+		buffer.LoopLength = mWaveData.loopLength;
 		buffer.LoopCount = XAUDIO2_LOOP_INFINITE;
 	}
 
@@ -175,7 +175,7 @@ HRESULT SoundBuffer::PlayWave(IXAudio2* pXaudio2, bool loop)
 		}
 	}
 #else
-	if (wavedata.seek)
+	if (mWaveData.seek)
 	{
 		//LOGGER("This platform does not support xWMA or XMA2\n");
 		src_voice->DestroyVoice();
@@ -189,9 +189,9 @@ HRESULT SoundBuffer::PlayWave(IXAudio2* pXaudio2, bool loop)
 		return hr;
 	}
 
-	m_p_source_voices.emplace_back(src_voice);
-	m_p_source_voices.back()->Start(0);
-	m_p_source_voices.back()->SetVolume(1.0f);
+	mPSourceVoices.emplace_back(src_voice);
+	mPSourceVoices.back()->Start(0);
+	mPSourceVoices.back()->SetVolume(1.0f);
 
 	return hr;
 }

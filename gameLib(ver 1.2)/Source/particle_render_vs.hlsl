@@ -4,7 +4,7 @@
 VS_OUT main(float4 position : POSITION, float3 angle : ANGLE, float4 color : COLOR, float3 velocity : VELOCITY, float3 scale : SCALE)
 {
 	VS_OUT vout;
-	vout.worldPosition = position;
+	vout.worldPosition = position.xyz;
 	vout.position = mul(float4(position.xyz, 1), view);
 	vout.position = mul(vout.position, projection);
 	vout.scale = scale;

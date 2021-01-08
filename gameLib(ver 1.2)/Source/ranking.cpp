@@ -40,10 +40,10 @@ void TimeText::Render(ID3D11DeviceContext* context, Sprite* sprite)
 int Ranking::mStageNo = 0;
 Ranking::Ranking(ID3D11Device* device, float time) :mState(0), mNowPlayTime(time), mTimer(0), mTestFlag(false), mNowPlayRank(0), mNewPlayMove(0), mNoRankTextColor(1,1,1,1)
 {
-	mNowPlayTimeText = std::make_unique<TimeText>(0);
+	mNowPlayTimeText = std::make_unique<TimeText>(0.f);
 	for (int i = 0; i < 5; i++)
 	{
-		mRankingTexts.push_back(std::make_unique<TimeText>(0));
+		mRankingTexts.push_back(std::make_unique<TimeText>(0.f));
 	}
 	mNumberTest = std::make_unique<Sprite>(device, L"Data/image/number.png");
 	mRankTest = std::make_unique<Sprite>(device, L"Data/image/rank.png");

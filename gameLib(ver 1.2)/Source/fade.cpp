@@ -34,7 +34,7 @@ Fade::Fade(ID3D11Device* device, FADE_SCENE scene)
 	StartLoad();
 	mNowFadeData = mFadeDatas[mEditorScene];
 	mSprite = std::make_unique<Sprite>(device, L"Data/image/siro.png");
-	load_texture_from_file(device, L"Data/image/siro.png", mSRV.GetAddressOf());
+	LoadTextureFromFile(device, L"Data/image/siro.png", mSRV.GetAddressOf());
 }
 
 void Fade::SetFadeScene(FADE_SCENE scene)

@@ -45,8 +45,8 @@ public:
 	const VECTOR4F& GetLightDirection() { return mDefLight.mLightDirection; }
 	const VECTOR4F& GetLightColor() { return mDefLight.mLightColor; }
 	const VECTOR4F& GetAmbientColor() { return mDefLight.mAmbientColor; }
-	PointLight* GetPointLight() { return pointLight; }
-	SpotLight* GetSpotLight() { return spotLight; }
+	PointLight* GetPointLight() { return mPointLight; }
+	SpotLight* GetSpotLight() { return mSpotLight; }
 
 	//インスタンス関数
 	static Light& GetInctance()
@@ -77,8 +77,8 @@ private:
 		float dummy2;
 	};
 
-	PointLight pointLight[POINTMAX];
-	SpotLight spotLight[SPOTMAX];
+	PointLight mPointLight[POINTMAX];
+	SpotLight mSpotLight[SPOTMAX];
 	CbDefLight mDefLight;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbLight;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbDefLight;

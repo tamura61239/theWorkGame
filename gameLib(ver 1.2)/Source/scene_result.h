@@ -49,7 +49,7 @@ private:
 	int mEditorNo;
 	bool mPlayFlag;
 	bool nowLoading;
-	std::vector<std::unique_ptr<blend_state>>mBlend;
+	std::vector<std::unique_ptr<BlendState>>mBlend;
 	std::shared_ptr<FrameBuffer>frameBuffer;
 	std::unique_ptr<FrameBuffer>frameBuffer2;
 	std::shared_ptr<FrameBuffer>velocityBuffer;

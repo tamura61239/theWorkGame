@@ -8,8 +8,8 @@
 
 Light::Light()
 {
-	ZeroMemory(pointLight, sizeof(PointLight) * POINTMAX);
-	ZeroMemory(spotLight, sizeof(SpotLight) * SPOTMAX);
+	ZeroMemory(mPointLight, sizeof(PointLight) * POINTMAX);
+	ZeroMemory(mSpotLight, sizeof(SpotLight) * SPOTMAX);
 	Load();
 }
 
@@ -88,12 +88,12 @@ void Light::SetPointLight(int index, VECTOR3F position, VECTOR3F color, float ra
 {
 	if (index < 0) return;
 	if (index >= POINTMAX)return;
-	pointLight[index].index = (float)index;
-	pointLight[index].range = range;
-	pointLight[index].type = 1.0f;
-	pointLight[index].dumy = 0.0f;
-	pointLight[index].position = VECTOR4F(position.x, position.y, position.z, 0);
-	pointLight[index].color = VECTOR4F(color.x, color.y, color.z, 0);
+	mPointLight[index].index = (float)index;
+	mPointLight[index].range = range;
+	mPointLight[index].type = 1.0f;
+	mPointLight[index].dumy = 0.0f;
+	mPointLight[index].position = VECTOR4F(position.x, position.y, position.z, 0);
+	mPointLight[index].color = VECTOR4F(color.x, color.y, color.z, 0);
 
 }
 
@@ -102,18 +102,18 @@ void Light::SetSpotLight(int index, VECTOR3F position, VECTOR3F color, VECTOR3F 
 	if (index < 0) return;
 	if (index >= SPOTMAX)return;
 
-	spotLight[index].index = (float)index;
-	spotLight[index].range = range;
-	spotLight[index].type = 1.0f;
-	spotLight[index].nearArea = nearArea;
-	spotLight[index].farArea = farArea;
-	spotLight[index].dumy0 = 0.0f;
-	spotLight[index].dumy1 = 0.0f;
-	spotLight[index].dumy2 = 0.0f;
+	mSpotLight[index].index = (float)index;
+	mSpotLight[index].range = range;
+	mSpotLight[index].type = 1.0f;
+	mSpotLight[index].nearArea = nearArea;
+	mSpotLight[index].farArea = farArea;
+	mSpotLight[index].dumy0 = 0.0f;
+	mSpotLight[index].dumy1 = 0.0f;
+	mSpotLight[index].dumy2 = 0.0f;
 
-	spotLight[index].position = VECTOR4F(position.x, position.y, position.z, 0);
-	spotLight[index].color = VECTOR4F(color.x, color.y, color.z, 0);
-	spotLight[index].dir = VECTOR4F(dir.x, dir.y, dir.z, 0);
+	mSpotLight[index].position = VECTOR4F(position.x, position.y, position.z, 0);
+	mSpotLight[index].color = VECTOR4F(color.x, color.y, color.z, 0);
+	mSpotLight[index].dir = VECTOR4F(dir.x, dir.y, dir.z, 0);
 
 }
 
@@ -122,8 +122,8 @@ void Light::ConstanceLightBufferSetShader(ID3D11DeviceContext* context)
 	context->PSSetConstantBuffers(3, 1, mCbLight.GetAddressOf());
 	context->PSSetConstantBuffers(4, 1, mCbDefLight.GetAddressOf());
 	CbLight cbLight;
-	memcpy(cbLight.pointLight, pointLight, sizeof(PointLight) * POINTMAX);
-	memcpy(cbLight.spotLight, spotLight, sizeof(SpotLight) * SPOTMAX);
+	memcpy(cbLight.pointLight, mPointLight, sizeof(PointLight) * POINTMAX);
+	memcpy(cbLight.spotLight, mSpotLight, sizeof(SpotLight) * SPOTMAX);
 
 	mDefLight.mEyePosition = VECTOR4F(pCameraManager->GetCamera()->GetEye().x, pCameraManager->GetCamera()->GetEye().y, pCameraManager->GetCamera()->GetEye().z, .0f);
 	context->UpdateSubresource(mCbLight.Get(), 0, 0, &cbLight, 0, 0);

@@ -45,7 +45,7 @@ private:
 	std::unique_ptr<Sprite>test;
 	std::unique_ptr<BloomRender>bloom;
 	std::unique_ptr<FrameBuffer>frameBuffer[3];
-	std::unique_ptr<blend_state>blend[2];
+	std::unique_ptr<BlendState>blend[2];
 	std::unique_ptr<ModelRenderer>modelRender;
 	std::unique_ptr<Character>character;
 	//std::unique_ptr<ModelRenderer>modelRender;

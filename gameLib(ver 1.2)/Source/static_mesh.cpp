@@ -60,30 +60,30 @@ void StaticMesh::SetShaderResouceView(ID3D11DeviceContext* context, Subset& subs
 	switch (mShaderType)
 	{
 	case SHADER_TYPE::USEALLY:
-		context->PSSetShaderResources(0, 1, subset.diffuse.mShaderResourceView.GetAddressOf());
+		context->PSSetShaderResources(0, 1, subset.diffuse.SRV.GetAddressOf());
 		break;
 	case SHADER_TYPE::NORMAL:
-		context->PSSetShaderResources(0, 1, subset.diffuse.mShaderResourceView.GetAddressOf());
-		context->PSSetShaderResources(1, 1, subset.normal.mShaderResourceView.GetAddressOf());
-		context->PSSetShaderResources(2, 1, subset.bump.mShaderResourceView.GetAddressOf());
+		context->PSSetShaderResources(0, 1, subset.diffuse.SRV.GetAddressOf());
+		context->PSSetShaderResources(1, 1, subset.normal.SRV.GetAddressOf());
+		context->PSSetShaderResources(2, 1, subset.bump.SRV.GetAddressOf());
 		break;
 	}
 }
 
 void StaticMesh::SetMinAndMaxPosition()
 {
-	minPosition = maxPosition = VECTOR3F(0, 0, 0);
-	for (auto& mesh : meshes)
+	mMinPosition = mMaxPosition = VECTOR3F(0, 0, 0);
+	for (auto& mesh : mMeshes)
 	{
 		for (auto& vertex : mesh.vertices)
 		{
-			minPosition.x = minPosition.x < vertex.position.x ? minPosition.x : vertex.position.x;
-			minPosition.y = minPosition.y < vertex.position.y ? minPosition.y : vertex.position.y;
-			minPosition.z = minPosition.z < vertex.position.z ? minPosition.z : vertex.position.z;
+			mMinPosition.x = mMinPosition.x < vertex.position.x ? mMinPosition.x : vertex.position.x;
+			mMinPosition.y = mMinPosition.y < vertex.position.y ? mMinPosition.y : vertex.position.y;
+			mMinPosition.z = mMinPosition.z < vertex.position.z ? mMinPosition.z : vertex.position.z;
 
-			maxPosition.x = maxPosition.x > vertex.position.x ? maxPosition.x : vertex.position.x;
-			maxPosition.y = maxPosition.y > vertex.position.y ? maxPosition.y : vertex.position.y;
-			maxPosition.z = maxPosition.z > vertex.position.z ? maxPosition.z : vertex.position.z;
+			mMaxPosition.x = mMaxPosition.x > vertex.position.x ? mMaxPosition.x : vertex.position.x;
+			mMaxPosition.y = mMaxPosition.y > vertex.position.y ? mMaxPosition.y : vertex.position.y;
+			mMaxPosition.z = mMaxPosition.z > vertex.position.z ? mMaxPosition.z : vertex.position.z;
 
 		}
 	}
@@ -140,13 +140,13 @@ void StaticMesh::CreateMesh(ID3D11Device* device, const char* fileName, bool pat
 	};
 	traverse(scene->GetRootNode());
 
-	meshes.resize(fetchedMeshes.size());
+	mMeshes.resize(fetchedMeshes.size());
 
 	//FbxMesh *fbx_mesh = fetched_meshes.at(0)->GetMesh();  // Currently only one mesh.
 	for (size_t i = 0; i < fetchedMeshes.size(); i++)
 	{
 		FbxMesh* fbxMesh = fetchedMeshes.at(i)->GetMesh();
-		Mesh& mesh = meshes.at(i);
+		Mesh& mesh = mMeshes.at(i);
 
 		FbxAMatrix globalTransform = fbxMesh->GetNode()->EvaluateGlobalTransform(0);
 		fbxamatrix_to_xmfloat4x4(globalTransform, mesh.globalTransform);
@@ -179,7 +179,7 @@ void StaticMesh::CreateMesh(ID3D11Device* device, const char* fileName, bool pat
 			{
 				const u_int materialIndex = fbxMesh->GetElementMaterial()->GetIndexArray().GetAt(indexOfPolygon);
 
-				//subsets.at(material_index).index_count += 3;
+				//subsets.at(materialIndex).indexCount += 3;
 				mesh.subsets.at(materialIndex).indexCount += 3;
 
 			}
@@ -327,7 +327,7 @@ void StaticMesh::FbxTettureNameLoad(const char* property_name, const char* facto
 					wchar_t fbxUnicode[256];
 					MultiByteToWideChar(CP_ACP, 0, fileName, static_cast<int>(strlen(fileName) + 1), fbxUnicode, 1024);
 					MultiByteToWideChar(CP_ACP, 0, fileTexture->GetFileName(), static_cast<int>(strlen(fileTexture->GetFileName()) + 1), textureUnicode, 1024);
-					combine_resource_path(textureUnicode, fbxUnicode, textureUnicode);
+					CombineResourcePath(textureUnicode, fbxUnicode, textureUnicode);
 				}
 				material.textureName = textureUnicode;
 
@@ -335,7 +335,7 @@ void StaticMesh::FbxTettureNameLoad(const char* property_name, const char* facto
 
 
 
-				//material.texture_filename = texture_unicode;
+				//material.textureFilename = texture_unicode;
 			}
 		}
 	}
@@ -346,7 +346,7 @@ void StaticMesh::CreateBuffers(ID3D11Device* device)
 {
 	HRESULT hr;
 
-	for (auto& mesh : meshes)
+	for (auto& mesh : mMeshes)
 	{
 		//頂点バッファの生成
 		{
@@ -389,36 +389,36 @@ void StaticMesh::CreateBuffers(ID3D11Device* device)
 
 void StaticMesh::CreateShaderResourceView(ID3D11Device* device, SHADER_TYPE shaderType)
 {
-	for (auto& mesh : meshes)
+	for (auto& mesh : mMeshes)
 	{
 		for (auto& subset : mesh.subsets)
 		{
 			if (wcscmp(subset.diffuse.textureName.c_str(), L"") != 0)
 			{
 				D3D11_TEXTURE2D_DESC texture2dDesc;
-				load_texture_from_file(device, subset.diffuse.textureName.c_str(), subset.diffuse.mShaderResourceView.GetAddressOf(), &texture2dDesc);
+				LoadTextureFromFile(device, subset.diffuse.textureName.c_str(), subset.diffuse.SRV.GetAddressOf(), &texture2dDesc);
 			}
-			if (!subset.diffuse.mShaderResourceView)
+			if (!subset.diffuse.SRV)
 			{
-				make_dummy_texture(device, subset.diffuse.mShaderResourceView.GetAddressOf());
+				MakeDummyTexture(device, subset.diffuse.SRV.GetAddressOf());
 			}
 			if (wcscmp(subset.normal.textureName.c_str(), L"") != 0&& shaderType==SHADER_TYPE::NORMAL)
 			{
 				D3D11_TEXTURE2D_DESC texture2dDesc;
-				load_texture_from_file(device, subset.normal.textureName.c_str(), subset.normal.mShaderResourceView.GetAddressOf(), &texture2dDesc);
+				LoadTextureFromFile(device, subset.normal.textureName.c_str(), subset.normal.SRV.GetAddressOf(), &texture2dDesc);
 			}
-			if (!subset.normal.mShaderResourceView)
+			if (!subset.normal.SRV)
 			{
-				make_dummy_texture(device, subset.normal.mShaderResourceView.GetAddressOf());
+				MakeDummyTexture(device, subset.normal.SRV.GetAddressOf());
 			}
 			if (wcscmp(subset.bump.textureName.c_str(), L"") != 0 && shaderType == SHADER_TYPE::NORMAL)
 			{
 				D3D11_TEXTURE2D_DESC texture2dDesc;
-				load_texture_from_file(device, subset.bump.textureName.c_str(), subset.bump.mShaderResourceView.GetAddressOf(), &texture2dDesc);
+				LoadTextureFromFile(device, subset.bump.textureName.c_str(), subset.bump.SRV.GetAddressOf(), &texture2dDesc);
 			}
-			if (!subset.bump.mShaderResourceView)
+			if (!subset.bump.SRV)
 			{
-				make_dummy_texture(device, subset.bump.mShaderResourceView.GetAddressOf());
+				MakeDummyTexture(device, subset.bump.SRV.GetAddressOf());
 			}
 
 		}
@@ -438,7 +438,7 @@ int StaticMesh::RayPick(const VECTOR3F& startPosition, const VECTOR3F& endPositi
 	DirectX::XMStoreFloat(&neart, length);
 
 	DirectX::XMVECTOR position, normal;
-	for (auto& mesh : meshes)
+	for (auto& mesh : mMeshes)
 	{
 		for (auto& face : mesh.faces)
 		{
@@ -502,7 +502,7 @@ int StaticMesh::RayPick(const VECTOR3F& startPosition, const VECTOR3F& endPositi
 }
 void StaticMesh::ChangeShaderResourceView(ID3D11Device* device, SHADER_TYPE shaderType, std::vector<TextureMapData> data)
 {
-	for (auto& mesh : meshes)
+	for (auto& mesh : mMeshes)
 	{
 		for (auto& subset : mesh.subsets)
 		{
@@ -535,7 +535,7 @@ MeshRender::MeshRender(ID3D11Device* device)
 			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
 		//Microsoft::WRL::ComPtr<ID3D11InputLayout>input;
-		//create_vs_from_cso(device, "Data/shader/static_mesh_shadow_vs.cso", mShadowVSShader.GetAddressOf(), input.GetAddressOf(), inputElementDesc, ARRAYSIZE(inputElementDesc));
+		//CreateVSFromCso(device, "Data/shader/static_mesh_shadow_vs.cso", mShadowVSShader.GetAddressOf(), input.GetAddressOf(), inputElementDesc, ARRAYSIZE(inputElementDesc));
 		mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/static_mesh_vs.cso", "", "Data/shader/static_mesh_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc)));
 		mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/static_mesh_normal_vs.cso", "", "Data/shader/static_mesh_normal_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc)));
 		mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/static_mesh_motion_data_vs.cso", "Data/shader/static_mesh_motion_data_gs.cso", "Data/shader/static_mesh_motion_data_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc)));
@@ -673,7 +673,7 @@ void MeshRender::ShadowBegin(ID3D11DeviceContext* context, const FLOAT4X4& view,
 void MeshRender::ShadowRender(ID3D11DeviceContext* context, StaticMesh* obj, const FLOAT4X4& world, const VECTOR4F&color)
 {
 
-	for (StaticMesh::Mesh& mesh : obj->meshes)
+	for (StaticMesh::Mesh& mesh : obj->mMeshes)
 	{
 		u_int stride = sizeof(StaticMesh::Vertex);
 		u_int offset = 0;
@@ -728,7 +728,7 @@ void MeshRender::Render(ID3D11DeviceContext* context, StaticMesh* obj, const FLO
 	SHADER_TYPE shaderType = obj->GetShaderType();
 	mShader[static_cast<int>(shaderType)]->Activate(context);
 
-	for (StaticMesh::Mesh& mesh : obj->meshes)
+	for (StaticMesh::Mesh& mesh : obj->mMeshes)
 	{
 		u_int stride = sizeof(StaticMesh::Vertex);
 		u_int offset = 0;
@@ -763,7 +763,7 @@ void MeshRender::Render(ID3D11DeviceContext* context, StaticMesh* obj, const FLO
 void MeshRender::Render(ID3D11DeviceContext* context, DrowShader* shader, StaticMesh* obj, const FLOAT4X4& world, const VECTOR4F color)
 {
 	shader->Activate(context);
-	for (StaticMesh::Mesh& mesh : obj->meshes)
+	for (StaticMesh::Mesh& mesh : obj->mMeshes)
 	{
 		u_int stride = sizeof(StaticMesh::Vertex);
 		u_int offset = 0;
@@ -827,7 +827,7 @@ void MeshRender::VelocityBegin(ID3D11DeviceContext* context, const FLOAT4X4& vie
 
 void MeshRender::VelocityRender(ID3D11DeviceContext* context, StaticMesh* obj, const FLOAT4X4& world, const FLOAT4X4& beforeWorld, const VECTOR4F color)
 {
-	for (StaticMesh::Mesh& mesh : obj->meshes)
+	for (StaticMesh::Mesh& mesh : obj->mMeshes)
 	{
 		u_int stride = sizeof(StaticMesh::Vertex);
 		u_int offset = 0;

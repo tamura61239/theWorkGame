@@ -39,17 +39,22 @@ public:
 		mDefColor = color;
 	}
 	//getter
-	const VECTOR2F& GetTextureSize() { return mTextureData.expired() ? VECTOR2F(0, 0):mTextureData.lock()->mTextureDrowSize; }
+	const VECTOR2F& GetTextureSize() 
+	{ 
+		mTextureSize = mTextureData.expired() ? VECTOR2F(0, 0) : mTextureData.lock()->mTextureDrowSize;
+		return  mTextureSize;
+	}
 	void Render(ID3D11DeviceContext* context, Sprite* sprite, const VECTOR2F& position, const VECTOR2F& scale,const VECTOR2F&size, const VECTOR4F& color);
 private:
 	std::weak_ptr<LocalData>mLocalData;
 	std::weak_ptr<TextureData>mTextureData;
 	VECTOR2F mUV;
 	VECTOR4F mDefColor;
+	VECTOR2F mTextureSize;
 };
 //struct TextureData
 //{
-//	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>mSRV;
+//	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>SRV;
 //	D3D11_TEXTURE2D_DESC mDesc;
 //	VECTOR2F mTextureDrowSize;
 //};

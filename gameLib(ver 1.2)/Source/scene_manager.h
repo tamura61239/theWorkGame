@@ -19,6 +19,13 @@ public:
 		static SceneManager manager;
 		return manager;
 	}
+	enum SCENETYPE
+	{
+		TITLE,
+		GAME,
+		RESULT,
+	};
+
 private:
 	SceneManager()
 	{
@@ -29,9 +36,3 @@ private:
 	std::unique_ptr<SceneEditor>mEditor;
 };
 #define pSceneManager (SceneManager::GetInctance())
-enum SCENETYPE
-{
-	TITLE,
-	GAME,
-	RESULT,
-};

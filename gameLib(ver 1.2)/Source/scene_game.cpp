@@ -43,7 +43,7 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 #endif
 			mSManager = std::make_unique<StageManager>(device, SCREEN_WIDTH, SCREEN_HEIGHT);
 			modelRenderer = std::make_unique<ModelRenderer>(device);
-			bloom = std::make_unique<BloomRender>(device, SCREEN_WIDTH, SCREEN_HEIGHT, 1);
+			bloom = std::make_unique<BloomRender>(device, static_cast<float>(SCREEN_WIDTH), static_cast<float>(SCREEN_HEIGHT), 1);
 			mStageOperation = std::make_unique<StageOperation>();
 			pHitAreaDrow.CreateObj(device);
 			pLight.CreateLightBuffer(device);
@@ -95,9 +95,9 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 	nowLoading = std::make_unique<Sprite>(device, L"Data/image/now.png");
 	siro = std::make_unique<Sprite>(device, L"Data/image/siro.png");
 	pushKey = std::make_unique<Sprite>(device, L"Data/image/push key.png");
-	blend[0] = std::make_unique<blend_state>(device, BLEND_MODE::ALPHA);
-	blend[1] = std::make_unique<blend_state>(device, BLEND_MODE::ADD);
-	blend[2] = std::make_unique<blend_state>(device, BLEND_MODE::NONE);
+	blend[0] = std::make_unique<BlendState>(device, BLEND_MODE::ALPHA);
+	blend[1] = std::make_unique<BlendState>(device, BLEND_MODE::ADD);
+	blend[2] = std::make_unique<BlendState>(device, BLEND_MODE::NONE);
 	stop = false;
 	editorNo = 0;
 	textureNo = 0;
@@ -182,7 +182,7 @@ void SceneGame::Update(float elapsed_time)
 			Ranking::SetStageNo(mSManager->GrtStageNo());
 			Relese();
 
-			pSceneManager.ChangeScene(SCENETYPE::RESULT);
+			pSceneManager.ChangeScene(SceneManager::SCENETYPE::RESULT);
 
 			return;
 		}
@@ -236,7 +236,7 @@ bool SceneGame::ImGuiUpdate()
 	case 1:
 		UIManager::Destroy();
 		Relese();
-		pSceneManager.ChangeScene(SCENETYPE::TITLE);
+		pSceneManager.ChangeScene(SceneManager::SCENETYPE::TITLE);
 
 		return true;
 		break;
@@ -287,7 +287,7 @@ bool SceneGame::ImGuiUpdate()
 		UIManager::GetInctance()->ClearUI();
 		Ranking::SetStageNo(mSManager->GrtStageNo());
 		Relese();
-		pSceneManager.ChangeScene(SCENETYPE::RESULT);
+		pSceneManager.ChangeScene(SceneManager::SCENETYPE::RESULT);
 
 		return true;
 		break;

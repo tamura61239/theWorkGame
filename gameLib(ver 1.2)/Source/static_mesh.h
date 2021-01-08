@@ -27,8 +27,8 @@ public:
 		VECTOR3F* outNormal,//ÉåÉCÇ™ìñÇΩÇ¡ÇΩñ ÇÃñ@ê¸
 		float* outLength//ÉåÉCÇ™ìñÇΩÇ¡ÇΩñ Ç‹Ç≈ÇÃãóó£
 	);
-	const VECTOR3F& GetMaxPosition() { return maxPosition; }
-	const VECTOR3F& GetMinPosition() { return minPosition; }
+	const VECTOR3F& GetMaxPosition() { return mMaxPosition; }
+	const VECTOR3F& GetMinPosition() { return mMinPosition; }
 	void ChangeShaderResourceView(ID3D11Device* device, SHADER_TYPE shaderType, std::vector<TextureMapData>data);
 	SHADER_TYPE GetShaderType() { return mShaderType; }
 public:
@@ -52,7 +52,7 @@ public:
 	{
 		VECTOR4F color = { 1.0f,1.0f,1.0f,1.0f };
 		std::wstring textureName;
-		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>mShaderResourceView;
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>SRV;
 		template<class Archive>
 		void serialize(Archive& archive)
 		{
@@ -118,12 +118,12 @@ public:
 			);
 		}
 	};
-	std::vector<Mesh>meshes;
+	std::vector<Mesh>mMeshes;
 	template<class Archive>
 	void serialize(Archive& archive)
 	{
 		archive(
-			meshes
+			mMeshes
 		);
 	}
 public:
@@ -136,8 +136,8 @@ private:
 	void CreateShaderResourceView(ID3D11Device* device, SHADER_TYPE shaderType);
 private:
 	SHADER_TYPE mShaderType;
-	VECTOR3F minPosition;
-	VECTOR3F maxPosition;
+	VECTOR3F mMinPosition;
+	VECTOR3F mMaxPosition;
 };
 
 class MeshRender

@@ -13,25 +13,25 @@ StageSelect::StageSelect(ID3D11Device* device, const int maxCount) :mSelectScene
 	HRESULT hr;
 	//ステージフォントのテクスチャ
 	mStageTexture = std::make_shared<TextureData>();
-	hr = load_texture_from_file(device, L"Data/image/stage.png", mStageTexture->mSRV.GetAddressOf(), &mStageTexture->mDesc);
+	hr = LoadTextureFromFile(device, L"Data/image/stage.png", mStageTexture->mSRV.GetAddressOf(), &mStageTexture->mDesc);
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	mStageTexture->mTextureDrowSize = VECTOR2F(320, 100);
 	//数字フォントのテクスチャ
 	mNumberTexture = std::make_shared<TextureData>();
-	hr = load_texture_from_file(device, L"Data/image/number.png", mNumberTexture->mSRV.GetAddressOf(), &mNumberTexture->mDesc);
+	hr = LoadTextureFromFile(device, L"Data/image/number.png", mNumberTexture->mSRV.GetAddressOf(), &mNumberTexture->mDesc);
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	mNumberTexture->mTextureDrowSize = VECTOR2F(63, 100);
 	mBoardSize = VECTOR2F(200, 500);
 	//枠のテクスチャ
 	mBackTexture = std::make_shared<TextureData>();
-	hr = load_texture_from_file(device, L"Data/image/siro.png", mBackTexture->mSRV.GetAddressOf(), &mBackTexture->mDesc);
+	hr = LoadTextureFromFile(device, L"Data/image/siro.png", mBackTexture->mSRV.GetAddressOf(), &mBackTexture->mDesc);
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	for (int i = 0; i < maxCount; i++)
 	{
 		std::wstring fileName = L"Data/image/stage" + std::to_wstring(i) + L"scne_map.dds";
 
 		mStageImageText.push_back(std::make_shared<TextureData>());
-		hr = load_texture_from_file(device, fileName.c_str(), mStageImageText.back()->mSRV.GetAddressOf(), &mStageImageText.back()->mDesc);
+		hr = LoadTextureFromFile(device, fileName.c_str(), mStageImageText.back()->mSRV.GetAddressOf(), &mStageImageText.back()->mDesc);
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		mStageImageText.back()->mTextureDrowSize = VECTOR2F(1920, 1080);
 	}

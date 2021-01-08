@@ -8,7 +8,7 @@
 #include<string>
 
 
-HRESULT create_vs_from_cso(ID3D11Device* device, const char* cso_name, ID3D11VertexShader** vertex_shader, ID3D11InputLayout** input_layout, D3D11_INPUT_ELEMENT_DESC* input_element_desc, UINT num_elements)
+HRESULT CreateVSFromCso(ID3D11Device* device, const char* cso_name, ID3D11VertexShader** vertex_shader, ID3D11InputLayout** input_layout, D3D11_INPUT_ELEMENT_DESC* input_element_desc, UINT num_elements)
 {
 	struct set_of_vertex_shader_and_input_layout
 	{
@@ -52,7 +52,7 @@ HRESULT create_vs_from_cso(ID3D11Device* device, const char* cso_name, ID3D11Ver
 	return hr;
 }
 
-HRESULT create_ps_from_cso(ID3D11Device* device, const char* cso_name, ID3D11PixelShader** pixel_shader)
+HRESULT CreatePSFromCso(ID3D11Device* device, const char* cso_name, ID3D11PixelShader** pixel_shader)
 {
 	static std::map<std::string, Microsoft::WRL::ComPtr<ID3D11PixelShader>> cache;
 	auto it = cache.find(cso_name);
@@ -84,7 +84,7 @@ HRESULT create_ps_from_cso(ID3D11Device* device, const char* cso_name, ID3D11Pix
 	return hr;
 }
 
-HRESULT create_gs_from_cso(ID3D11Device* device, const char* cso_name, ID3D11GeometryShader** geometry_shader)
+HRESULT CreateGSFromCso(ID3D11Device* device, const char* cso_name, ID3D11GeometryShader** geometry_shader)
 {
 	static std::map<std::string, Microsoft::WRL::ComPtr<ID3D11GeometryShader>> cache;
 	auto it = cache.find(cso_name);
@@ -116,7 +116,7 @@ HRESULT create_gs_from_cso(ID3D11Device* device, const char* cso_name, ID3D11Geo
 	return hr;
 }
 
-HRESULT create_cs_from_cso(ID3D11Device* device, const char* cso_name, ID3D11ComputeShader** compute_shader)
+HRESULT CreateCSFromCso(ID3D11Device* device, const char* cso_name, ID3D11ComputeShader** compute_shader)
 {
 	static std::map<std::string, Microsoft::WRL::ComPtr<ID3D11ComputeShader>> cache;
 	auto it = cache.find(cso_name);

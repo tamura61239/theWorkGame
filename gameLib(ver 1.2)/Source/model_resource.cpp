@@ -6,12 +6,12 @@
 
 ModelResource::ModelResource(ID3D11Device* device, std::unique_ptr<ModelData> data, SHADER_TYPE shaderType)
 {
-	m_data = std::move(data);
+	mData = std::move(data);
 
 	// マテリアル
-	diffuses.resize(m_data->diffuses.size());
-	normals.resize(m_data->normals.size());
-	bumps.resize(m_data->bumps.size());
+	mDiffuses.resize(mData->diffuses.size());
+	mNormals.resize(mData->normals.size());
+	mBumps.resize(mData->bumps.size());
 	mShaderType = shaderType;
 	//テクスチャをロードする処理
 	struct
@@ -27,28 +27,28 @@ ModelResource::ModelResource(ID3D11Device* device, std::unique_ptr<ModelData> da
 				wchar_t filename[256];
 				::mbstowcs_s(&length, filename, 256, textureFileName.c_str(), _TRUNCATE);
 				D3D11_TEXTURE2D_DESC texture2dDesc;
-				HRESULT hr = load_texture_from_file(device, filename, material.shader_resource_view.GetAddressOf(), &texture2dDesc);
+				HRESULT hr = LoadTextureFromFile(device, filename, material.SRV.GetAddressOf(), &texture2dDesc);
 				_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 			}
 			return material;
 		}
 	}texture;
-	for (size_t material_index = 0; material_index < diffuses.size(); ++material_index)
+	for (size_t material_index = 0; material_index < mDiffuses.size(); ++material_index)
 	{
-		diffuses.at(material_index) = texture(device, m_data->diffuses.at(material_index).texture_filename, m_data->diffuses.at(material_index).color);
+		mDiffuses.at(material_index) = texture(device, mData->diffuses.at(material_index).textureFilename, mData->diffuses.at(material_index).color);
 		if (shaderType == SHADER_TYPE::NORMAL)
 		{
-			normals.at(material_index) = texture(device, m_data->normals.at(material_index).texture_filename, m_data->normals.at(material_index).color);
-			bumps.at(material_index) = texture(device, m_data->bumps.at(material_index).texture_filename, m_data->bumps.at(material_index).color);
+			mNormals.at(material_index) = texture(device, mData->normals.at(material_index).textureFilename, mData->normals.at(material_index).color);
+			mBumps.at(material_index) = texture(device, mData->bumps.at(material_index).textureFilename, mData->bumps.at(material_index).color);
 		}
 	}
 
 	// メッシュ
-	m_meshes.resize(m_data->meshes.size());
-	for (size_t mesh_index = 0; mesh_index < m_meshes.size(); ++mesh_index)
+	mMeshes.resize(mData->meshes.size());
+	for (size_t mesh_index = 0; mesh_index < mMeshes.size(); ++mesh_index)
 	{
-		auto&& src = m_data->meshes.at(mesh_index);
-		auto&& dst = m_meshes.at(mesh_index);
+		auto&& src = mData->meshes.at(mesh_index);
+		auto&& dst = mMeshes.at(mesh_index);
 
 		// 頂点バッファ
 		{
@@ -66,7 +66,7 @@ ModelResource::ModelResource(ID3D11Device* device, std::unique_ptr<ModelData> da
 			subresource_data.SysMemPitch = 0;
 			subresource_data.SysMemSlicePitch = 0;
 
-			HRESULT hr = device->CreateBuffer(&buffer_desc, &subresource_data, dst.vertex_buffer.GetAddressOf());
+			HRESULT hr = device->CreateBuffer(&buffer_desc, &subresource_data, dst.vertexBuffer.GetAddressOf());
 			_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		}
 
@@ -85,11 +85,11 @@ ModelResource::ModelResource(ID3D11Device* device, std::unique_ptr<ModelData> da
 			subresource_data.pSysMem = src.indices.data();
 			subresource_data.SysMemPitch = 0; //Not use for index buffers.
 			subresource_data.SysMemSlicePitch = 0; //Not use for index buffers.
-			HRESULT hr = device->CreateBuffer(&buffer_desc, &subresource_data, dst.index_buffer.GetAddressOf());
+			HRESULT hr = device->CreateBuffer(&buffer_desc, &subresource_data, dst.indexBuffer.GetAddressOf());
 			_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		}
 
-		dst.node_index = src.node_index;
+		dst.nodeIndex = src.nodeIndex;
 
 		// サブセット
 		dst.subsets.resize(src.subsets.size());
@@ -98,24 +98,24 @@ ModelResource::ModelResource(ID3D11Device* device, std::unique_ptr<ModelData> da
 			auto&& src_subset = src.subsets.at(subset_index);
 			auto&& dst_subset = dst.subsets.at(subset_index);
 
-			dst_subset.start_index = src_subset.start_index;
-			dst_subset.index_count = src_subset.index_count;
-			dst_subset.diffuse = &diffuses.at(src_subset.material_index);
+			dst_subset.startIndex = src_subset.startIndex;
+			dst_subset.indexCount = src_subset.indexCount;
+			dst_subset.diffuse = &mDiffuses.at(src_subset.materialIndex);
 			//if (shaderType == SHADER_TYPE::NORMAL)
 			//{
-				dst_subset.normal = &normals.at(src_subset.material_index);
-				dst_subset.bump = &bumps.at(src_subset.material_index);
+				dst_subset.normal = &mNormals.at(src_subset.materialIndex);
+				dst_subset.bump = &mBumps.at(src_subset.materialIndex);
 			//}
 		}
 
 		// ボーン変換行列用
-		dst.node_indices.resize(src.node_indices.size());
-		::memcpy(dst.node_indices.data(), src.node_indices.data(), sizeof(int) * dst.node_indices.size());
+		dst.nodeIndices.resize(src.nodeIndices.size());
+		::memcpy(dst.nodeIndices.data(), src.nodeIndices.data(), sizeof(int) * dst.nodeIndices.size());
 
-		dst.inverse_transforms.resize(src.inverse_transforms.size());
-		for (size_t index = 0; index < dst.inverse_transforms.size(); ++index)
+		dst.inverseTransforms.resize(src.inverseTransforms.size());
+		for (size_t index = 0; index < dst.inverseTransforms.size(); ++index)
 		{
-			dst.inverse_transforms.at(index) = &src.inverse_transforms.at(index);
+			dst.inverseTransforms.at(index) = &src.inverseTransforms.at(index);
 		}
 	}
 }

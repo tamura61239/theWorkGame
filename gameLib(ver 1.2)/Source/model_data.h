@@ -8,7 +8,7 @@ struct ModelData
 	struct Node
 	{
 		std::string			name;
-		int					parent_index;
+		int					parentIndex;
 		VECTOR3F	scale;
 		VECTOR4F	rotate;
 		VECTOR3F	translate;
@@ -17,7 +17,7 @@ struct ModelData
 		{
 			archive(
 				name,
-				parent_index,
+				parentIndex,
 				scale,
 				rotate,
 				translate
@@ -30,8 +30,8 @@ struct ModelData
 		VECTOR3F	position;
 		VECTOR3F	normal;
 		VECTOR2F	texcoord;
-		VECTOR4F	bone_weight;
-		UVECTOR4	bone_index;
+		VECTOR4F	boneWeight;
+		UVECTOR4	boneIndex;
 		template<class Archive>
 		void serialize(Archive& archive)
 		{
@@ -39,8 +39,8 @@ struct ModelData
 				position,
 				normal,
 				texcoord,
-				bone_weight,
-				bone_index
+				boneWeight,
+				boneIndex
 			);
 		}
 
@@ -48,16 +48,16 @@ struct ModelData
 
 	struct Subset
 	{
-		int					material_index;
-		int					start_index;
-		int					index_count;
+		int					materialIndex;
+		int					startIndex;
+		int					indexCount;
 		template<class Archive>
 		void serialize(Archive& archive)
 		{
 			archive(
-				material_index,
-				start_index,
-				index_count
+				materialIndex,
+				startIndex,
+				indexCount
 			);
 		}
 
@@ -69,10 +69,10 @@ struct ModelData
 		std::vector<int>	indices;
 		std::vector<Subset>	subsets;
 
-		int					node_index;
+		int					nodeIndex;
 
-		std::vector<int>					node_indices;
-		std::vector<FLOAT4X4>	inverse_transforms;
+		std::vector<int>					nodeIndices;
+		std::vector<FLOAT4X4>	inverseTransforms;
 		template<class Archive>
 		void serialize(Archive& archive)
 		{
@@ -80,9 +80,9 @@ struct ModelData
 				vertices,
 				indices,
 				subsets,
-				node_index,
-				node_indices,
-				inverse_transforms
+				nodeIndex,
+				nodeIndices,
+				inverseTransforms
 			);
 		}
 
@@ -91,13 +91,13 @@ struct ModelData
 	struct Material
 	{
 		VECTOR4F	color;
-		std::string			texture_filename;
+		std::string			textureFilename;
 		template<class Archive>
 		void serialize(Archive& archive)
 		{
 			archive(
 				color.x, color.y, color.z, color.w,
-				texture_filename
+				textureFilename
 			);
 		}
 
@@ -123,26 +123,26 @@ struct ModelData
 	struct Keyframe
 	{
 		float						seconds;
-		std::vector<NodeKeyData>	node_keys;
+		std::vector<NodeKeyData>	nodeKeys;
 		template<class Archive>
 		void serialize(Archive& archive)
 		{
 			archive(
 				seconds,
-				node_keys
+				nodeKeys
 			);
 		}
 
 	};
 	struct Animation
 	{
-		float						seconds_length;
+		float						secondsLength;
 		std::vector<Keyframe>		keyframes;
 		template<class Archive>
 		void serialize(Archive& archive)
 		{
 			archive(
-				seconds_length,
+				secondsLength,
 				keyframes
 			);
 		}

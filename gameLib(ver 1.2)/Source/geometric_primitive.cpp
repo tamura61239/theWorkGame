@@ -8,7 +8,7 @@
 void GeometricPrimitive::CreateBuffer(ID3D11Device* device, std::vector<Vertex> vertics, std::vector<UINT> index)
 {
 	HRESULT hr = S_OK;
-	indexNum = static_cast<int>(index.size());
+	mIndexNum = static_cast<int>(index.size());
 	// 頂点バッファの生成
 	{
 		// 頂点バッファを作成するための設定オプション

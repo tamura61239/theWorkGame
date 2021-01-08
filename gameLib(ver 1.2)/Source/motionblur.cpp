@@ -5,7 +5,7 @@
 MotionBlur::MotionBlur(ID3D11Device* device)
 {
 	HRESULT hr;
-	hr = create_cs_from_cso(device, "Data/shader/motionblur_cs.cso", mCSShader.GetAddressOf());
+	hr = CreateCSFromCso(device, "Data/shader/motionblur_cs.cso", mCSShader.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	{
 		D3D11_TEXTURE2D_DESC desc;

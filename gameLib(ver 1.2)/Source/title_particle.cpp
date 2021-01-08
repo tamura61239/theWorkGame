@@ -105,11 +105,11 @@ TitleParticle::TitleParticle(ID3D11Device* device):mSceneChange(false)
 	mCbStart2.randScale = 1;
 	mCbStart2.defVelocity = VECTOR3F(-1, 0, 1);
 
-	hr = create_cs_from_cso(device, "Data/shader/title_particle_create_cs.cso", mCreateShader.GetAddressOf());
+	hr = CreateCSFromCso(device, "Data/shader/title_particle_create_cs.cso", mCreateShader.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	hr = create_cs_from_cso(device, "Data/shader/title_particle_cs.cso", mCSShader.GetAddressOf());
+	hr = CreateCSFromCso(device, "Data/shader/title_particle_cs.cso", mCSShader.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	hr = create_cs_from_cso(device, "Data/shader/title_scene_change_particle_cs.cso", mSceneChangeCSShader.GetAddressOf());
+	hr = CreateCSFromCso(device, "Data/shader/title_scene_change_particle_cs.cso", mSceneChangeCSShader.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =

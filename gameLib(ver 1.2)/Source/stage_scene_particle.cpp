@@ -18,7 +18,7 @@ StageSceneParticle::StageSceneParticle(ID3D11Device* device) :mMaxCount(100000),
 	//バッファの生成
 	{
 		D3D11_BUFFER_DESC desc;
-		ZeroMemory(&desc, 0, sizeof(desc));
+		ZeroMemory(&desc, sizeof(desc));
 		//定数バッファ生成
 		desc.ByteWidth = sizeof(CbCreate);
 		desc.Usage = D3D11_USAGE_DEFAULT;
@@ -53,7 +53,7 @@ StageSceneParticle::StageSceneParticle(ID3D11Device* device) :mMaxCount(100000),
 	//UAVの生成
 	{
 		D3D11_UNORDERED_ACCESS_VIEW_DESC desc;
-		ZeroMemory(&desc, 0, sizeof(desc));
+		ZeroMemory(&desc, sizeof(desc));
 		desc.Format = DXGI_FORMAT_R32_TYPELESS;
 		desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
 		desc.Buffer.FirstElement = 0;
@@ -66,9 +66,9 @@ StageSceneParticle::StageSceneParticle(ID3D11Device* device) :mMaxCount(100000),
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
 	//シェーダーの読み込み
-	hr = create_cs_from_cso(device, "Data/shader/stage_scene_particle_create_cs.cso", mCSCreateShader.GetAddressOf());
+	hr = CreateCSFromCso(device, "Data/shader/stage_scene_particle_create_cs.cso", mCSCreateShader.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	hr = create_cs_from_cso(device, "Data/shader/stage_scene_particle_cs.cso", mCSShader.GetAddressOf());
+	hr = CreateCSFromCso(device, "Data/shader/stage_scene_particle_cs.cso", mCSShader.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
@@ -85,7 +85,7 @@ StageSceneParticle::StageSceneParticle(ID3D11Device* device) :mMaxCount(100000),
 
 	mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/particle_render_vs.cso", "", "Data/shader/particle_render_point_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc)));
 	//テクスチャの読み込み
-	hr = load_texture_from_file(device, L"Data/image/○.png", mTextureSRV.GetAddressOf());
+	hr = LoadTextureFromFile(device, L"Data/image/○.png", mTextureSRV.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	//SamplerStateの生成
 	{
@@ -163,7 +163,7 @@ void StageSceneParticle::Update(ID3D11DeviceContext* context, float elapsdTime)
 		context->CSSetShader(mCSCreateShader.Get(), nullptr, 0);
 		CbCreate create;
 		create.randX = mEditorData.randX;
-		create.startIndex = mBeforeIndex;
+		create.startIndex = static_cast<int>(mBeforeIndex);
 		create.createArea = mEditorData.createArea;
 		create.createCentralPosition = mEditorData.createCentralPosition;
 		create.color = mEditorData.color;

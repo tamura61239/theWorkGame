@@ -2,7 +2,7 @@
 
 namespace Descartes
 {
-	ID3D11BlendState* create_blend_state(ID3D11Device* device, BLEND_MODE mode)
+	ID3D11BlendState* CreateBlendState(ID3D11Device* device, BLEND_MODE mode)
 	{
 		ID3D11BlendState* blend_state;
 

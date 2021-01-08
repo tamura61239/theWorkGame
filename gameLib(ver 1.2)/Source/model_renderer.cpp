@@ -15,14 +15,14 @@ ModelRenderer::ModelRenderer(ID3D11Device* device)
 		{ "WEIGHTS",  0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "BONES",    0, DXGI_FORMAT_R32G32B32A32_UINT,  0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
-	//create_vs_from_cso(device, "Data/shader/model_vs.cso", m_vertex_shader[0].GetAddressOf(), m_input_layout.GetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
+	//CreateVSFromCso(device, "Data/shader/model_vs.cso", m_vertex_shader[0].GetAddressOf(), m_input_layout.GetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
 	//Microsoft::WRL::ComPtr<ID3D11InputLayout>		input_layout;
-	//create_vs_from_cso(device, "Data/shader/model_normal_vs.cso", m_vertex_shader[1].GetAddressOf(), input_layout.GetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
+	//CreateVSFromCso(device, "Data/shader/model_normal_vs.cso", m_vertex_shader[1].GetAddressOf(), input_layout.GetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
 	//Microsoft::WRL::ComPtr<ID3D11InputLayout>		shadow_input;
-	//create_vs_from_cso(device, "Data/shader/model_shadow_vs.cso", mShadowVSShader.GetAddressOf(), shadow_input.GetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
+	//CreateVSFromCso(device, "Data/shader/model_shadow_vs.cso", mShadowVSShader.GetAddressOf(), shadow_input.GetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
 
-	//create_ps_from_cso(device, "Data/shader/model_ps.cso", m_pixel_shader[0].GetAddressOf());
-	//create_ps_from_cso(device, "Data/shader/model_normal_ps.cso", m_pixel_shader[1].GetAddressOf());
+	//CreatePSFromCso(device, "Data/shader/model_ps.cso", m_pixel_shader[0].GetAddressOf());
+	//CreatePSFromCso(device, "Data/shader/model_normal_ps.cso", m_pixel_shader[1].GetAddressOf());
 
 	mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/model_vs.cso", "", "Data/shader/model_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc)));
 	mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/model_normal_vs.cso", "", "Data/shader/model_normal_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc)));
@@ -40,14 +40,14 @@ ModelRenderer::ModelRenderer(ID3D11Device* device)
 		desc.ByteWidth = sizeof(CbScene);
 		desc.StructureByteStride = 0;
 
-		HRESULT hr = device->CreateBuffer(&desc, 0, m_cb_scene.GetAddressOf());
+		HRESULT hr = device->CreateBuffer(&desc, 0, mCbScene.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 
 		// メッシュ用バッファ
 		desc.ByteWidth = sizeof(CbMesh);
 
-		hr = device->CreateBuffer(&desc, 0, m_cb_mesh.GetAddressOf());
+		hr = device->CreateBuffer(&desc, 0, mCbMesh.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 		hr = device->CreateBuffer(&desc, 0, mCbBeforeMesh.GetAddressOf());
@@ -56,7 +56,7 @@ ModelRenderer::ModelRenderer(ID3D11Device* device)
 		// サブセット用バッファ
 		desc.ByteWidth = sizeof(CbSubset);
 
-		hr = device->CreateBuffer(&desc, 0, m_cb_subset.GetAddressOf());
+		hr = device->CreateBuffer(&desc, 0, mCbSubset.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
 
@@ -75,7 +75,7 @@ ModelRenderer::ModelRenderer(ID3D11Device* device)
 		desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 		desc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
-		HRESULT hr = device->CreateBlendState(&desc, m_blend_state.GetAddressOf());
+		HRESULT hr = device->CreateBlendState(&desc, mBlendState.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
 
@@ -87,7 +87,7 @@ ModelRenderer::ModelRenderer(ID3D11Device* device)
 		desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 		desc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 
-		HRESULT hr = device->CreateDepthStencilState(&desc, m_depth_stencil_state.GetAddressOf());
+		HRESULT hr = device->CreateDepthStencilState(&desc, mDepthStencilState.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
 
@@ -106,7 +106,7 @@ ModelRenderer::ModelRenderer(ID3D11Device* device)
 		desc.CullMode = D3D11_CULL_NONE;
 		desc.AntialiasedLineEnable = false;
 
-		HRESULT hr = device->CreateRasterizerState(&desc, m_rasterizer_state.GetAddressOf());
+		HRESULT hr = device->CreateRasterizerState(&desc, mRasterizerState.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
 
@@ -128,14 +128,14 @@ ModelRenderer::ModelRenderer(ID3D11Device* device)
 		desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
 		desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 
-		HRESULT hr = device->CreateSamplerState(&desc, m_sampler_state[0].GetAddressOf());
+		HRESULT hr = device->CreateSamplerState(&desc, mSamplerState[0].GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 		desc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
 		desc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
 		desc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
 
-		hr = device->CreateSamplerState(&desc, m_sampler_state[1].GetAddressOf());
+		hr = device->CreateSamplerState(&desc, mSamplerState[1].GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 	}
@@ -168,7 +168,7 @@ ModelRenderer::ModelRenderer(ID3D11Device* device)
 		HRESULT hr = device->CreateTexture2D(&desc, &data, texture.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-		hr = device->CreateShaderResourceView(texture.Get(), nullptr, m_dummy_srv.GetAddressOf());
+		hr = device->CreateShaderResourceView(texture.Get(), nullptr, mDummySRV.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
 }
@@ -179,22 +179,22 @@ void ModelRenderer::Begin(ID3D11DeviceContext* context, const FLOAT4X4& view_pro
 
 	ID3D11Buffer* constant_buffers[] =
 	{
-		m_cb_scene.Get(),
-		m_cb_mesh.Get(),
-		m_cb_subset.Get()
+		mCbScene.Get(),
+		mCbMesh.Get(),
+		mCbSubset.Get()
 	};
 	context->VSSetConstantBuffers(0, ARRAYSIZE(constant_buffers), constant_buffers);
 	context->PSSetConstantBuffers(0, ARRAYSIZE(constant_buffers), constant_buffers);
 
 	const float blend_factor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-	context->OMSetDepthStencilState(m_depth_stencil_state.Get(), 0);
-	context->RSSetState(m_rasterizer_state.Get());
+	context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
+	context->RSSetState(mRasterizerState.Get());
 
 	// シーン用定数バッファ更新
 	CbScene cb_scene;
-	cb_scene.view_projection = view_projection;
+	cb_scene.viewProjection = view_projection;
 
-	context->UpdateSubresource(m_cb_scene.Get(), 0, 0, &cb_scene, 0, 0);
+	context->UpdateSubresource(mCbScene.Get(), 0, 0, &cb_scene, 0, 0);
 }
 
 // 描画
@@ -205,50 +205,50 @@ void ModelRenderer::Draw(ID3D11DeviceContext* context, Model& model, const VECTO
 
 	SHADER_TYPE shaderType = model_resource->GetShaderType();
 	mShader[static_cast<int>(shaderType)]->Activate(context);
-	context->PSSetSamplers(0, 1, m_sampler_state[0].GetAddressOf());
+	context->PSSetSamplers(0, 1, mSamplerState[0].GetAddressOf());
 	if (shaderType == SHADER_TYPE::NORMAL)
 	{
-		context->PSSetSamplers(1, 1, m_sampler_state[1].GetAddressOf());
+		context->PSSetSamplers(1, 1, mSamplerState[1].GetAddressOf());
 	}
 	for (const ModelResource::Mesh& mesh : model_resource->GetMeshes())
 	{
 		// メッシュ用定数バッファ更新
 		CbMesh cb_mesh;
 		::memset(&cb_mesh, 0, sizeof(cb_mesh));
-		if (mesh.node_indices.size() > 0)
+		if (mesh.nodeIndices.size() > 0)
 		{
-			for (size_t i = 0; i < mesh.node_indices.size(); ++i)
+			for (size_t i = 0; i < mesh.nodeIndices.size(); ++i)
 			{
-				DirectX::XMMATRIX inverse_transform = DirectX::XMLoadFloat4x4(mesh.inverse_transforms.at(i));
-				DirectX::XMMATRIX world_transform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.node_indices.at(i)).world_transform);
+				DirectX::XMMATRIX inverse_transform = DirectX::XMLoadFloat4x4(mesh.inverseTransforms.at(i));
+				DirectX::XMMATRIX world_transform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.nodeIndices.at(i)).worldTransform);
 				DirectX::XMMATRIX bone_transform = inverse_transform * world_transform;
-				DirectX::XMStoreFloat4x4(&cb_mesh.bone_transforms[i], bone_transform);
+				DirectX::XMStoreFloat4x4(&cb_mesh.boneTransforms[i], bone_transform);
 			}
 		}
 		else
 		{
-			cb_mesh.bone_transforms[0] = nodes.at(mesh.node_index).world_transform;
+			cb_mesh.boneTransforms[0] = nodes.at(mesh.nodeIndex).worldTransform;
 		}
-		context->UpdateSubresource(m_cb_mesh.Get(), 0, 0, &cb_mesh, 0, 0);
+		context->UpdateSubresource(mCbMesh.Get(), 0, 0, &cb_mesh, 0, 0);
 
 		UINT stride = sizeof(ModelData::Vertex);
 		UINT offset = 0;
-		context->IASetVertexBuffers(0, 1, mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
-		context->IASetIndexBuffer(mesh.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+		context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &stride, &offset);
+		context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		for (const ModelResource::Subset& subset : mesh.subsets)
 		{
 			CbSubset cb_subset;
-			cb_subset.material_color = VECTOR4F(subset.diffuse->color.x * color.x, subset.diffuse->color.y * color.y, subset.diffuse->color.z * color.z, subset.diffuse->color.w * color.w);
-			context->UpdateSubresource(m_cb_subset.Get(), 0, 0, &cb_subset, 0, 0);
-			context->PSSetShaderResources(0, 1, subset.diffuse->shader_resource_view.Get() ? subset.diffuse->shader_resource_view.GetAddressOf() : m_dummy_srv.GetAddressOf());
+			cb_subset.materialColor = VECTOR4F(subset.diffuse->color.x * color.x, subset.diffuse->color.y * color.y, subset.diffuse->color.z * color.z, subset.diffuse->color.w * color.w);
+			context->UpdateSubresource(mCbSubset.Get(), 0, 0, &cb_subset, 0, 0);
+			context->PSSetShaderResources(0, 1, subset.diffuse->SRV.Get() ? subset.diffuse->SRV.GetAddressOf() : mDummySRV.GetAddressOf());
 			if (shaderType == SHADER_TYPE::NORMAL)
 			{
-				context->PSSetShaderResources(1, 1, subset.normal->shader_resource_view.Get() ? subset.normal->shader_resource_view.GetAddressOf() : m_dummy_srv.GetAddressOf());
-				context->PSSetShaderResources(2, 1, subset.bump->shader_resource_view.Get() ? subset.bump->shader_resource_view.GetAddressOf() : m_dummy_srv.GetAddressOf());
+				context->PSSetShaderResources(1, 1, subset.normal->SRV.Get() ? subset.normal->SRV.GetAddressOf() : mDummySRV.GetAddressOf());
+				context->PSSetShaderResources(2, 1, subset.bump->SRV.Get() ? subset.bump->SRV.GetAddressOf() : mDummySRV.GetAddressOf());
 			}
-			context->DrawIndexed(subset.index_count, subset.start_index, 0);
+			context->DrawIndexed(subset.indexCount, subset.startIndex, 0);
 		}
 	}
 	mShader[static_cast<int>(shaderType)]->Deactivate(context);
@@ -261,53 +261,53 @@ void ModelRenderer::Draw(ID3D11DeviceContext* context, DrowShader* shader, Model
 
 	SHADER_TYPE shaderType = model_resource->GetShaderType();
 	shader->Activate(context);
-	context->PSSetSamplers(0, 1, m_sampler_state[0].GetAddressOf());
+	context->PSSetSamplers(0, 1, mSamplerState[0].GetAddressOf());
 
 	if (shaderType == SHADER_TYPE::NORMAL)
 	{
-		context->PSSetSamplers(1, 1, m_sampler_state[1].GetAddressOf());
+		context->PSSetSamplers(1, 1, mSamplerState[1].GetAddressOf());
 	}
 	for (const ModelResource::Mesh& mesh : model_resource->GetMeshes())
 	{
 		// メッシュ用定数バッファ更新
 		CbMesh cb_mesh;
 		::memset(&cb_mesh, 0, sizeof(cb_mesh));
-		if (mesh.node_indices.size() > 0)
+		if (mesh.nodeIndices.size() > 0)
 		{
-			for (size_t i = 0; i < mesh.node_indices.size(); ++i)
+			for (size_t i = 0; i < mesh.nodeIndices.size(); ++i)
 			{
-				DirectX::XMMATRIX inverse_transform = DirectX::XMLoadFloat4x4(mesh.inverse_transforms.at(i));
-				DirectX::XMMATRIX world_transform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.node_indices.at(i)).world_transform);
+				DirectX::XMMATRIX inverse_transform = DirectX::XMLoadFloat4x4(mesh.inverseTransforms.at(i));
+				DirectX::XMMATRIX world_transform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.nodeIndices.at(i)).worldTransform);
 				DirectX::XMMATRIX bone_transform = inverse_transform * world_transform;
-				DirectX::XMStoreFloat4x4(&cb_mesh.bone_transforms[i], bone_transform);
-				DirectX::XMMATRIX beforeWorldTransform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.node_indices.at(i)).beforeWorldTransform);
+				DirectX::XMStoreFloat4x4(&cb_mesh.boneTransforms[i], bone_transform);
+				DirectX::XMMATRIX beforeWorldTransform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.nodeIndices.at(i)).beforeWorldTransform);
 
 			}
 		}
 		else
 		{
-			cb_mesh.bone_transforms[0] = nodes.at(mesh.node_index).world_transform;
+			cb_mesh.boneTransforms[0] = nodes.at(mesh.nodeIndex).worldTransform;
 		}
-		context->UpdateSubresource(m_cb_mesh.Get(), 0, 0, &cb_mesh, 0, 0);
+		context->UpdateSubresource(mCbMesh.Get(), 0, 0, &cb_mesh, 0, 0);
 
 		UINT stride = sizeof(ModelData::Vertex);
 		UINT offset = 0;
-		context->IASetVertexBuffers(0, 1, mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
-		context->IASetIndexBuffer(mesh.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+		context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &stride, &offset);
+		context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		for (const ModelResource::Subset& subset : mesh.subsets)
 		{
 			CbSubset cb_subset;
-			cb_subset.material_color = VECTOR4F(subset.diffuse->color.x * color.x, subset.diffuse->color.y * color.y, subset.diffuse->color.z * color.z, subset.diffuse->color.w * color.w);
-			context->UpdateSubresource(m_cb_subset.Get(), 0, 0, &cb_subset, 0, 0);
-			context->PSSetShaderResources(0, 1, subset.diffuse->shader_resource_view.Get() ? subset.diffuse->shader_resource_view.GetAddressOf() : m_dummy_srv.GetAddressOf());
+			cb_subset.materialColor = VECTOR4F(subset.diffuse->color.x * color.x, subset.diffuse->color.y * color.y, subset.diffuse->color.z * color.z, subset.diffuse->color.w * color.w);
+			context->UpdateSubresource(mCbSubset.Get(), 0, 0, &cb_subset, 0, 0);
+			context->PSSetShaderResources(0, 1, subset.diffuse->SRV.Get() ? subset.diffuse->SRV.GetAddressOf() : mDummySRV.GetAddressOf());
 			if (shaderType == SHADER_TYPE::NORMAL)
 			{
-				context->PSSetShaderResources(1, 1, subset.normal->shader_resource_view.Get() ? subset.normal->shader_resource_view.GetAddressOf() : m_dummy_srv.GetAddressOf());
-				context->PSSetShaderResources(2, 1, subset.bump->shader_resource_view.Get() ? subset.bump->shader_resource_view.GetAddressOf() : m_dummy_srv.GetAddressOf());
+				context->PSSetShaderResources(1, 1, subset.normal->SRV.Get() ? subset.normal->SRV.GetAddressOf() : mDummySRV.GetAddressOf());
+				context->PSSetShaderResources(2, 1, subset.bump->SRV.Get() ? subset.bump->SRV.GetAddressOf() : mDummySRV.GetAddressOf());
 			}
-			context->DrawIndexed(subset.index_count, subset.start_index, 0);
+			context->DrawIndexed(subset.indexCount, subset.startIndex, 0);
 		}
 	}
 	shader->Deactivate(context);
@@ -327,22 +327,22 @@ void ModelRenderer::ShadowBegin(ID3D11DeviceContext* context, const FLOAT4X4& vi
 	mShadowShader->Activate(context);
 	ID3D11Buffer* constant_buffers[] =
 	{
-		m_cb_scene.Get(),
-		m_cb_mesh.Get(),
-		m_cb_subset.Get()
+		mCbScene.Get(),
+		mCbMesh.Get(),
+		mCbSubset.Get()
 	};
 	context->VSSetConstantBuffers(0, ARRAYSIZE(constant_buffers), constant_buffers);
 	context->PSSetConstantBuffers(0, ARRAYSIZE(constant_buffers), constant_buffers);
 
 	const float blend_factor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-	context->OMSetDepthStencilState(m_depth_stencil_state.Get(), 0);
-	context->RSSetState(m_rasterizer_state.Get());
+	context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
+	context->RSSetState(mRasterizerState.Get());
 
 	// シーン用定数バッファ更新
 	CbScene cb_scene;
-	cb_scene.view_projection = view_projection;
+	cb_scene.viewProjection = view_projection;
 
-	context->UpdateSubresource(m_cb_scene.Get(), 0, 0, &cb_scene, 0, 0);
+	context->UpdateSubresource(mCbScene.Get(), 0, 0, &cb_scene, 0, 0);
 
 }
 
@@ -356,34 +356,34 @@ void ModelRenderer::ShadowDraw(ID3D11DeviceContext* context, Model& model, const
 		// メッシュ用定数バッファ更新
 		CbMesh cb_mesh;
 		::memset(&cb_mesh, 0, sizeof(cb_mesh));
-		if (mesh.node_indices.size() > 0)
+		if (mesh.nodeIndices.size() > 0)
 		{
-			for (size_t i = 0; i < mesh.node_indices.size(); ++i)
+			for (size_t i = 0; i < mesh.nodeIndices.size(); ++i)
 			{
-				DirectX::XMMATRIX inverse_transform = DirectX::XMLoadFloat4x4(mesh.inverse_transforms.at(i));
-				DirectX::XMMATRIX world_transform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.node_indices.at(i)).world_transform);
+				DirectX::XMMATRIX inverse_transform = DirectX::XMLoadFloat4x4(mesh.inverseTransforms.at(i));
+				DirectX::XMMATRIX world_transform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.nodeIndices.at(i)).worldTransform);
 				DirectX::XMMATRIX bone_transform = inverse_transform * world_transform;
-				DirectX::XMStoreFloat4x4(&cb_mesh.bone_transforms[i], bone_transform);
+				DirectX::XMStoreFloat4x4(&cb_mesh.boneTransforms[i], bone_transform);
 			}
 		}
 		else
 		{
-			cb_mesh.bone_transforms[0] = nodes.at(mesh.node_index).world_transform;
+			cb_mesh.boneTransforms[0] = nodes.at(mesh.nodeIndex).worldTransform;
 		}
-		context->UpdateSubresource(m_cb_mesh.Get(), 0, 0, &cb_mesh, 0, 0);
+		context->UpdateSubresource(mCbMesh.Get(), 0, 0, &cb_mesh, 0, 0);
 
 		UINT stride = sizeof(ModelData::Vertex);
 		UINT offset = 0;
-		context->IASetVertexBuffers(0, 1, mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
-		context->IASetIndexBuffer(mesh.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+		context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &stride, &offset);
+		context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		for (const ModelResource::Subset& subset : mesh.subsets)
 		{
 			CbSubset cb_subset;
-			cb_subset.material_color = VECTOR4F(subset.diffuse->color.x * color.x, subset.diffuse->color.y * color.y, subset.diffuse->color.z * color.z, subset.diffuse->color.w * color.w);
-			context->UpdateSubresource(m_cb_subset.Get(), 0, 0, &cb_subset, 0, 0);
-			context->DrawIndexed(subset.index_count, subset.start_index, 0);
+			cb_subset.materialColor = VECTOR4F(subset.diffuse->color.x * color.x, subset.diffuse->color.y * color.y, subset.diffuse->color.z * color.z, subset.diffuse->color.w * color.w);
+			context->UpdateSubresource(mCbSubset.Get(), 0, 0, &cb_subset, 0, 0);
+			context->DrawIndexed(subset.indexCount, subset.startIndex, 0);
 		}
 	}
 
@@ -403,22 +403,22 @@ void ModelRenderer::VelocityBegin(ID3D11DeviceContext* context, const FLOAT4X4& 
 	mShader[2]->Activate(context);
 	ID3D11Buffer* constant_buffers[] =
 	{
-		m_cb_scene.Get(),
-		m_cb_mesh.Get(),
+		mCbScene.Get(),
+		mCbMesh.Get(),
 		mCbBeforeMesh.Get()
 	};
 	context->VSSetConstantBuffers(0, ARRAYSIZE(constant_buffers), constant_buffers);
 	context->PSSetConstantBuffers(0, ARRAYSIZE(constant_buffers), constant_buffers);
 
 	const float blend_factor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-	context->OMSetDepthStencilState(m_depth_stencil_state.Get(), 0);
-	context->RSSetState(m_rasterizer_state.Get());
+	context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
+	context->RSSetState(mRasterizerState.Get());
 
 	// シーン用定数バッファ更新
 	CbScene cb_scene;
-	cb_scene.view_projection = viewProjection;
+	cb_scene.viewProjection = viewProjection;
 
-	context->UpdateSubresource(m_cb_scene.Get(), 0, 0, &cb_scene, 0, 0);
+	context->UpdateSubresource(mCbScene.Get(), 0, 0, &cb_scene, 0, 0);
 
 }
 
@@ -431,37 +431,37 @@ void ModelRenderer::VelocityDraw(ID3D11DeviceContext* context, Model& model)
 		// メッシュ用定数バッファ更新
 		CbMesh cb_mesh, cbBeforeMesh;
 		::memset(&cb_mesh, 0, sizeof(cb_mesh));
-		if (mesh.node_indices.size() > 0)
+		if (mesh.nodeIndices.size() > 0)
 		{
-			for (size_t i = 0; i < mesh.node_indices.size(); ++i)
+			for (size_t i = 0; i < mesh.nodeIndices.size(); ++i)
 			{
-				DirectX::XMMATRIX inverse_transform = DirectX::XMLoadFloat4x4(mesh.inverse_transforms.at(i));
-				DirectX::XMMATRIX world_transform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.node_indices.at(i)).world_transform);
+				DirectX::XMMATRIX inverse_transform = DirectX::XMLoadFloat4x4(mesh.inverseTransforms.at(i));
+				DirectX::XMMATRIX world_transform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.nodeIndices.at(i)).worldTransform);
 				DirectX::XMMATRIX bone_transform = inverse_transform * world_transform;
-				DirectX::XMStoreFloat4x4(&cb_mesh.bone_transforms[i], bone_transform);
-				DirectX::XMMATRIX beforeWorldTransform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.node_indices.at(i)).beforeWorldTransform);
+				DirectX::XMStoreFloat4x4(&cb_mesh.boneTransforms[i], bone_transform);
+				DirectX::XMMATRIX beforeWorldTransform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.nodeIndices.at(i)).beforeWorldTransform);
 				bone_transform = inverse_transform * beforeWorldTransform;
-				DirectX::XMStoreFloat4x4(&cbBeforeMesh.bone_transforms[i], bone_transform);
+				DirectX::XMStoreFloat4x4(&cbBeforeMesh.boneTransforms[i], bone_transform);
 
 			}
 		}
 		else
 		{
-			cb_mesh.bone_transforms[0] = nodes.at(mesh.node_index).world_transform;
-			cbBeforeMesh.bone_transforms[0] = nodes.at(mesh.node_index).beforeWorldTransform;
+			cb_mesh.boneTransforms[0] = nodes.at(mesh.nodeIndex).worldTransform;
+			cbBeforeMesh.boneTransforms[0] = nodes.at(mesh.nodeIndex).beforeWorldTransform;
 		}
-		context->UpdateSubresource(m_cb_mesh.Get(), 0, 0, &cb_mesh, 0, 0);
+		context->UpdateSubresource(mCbMesh.Get(), 0, 0, &cb_mesh, 0, 0);
 		context->UpdateSubresource(mCbBeforeMesh.Get(), 0, 0, &cbBeforeMesh, 0, 0);
 
 		UINT stride = sizeof(ModelData::Vertex);
 		UINT offset = 0;
-		context->IASetVertexBuffers(0, 1, mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
-		context->IASetIndexBuffer(mesh.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+		context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &stride, &offset);
+		context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		for (const ModelResource::Subset& subset : mesh.subsets)
 		{
-			context->DrawIndexed(subset.index_count, subset.start_index, 0);
+			context->DrawIndexed(subset.indexCount, subset.startIndex, 0);
 		}
 	}
 

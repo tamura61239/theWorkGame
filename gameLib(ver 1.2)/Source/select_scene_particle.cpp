@@ -13,7 +13,7 @@ SelectSceneParticle::SelectSceneParticle(ID3D11Device* device)
 	std::vector<Particle>particles;
 	//Microsoft::WRL::ComPtr<ID3D11Buffer>mParticleBuffer;
 	mMaxParticle = 60000;
-	particles.resize(mMaxParticle);
+	particles.resize(static_cast<size_t>(mMaxParticle));
 	HRESULT hr;
 	{
 		D3D11_BUFFER_DESC desc;
@@ -93,13 +93,13 @@ SelectSceneParticle::SelectSceneParticle(ID3D11Device* device)
 	mCb.endPosition = VECTOR3F(0, 0, 1000);
 
 	mCb.defVelocity = VECTOR3F(0, 0, 1);
-	hr = create_cs_from_cso(device, "Data/shader/select_scene_create_particle_cs.cso", mCreateShader.GetAddressOf());
+	hr = CreateCSFromCso(device, "Data/shader/select_scene_create_particle_cs.cso", mCreateShader.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	hr = create_cs_from_cso(device, "Data/shader/select_scene_particle_cs.cso", mCSShader.GetAddressOf());
+	hr = CreateCSFromCso(device, "Data/shader/select_scene_particle_cs.cso", mCSShader.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	hr = create_cs_from_cso(device, "Data/shader/particle_render_set_cs.cso", mRenderSetCSShader.GetAddressOf());
+	hr = CreateCSFromCso(device, "Data/shader/particle_render_set_cs.cso", mRenderSetCSShader.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	hr = create_cs_from_cso(device, "Data/shader/clear_render_cs.cso", mClearCSShader.GetAddressOf());
+	hr = CreateCSFromCso(device, "Data/shader/clear_render_cs.cso", mClearCSShader.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
@@ -187,7 +187,7 @@ void SelectSceneParticle::Render(ID3D11DeviceContext* context)
 	context->IASetVertexBuffers(0, 1, mRenderBuffer.GetAddressOf(), &stride, &offset);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 
-	context->Draw(mMaxParticle, 0);
+	context->Draw(static_cast<UINT>(mMaxParticle), 0);
 	mShader->Deactivate(context);
 
 }

@@ -64,7 +64,7 @@ BOOL PASCAL EnumJoyDeviceProc(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 
 DirectInput::DirectInput(const int id, const float deadzone_x, const float deadzone_y, HINSTANCE instance)
 {
-	m_id = id;
+	mId = id;
 
 	HRESULT hr = DirectInput8Create(instance, DIRECTINPUT_VERSION, IID_IDirectInput8, (LPVOID*)&g_lpDI, NULL);
 	if (FAILED(hr))
@@ -81,24 +81,24 @@ DirectInput::DirectInput(const int id, const float deadzone_x, const float deadz
 	{
 		return;
 	}
-	if (!g_lpJoysticks.at(m_id)) {
+	if (!g_lpJoysticks.at(mId)) {
 		// The gamepad was not find
-		m_current_state.connected = false;
+		mCurrentState.connected = false;
 		return;
 	}
 
 	// Device information
 	DIDEVCAPS dc;
 	dc.dwSize = sizeof(dc);
-	g_lpJoysticks.at(m_id)->GetCapabilities(&dc);
+	g_lpJoysticks.at(mId)->GetCapabilities(&dc);
 
 	// Start of operation
-	g_lpJoysticks.at(m_id)->Acquire();
-	m_current_state.connected = true;
+	g_lpJoysticks.at(mId)->Acquire();
+	mCurrentState.connected = true;
 
 
-	m_deadzone_y = deadzone_y;
-	m_deadzone_x = deadzone_x;
+	mDeadzoneY = deadzone_y;
+	mDeadzoneX = deadzone_x;
 }
 
 DirectInput::~DirectInput()
@@ -109,20 +109,20 @@ DirectInput::~DirectInput()
 	{
 		return;
 	};
-	if (g_lpJoysticks.at(m_id) != nullptr)
-		g_lpJoysticks.at(m_id)->Release();
+	if (g_lpJoysticks.at(mId) != nullptr)
+		g_lpJoysticks.at(mId)->Release();
 
 	
 }
 
 void DirectInput::Update()
 {
-	if (!m_current_state.connected)
+	if (!mCurrentState.connected)
 		return;
 
-	m_previous_state = m_current_state;
+	mPreviousState = mCurrentState;
 
-	HRESULT hr = g_lpJoysticks.at(m_id)->GetDeviceState(sizeof(m_current_state.state), &m_current_state.state);
+	HRESULT hr = g_lpJoysticks.at(mId)->GetDeviceState(sizeof(mCurrentState.state), &mCurrentState.state);
 	//if (FAILED(hr)) {
 	//	// Start again
 	//	g_lpJoystick->Acquire();
@@ -135,10 +135,10 @@ void DirectInput::Update()
 
 bool DirectInput::ButtonPressedState(int button)
 {
-	if (!m_current_state.connected)
+	if (!mCurrentState.connected)
 		return false;
 
-	if (m_current_state.state.rgbButtons[button] & 0x80)
+	if (mCurrentState.state.rgbButtons[button] & 0x80)
 	{
 		return true;
 	}
@@ -146,8 +146,8 @@ bool DirectInput::ButtonPressedState(int button)
 }
 bool DirectInput::ButtonRisingState(int button)
 {
-	if ((m_current_state.state.rgbButtons[button] & 0x80) &&
-		!(m_previous_state.state.rgbButtons[button] & 0x80))
+	if ((mCurrentState.state.rgbButtons[button] & 0x80) &&
+		!(mPreviousState.state.rgbButtons[button] & 0x80))
 	{
 		return true;
 	}
@@ -155,8 +155,8 @@ bool DirectInput::ButtonRisingState(int button)
 }
 bool DirectInput::ButtonFallingState(int button)
 {
-	if (!(m_current_state.state.rgbButtons[button] & 0x80) &&
-		(m_previous_state.state.rgbButtons[button] & 0x80))
+	if (!(mCurrentState.state.rgbButtons[button] & 0x80) &&
+		(mPreviousState.state.rgbButtons[button] & 0x80))
 	{
 		return true;
 	}
@@ -165,70 +165,70 @@ bool DirectInput::ButtonFallingState(int button)
 
 bool DirectInput::DirectionButtonPressedState(int button)
 {
-	return m_current_state.direction_button[button] > 0;
+	return mCurrentState.directionButton[button] > 0;
 }
 bool DirectInput::DirectionButtonRisingState(int button)
 {
-	return m_current_state.direction_button[button] > 0 && m_previous_state.direction_button[button] == 0;
+	return mCurrentState.directionButton[button] > 0 && mPreviousState.directionButton[button] == 0;
 }
 bool DirectInput::DirectionButtonFallingState(int button)
 {
-	return m_current_state.direction_button[button] == 0 && m_previous_state.direction_button[button] > 0;
+	return mCurrentState.directionButton[button] == 0 && mPreviousState.directionButton[button] > 0;
 }
 
 void DirectInput::DirectionButtonState()
 {
-	if (m_current_state.state.rgdwPOV[0] == 0 ||
-		m_current_state.state.rgdwPOV[0] == 4500 ||
-		m_current_state.state.rgdwPOV[0] == 31500)
-		++m_current_state.direction_button[State::UP];
+	if (mCurrentState.state.rgdwPOV[0] == 0 ||
+		mCurrentState.state.rgdwPOV[0] == 4500 ||
+		mCurrentState.state.rgdwPOV[0] == 31500)
+		++mCurrentState.directionButton[State::UP];
 	else
 	{
-		m_current_state.direction_button[State::UP] = 0;
+		mCurrentState.directionButton[State::UP] = 0;
 	}
 
-	if (m_current_state.state.rgdwPOV[0] == 13500 ||
-		m_current_state.state.rgdwPOV[0] == 18000 ||
-		m_current_state.state.rgdwPOV[0] == 22500)
-		++m_current_state.direction_button[State::DOWN];
+	if (mCurrentState.state.rgdwPOV[0] == 13500 ||
+		mCurrentState.state.rgdwPOV[0] == 18000 ||
+		mCurrentState.state.rgdwPOV[0] == 22500)
+		++mCurrentState.directionButton[State::DOWN];
 	else
 	{
-		m_current_state.direction_button[State::DOWN] = 0;
+		mCurrentState.directionButton[State::DOWN] = 0;
 	}
 
-	if (m_current_state.state.rgdwPOV[0] == 22500 ||
-		m_current_state.state.rgdwPOV[0] == 27000 ||
-		m_current_state.state.rgdwPOV[0] == 31500)
-		++m_current_state.direction_button[State::LEFT];
+	if (mCurrentState.state.rgdwPOV[0] == 22500 ||
+		mCurrentState.state.rgdwPOV[0] == 27000 ||
+		mCurrentState.state.rgdwPOV[0] == 31500)
+		++mCurrentState.directionButton[State::LEFT];
 	else
 	{
-		m_current_state.direction_button[State::LEFT] = 0;
+		mCurrentState.directionButton[State::LEFT] = 0;
 	}
 
-	if (m_current_state.state.rgdwPOV[0] == 4500 ||
-		m_current_state.state.rgdwPOV[0] == 9000 ||
-		m_current_state.state.rgdwPOV[0] == 13500)
-		++m_current_state.direction_button[State::RIGHT];
+	if (mCurrentState.state.rgdwPOV[0] == 4500 ||
+		mCurrentState.state.rgdwPOV[0] == 9000 ||
+		mCurrentState.state.rgdwPOV[0] == 13500)
+		++mCurrentState.directionButton[State::RIGHT];
 	else
 	{
-		m_current_state.direction_button[State::RIGHT] = 0;
+		mCurrentState.directionButton[State::RIGHT] = 0;
 	}
 }
 void DirectInput::StickState()
 {
-	m_current_state.l_stick.x = ApplyDeadZone(static_cast<float>(m_current_state.state.lX), MAX_STICKTILT, m_deadzone_x);
+	mCurrentState.lStick.x = ApplyDeadZone(static_cast<float>(mCurrentState.state.lX), MAX_STICKTILT, mDeadzoneX);
 
-	m_current_state.l_stick.y = ApplyDeadZone(static_cast<float>(m_current_state.state.lY), MAX_STICKTILT, m_deadzone_y);
+	mCurrentState.lStick.y = ApplyDeadZone(static_cast<float>(mCurrentState.state.lY), MAX_STICKTILT, mDeadzoneY);
 
-	m_current_state.r_stick.x = ApplyDeadZone(static_cast<float>(m_current_state.state.lZ), MAX_STICKTILT, m_deadzone_x);
+	mCurrentState.rStick.x = ApplyDeadZone(static_cast<float>(mCurrentState.state.lZ), MAX_STICKTILT, mDeadzoneX);
 
-	m_current_state.r_stick.y = ApplyDeadZone(static_cast<float>(m_current_state.state.lRz), MAX_STICKTILT, m_deadzone_y);
+	mCurrentState.rStick.y = ApplyDeadZone(static_cast<float>(mCurrentState.state.lRz), MAX_STICKTILT, mDeadzoneY);
 }
 
 void DirectInput::TriggerState()
 {
-	m_current_state.l_trigger = ApplyDeadZone(static_cast<float>(m_current_state.state.lRx), MAX_TRRIGERTILT, 0.0f);
-	m_current_state.r_trigger = ApplyDeadZone(static_cast<float>(m_current_state.state.lRy), MAX_TRRIGERTILT, 0.0f);
+	mCurrentState.lTrigger = ApplyDeadZone(static_cast<float>(mCurrentState.state.lRx), MAX_TRRIGERTILT, 0.0f);
+	mCurrentState.rTrigger = ApplyDeadZone(static_cast<float>(mCurrentState.state.lRy), MAX_TRRIGERTILT, 0.0f);
 }
 
 float DirectInput::ApplyDeadZone(const float value, const float max_value, const float deadzone)

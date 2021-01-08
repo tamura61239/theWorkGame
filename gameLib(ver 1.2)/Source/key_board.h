@@ -5,43 +5,43 @@ class KeyBoad
 public:
 	void Update()
 	{
-		if (!GetKeyboardState(key))return;
+		if (!GetKeyboardState(mKey))return;
 		for (int i = 0; i < 256; i++)
 		{
-			before_key[i] = push_key[i];
-			if (key[i] & 0x80)
+			mBeforeKey[i] = mPushKey[i];
+			if (mKey[i] & 0x80)
 			{
-				push_key[i]++;
+				mPushKey[i]++;
 			}
 			else
 			{
-				push_key[i] = 0;
+				mPushKey[i] = 0;
 			}
 		}
 	}
 	//‰Ÿ‚µ‚½‚Æ‚«
-	bool PressedState(const int key) { return push_key[key] > 0; }
+	bool PressedState(const int key) { return mPushKey[key] > 0; }
 
 	//‰Ÿ‚µŽn‚ß
-	bool RisingState(const int key) { return  push_key[key] > 0 && before_key[key] == 0; }
+	bool RisingState(const int key) { return  mPushKey[key] > 0 && mBeforeKey[key] == 0; }
 
 	//—£‚µ‚½‚Æ‚«
-	bool FallingState(const int key) { return  push_key[key] == 0 && before_key[key] > 0; }
+	bool FallingState(const int key) { return  mPushKey[key] == 0 && mBeforeKey[key] > 0; }
 	static KeyBoad& getinctanse()
 	{
 		static KeyBoad keyboad;
 		return keyboad;
 	}
 private:
-	BYTE key[256] = { 0 };
-	int push_key[256] = { 0 };
-	int before_key[256] = { 0 };
+	BYTE mKey[256] = { 0 };
+	int mPushKey[256] = { 0 };
+	int mBeforeKey[256] = { 0 };
 	KeyBoad()
 	{
 		for (int i = 0; i < 256; i++)
 		{
-			push_key[i] = 0;
-			before_key[i] = 0;
+			mPushKey[i] = 0;
+			mBeforeKey[i] = 0;
 		}
 	}
 };

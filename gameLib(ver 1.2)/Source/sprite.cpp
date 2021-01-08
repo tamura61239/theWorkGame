@@ -42,13 +42,13 @@ Sprite::Sprite(ID3D11Device* device, const wchar_t* fileName)
 
 	};
 	////頂点シェーダー＆頂点入力レイアウトの生成
-	//hr = create_vs_from_cso(device, "Data/shader/sprite_vs.cso", mVSShader.GetAddressOf(), mInput.GetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
+	//hr = CreateVSFromCso(device, "Data/shader/sprite_vs.cso", mVSShader.GetAddressOf(), mInput.GetAddressOf(), input_element_desc, ARRAYSIZE(input_element_desc));
 	//_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	//// ピクセルシェーダーの生成
-	//hr = create_ps_from_cso(device, "Data/shader/sprite_ps.cso", mPSShader.GetAddressOf());
+	//hr = CreatePSFromCso(device, "Data/shader/sprite_ps.cso", mPSShader.GetAddressOf());
 	//_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	mShader = std::make_unique<DrowShader>(device, "Data/shader/sprite_vs.cso", "", "Data/shader/sprite_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc));
-	hr = load_texture_from_file(device, fileName, mTexview.GetAddressOf(), &mTexture2d);
+	hr = LoadTextureFromFile(device, fileName, mTexview.GetAddressOf(), &mTexture2d);
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 	//RasterizerStateの生成
@@ -211,7 +211,7 @@ void Sprite::Load(ID3D11Device* device, const wchar_t* fileName)
 {
 	HRESULT hr;
 
-	hr = load_texture_from_file(device, fileName, mTexview.GetAddressOf(), &mTexture2d);
+	hr = LoadTextureFromFile(device, fileName, mTexview.GetAddressOf(), &mTexture2d);
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 }

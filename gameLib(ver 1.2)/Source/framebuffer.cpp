@@ -100,12 +100,12 @@ FrameBuffer::FrameBuffer(ID3D11Device* device, int width, int height, bool msaaF
 			_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		}
 	}
-	viewport.Width = static_cast<float>(width);
-	viewport.Height = static_cast<float>(height);
-	viewport.MinDepth = 0.0f;
-	viewport.MaxDepth = 1.0f;
-	viewport.TopLeftX = 0.0f;
-	viewport.TopLeftY = 0.0f;
+	mViewport.Width = static_cast<float>(width);
+	mViewport.Height = static_cast<float>(height);
+	mViewport.MinDepth = 0.0f;
+	mViewport.MaxDepth = 1.0f;
+	mViewport.TopLeftX = 0.0f;
+	mViewport.TopLeftY = 0.0f;
 }
 
 void FrameBuffer::Clear(ID3D11DeviceContext* context, float r, float g, float b, float a, unsigned int clearFlags, float depth, unsigned char stencil)
@@ -123,9 +123,9 @@ void FrameBuffer::Clear(ID3D11DeviceContext* context, float r, float g, float b,
 
 void FrameBuffer::Activate(ID3D11DeviceContext* context)
 {
-	viewportsNumber = D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE;
-	context->RSGetViewports(&viewportsNumber, defaultViewports);
-	context->RSSetViewports(1, &viewport);
+	mViewportsNumber = D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE;
+	context->RSGetViewports(&mViewportsNumber, mDefaultViewports);
+	context->RSSetViewports(1, &mViewport);
 
 	context->OMGetRenderTargets(1, mDefaultRenderTargetView.GetAddressOf(), mDefaultDepthStencilView.GetAddressOf());
 	context->OMSetRenderTargets(1, mRenderTargetView.GetAddressOf(), mDepthStencilView.Get());
@@ -133,7 +133,7 @@ void FrameBuffer::Activate(ID3D11DeviceContext* context)
 
 void FrameBuffer::Deactivate(ID3D11DeviceContext* context)
 {
-	context->RSSetViewports(viewportsNumber, defaultViewports);
+	context->RSSetViewports(mViewportsNumber, mDefaultViewports);
 	context->OMSetRenderTargets(1, mDefaultRenderTargetView.GetAddressOf(), mDefaultDepthStencilView.Get());
 
 }
@@ -166,7 +166,7 @@ void FrameBuffer::SaveDDSFile(ID3D11DeviceContext* context, const wchar_t* fileN
 
 void MulltiRenderTargetFunction::Clear(ID3D11DeviceContext* context, float r, float g, float b, float a, unsigned int clearFlags, float depth, unsigned char stencil)
 {
-	for (auto& frame : frameBuffers)
+	for (auto& frame : mFrameBuffers)
 	{
 		frame->Clear(context, r, g, b, a, clearFlags, depth, stencil);
 	}
@@ -174,23 +174,23 @@ void MulltiRenderTargetFunction::Clear(ID3D11DeviceContext* context, float r, fl
 
 void MulltiRenderTargetFunction::Activate(ID3D11DeviceContext* context)
 {
-	if (frameBuffers.size() <= 0)return;
+	if (mFrameBuffers.size() <= 0)return;
 	std::vector<ID3D11RenderTargetView*>rtvs;
-	for (auto& frame : frameBuffers)
+	for (auto& frame : mFrameBuffers)
 	{
 		rtvs.push_back(frame->GetRenderargetView().Get());
 	}
-	viewportsNumber = D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE;
-	context->RSGetViewports(&viewportsNumber, defaultViewports);
-	context->RSSetViewports(1, &frameBuffers[0]->GetViewPort());
+	mViewportsNumber = D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE;
+	context->RSGetViewports(&mViewportsNumber, mDefaultViewports);
+	context->RSSetViewports(1, &mFrameBuffers[0]->GetViewPort());
 	context->OMGetRenderTargets(1, mDefaultRenderTargetView.GetAddressOf(), mDefaultDepthStencilView.GetAddressOf());
-	context->OMSetRenderTargets(rtvs.size(), &rtvs[0], frameBuffers[0]->GetDepthStencilView().Get());
+	context->OMSetRenderTargets(rtvs.size(), &rtvs[0], mFrameBuffers[0]->GetDepthStencilView().Get());
 
 }
 
 void MulltiRenderTargetFunction::Deactivate(ID3D11DeviceContext* context)
 {
-	if (frameBuffers.size() <= 0)return;
-	context->RSSetViewports(viewportsNumber, defaultViewports);
+	if (mFrameBuffers.size() <= 0)return;
+	context->RSSetViewports(mViewportsNumber, mDefaultViewports);
 	context->OMSetRenderTargets(1, mDefaultRenderTargetView.GetAddressOf(), mDefaultDepthStencilView.Get());
 }

@@ -10,12 +10,12 @@
 class GeometricPrimitive
 {
 public:
-	GeometricPrimitive(ID3D11Device* device) :indexNum(0) {};
+	GeometricPrimitive(ID3D11Device* device) :mIndexNum(0) {};
 	virtual ~GeometricPrimitive() {};
 	Microsoft::WRL::ComPtr<ID3D11Buffer>GetVertexBuffer() { return mVertexBuffer; }
 	Microsoft::WRL::ComPtr<ID3D11Buffer>GetIndexBuffer() { return mIndexBuffer; }
 
-	const int& GetIndexNum() { return indexNum; }
+	const int& GetIndexNum() { return mIndexNum; }
 #if TYPE
 	const FLOAT4X4& GetWorld() { return world; }
 	void CalculateTransform(const VECTOR3F& position, const VECTOR3F& scale, const VECTOR3F& angle)
@@ -43,8 +43,8 @@ public:
 protected:
 	void CreateBuffer(ID3D11Device* device, std::vector<Vertex>vertics, std::vector<UINT>index);
 private:
-	FLOAT4X4 world;
-	int indexNum;
+	FLOAT4X4 mWorld;
+	int mIndexNum;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mVertexBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mIndexBuffer;
 };

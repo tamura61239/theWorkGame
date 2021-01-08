@@ -16,25 +16,25 @@ class DirectInput
 		DIJOYSTATE state;
 
 		enum { UP, DOWN, LEFT, RIGHT };
-		int direction_button[4];
-		float r_trigger;
-		float l_trigger;
+		int directionButton[4];
+		float rTrigger;
+		float lTrigger;
 
-		VECTOR2F r_stick;
-		VECTOR2F l_stick;
+		VECTOR2F rStick;
+		VECTOR2F lStick;
 
 		bool connected = false;
 	};
 
 	static constexpr float MAX_STICKTILT = 32767.0f;
 	static constexpr float MAX_TRRIGERTILT = 255.0f;
-	int m_id;
+	int mId;
 
-	State m_current_state;
-	State m_previous_state;
+	State mCurrentState;
+	State mPreviousState;
 
-	float m_deadzone_x;
-	float m_deadzone_y;
+	float mDeadzoneX;
+	float mDeadzoneY;
 
 	void DirectionButtonState();
 	void StickState();
@@ -55,11 +55,11 @@ public:
 	bool DirectionButtonRisingState(int pad);
 	bool DirectionButtonFallingState(int pad);
 
-	float StickStateX(bool right) { if (right) return m_current_state.r_stick.x; else return m_current_state.l_stick.x; }
-	float StickStateY(bool right) { if (right) return m_current_state.r_stick.y; else return m_current_state.l_stick.y; }
+	float StickStateX(bool right) { if (right) return mCurrentState.rStick.x; else return mCurrentState.lStick.x; }
+	float StickStateY(bool right) { if (right) return mCurrentState.rStick.y; else return mCurrentState.lStick.y; }
 
-	bool TriggerPressedState(bool right) { if (right) return m_current_state.r_trigger > 0.0f; else return m_current_state.l_trigger > 0.0f; }
-	bool TriggerRisingState(bool right) { if (right) return m_current_state.r_trigger > 0.0f  && m_previous_state.r_trigger == 0.0f; else return m_current_state.l_trigger > 0.0f  && m_previous_state.l_trigger == 0.0f; }
-	bool TriggerFallingState(bool right) { if (right) return m_current_state.r_trigger == 0.0f && m_previous_state.r_trigger > 0.0f;  else return m_current_state.l_trigger == 0.0f && m_previous_state.l_trigger > 0.0f; }
+	bool TriggerPressedState(bool right) { if (right) return mCurrentState.rTrigger > 0.0f; else return mCurrentState.lTrigger > 0.0f; }
+	bool TriggerRisingState(bool right) { if (right) return mCurrentState.rTrigger > 0.0f  && mPreviousState.rTrigger == 0.0f; else return mCurrentState.lTrigger > 0.0f  && mPreviousState.lTrigger == 0.0f; }
+	bool TriggerFallingState(bool right) { if (right) return mCurrentState.rTrigger == 0.0f && mPreviousState.rTrigger > 0.0f;  else return mCurrentState.lTrigger == 0.0f && mPreviousState.lTrigger > 0.0f; }
 
 };

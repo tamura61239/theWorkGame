@@ -49,9 +49,9 @@ Board::Board(ID3D11Device* device, const wchar_t* fileName)
 			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 		};
-		hr = create_vs_from_cso(device, "Data/shader/board_vs.cso", mVSShader.GetAddressOf(), mInput.GetAddressOf(), inputElementDesc, ARRAYSIZE(inputElementDesc));
+		hr = CreateVSFromCso(device, "Data/shader/board_vs.cso", mVSShader.GetAddressOf(), mInput.GetAddressOf(), inputElementDesc, ARRAYSIZE(inputElementDesc));
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-		hr = create_ps_from_cso(device, "Data/shader/board_ps.cso", mPSShader.GetAddressOf());
+		hr = CreatePSFromCso(device, "Data/shader/board_ps.cso", mPSShader.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
 	//ラスタライザーステートの設定
@@ -116,7 +116,7 @@ Board::Board(ID3D11Device* device, const wchar_t* fileName)
 	}
 	//shaderResouceViewの生成
 	{
-		load_texture_from_file(device, fileName, mShaderResourceView.GetAddressOf(), &texture2d);
+		LoadTextureFromFile(device, fileName, mShaderResourceView.GetAddressOf(), &texture2d);
 	}
 }
 

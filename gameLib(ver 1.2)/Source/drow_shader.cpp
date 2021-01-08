@@ -9,17 +9,17 @@ DrowShader::DrowShader(ID3D11Device* device, const char* vsName, const char* gsN
 	HRESULT hr;
 	if (strcmp(vsName, "") != 0)
 	{
-		hr = create_vs_from_cso(device, vsName, mVSShader.GetAddressOf(), mInput.GetAddressOf(), input_element_desc, num_elements);
+		hr = CreateVSFromCso(device, vsName, mVSShader.GetAddressOf(), mInput.GetAddressOf(), input_element_desc, num_elements);
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
 	if (strcmp(gsName, "") != 0)
 	{
-		hr = create_gs_from_cso(device, gsName, mGSShader.GetAddressOf());
+		hr = CreateGSFromCso(device, gsName, mGSShader.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
 	if (strcmp(psName, "") != 0)
 	{
-		hr = create_ps_from_cso(device, psName, mPSShader.GetAddressOf());
+		hr = CreatePSFromCso(device, psName, mPSShader.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
 

@@ -77,9 +77,9 @@ FireworksParticle::FireworksParticle(ID3D11Device* device) :mCreateFlag(false), 
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 	}
-	create_cs_from_cso(device, "Data/shader/fireworks_particle_create_cs.cso", mCSCreate1Shader.GetAddressOf());
-	create_cs_from_cso(device, "Data/shader/fireworks_smoke_particle_create.cso", mCSCreate2Shader.GetAddressOf());
-	create_cs_from_cso(device, "Data/shader/fireworks_particle_cs.cso", mCSShader.GetAddressOf());
+	CreateCSFromCso(device, "Data/shader/fireworks_particle_create_cs.cso", mCSCreate1Shader.GetAddressOf());
+	CreateCSFromCso(device, "Data/shader/fireworks_smoke_particle_create.cso", mCSCreate2Shader.GetAddressOf());
+	CreateCSFromCso(device, "Data/shader/fireworks_particle_cs.cso", mCSShader.GetAddressOf());
 
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
 	{
@@ -163,7 +163,7 @@ void FireworksParticle::ImGuiUpdate()
 		ImGui::InputFloat("start time line", &mStartMaxTime);
 		ImGui::InputInt("one rank emitor count", &mOneRankEmitorCount, 1);
 		int size = 5 * mOneRankEmitorCount + mOneRankEmitorCount / 2;
-		if (size > mStartEmitorData.size())
+		if (size > static_cast<int>(mStartEmitorData.size()))
 		{
 			int s = size - mStartEmitorData.size();
 			for (int i = 0; i < s; i++)
@@ -171,7 +171,7 @@ void FireworksParticle::ImGuiUpdate()
 				mStartEmitorData.emplace_back();
 			}
 		}
-		else if (size < mStartEmitorData.size())
+		else if (size < static_cast<int>(mStartEmitorData.size()))
 		{
 			int s = mStartEmitorData.size() - size;
 			for (int i = 0; i < s; i++)
@@ -322,7 +322,7 @@ void FireworksParticle::Update(float elapsdTime, ID3D11DeviceContext* context)
 			int count = 0;
 			for (auto& create : cbCreate.createData)
 			{
-				count += create.firework.maxCount;
+				count += static_cast<int>(create.firework.maxCount);
 			}
 			if (mIndex + count >= mMaxParticle)
 			{
@@ -344,8 +344,8 @@ void FireworksParticle::Update(float elapsdTime, ID3D11DeviceContext* context)
 				auto& data = cbCreate2.createData[i];
 				float length = 0;
 				DirectX::XMStoreFloat(&length, DirectX::XMVector3Length(DirectX::XMLoadFloat3(&data.velocity)));
-				data.firework.maxCount = static_cast<int>(length / 0.05f);
-				count += data.firework.maxCount;
+				data.firework.maxCount = length / 0.05f;
+				count += static_cast<int>(data.firework.maxCount);
 			}
 			if (mIndex + count >= mMaxParticle)
 			{
@@ -471,7 +471,7 @@ void FireworksParticle::Save()
 
 void FireworksParticle::StartFireworksEmitorUpdate(float elapsdTime, CbCreate* smokeConstant, CbCreate* fireworksConstant, int& emitorCount, int& fireworksCount)
 {
-	for (int i = 0; i < mStartCreateNumberList.size(); i++)
+	for (int i = 0; i < static_cast<int>(mStartCreateNumberList.size()); i++)
 	{
 		auto& emitorData = mStartEmitorData[mStartCreateNumberList[i]];
 		auto& emitor = mEmitors[i];
@@ -524,7 +524,7 @@ void FireworksParticle::StartFireworksEmitorUpdate(float elapsdTime, CbCreate* s
 
 void FireworksParticle::LoopFireworksEmitorUpdate(float elapsdTime, CbCreate* smokeConstant, CbCreate* fireworksConstant, int& emitorCount, int& fireworksCount)
 {
-	for (int i = 0; i < mEmitors.size(); i++)
+	for (int i = 0; i < static_cast<int>(mEmitors.size()); i++)
 	{
 		auto& emitor = mEmitors[i];
 		auto& emitorData = mEmitorData[i];
@@ -584,7 +584,7 @@ void FireworksParticle::LoopFireworksEmitorUpdate(float elapsdTime, CbCreate* sm
 void FireworksParticle::SetStartList(const int size)
 {
 	mStartCreateNumberList.clear();
-	for (int i = 0; i < mStartEmitorData.size(); i++)
+	for (int i = 0; i < static_cast<int>(mStartEmitorData.size()); i++)
 	{
 		mStartCreateNumberList.push_back(i);
 	}

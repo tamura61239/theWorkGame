@@ -22,12 +22,12 @@ extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wparam
 class Framework
 {
 public:
-	static Framework& Instance() { return *inst; }
+	static Framework& Instance() { return *mInst; }
 
 	//コンストラクタ
-	Framework(HWND hwnd) :hwnd(hwnd)
+	Framework(HWND hwnd) :mHwnd(hwnd)
 	{
-		inst = this;
+		mInst = this;
 
 	}
 	//デストラクタ
@@ -37,8 +37,8 @@ public:
 	{
 		MSG msg = {};
 
-		if (!Initialize(hwnd)) return 0;
-		timer.reset();
+		if (!Initialize(mHwnd)) return 0;
+		mTimer.reset();
 
 		while (WM_QUIT != msg.message)
 		{
@@ -50,10 +50,10 @@ public:
 			else
 			{
 
-				timer.tick();
+				mTimer.tick();
 				CalculateFrameStats();
-				Update(timer.time_interval());
-				Render(timer.time_interval());
+				Update(mTimer.time_interval());
+				Render(mTimer.time_interval());
 
 			}
 		}
@@ -96,12 +96,12 @@ public:
 			break;
 		case WM_ENTERSIZEMOVE:
 			// WM_EXITSIZEMOVE is sent when the user grabs the resize bars.
-			timer.stop();
+			mTimer.stop();
 			break;
 		case WM_EXITSIZEMOVE:
 			// WM_EXITSIZEMOVE is sent when the user releases the resize bars.
 			// Here we reset everything based on the new window dimensions.
-			timer.start();
+			mTimer.start();
 			break;
 		default:
 			return DefWindowProc(hwnd, msg, wparam, lparam);
@@ -109,7 +109,7 @@ public:
 
 		return 0;
 	}
-	HWND GetHwnd() { return hwnd; }
+	HWND GetHwnd() { return mHwnd; }
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView>GetDepthStencilView() { return mDepthStencilView; }
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView>GetRenderTargetView() { return mRenderTargetView; }
 
@@ -119,8 +119,8 @@ private:
 	//********************************//
 	//             変数               //
 	//********************************//
-	const HWND hwnd;
-	high_resolution_timer timer;
+	const HWND mHwnd;
+	HighResolutionTimer mTimer;
 
 	Microsoft::WRL::ComPtr<ID3D11Device>mDevice;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext>mDeviceContext;
@@ -128,9 +128,9 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView>mRenderTargetView;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView>mDepthStencilView;
 
-	D3D_FEATURE_LEVEL       level;
+	D3D_FEATURE_LEVEL       mLevel;
 
-	static Framework* inst;
+	static Framework* mInst;
 
 	//********************************//
 	//           関数                 //
@@ -146,23 +146,23 @@ private:
 		// average time it takes to render one frame.  These stats 
 		// are appended to the window caption bar.
 		static int frames = 0;
-		static float time_tlapsed = 0.0f;
+		static float timeTlapsed = 0.0f;
 
 		frames++;
 
 		// Compute averages over one second period.
-		if ((timer.time_stamp() - time_tlapsed) >= 1.0f)
+		if ((mTimer.time_stamp() - timeTlapsed) >= 1.0f)
 		{
 			float fps = static_cast<float>(frames); // fps = frameCnt / 1
 			float mspf = 1000.0f / fps;
 			std::ostringstream outs;
 			outs.precision(6);
 			outs << "FPS : " << fps << " / " << "Frame Time : " << mspf << " (ms)";
-			SetWindowTextA(hwnd, outs.str().c_str());
+			SetWindowTextA(mHwnd, outs.str().c_str());
 
 			// Reset for next average.
 			frames = 0;
-			time_tlapsed += 1.0f;
+			timeTlapsed += 1.0f;
 		}
 	}
 

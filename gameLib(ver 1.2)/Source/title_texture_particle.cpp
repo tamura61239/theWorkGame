@@ -81,8 +81,8 @@ TitleTextureParticle::TitleTextureParticle(ID3D11Device* device) :mFullCreateFla
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 	}
-	create_cs_from_cso(device, "Data/shader/titile_texture_change_creat_cs.cso", mSceneChangeCreateCSShader.GetAddressOf());
-	create_cs_from_cso(device, "Data/shader/title_texture_scene_change_cs.cso", mCSShader.GetAddressOf());
+	CreateCSFromCso(device, "Data/shader/titile_texture_change_creat_cs.cso", mSceneChangeCreateCSShader.GetAddressOf());
+	CreateCSFromCso(device, "Data/shader/title_texture_scene_change_cs.cso", mCSShader.GetAddressOf());
 
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
 	{
@@ -95,10 +95,10 @@ TitleTextureParticle::TitleTextureParticle(ID3D11Device* device) :mFullCreateFla
 	//mShader = std::make_unique<DrowShader>(device, "Data/shader/particle_render_vs.cso", "", "Data/shader/particle_render_point_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
 	mShader = std::make_unique<DrowShader>(device, "Data/shader/particle_render_vs.cso", "Data/shader/particle_render_billboard_gs.cso", "Data/shader/particle_render_text_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
 	//mShader = std::make_unique<DrowShader>(device, "Data/shader/particle_render_vs.cso", "Data/shader/particle_render_cube_mesh_gs.cso", "Data/shader/particle_render_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
-	//hr = make_dummy_texture(device, mParticleSRV.GetAddressOf());
-	hr = load_texture_from_file(device, L"Data/image/Åõ.png", mParticleSRV.GetAddressOf());
+	//hr = MakeDummyTexture(device, mParticleSRV.GetAddressOf());
+	hr = LoadTextureFromFile(device, L"Data/image/Åõ.png", mParticleSRV.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	blend = std::make_unique<blend_state>(device, BLEND_MODE::ALPHA);
+	blend = std::make_unique<BlendState>(device, BLEND_MODE::ALPHA);
 	mEditorData.scale = 0.00015f;
 	mEditorData.screenSplit = 10;
 	mMaxParticle = 0;
@@ -123,7 +123,7 @@ void TitleTextureParticle::ImGuiUpdate()
 	ImGui::InputFloat("scale", &mEditorData.scale, 0.1f);
 	ImGui::InputFloat("screen split", &mEditorData.screenSplit, 0.1f);
 	static int num = 0;
-	for (int i = 0; i < mTextures.size(); i++)
+	for (int i = 0; i < static_cast<int>(mTextures.size()); i++)
 	{
 		auto& texture = mTextures[i];
 		std::string name = to_string(texture.data.mTextureName);
@@ -147,7 +147,7 @@ void TitleTextureParticle::LoadTexture(ID3D11Device* device, std::wstring name, 
 {
 	mTextures.emplace_back();
 	auto& textute = mTextures.back();
-	HRESULT hr = load_texture_from_file(device, name.c_str(), textute.mSRV.GetAddressOf());
+	HRESULT hr = LoadTextureFromFile(device, name.c_str(), textute.mSRV.GetAddressOf());
 	textute.data.mLeftTop = leftTop;
 	textute.data.mSize = size;
 	textute.data.mUVLeftTop = uv;
@@ -205,7 +205,7 @@ void TitleTextureParticle::Update(float elapsdTime, ID3D11DeviceContext* context
 //	{
 //		auto& texture = mTextures.at(i);
 //		auto& board = boards.at(i);
-//		context->CSSetShaderResources(0, 1, texture.mSRV.GetAddressOf());
+//		context->CSSetShaderResources(0, 1, texture.SRV.GetAddressOf());
 //
 //		CbCreate cbCreate;
 //		cbCreate.uvSize = texture.data.mUVSize;
@@ -221,7 +221,7 @@ void TitleTextureParticle::Update(float elapsdTime, ID3D11DeviceContext* context
 //
 //		}
 //
-//		DirectX::XMStoreFloat4x4(&cbCreate.world, DirectX::XMLoadFloat4x4(&view) * W);
+//		DirectX::XMStoreFloat4x4(&cbCreate.mWorld, DirectX::XMLoadFloat4x4(&view) * W);
 //		context->UpdateSubresource(mCbCreateBuffer.Get(), 0, 0, &cbCreate, 0, 0);
 //		float drowCount = elapsdTime * (static_cast<float>(mEditorData.mSceneMaxParticle) / 2.f);
 //
@@ -259,7 +259,7 @@ void TitleTextureParticle::SceneChangeUpdate(float elapsdTime, ID3D11DeviceConte
 		view._41 = view._42 = view._43 = 0.0f;
 		view._44 = 1.0f;
 		int particleCount = 0;
-		for (int i = 0; i < mTextures.size(); i++)
+		for (int i = 0; i < static_cast<int>(mTextures.size()); i++)
 		{
 			auto& texture = mTextures.at(i);
 			auto& board = boards.at(i);
@@ -281,7 +281,7 @@ void TitleTextureParticle::SceneChangeUpdate(float elapsdTime, ID3D11DeviceConte
 
 			DirectX::XMStoreFloat4x4(&cbCreate.world, DirectX::XMLoadFloat4x4(&view) * W);
 			context->UpdateSubresource(mCbCreateBuffer.Get(), 0, 0, &cbCreate, 0, 0);
-			int newParticle = (texture.data.mUVSize.x / cbCreate.screenSplit * texture.data.mUVSize.y / cbCreate.screenSplit);
+			int newParticle = static_cast<int>(texture.data.mUVSize.x / cbCreate.screenSplit * texture.data.mUVSize.y / cbCreate.screenSplit);
 			particleCount += newParticle;
 
 			context->Dispatch(newParticle, 1, 1);

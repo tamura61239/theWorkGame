@@ -31,31 +31,31 @@ private:
 
 	struct CbScene
 	{
-		FLOAT4X4	view_projection;
+		FLOAT4X4	viewProjection;
 	};
 	struct CbMesh
 	{
-		FLOAT4X4	bone_transforms[MaxBones];
+		FLOAT4X4	boneTransforms[MaxBones];
 	};
 
 	struct CbSubset
 	{
-		VECTOR4F	material_color;
+		VECTOR4F	materialColor;
 	};
 
 
-	Microsoft::WRL::ComPtr<ID3D11Buffer>			m_cb_scene;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>			m_cb_mesh;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>			m_cb_subset;
+	Microsoft::WRL::ComPtr<ID3D11Buffer>			mCbScene;
+	Microsoft::WRL::ComPtr<ID3D11Buffer>			mCbMesh;
+	Microsoft::WRL::ComPtr<ID3D11Buffer>			mCbSubset;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>            mCbBeforeMesh;
 
 	std::vector<std::unique_ptr<DrowShader>>mShader;
 	std::unique_ptr<DrowShader>mShadowShader;
 
-	Microsoft::WRL::ComPtr<ID3D11BlendState>		m_blend_state;
-	Microsoft::WRL::ComPtr<ID3D11RasterizerState>	m_rasterizer_state;
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilState>	m_depth_stencil_state;
+	Microsoft::WRL::ComPtr<ID3D11BlendState>		mBlendState;
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState>	mRasterizerState;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilState>	mDepthStencilState;
 
-	Microsoft::WRL::ComPtr<ID3D11SamplerState>		m_sampler_state[2];
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	m_dummy_srv;
+	Microsoft::WRL::ComPtr<ID3D11SamplerState>		mSamplerState[2];
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	mDummySRV;
 };

@@ -4,26 +4,26 @@
 
 XInput::XInput(const int id, const float deadzone_x, const float deadzone_y)
 {
-	m_id = id;
+	mId = id;
 
-	DWORD result = XInputGetState(m_id, &m_current_state.state);
+	DWORD result = XInputGetState(mId, &mCurrentState.state);
 	if (result != ERROR_DEVICE_NOT_CONNECTED)
 	{
-		m_current_state.connected = true;
+		mCurrentState.connected = true;
 	}
 
-	m_deadzone_y = deadzone_y;
-	m_deadzone_x = deadzone_x;
+	mDeadzoneY = deadzone_y;
+	mDeadzoneX = deadzone_x;
 }
 
 void XInput::Update()
 {
-	if (!m_current_state.connected)
+	if (!mCurrentState.connected)
 		return;
 
-	m_previous_state = m_current_state;
+	mPreviousState = mCurrentState;
 
-	DWORD result = XInputGetState(m_id, &m_current_state.state);
+	DWORD result = XInputGetState(mId, &mCurrentState.state);
 
 
 	StickState();
@@ -32,19 +32,19 @@ void XInput::Update()
 
 void XInput::StickState()
 {
-	m_current_state.l_stick.x = ApplyDeadZone(static_cast<float>(m_current_state.state.Gamepad.sThumbLX), MAX_STICKTILT, m_deadzone_x);
+	mCurrentState.lStick.x = ApplyDeadZone(static_cast<float>(mCurrentState.state.Gamepad.sThumbLX), MAX_STICKTILT, mDeadzoneX);
 
-	m_current_state.l_stick.y = ApplyDeadZone(static_cast<float>(m_current_state.state.Gamepad.sThumbLY), MAX_STICKTILT, m_deadzone_y);
+	mCurrentState.lStick.y = ApplyDeadZone(static_cast<float>(mCurrentState.state.Gamepad.sThumbLY), MAX_STICKTILT, mDeadzoneY);
 
-	m_current_state.r_stick.x = ApplyDeadZone(static_cast<float>(m_current_state.state.Gamepad.sThumbRX), MAX_STICKTILT, m_deadzone_x);
+	mCurrentState.rStick.x = ApplyDeadZone(static_cast<float>(mCurrentState.state.Gamepad.sThumbRX), MAX_STICKTILT, mDeadzoneX);
 
-	m_current_state.r_stick.y = ApplyDeadZone(static_cast<float>(m_current_state.state.Gamepad.sThumbRY), MAX_STICKTILT, m_deadzone_y);
+	mCurrentState.rStick.y = ApplyDeadZone(static_cast<float>(mCurrentState.state.Gamepad.sThumbRY), MAX_STICKTILT, mDeadzoneY);
 }
 
 void XInput::TriggerState()
 {
-	m_current_state.l_trigger = ApplyDeadZone(static_cast<float>(m_current_state.state.Gamepad.bLeftTrigger), MAX_TRRIGERTILT, 0.0f);
-	m_current_state.r_trigger = ApplyDeadZone(static_cast<float>(m_current_state.state.Gamepad.bRightTrigger), MAX_TRRIGERTILT, 0.0f);
+	mCurrentState.lTrigger = ApplyDeadZone(static_cast<float>(mCurrentState.state.Gamepad.bLeftTrigger), MAX_TRRIGERTILT, 0.0f);
+	mCurrentState.rTrigger = ApplyDeadZone(static_cast<float>(mCurrentState.state.Gamepad.bRightTrigger), MAX_TRRIGERTILT, 0.0f);
 }
 
 float XInput::ApplyDeadZone(const float value, const float max_value, const float deadzone)

@@ -13,7 +13,7 @@ Sound::Sound(const char* filename)
 {
 	wchar_t wav_name_w[256];
 	mbstowcs_s(0, wav_name_w, filename, strlen(filename) + 1);
-	sound_buffer = std::make_unique<SoundBuffer>(wav_name_w);
+	mSoundBuffer = std::make_unique<SoundBuffer>(wav_name_w);
 
 	//
 	// Initialize XAudio2
@@ -24,7 +24,7 @@ Sound::Sound(const char* filename)
 #if (_WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/) && defined(_DEBUG)
 	flags |= XAUDIO2_DEBUG_ENGINE;
 #endif
-	HRESULT hr = XAudio2Create(&m_p_xaudio2, flags);
+	HRESULT hr = XAudio2Create(&mPXaudio2, flags);
 	if (FAILED(hr))
 	{
 		CoUninitialize();
@@ -43,20 +43,20 @@ Sound::Sound(const char* filename)
 	XAUDIO2_DEBUG_CONFIGURATION debug = { 0 };
 	debug.TraceMask = XAUDIO2_LOG_ERRORS | XAUDIO2_LOG_WARNINGS;
 	debug.BreakMask = XAUDIO2_LOG_ERRORS;
-	m_p_xaudio2->SetDebugConfiguration(&debug, 0);
+	mPXaudio2->SetDebugConfiguration(&debug, 0);
 #endif
 
 	//
 	// Create a mastering voice
 	//
-	hr = m_p_xaudio2->CreateMasteringVoice(&m_p_mastering_voice);
+	hr = mPXaudio2->CreateMasteringVoice(&mPMasteringVoice);
 	if (FAILED(hr))
 	{
 		wprintf(L"Failed creating mastering voice: %#X\n", hr);
-		if (m_p_xaudio2 != nullptr)
+		if (mPXaudio2 != nullptr)
 		{
-			m_p_xaudio2->Release();
-			m_p_xaudio2 = nullptr;
+			mPXaudio2->Release();
+			mPXaudio2 = nullptr;
 		}
 		CoUninitialize();
 		//LOGGER("*************************************\n");
@@ -68,30 +68,30 @@ Sound::Sound(const char* filename)
 
 Sound::~Sound()
 {
-	sound_buffer->Uninitlize();
+	mSoundBuffer->Uninitlize();
 
-	if (m_p_xaudio2 != nullptr)
+	if (mPXaudio2 != nullptr)
 	{
-		if (m_p_mastering_voice != nullptr)
+		if (mPMasteringVoice != nullptr)
 		{
-			m_p_mastering_voice->DestroyVoice();
-			m_p_mastering_voice = nullptr;
+			mPMasteringVoice->DestroyVoice();
+			mPMasteringVoice = nullptr;
 		}
 
-		m_p_xaudio2->Release();
-		m_p_xaudio2 = nullptr;
+		mPXaudio2->Release();
+		mPXaudio2 = nullptr;
 	}
 	CoUninitialize();
 }
 
 void Sound::Update()
 {
-	sound_buffer->Update();
+	mSoundBuffer->Update();
 }
 
 void Sound::Play(bool loop)
 {
-	HRESULT hr = sound_buffer->PlayWave(m_p_xaudio2, loop);
+	HRESULT hr = mSoundBuffer->PlayWave(mPXaudio2, loop);
 	if (FAILED(hr))
 	{
 		//LOGGER("*************************\n");
@@ -103,22 +103,22 @@ void Sound::Play(bool loop)
 bool Sound::Playing()
 {
 
-	return sound_buffer->Playing();
+	return mSoundBuffer->Playing();
 }
 
 void Sound::Pause()
 {
-	sound_buffer->Pause();
+	mSoundBuffer->Pause();
 }
 
 void Sound::Stop()
 {
-	sound_buffer->Stop();
+	mSoundBuffer->Stop();
 }
 
 void Sound::SetVolume(const float volume)
 {
-	sound_buffer->Volume(volume);
+	mSoundBuffer->Volume(volume);
 }
 #else
 Sound::Sound(const wchar_t* fileName, DirectX::AudioEngine* audioEngine)
