@@ -10,6 +10,8 @@
 #include"model_renderer.h"
 #include"static_obj.h"
 #include"fade.h"
+#include"constant_buffer.h"
+#include"zoom_blur_parameter.h"
 
 class SceneTitle :public Scene
 {
@@ -54,6 +56,7 @@ private:
 	std::unique_ptr<MeshRender>mRender;
 	std::unique_ptr<Fade>mFade;
 	std::unique_ptr<DrowShader>mBluer;
+	std::unique_ptr<ConstantBuffer<CbZoom>>mCbZoomBuffer;
 	bool mEditorFlag;
 	bool mTestMove;
 	bool mLoading;

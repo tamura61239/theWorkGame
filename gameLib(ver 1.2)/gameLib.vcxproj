@@ -225,6 +225,7 @@
     <ClCompile Include="Source\title_particle.cpp" />
     <ClCompile Include="Source\title_texture_particle.cpp" />
     <ClCompile Include="Source\title_ui_move.cpp" />
+    <ClCompile Include="Source\tutorial_state.cpp" />
     <ClCompile Include="Source\ui.cpp" />
     <ClCompile Include="Source\ui_manager.cpp" />
     <ClCompile Include="Source\vector.cpp" />
@@ -247,6 +248,7 @@
     <ClInclude Include="Source\camera_operation.h" />
     <ClInclude Include="Source\character.h" />
     <ClInclude Include="Source\collision.h" />
+    <ClInclude Include="Source\constant_buffer.h" />
     <ClInclude Include="Source\depth_of_field.h" />
     <ClInclude Include="Source\direct_input.h" />
     <ClInclude Include="Source\drow_shader.h" />
@@ -315,12 +317,14 @@
     <ClInclude Include="Source\title_particle.h" />
     <ClInclude Include="Source\title_texture_particle.h" />
     <ClInclude Include="Source\title_ui_move.h" />
+    <ClInclude Include="Source\tutorial_state.h" />
     <ClInclude Include="Source\ui.h" />
     <ClInclude Include="Source\ui_manager.h" />
     <ClInclude Include="Source\vector.h" />
     <ClInclude Include="Source\vector_combo.h" />
     <ClInclude Include="Source\x_input.h" />
     <ClInclude Include="Source\stage_scene_particle.h" />
+    <ClInclude Include="Source\zoom_blur_parameter.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\before_camera_view_data.hlsli" />
@@ -353,6 +357,7 @@
     <None Include="Source\static_mesh_normal.hlsli" />
     <None Include="Source\title_psrticle_compute.hlsli" />
     <None Include="Source\title_texture_particle.hlsli" />
+    <None Include="Source\zoom_blur.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\bloomStart_ps.hlsl">

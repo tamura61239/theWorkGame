@@ -5,25 +5,34 @@
 [numthreads(1, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {
-	uint index = DTid.x + startNumber;
-	uint bufferIndex = index * MAX;
-	Particle p = (Particle)0;
+    uint index = DTid.x % indexCount;
+    float3 pos[3] = { { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } }, normal = { 0, 0, 0 };
+    for (int i = 0; i < 3;i++)
+    {
+        uint vertexIndex = indexBuffer[index * 3 + i];
+        Mesh mesh = vertexBuffer[vertexIndex];
+        for (int j = 0; j < 4;j++)
+        {
+            pos[i] += (mesh.boneWeight[j] * mul(float4(mesh.position, 1), boneWorld[mesh.boneIndex[j]])).xyz;
+            normal += (mesh.boneWeight[j] * mul(mesh.normal, (float3x3) boneWorld[mesh.boneIndex[j]])).xyz;
 
-	//‰½”Ô–Ú‚Ìƒ{[ƒ“‚Ì“–‚½‚è‚Éo‚·‚©
-	uint boneNo = index % boneNumber;
+        }
+    }
+    normal = normalize(normal);
+    Particle p = (Particle) 0;
 
-	float angle = (rand_1_normal(float2(bufferIndex % 283, bufferIndex % 512), 1) - 1) * 3.14f;
-	float z = rand_1_normal(float2(bufferIndex % 435, bufferIndex % 125), 1) - 1;
-	float x = sqrt(1 - z * z) * cos(angle);
-	float y = sqrt(1 - z * z) * sin(angle);
-	y += 1.f;
-
-	//‰Šú‰»
-	p.position = boneWorld[boneNo].xyz + float3(x, y, z) * 3;
-	p.velocity = velocity + float3(x, (y - 0.45f)*0.65f, (z - 1) * 0.15f) * speed * rand_1_normal(float2(bufferIndex % 275, bufferIndex % 666), 0.3f);
-	p.life = 1;
-	p.lifeAmount = 1 / maxLife;
-	p.color = color;
-	p.scale = scale;
-	WriteParticle(p, bufferIndex);
+    float3 vec1 = (pos[1] - pos[0]) * saturate(rand_1_normal(float2((startIndex + DTid.x) % 621, DTid.x * 3 % 439), 0.5f));
+    float3 vec2 = (pos[2] - pos[0]) * saturate(rand_1_normal(float2(DTid.x * 3 % 756, (startIndex + DTid.x) % 394), 0.5f));
+    
+    float3 vec3 = vec2 - vec1;
+    
+    vec3 *= saturate(rand_1_normal(float2((startIndex + DTid.x) % 567, (startIndex + DTid.x) % 381), 0.5f));
+    p.position = pos[0] + vec1 + vec3;
+    p.color = color;
+    p.life = 1;
+    p.lifeAmoust = 1 / life;
+    p.scale = 0.2f;
+    p.velocity = normal;
+    particle[startIndex+DTid.x] = p;
+    
 }

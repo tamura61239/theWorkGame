@@ -13,7 +13,7 @@ class GpuParticleManager:public Singleton<GpuParticleManager>
 {
 public:
 	void CreateTitleBuffer(ID3D11Device* device);
-	void CreateGameBuffer(ID3D11Device* device);
+	void CreateGameBuffer(ID3D11Device* device,std::shared_ptr<PlayerAI>player);
 	void CreateResultBuffer(ID3D11Device* device);
 	void ClearBuffer();
 	//çXêV

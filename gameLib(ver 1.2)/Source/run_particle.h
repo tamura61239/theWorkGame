@@ -3,82 +3,53 @@
 #include<d3d11.h>
 #include<wrl.h>
 #include<vector>
-#include"model.h"
+#include"player_ai.h"
 #include"drow_shader.h"
 #include"static_mesh.h"
+#include"constant_buffer.h"
 
 #define RUNPARTICLE_TYPE 0
 
 class RunParticles
 {
 public:
-	RunParticles(ID3D11Device* device);
+	RunParticles(ID3D11Device* device, std::shared_ptr<PlayerAI>player);
 	void ImGuiUpdate();
-	void SetBoneData(Model* model);
-	void SetPlayerData(const VECTOR3F&velocity,const bool playFlag);
 	void Update(ID3D11DeviceContext* context, float elapsd_time);
 	void Render(ID3D11DeviceContext* context);
 	void Render(ID3D11DeviceContext* context,DrowShader*shader);
-private:
-#if (RUNPARTICLE_TYPE==0)
-	struct CbeBone
+private: 
+	//定数バッファ
+	struct CbBone
 	{
-		VECTOR4F boneWorld[32];
-		float boneNumber;
-		VECTOR3F dummmy;
+		FLOAT4X4 boneTransForm[128];
 	};
-	struct CbCreateData
+	struct CbCreate
 	{
-		VECTOR3F velocity;
-		float maxLife;
-		VECTOR4F color;
-		float scale;
-		float mStartNumber;
+		float life;
 		float speed;
-		float maxY;
+		UINT color;
+		int indexCount;
+		int startIndex;
+		VECTOR3F dummy;
 	};
-#elif (RUNPARTICLE_TYPE==1)
-public:
-	void SetMeshData(Model* model, ID3D11Device* device);
-private:
-	struct Vertex
-	{
-		VECTOR3F	position;
-		VECTOR3F	normal;
-		VECTOR4F	bone_weight;
-		UVECTOR4	bone_index;
-	};
-	struct CbeBone
-	{
-		FLOAT4X4 boneTransform[32];
-	};
-	struct CbCreateData
-	{
-		VECTOR3F velocity;
-		float maxLife;
-		VECTOR4F color;
-		float scale;
-		float mStartNumber;
-		float speed;
-		float meshSize;
-	};
-	int mMeshSize;
-	float mCreateTimeCount;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>mMeshSRV;
-#endif
 	struct CbUpdate
 	{
 		float elapsdTime;
-		VECTOR3F dummy2;
+		VECTOR3F dummy;
 	};
+	std::unique_ptr<ConstantBuffer<CbBone>>mCbBoneBuffer;
+	std::unique_ptr<ConstantBuffer<CbCreate>>mCbCreateBuffer;
+	std::unique_ptr<ConstantBuffer<CbUpdate>>mCbUpdateBuffer;
+	//パーティクルバッファ
 	struct Particle
 	{
 		VECTOR3F position;
 		VECTOR3F velocity;
+		UINT color;
+		float scale;
 		float life;
-		VECTOR4F color;
-		float scele;
-		float lifeAmount;
+		float lifeAmoust;
 	};
 	struct RenderParticle
 	{
@@ -88,38 +59,29 @@ private:
 		VECTOR3F velocity;
 		VECTOR3F scale;
 	};
-	struct EditorData
-	{
-		float maxLife;
-		VECTOR4F color;
-		float scale;
-		float mCreateSize;
-		float speed;
-
-	};
-	int mRenderSize;
-	bool mPlayFlag;
-	bool mTestFlag;
-	VECTOR3F mTestVelocity;
-	float mNewIndex;
-	//Mesh周り
-	std::vector<CbeBone>mCbBones;
-	CbeBone mCbBone;
-	//パーティクルバッファ
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mRenderBuffer;
 	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mParticleUAV;
+	Microsoft::WRL::ComPtr<ID3D11Buffer>mRenderBuffer;
 	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mRenderUAV;
-	//定数バッファ
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbCreateBuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbBoneBuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbUpdateBuffer;
-	//Shader
+	//メッシュデータ
+	struct Mesh
+	{
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>mIndexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>mVertexBuffer;
+		int mMwshSize;
+	};
+	std::vector<Mesh>mMeshs;
+	//シェーダー
 	std::unique_ptr<DrowShader>mShader;
-	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCreateShader;
-	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mUpdateShader;
-	CbCreateData mCbCreateData;
-	EditorData mEditorData;
-	//ファイル操作関数
+	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCreateCSShader;
+	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSShader;
 	void Load();
 	void Save();
+	
+	std::weak_ptr<PlayerAI>mPlayer;
+	int mMaxParticle;
+	float mTimer;
+	//パラメーター
+	float mColor[4] = { 1,1,1,1 };
+	float mCreateTime;
+	int mCreateCount;
 };

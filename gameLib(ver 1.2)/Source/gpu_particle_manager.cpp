@@ -78,12 +78,12 @@ void GpuParticleManager::CreateTitleBuffer(ID3D11Device* device)
 	mTitleTextureParticle = std::make_unique<TitleTextureParticle>(device);
 }
 
-void GpuParticleManager::CreateGameBuffer(ID3D11Device* device)
+void GpuParticleManager::CreateGameBuffer(ID3D11Device* device, std::shared_ptr<PlayerAI>player)
 {
 	mState = 0;
 	CreateBuffer(device);
 	mSelectSceneParticle = std::make_unique<SelectSceneParticle>(device);
-	mRunParticle = std::make_unique<RunParticles>(device);
+	mRunParticle = std::make_unique<RunParticles>(device, player);
 	mStageSceneParticle = std::make_unique<StageSceneParticle>(device);
 }
 
@@ -122,7 +122,7 @@ void GpuParticleManager::Update(float elapsd_time)
 		break;
 	case GAME:
 		if (mRunParticle.get() != nullptr)mRunParticle->Update(context, elapsd_time);
-		mStageSceneParticle->Update(context, elapsd_time);
+		//mStageSceneParticle->Update(context, elapsd_time);
 		break;
 	case RESULT:
 #if (RESULT_TYPE==0)
@@ -193,7 +193,7 @@ void GpuParticleManager::SelectImGui()
 void GpuParticleManager::GameImGui()
 {
 #ifdef USE_IMGUI
-	static bool selects[2] = { false,false };
+	static bool selects[3] = { false,false,false };
 	ImGui::Begin("game particles");
 	ImGui::Selectable("run particle", &selects[0]);
 	ImGui::Selectable("stage scene particle", &selects[1]);
@@ -205,7 +205,7 @@ void GpuParticleManager::GameImGui()
 	if (selects[1])
 	{
 		mStageSceneParticle->ImGuiUpdate();
-}
+     }
 
 #endif
 
@@ -241,8 +241,8 @@ void GpuParticleManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& vi
 		mSelectSceneParticle->Render(context);
 		break;
 	case GAME:
-		//if (mRunParticle.get() != nullptr)mRunParticle->Render(context);
-		mStageSceneParticle->Render(context);
+		if (mRunParticle.get() != nullptr)mRunParticle->Render(context);
+		//mStageSceneParticle->Render(context);
 		break;
 	case RESULT:
 		mFireworksParticle->Render(context);
@@ -268,8 +268,8 @@ void GpuParticleManager::VelocityRender(ID3D11DeviceContext* context, const FLOA
 		mSelectSceneParticle->Render(context);
 		break;
 	case GAME:
-		//if (mRunParticle.get() != nullptr)mRunParticle->Render(context,mSSceneShader.get());
-		mStageSceneParticle->Render(context, mSSceneShader.get());
+		if (mRunParticle.get() != nullptr)mRunParticle->Render(context,mSSceneShader.get());
+		//mStageSceneParticle->Render(context, mSSceneShader.get());
 		break;
 	case RESULT:
 #if (RESULT_TYPE==0)

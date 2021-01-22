@@ -47,7 +47,15 @@ SceneTitle::SceneTitle(ID3D11Device* device):mEditorFlag(true), mTestMove(false)
 
 			};
 			mBluer = std::make_unique<DrowShader>(device, "Data/shader/sprite_vs.cso", "", "Data/shader/zoom_blur_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc));
-
+			mCbZoomBuffer = std::make_unique<ConstantBuffer<CbZoom>>(device);
+			{
+				FILE* fp;
+				if (fopen_s(&fp, "Data/file/title_zoom_blur_parameter.bin", "rb") == 0)
+				{
+					fread(&mCbZoomBuffer->data, sizeof(mCbZoomBuffer->data), 1, fp);
+					fclose(fp);
+				}
+			}
 		}, device);
 	test = std::make_unique<Sprite>(device/*, L"Data/image/change_color.png"*/);
 	blend[0] = std::make_unique<BlendState>(device, BLEND_MODE::ADD);
@@ -123,7 +131,9 @@ void SceneTitle::Render(ID3D11DeviceContext* context, float elapsed_time)
 	frameBuffer[2]->Activate(context);
 	if (pCameraManager->GetCameraOperation()->GetTitleCamera()->GetMoveFlag())
 	{
+		mCbZoomBuffer->Activate(context, 0, true, true);
 		test->Render(context,mBluer.get(), frameBuffer[1]->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+		mCbZoomBuffer->DeActivate(context);
 
 	}
 	else
@@ -192,6 +202,7 @@ bool SceneTitle::ImGuiUpdate()
 	ImGui::RadioButton("CAMERA", &editorNum, 3);
 	ImGui::RadioButton("BLOOM", &editorNum, 4);
 	ImGui::RadioButton("FADE", &editorNum, 5);
+	ImGui::RadioButton("ZOOM BLUR", &editorNum, 6);
 	ImGui::End();
 	switch (editorNum)
 	{
@@ -215,7 +226,22 @@ bool SceneTitle::ImGuiUpdate()
 		break;
 
 	}
+	if (editorNum == 6)
+	{
+		ImGui::Begin("zoom blur");
+		ImGui::InputFloat("length", &mCbZoomBuffer->data.lenght, 0.1f);
+		ImGui::InputInt("division", &mCbZoomBuffer->data.division, 1);
+		if (ImGui::Button("save"))
+		{
+			FILE* fp;
+			fopen_s(&fp, "Data/file/title_zoom_blur_parameter.bin", "wb");
+			fwrite(&mCbZoomBuffer->data, sizeof(mCbZoomBuffer->data), 1, fp);
+			fclose(fp);
 
+		}
+		ImGui::End();
+
+	}
 #endif
 
 	return false;

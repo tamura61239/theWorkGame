@@ -16,7 +16,6 @@
 #include <locale>
 #include"screen_size.h"
 
-
 SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(false), testGame(false), hitArea(false), screenShot(false), mNowLoading(true), mLoadEnd(false)
 {
 	loading_thread = std::make_unique<std::thread>([&](ID3D11Device* device)
@@ -35,9 +34,9 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 
 			renderEffects = std::make_unique<RenderEffects>(device,"testShadow");
 			GpuParticleManager::Create();
-			pGpuParticleManager->CreateGameBuffer(device);
+			player = std::make_shared<PlayerAI>(device, "Data/FBX/new_player_anim.fbx");
+			pGpuParticleManager->CreateGameBuffer(device, player);
 			pGpuParticleManager->SetState(GpuParticleManager::STATE::SELECT);
-			player = std::make_unique<PlayerAI>(device, "Data/FBX/new_player_anim.fbx");
 #if (RUNPARTICLE_TYPE==1)
 			pGpuParticleManager->GetRunParticle()->SetMeshData(player->GetCharacter()->GetModel(), device);
 #endif
@@ -90,6 +89,17 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 			UIManager::Create();
 			UIManager::GetInctance()->GameInitialize(device);
 			mLightView = std::make_unique<LightView>(device,"LightViewData1");
+			mTutorialState = std::make_unique<TutorialState>(device);
+			mCbZoomBuffer = std::make_unique<ConstantBuffer<CbZoom>>(device);
+			{
+				FILE* fp;
+				if (fopen_s(&fp, "Data/file/game_zoom_blur_parameter.bin", "rb") == 0)
+				{
+					fread(&mCbZoomBuffer->data, sizeof(mCbZoomBuffer->data), 1, fp);
+					fclose(fp);
+				}
+
+			}
 		}, device);
 	test = std::make_unique<Sprite>(device, L"Data/image/操作説明.png");
 	nowLoading = std::make_unique<Sprite>(device, L"Data/image/now.png");
@@ -162,6 +172,7 @@ void SceneGame::Update(float elapsed_time)
 
 	}
 	/**********************GameSceneの更新*******************************/
+
 	//フェートインの時
 	if (fadeOut->GetFadeScene() == Fade::FADE_MODO::FADEIN)
 	{
@@ -191,11 +202,6 @@ void SceneGame::Update(float elapsed_time)
 	//フェートインでもフェードアウトでもない時
 	else
 	{
-		//ゴールしてない時
-		if (!player->GetCharacter()->GetGorlFlag())
-		{
-			UIManager::GetInctance()->Update(elapsed_time);
-		}
 		//カウントが0かつStartFlagがtrueの時
 		if (UIManager::GetInctance()->GetGameUIMove()->GetCount() <= 0)
 		{
@@ -206,6 +212,9 @@ void SceneGame::Update(float elapsed_time)
 		}
 
 	}
+	if(mSManager->GrtStageNo()==0)elapsed_time *= mTutorialState->Update(elapsed_time, player->GetCharacter());
+	UIManager::GetInctance()->Update(elapsed_time);
+
 	if (player->GetPlayFlag())
 	{
 		if (UIManager::GetInctance()->GetGameUIMove()->GetTime() <= 0 || player->GetCharacter()->GetGorlFlag())
@@ -222,8 +231,6 @@ void SceneGame::Update(float elapsed_time)
 
 	mSManager->Update(elapsed_time);
 	pCameraManager->Update(elapsed_time);
-	pGpuParticleManager->GetRunParticle()->SetBoneData(player->GetCharacter()->GetModel());
-	pGpuParticleManager->GetRunParticle()->SetPlayerData(player->GetCharacter()->GetVelocity(), player->GetPlayFlag());
 	pGpuParticleManager->Update(elapsed_time);
 }
 /**********************Editor*********************/
@@ -359,7 +366,7 @@ bool SceneGame::ImGuiUpdate()
 				player->SetPlayFlag(false);
 				UIManager::GetInctance()->GetGameUIMove()->SetStartFlag(false);
 				UIManager::GetInctance()->ResetGameUI();
-
+				mTutorialState->ResetParameter();
 			}
 
 		}
@@ -375,6 +382,8 @@ bool SceneGame::ImGuiUpdate()
 		ImGui::RadioButton("SKY MAP", &editorNo, 10);
 		ImGui::RadioButton("SHADOW MAP", &editorNo, 11);
 		ImGui::RadioButton("LIGHT VIEW", &editorNo, 12);
+		ImGui::RadioButton("TUTORIAL", &editorNo, 13);
+		ImGui::RadioButton("ZOOM BLUR", &editorNo, 14);
 	}
 	ImGui::RadioButton("PARTICLE", &editorNo, 5);
 	ImGui::RadioButton("CAMERA", &editorNo, 6);
@@ -431,6 +440,9 @@ bool SceneGame::ImGuiUpdate()
 	case 12:
 		mLightView->ImGuiUpdate();
 		break;
+	case 13:
+		mTutorialState->ImGuiUpdate();
+		break;
 
 	}
 	if (editorNo == 10)
@@ -448,6 +460,21 @@ bool SceneGame::ImGuiUpdate()
 			fopen_s(&fp, "Data/file/game_sky_map.bin", "wb");
 			fwrite(sky->GetPosData(), sizeof(Obj3D), 1, fp);
 			fclose(fp);
+		}
+		ImGui::End();
+	}
+	else if (editorNo == 14)
+	{
+		ImGui::Begin("zoom blur");
+		ImGui::InputFloat("length", &mCbZoomBuffer->data.lenght, 0.1f);
+		ImGui::InputInt("division", &mCbZoomBuffer->data.division, 1);
+		if (ImGui::Button("save"))
+		{
+			FILE* fp;
+			fopen_s(&fp, "Data/file/game_zoom_blur_parameter.bin", "wb");
+			fwrite(&mCbZoomBuffer->data, sizeof(mCbZoomBuffer->data), 1, fp);
+			fclose(fp);
+
 		}
 		ImGui::End();
 	}
@@ -548,9 +575,9 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 		{
 			sky->Render(context, view, projection);
 			pGpuParticleManager->Render(context, view, projection);
-			modelRenderer->Begin(context, viewProjection);
-			modelRenderer->Draw(context, *player->GetCharacter()->GetModel(), VECTOR4F(0.5, 0.5, 0.5, 1));
-			modelRenderer->End(context);
+			//modelRenderer->Begin(context, viewProjection);
+			//modelRenderer->Draw(context, *player->GetCharacter()->GetModel(), VECTOR4F(0.5, 0.5, 0.5, 1));
+			//modelRenderer->End(context);
 
 			mSManager->Render(context, view, projection, mStageOperation->GetColorType());
 			if (hitArea)HitAreaRender::GetInctance()->Render(context, view, projection);
@@ -561,9 +588,9 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 		velocityMap->Clear(context);
 		velocityMap->Activate(context);
 		pCameraManager->GetCamera()->ShaderSetBeforeBuffer(context, 5);
-		modelRenderer->VelocityBegin(context, viewProjection);
-		modelRenderer->VelocityDraw(context, *player->GetCharacter()->GetModel());
-		modelRenderer->VelocityEnd(context);
+		//modelRenderer->VelocityBegin(context, viewProjection);
+		//modelRenderer->VelocityDraw(context, *player->GetCharacter()->GetModel());
+		//modelRenderer->VelocityEnd(context);
 		pGpuParticleManager->VelocityRender(context, view, projection);
 
 		mSManager->RenderVelocity(context, view, projection, mStageOperation->GetColorType());
@@ -653,7 +680,15 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 
 	if (player->GetCharacter()->GetGorlFlag())
 	{
+		mCbZoomBuffer->Activate(context,0, true, true);
 		siro->Render(context, blurShader.get(), frameBuffer2->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+		mCbZoomBuffer->DeActivate(context);
+	}
+	else if (mTutorialState->GetState() == 1)
+	{
+		mTutorialState->GetCbZoom()->Activate(context, 0, true, true);
+		siro->Render(context, blurShader.get(), frameBuffer2->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0,mTutorialState->GetBackGroundColor());
+		mTutorialState->GetCbZoom()->DeActivate(context);
 
 	}
 	else
@@ -677,7 +712,7 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	
 	
 	if (editorNo == 3)mSManager->SidoViewRender(context);
-
+	mTutorialState->Render(context);
 	fadeOut->Render(context);
 	blend[0]->deactivate(context);
 

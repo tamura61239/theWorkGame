@@ -21,6 +21,9 @@
 #include"stage_select.h"
 #include"fade.h"
 #include"light_view.h"
+#include"tutorial_state.h"
+#include"zoom_blur_parameter.h"
+#include"constant_buffer.h"
 
 
 class SceneGame :public Scene
@@ -72,7 +75,7 @@ private:
 	std::shared_ptr<FrameBuffer>shadowRenderBuffer;
 	std::shared_ptr<FrameBuffer>frameBuffer2;
 	std::unique_ptr<RenderEffects>renderEffects;
-	std::unique_ptr<PlayerAI>player;
+	std::shared_ptr<PlayerAI>player;
 	std::unique_ptr<ModelRenderer>modelRenderer;
 	std::unique_ptr<BloomRender>bloom;
 	std::unique_ptr<StageManager>mSManager;
@@ -85,6 +88,8 @@ private:
 	std::unique_ptr<StageSelect>mStageSelect;
 	std::unique_ptr<Fade>fadeOut;
 	std::unique_ptr<LightView>mLightView;
+	std::unique_ptr<TutorialState>mTutorialState;
+	std::unique_ptr<ConstantBuffer<CbZoom>>mCbZoomBuffer;
 	bool stop;
 	int editorNo;
 	bool selectSceneFlag;

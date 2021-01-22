@@ -339,6 +339,9 @@
     <ClCompile Include="Source\light_view.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="Source\tutorial_state.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="External_Libraries\imgui\imconfig.h">
@@ -611,6 +614,15 @@
     <ClInclude Include="Source\light_view.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="Source\tutorial_state.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\constant_buffer.h">
+      <Filter>gameLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\zoom_blur_parameter.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\board.hlsli">
@@ -693,6 +705,9 @@
     </None>
     <None Include="Source\model_motion_data.hlsli">
       <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28model%29</Filter>
+    </None>
+    <None Include="Source\zoom_blur.hlsli">
+      <Filter>シェーダー\postEffect\ズームブラー</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
