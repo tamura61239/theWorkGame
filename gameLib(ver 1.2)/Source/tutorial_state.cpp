@@ -6,13 +6,15 @@
 #include<imgui.h>
 #endif
 
-TutorialState::TutorialState(ID3D11Device* device) :mState(0), mBackGroundColor(1, 1, 1, 1), mTextAlpha(1), mCount(0), mTimer(0), mNextTime(0.2f),mTextPosition(0,0),mTextSize(230, 36), mEasingTimer(5.f), mLockTime(0.5f)
+TutorialState::TutorialState(ID3D11Device* device) :mState(0), mBackGroundColor(1, 1, 1, 1), mTextAlpha(1), mCount(0), mTimer(0), mNextTime(0.2f),mTextPosition(0,0),mTextSize(230, 36), mEasingTimer(3.f), mLockTime(0.5f)
+, mKeyFlag(false)
 {
-	mRender = std::make_unique<Sprite>(device);
-	mTexts.resize(3);
-	LoadTextureFromFile(device, L"Data/image/push key.png", mTexts[0].GetAddressOf());
-	LoadTextureFromFile(device, L"Data/image/操作説明.png", mTexts[1].GetAddressOf());
-	LoadTextureFromFile(device, L"Data/image/screenShot6.png", mTexts[2].GetAddressOf());
+	mRender = std::make_unique<Sprite>(device, L"Data/image/siro.png");
+	mTexts.resize(4);
+	LoadTextureFromFile(device, L"Data/image/チュートリアルボタン.png", mTexts[0].GetAddressOf());
+	LoadTextureFromFile(device, L"Data/image/説明2.png", mTexts[1].GetAddressOf());
+	LoadTextureFromFile(device, L"Data/image/説明1.png", mTexts[2].GetAddressOf());
+	LoadTextureFromFile(device, L"Data/image/説明枠.png", mTexts[3].GetAddressOf());
 	mCbZoom = std::make_unique<ConstantBuffer<CbZoom>>(device);
 	{
 		FILE* fp;
@@ -82,15 +84,22 @@ void TutorialState::ImGuiUpdate()
 #endif
 }
 
-void TutorialState::Render(ID3D11DeviceContext* context)
+void TutorialState::RenderButton(ID3D11DeviceContext* context)
 {
 	if (mState == 1)
 	{
-		mRender->Render(context, mTexts[0].Get(), mTextPosition, mTextSize, VECTOR2F(0, 0), VECTOR2F(230, 36), 0, VECTOR4F(1, 1, 1, mTextAlpha));
+		mRender->Render(context, mTexts[0].Get(), mTextPosition, mTextSize, VECTOR2F(0, 0), VECTOR2F(500, 100), 0, VECTOR4F(0.6, 0.6, 0.6, mTextAlpha));
 	}
-	else if (mState == 3)
+	
+}
+
+void TutorialState::RenderText(ID3D11DeviceContext* context)
+{
+	if (mState == 3)
 	{
-		mRender->Render(context, mTexts[mCount+1].Get(), VECTOR2F(1920, 1080)*0.15f, VECTOR2F(1920,1080)*0.7f, VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+		mRender->Render(context, mTexts[3].Get(),VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0,VECTOR4F(1,1,1, mTextAlpha));
+		mRender->Render(context, mTexts[mCount + 1].Get(), VECTOR2F(1920, 1080) * 0.1f, VECTOR2F(1920, 1080) * 0.8f, VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+		if(mCount==1)mRender->Render(context, mTexts[0].Get(), VECTOR2F(1920, 1080)-VECTOR2F(500 * 1.02f, 100 * 1.2f), VECTOR2F(500, 100), VECTOR2F(0, 0), VECTOR2F(500, 100), 0, VECTOR4F(1, 1, 1, mTextAlpha));
 
 	}
 }
@@ -109,6 +118,7 @@ void TutorialState::CheckFirstJump(PlayerCharacter* player)
 			{
 				mState++;
 				mCount = 0;
+				mKeyFlag = true;
 			}
 		}
 	}
@@ -122,6 +132,7 @@ float TutorialState::StopScene(float elapsdTime)
 		mBackGroundColor = VECTOR4F(1, 1, 1, 1);
 		mTextAlpha = 1.f;
 		mTimer = 0;
+		mKeyFlag = false;
 		return 1.0f;
 	}
 	//static float s = 1;
@@ -136,7 +147,7 @@ float TutorialState::StopScene(float elapsdTime)
 	{
 		mTimer = mLockTime;
 	}
-	mBackGroundColor = VECTOR4F(0.8f, 0.8f, 0.8f, 1);
+	//mBackGroundColor = VECTOR4F(0.8f, 0.8f, 0.8f, 1);
 
 	return (1 - (mTimer / mLockTime)) * 0.05f;
 }
@@ -155,18 +166,27 @@ float TutorialState::CheckEndExplanation(float elapsdTime)
 {
 	if (pKeyBoad.RisingState(KeyLabel::RIGHT))
 	{
-		mCount++;
+		mCount = mCount + 1 == 2 ? 0 : 1;
 	}
 	if (pKeyBoad.RisingState(KeyLabel::LEFT))
 	{
-		mCount -= mCount > 0 ? 1 : 0;
+		mCount = mCount - 1 == -1 ? 1 : 0;
 	}
-	if (mCount >= 2)
+	if (pKeyBoad.RisingState(KeyLabel::SPACE))
 	{
-		mState++;
+		mTextAlpha = 1;
+		mTimer = 0;
 		mBackGroundColor = VECTOR4F(1, 1, 1, 1);
-		mCount = 0;
+		mState++;
+		mKeyFlag = true;
 		return 1.0f;
+	}
+	static float s = 1;
+	mTextAlpha = Easing::OutCirc(mTimer, mEasingTimer);
+	mTimer += elapsdTime * s;
+	if (mTimer > mEasingTimer || mTimer <= 0.f)
+	{
+		s *= -1.f;
 	}
 	mBackGroundColor = VECTOR4F(0.6f, 0.6f, 0.6f, 1);
 

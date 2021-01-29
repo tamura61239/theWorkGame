@@ -56,11 +56,6 @@ void StageOperation::Update(float elapsd_time, StageManager* manager, const bool
 {
 	if (!playFlag)
 	{
-		if (mColorType > 0)
-		{
-			mColorType = 0;
-			mChangFlag = true;
-		}
 	}
 	else
 	{

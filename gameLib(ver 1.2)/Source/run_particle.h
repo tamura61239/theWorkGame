@@ -8,7 +8,6 @@
 #include"static_mesh.h"
 #include"constant_buffer.h"
 
-#define RUNPARTICLE_TYPE 0
 
 class RunParticles
 {
@@ -59,8 +58,21 @@ private:
 		VECTOR3F velocity;
 		VECTOR3F scale;
 	};
+	struct ParticleCount
+	{
+		UINT aliveParticleCount;
+		UINT aliveNewParticleCount;
+		UINT deActiveParticleCount;
+		UINT dummy;
+	};
+	Microsoft::WRL::ComPtr<ID3D11Buffer>mParticleIndexBuffer[2];
+	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mParticleIndexUAV[2];
+	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mDeleteIndexUAV;
+	Microsoft::WRL::ComPtr<ID3D11Buffer>mParticleCountBuffer;
+	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mParticleCountUAV;
 	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mParticleUAV;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mRenderBuffer;
+	Microsoft::WRL::ComPtr<ID3D11Buffer>mRenderIndexBuffer;
 	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mRenderUAV;
 	//メッシュデータ
 	struct Mesh
@@ -72,6 +84,7 @@ private:
 	std::vector<Mesh>mMeshs;
 	//シェーダー
 	std::unique_ptr<DrowShader>mShader;
+	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mStartCSShader;
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCreateCSShader;
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSShader;
 	void Load();
@@ -84,4 +97,6 @@ private:
 	float mColor[4] = { 1,1,1,1 };
 	float mCreateTime;
 	int mCreateCount;
+	int mIndexNum;
+	UINT mRenderCount;
 };

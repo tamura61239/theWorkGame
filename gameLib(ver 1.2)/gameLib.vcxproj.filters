@@ -903,5 +903,8 @@
     <FxCompile Include="Source\particle_motion_blur_text_ps.hlsl">
       <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28particle%29</Filter>
     </FxCompile>
+    <FxCompile Include="Source\particle_count_cs.hlsl">
+      <Filter>シェーダー</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

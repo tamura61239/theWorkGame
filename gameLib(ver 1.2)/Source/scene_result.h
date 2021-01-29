@@ -49,6 +49,8 @@ private:
 	int mEditorNo;
 	bool mPlayFlag;
 	bool nowLoading;
+	bool mScreenShot;
+	int mTextureNo;
 	std::vector<std::unique_ptr<BlendState>>mBlend;
 	std::shared_ptr<FrameBuffer>frameBuffer;
 	std::unique_ptr<FrameBuffer>frameBuffer2;

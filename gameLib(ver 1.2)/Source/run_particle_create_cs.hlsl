@@ -19,6 +19,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         }
     }
     normal = normalize(normal);
+#if 1
     Particle p = (Particle) 0;
 
     float3 vec1 = (pos[1] - pos[0]) * saturate(rand_1_normal(float2((startIndex + DTid.x) % 621, DTid.x * 3 % 439), 0.5f));
@@ -32,7 +33,33 @@ void main(uint3 DTid : SV_DispatchThreadID)
     p.life = 1;
     p.lifeAmoust = 1 / life;
     p.scale = 0.2f;
-    p.velocity = normal;
+    p.velocity = normal*speed;
     particle[startIndex+DTid.x] = p;
+ #else
+    uint deadCount;
+    particleCount.InterlockedAdd(4 * 2, -1, deadCount);
+    uint newParticleIndex = deleteIndex[deadCount - 1];
     
+    normal = normalize(normal);
+    Particle p = (Particle) 0;
+
+    float3 vec1 = (pos[1] - pos[0]) * saturate(rand_1_normal(float2((newParticleIndex + deadCount) * DTid.x % 621, deadCount * 3 % 439), 0.5f));
+    float3 vec2 = (pos[2] - pos[0]) * saturate(rand_1_normal(float2(newParticleIndex * 3 % 756, (newParticleIndex + deadCount) * DTid.x % 394), 0.5f));
+    
+    float3 vec3 = vec2 - vec1;
+    
+    vec3 *= saturate(rand_1_normal(float2((newParticleIndex + deadCount) * DTid.x % 567, (newParticleIndex + deadCount) * DTid.x % 381), 0.5f));
+    p.position = pos[0] + vec1 + vec3;
+    p.color = color;
+    p.life = life;
+    p.lifeAmoust = 1 / life;
+    p.scale = 0.2f;
+    p.velocity = normal * 2;
+    
+    particle[newParticleIndex] = p;
+    uint aliveCount;
+    particleCount.InterlockedAdd(0, 1, aliveCount);
+    particleIndex[aliveCount] = newParticleIndex;
+
+    #endif
 }

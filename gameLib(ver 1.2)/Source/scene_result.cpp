@@ -9,8 +9,8 @@
 #include<imgui.h>
 #endif
 
-SceneResult::SceneResult(ID3D11Device* device) :mNowGameTime(0), mEditorFlag(false), mEditorNo(0),
-mPlayFlag(true), nowLoading(true)
+SceneResult::SceneResult(ID3D11Device* device) :mNowGameTime(0), mEditorFlag(false), mEditorNo(0), mScreenShot(false),
+mPlayFlag(true), nowLoading(true), mTextureNo(0)
 {
 	loading_thread = std::make_unique<std::thread>([&](ID3D11Device* device)
 		{
@@ -125,7 +125,7 @@ void SceneResult::Render(ID3D11DeviceContext* context, float elapsed_time)
 	FLOAT4X4 projection = pCameraManager->GetCamera()->GetProjection();
 
 	sky->Render(context, view, projection);
-	//mRenderScene->Render(context, VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0, VECTOR4F(0.6f, 0.6f, 0.6f, 1));
+	//mRenderScene->RenderButton(context, VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0, VECTOR4F(0.6f, 0.6f, 0.6f, 1));
 	
 #if 0
 	pGpuParticleManager->Render(context, view, projection);
@@ -162,9 +162,19 @@ void SceneResult::Render(ID3D11DeviceContext* context, float elapsed_time)
 	mRanking->Render(context);
 
 	frameBuffer->Deactivate(context);
+	frameBuffer2->Clear(context);
+	frameBuffer2->Activate(context);
 	mRenderScene->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 	mBloom->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), true);
+	frameBuffer2->Deactivate(context);
 
+	mRenderScene->Render(context, frameBuffer2->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+	if (mScreenShot)
+	{
+		mScreenShot = false;
+		std::wstring fileName = L"Data/image/screen_shot/screenShot" + std::to_wstring(mTextureNo) + L".dds";
+		frameBuffer2->SaveDDSFile(context, fileName.c_str(), frameBuffer2->GetRenderTargetShaderResourceView().Get());
+	}
 #endif
 	mFade->Render(context);
 	mBlend[0]->deactivate(context);
@@ -201,6 +211,15 @@ bool SceneResult::ImGuiUpdate()
 	}
 	if (!mEditorFlag)return false;
 	ImGui::Begin("scene result");
+	if (ImGui::CollapsingHeader("screen shot"))
+	{
+		ImGui::InputInt("No", &mTextureNo, 1);
+
+		if (ImGui::Button("shot"))
+		{
+			mScreenShot = true;
+		}
+	}
 	ImVec2 view = ImVec2(192 * 3, 108 * 3);
 	ImGui::Image(frameBuffer->GetRenderTargetShaderResourceView().Get(), view); ImGui::SameLine();
 	ImGui::Image(velocityBuffer->GetRenderTargetShaderResourceView().Get(), view);

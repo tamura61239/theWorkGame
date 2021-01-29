@@ -76,6 +76,7 @@ void SceneTitle::Update(float elapsed_time)
 	EndLoading();
 	if (ImGuiUpdate())return;
 	if (stop) elapsed_time = 0;
+	elapsed_time *= elapsedTimemMagnification;
 	mFade->Update(elapsed_time);
 	UIManager::GetInctance()->Update(elapsed_time);
 	pCameraManager->Update(elapsed_time);
@@ -186,6 +187,8 @@ bool SceneTitle::ImGuiUpdate()
 	screenShot = false;
 	ImGui::Begin("scene title");
 	ImGui::Checkbox("stop", &stop);
+	ImGui::SliderFloat("time", &elapsedTimemMagnification, 0, 1);
+
 	if (ImGui::CollapsingHeader("screen shot"))
 	{
 		ImGui::InputInt("No", &textureNo, 1);

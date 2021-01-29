@@ -122,7 +122,7 @@ void GpuParticleManager::Update(float elapsd_time)
 		break;
 	case GAME:
 		if (mRunParticle.get() != nullptr)mRunParticle->Update(context, elapsd_time);
-		//mStageSceneParticle->Update(context, elapsd_time);
+		mStageSceneParticle->Update(context, elapsd_time);
 		break;
 	case RESULT:
 #if (RESULT_TYPE==0)
@@ -242,7 +242,7 @@ void GpuParticleManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& vi
 		break;
 	case GAME:
 		if (mRunParticle.get() != nullptr)mRunParticle->Render(context);
-		//mStageSceneParticle->Render(context);
+		mStageSceneParticle->Render(context);
 		break;
 	case RESULT:
 		mFireworksParticle->Render(context);
@@ -269,7 +269,7 @@ void GpuParticleManager::VelocityRender(ID3D11DeviceContext* context, const FLOA
 		break;
 	case GAME:
 		if (mRunParticle.get() != nullptr)mRunParticle->Render(context,mSSceneShader.get());
-		//mStageSceneParticle->Render(context, mSSceneShader.get());
+		mStageSceneParticle->Render(context, mSSceneShader.get());
 		break;
 	case RESULT:
 #if (RESULT_TYPE==0)

@@ -12,7 +12,8 @@ public:
 	TutorialState(ID3D11Device*device);
 	float Update(float elapsdTime, PlayerCharacter* player);
 	void ImGuiUpdate();
-	void Render(ID3D11DeviceContext* context);
+	void RenderButton(ID3D11DeviceContext* context);
+	void RenderText(ID3D11DeviceContext* context);
 	const VECTOR4F& GetBackGroundColor() { return mBackGroundColor; }
 	const int& GetState() { return mState; }
 	void ResetParameter()
@@ -24,6 +25,9 @@ public:
 		mTimer = 0;
 	}
 	ConstantBuffer<CbZoom>* GetCbZoom() { return mCbZoom.get(); }
+	bool GetKeyFlag() {
+		return mKeyFlag;
+	}
 private:
 	//Å‰‚ÌƒWƒƒƒ“ƒv‚ğ‚µ‚½‚©‚Ç‚¤‚©‚ğ”»’f‚·‚éŠÖ”
 	void CheckFirstJump(PlayerCharacter* player);
@@ -40,6 +44,7 @@ private:
 	float mTimer;
 	float mLockTime;
 	float mNextTime;
+	bool mKeyFlag;
 	VECTOR2F mTextPosition;
 	VECTOR2F mTextSize;
 	float mEasingTimer;

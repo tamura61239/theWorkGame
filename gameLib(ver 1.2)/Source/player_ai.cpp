@@ -87,6 +87,7 @@ void PlayerAI::ImGuiUpdate()
 	ImGui::Text("position:%f,%f,%f", mCharacter->GetPosition().x, mCharacter->GetPosition().y, mCharacter->GetPosition().z);
 	ImGui::Text("velocity:%f,%f,%f", mCharacter->GetVelocity().x, mCharacter->GetVelocity().y, mCharacter->GetVelocity().z);
 	ImGui::Text("state:%d", mCharacter->GetMoveState());
+	ImGui::Text("changeFlg:%d", mCharacter->GetChangState());
 	ImGui::End();
 #endif
 }
@@ -97,9 +98,10 @@ void PlayerAI::Update(float elapsd_time, StageManager* manager, StageOperation* 
 	if (!mPlayFlag)
 	{
 		pCameraManager->GetCameraOperation()->GetPlayCamera()->SetPlayerPosition(mCharacter->GetPosition());
-		mCharacter->CalculateBoonTransform(elapsd_time);
+		mCharacter->AnimUpdate(0);
 		mCharacter->SetGorlFlag(false);
 		HitAreaRender::GetInctance()->SetObjData(mCharacter->GetPosition() + VECTOR3F(0, 3.3f, 0) * mCharacter->GetScale(), VECTOR3F(1.15f, 3.3f, 1.3f) * mCharacter->GetScale());
+		mCharacter->SetMoveState(PlayerCharacter::MOVESTATE::LANDING);
 		return;
 	}
 	//pCamera.GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::NORMAL);
@@ -173,5 +175,5 @@ void PlayerAI::Update(float elapsd_time, StageManager* manager, StageOperation* 
 	//ƒS[ƒ‹‚É‚Â‚¢‚Ä‚È‚¢Žž‚Ì“–‚½‚è”»’è
 	if (!mCharacter->GetGorlFlag())Judgment::Judge(mCharacter.get(), manager);
 	pCameraManager->GetCameraOperation()->GetPlayCamera()->SetPlayerPosition(mCharacter->GetPosition());
-	mCharacter->CalculateBoonTransform(elapsd_time);
+	mCharacter->AnimUpdate(elapsd_time);
 }

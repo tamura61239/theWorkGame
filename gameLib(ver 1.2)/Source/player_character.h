@@ -7,6 +7,7 @@ public:
 	PlayerCharacter(std::shared_ptr<ModelResource>resouce);
 	//ˆÚ“®
 	void Move(float elapsd_time);
+	void AnimUpdate(float elapsdTime);
 	//state
 	enum class MOVESTATE
 	{
@@ -54,4 +55,6 @@ private:
 	bool mGorlFlag;
 	float mMaxSpeed;
 	float mMinSpeed;
+	float mAnimSpeed;
+	int mAnimNo;
 };

@@ -101,4 +101,5 @@ private:
 	int textureNo;
 	bool mNowLoading;
 	bool mLoadEnd;
+	float elapsedTimemMagnification = 1.f;
 };

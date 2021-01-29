@@ -26,13 +26,13 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 
 			frameBuffer = std::make_shared<FrameBuffer>(device, SCREEN_WIDTH, SCREEN_HEIGHT, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
 			frameBuffer3 = std::make_shared<FrameBuffer>(device, SCREEN_WIDTH, SCREEN_HEIGHT, true, 8, DXGI_FORMAT_R16G16B16A16_FLOAT);
-			velocityMap= std::make_shared<FrameBuffer>(device, SCREEN_WIDTH, SCREEN_HEIGHT, true, 8, DXGI_FORMAT_R16G16B16A16_FLOAT);
+			velocityMap = std::make_shared<FrameBuffer>(device, SCREEN_WIDTH, SCREEN_HEIGHT, true, 8, DXGI_FORMAT_R16G16B16A16_FLOAT);
 			saveFrameBuffer = std::make_shared<FrameBuffer>(device, SCREEN_WIDTH, SCREEN_HEIGHT, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
 			frameBuffer2 = std::make_shared<FrameBuffer>(device, SCREEN_WIDTH, SCREEN_HEIGHT, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
-			shadowMap = std::make_unique<FrameBuffer>(device, 1024*5, 1024*5, false, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
+			shadowMap = std::make_unique<FrameBuffer>(device, 1024 * 5, 1024 * 5, false, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
 			shadowRenderBuffer = std::make_shared<FrameBuffer>(device, SCREEN_WIDTH, SCREEN_HEIGHT, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
 
-			renderEffects = std::make_unique<RenderEffects>(device,"testShadow");
+			renderEffects = std::make_unique<RenderEffects>(device, "testShadow");
 			GpuParticleManager::Create();
 			player = std::make_shared<PlayerAI>(device, "Data/FBX/new_player_anim.fbx");
 			pGpuParticleManager->CreateGameBuffer(device, player);
@@ -88,7 +88,7 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 			}
 			UIManager::Create();
 			UIManager::GetInctance()->GameInitialize(device);
-			mLightView = std::make_unique<LightView>(device,"LightViewData1");
+			mLightView = std::make_unique<LightView>(device, "LightViewData1");
 			mTutorialState = std::make_unique<TutorialState>(device);
 			mCbZoomBuffer = std::make_unique<ConstantBuffer<CbZoom>>(device);
 			{
@@ -112,7 +112,7 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 	editorNo = 0;
 	textureNo = 0;
 }
-static float elapsedTimemMagnification = 1.f;
+
 
 /***************************************************************/
 //                          更新
@@ -126,7 +126,7 @@ void SceneGame::Update(float elapsed_time)
 		{
 			mLoadEnd = true;
 		}
-			return;
+		return;
 	}
 	EndLoading();
 	/********************Editor************************/
@@ -212,7 +212,17 @@ void SceneGame::Update(float elapsed_time)
 		}
 
 	}
-	if(mSManager->GrtStageNo()==0)elapsed_time *= mTutorialState->Update(elapsed_time, player->GetCharacter());
+	if (mSManager->GrtStageNo() == 0)
+	{
+		{
+			mStageOperation->Update(elapsed_time, mSManager.get(), player->GetPlayFlag()&&(mTutorialState->GetKeyFlag()));
+		}
+		elapsed_time *= mTutorialState->Update(elapsed_time, player->GetCharacter());
+	}
+	else
+	{
+		mStageOperation->Update(elapsed_time, mSManager.get(), player->GetPlayFlag());
+	}
 	UIManager::GetInctance()->Update(elapsed_time);
 
 	if (player->GetPlayFlag())
@@ -223,7 +233,6 @@ void SceneGame::Update(float elapsed_time)
 			elapsed_time *= 0.3f;
 		}
 	}
-	mStageOperation->Update(elapsed_time, mSManager.get(), player->GetPlayFlag());
 
 	sky->GetPosData()->CalculateTransform();
 	player->Update(elapsed_time, mSManager.get(), mStageOperation.get());
@@ -575,9 +584,9 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 		{
 			sky->Render(context, view, projection);
 			pGpuParticleManager->Render(context, view, projection);
-			//modelRenderer->Begin(context, viewProjection);
-			//modelRenderer->Draw(context, *player->GetCharacter()->GetModel(), VECTOR4F(0.5, 0.5, 0.5, 1));
-			//modelRenderer->End(context);
+			modelRenderer->Begin(context, viewProjection);
+			modelRenderer->Draw(context, *player->GetCharacter()->GetModel(), VECTOR4F(0.5, 0.5, 0.5, 1));
+			modelRenderer->End(context);
 
 			mSManager->Render(context, view, projection, mStageOperation->GetColorType());
 			if (hitArea)HitAreaRender::GetInctance()->Render(context, view, projection);
@@ -588,9 +597,9 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 		velocityMap->Clear(context);
 		velocityMap->Activate(context);
 		pCameraManager->GetCamera()->ShaderSetBeforeBuffer(context, 5);
-		//modelRenderer->VelocityBegin(context, viewProjection);
-		//modelRenderer->VelocityDraw(context, *player->GetCharacter()->GetModel());
-		//modelRenderer->VelocityEnd(context);
+		modelRenderer->VelocityBegin(context, viewProjection);
+		modelRenderer->VelocityDraw(context, *player->GetCharacter()->GetModel());
+		modelRenderer->VelocityEnd(context);
 		pGpuParticleManager->VelocityRender(context, view, projection);
 
 		mSManager->RenderVelocity(context, view, projection, mStageOperation->GetColorType());
@@ -603,7 +612,7 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 		//light視点のカメラの更新と情報の取得
 		mLightView->Update(player->GetCharacter()->GetPosition(), context);
 		FLOAT4X4 lightVP, lightV = mLightView->GetLightCamera()->GetView(), lightP = mLightView->GetLightCamera()->GetProjection();
-		DirectX::XMStoreFloat4x4(&lightVP, DirectX::XMLoadFloat4x4(&lightV)* DirectX::XMLoadFloat4x4(&lightP));
+		DirectX::XMStoreFloat4x4(&lightVP, DirectX::XMLoadFloat4x4(&lightV) * DirectX::XMLoadFloat4x4(&lightP));
 
 		//light視点から見たシーンの描画
 		modelRenderer->ShadowBegin(context, lightVP);
@@ -635,12 +644,12 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 		//		modelRenderer->End(context);
 		//	}
 		//	
-		//	if (target[5])sky->Render(context, view, projection);
-		//	if (target[2])pGpuParticleManager->Render(context, view, projection);
+		//	if (target[5])sky->RenderButton(context, view, projection);
+		//	if (target[2])pGpuParticleManager->RenderButton(context, view, projection);
 
-		//	if(target[1])mSManager->Render(context, view, projection, mStageOperation->GetColorType());
-		//	if (target[4])if (hitArea)HitAreaRender::GetInctance()->Render(context, view, projection);
-		//	if (target[3])UIManager::GetInctance()->Render(context);
+		//	if(target[1])mSManager->RenderButton(context, view, projection, mStageOperation->GetColorType());
+		//	if (target[4])if (hitArea)HitAreaRender::GetInctance()->RenderButton(context, view, projection);
+		//	if (target[3])UIManager::GetInctance()->RenderButton(context);
 
 		//}
 		//else
@@ -650,20 +659,22 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 		//	modelRenderer->End(context);
 		//	if (mSManager->GetStageEditor()->GetEditorFlag())
 		//	{
-		//		mSManager->Render(context, view, projection, mStageOperation->GetColorType());
+		//		mSManager->RenderButton(context, view, projection, mStageOperation->GetColorType());
 		//	}
 		//	else
 		//	{
-		//		sky->Render(context, view, projection);
-		//		pGpuParticleManager->Render(context, view, projection);
+		//		sky->RenderButton(context, view, projection);
+		//		pGpuParticleManager->RenderButton(context, view, projection);
 
-		//		mSManager->Render(context, view, projection, mStageOperation->GetColorType());
-		//		if (hitArea)HitAreaRender::GetInctance()->Render(context, view, projection);
-		//		UIManager::GetInctance()->Render(context);
+		//		mSManager->RenderButton(context, view, projection, mStageOperation->GetColorType());
+		//		if (hitArea)HitAreaRender::GetInctance()->RenderButton(context, view, projection);
+		//		UIManager::GetInctance()->RenderButton(context);
 		//	}
 
 		//}
+
 		UIManager::GetInctance()->Render(context);
+		mTutorialState->RenderButton(context);
 
 		blend[0]->deactivate(context);
 		frameBuffer->Deactivate(context);
@@ -680,14 +691,14 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 
 	if (player->GetCharacter()->GetGorlFlag())
 	{
-		mCbZoomBuffer->Activate(context,0, true, true);
+		mCbZoomBuffer->Activate(context, 0, true, true);
 		siro->Render(context, blurShader.get(), frameBuffer2->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 		mCbZoomBuffer->DeActivate(context);
 	}
-	else if (mTutorialState->GetState() == 1)
+	else if (mTutorialState->GetState() == 1 || mTutorialState->GetState() == 3)
 	{
 		mTutorialState->GetCbZoom()->Activate(context, 0, true, true);
-		siro->Render(context, blurShader.get(), frameBuffer2->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0,mTutorialState->GetBackGroundColor());
+		siro->Render(context, blurShader.get(), frameBuffer2->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0, mTutorialState->GetBackGroundColor());
 		mTutorialState->GetCbZoom()->DeActivate(context);
 
 	}
@@ -698,7 +709,7 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	}
 	if (screenShot)
 	{
-		std::wstring fileName = L"Data/image/screen_shot/screenShot"+std::to_wstring(textureNo)+L".dds";
+		std::wstring fileName = L"Data/image/screen_shot/screenShot" + std::to_wstring(textureNo) + L".dds";
 		frameBuffer2->SaveDDSFile(context, fileName.c_str(), frameBuffer2->GetRenderTargetShaderResourceView().Get());
 	}
 	else if (mSManager->GetStageEditor()->GetEditorFlag())
@@ -709,14 +720,15 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 			frameBuffer2->SaveDDSFile(context, fileName.c_str(), frameBuffer2->GetRenderTargetShaderResourceView().Get());
 		}
 	}
-	
-	
+
+
 	if (editorNo == 3)mSManager->SidoViewRender(context);
-	mTutorialState->Render(context);
 	fadeOut->Render(context);
+	mTutorialState->RenderText(context);
+
 	blend[0]->deactivate(context);
 
-	//siro->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+	//siro->RenderButton(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 	HitAreaRender::GetInctance()->ClearCount();
 }
 

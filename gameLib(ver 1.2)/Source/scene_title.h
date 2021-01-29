@@ -63,4 +63,5 @@ private:
 	bool screenShot;
 	int textureNo;
 	bool stop;
+	float elapsedTimemMagnification = 1.f;
 };
