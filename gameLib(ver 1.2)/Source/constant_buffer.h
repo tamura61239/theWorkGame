@@ -47,11 +47,11 @@ struct ConstantBuffer
 	}
 	void DeActivate(ID3D11DeviceContext* context)
 	{
-		//ID3D11Buffer* buffer = nullptr;
-		//if (mSetFlag[0])context->VSSetConstantBuffers(mSlotNum, 1, &buffer);
-		//if (mSetFlag[1])context->PSSetConstantBuffers(mSlotNum, 1, &buffer);
-		//if (mSetFlag[2])context->GSSetConstantBuffers(mSlotNum, 1, &buffer);
-		//if (mSetFlag[3])context->CSSetConstantBuffers(mSlotNum, 1, &buffer);
+		ID3D11Buffer* buffer = nullptr;
+		if (mSetFlag[0])context->VSSetConstantBuffers(mSlotNum, 1, &buffer);
+		if (mSetFlag[1])context->PSSetConstantBuffers(mSlotNum, 1, &buffer);
+		if (mSetFlag[2])context->GSSetConstantBuffers(mSlotNum, 1, &buffer);
+		if (mSetFlag[3])context->CSSetConstantBuffers(mSlotNum, 1, &buffer);
 
 	}
 private:

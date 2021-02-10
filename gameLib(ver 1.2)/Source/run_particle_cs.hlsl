@@ -4,7 +4,7 @@
 [numthreads(100, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {
-    #if 1
+    #if 0
     Particle p = particle[DTid.x];
     float4 particleColor = (float4) 0;
     p.position += p.velocity * elapsdTime;
@@ -39,7 +39,8 @@ void main(uint3 DTid : SV_DispatchThreadID)
     uint aliveCount = particleCount.Load(0);
     if (aliveCount > DTid.x)
     {
-        uint index = particleIndex[DTid.x];
+        uint index /*= particleIndex[DTid.x]*/;
+        index=particleIndex.Load(DTid.x * 4);
         Particle p = particle[index];
         if (p.life > 0)
         {
@@ -50,17 +51,13 @@ void main(uint3 DTid : SV_DispatchThreadID)
             particleColor.b = ((p.color >> 8) & 0x000000FF) / 255.0f;
             particleColor.a = ((p.color >> 0) & 0x000000FF) / 255.0f;
             p.life -= elapsdTime;
-            particleColor.a -= elapsdTime * p.lifeAmoust;
+            particleColor.a = p.life;
             p.color |= ((uint) (particleColor.r * 255) & 0x000000FF) << 24;
             p.color |= ((uint) (particleColor.g * 255) & 0x000000FF) << 16;
             p.color |= ((uint) (particleColor.b * 255) & 0x000000FF) << 8;
             p.color |= ((uint) (particleColor.a * 255) & 0x000000FF) << 0;
 
             particle[index] = p;
-            //生きてる分カウントを増やす
-            uint newAliveCount;
-            particleCount.InterlockedAdd(4, 1, newAliveCount);
-            particleNewIndex[newAliveCount] = index;
             
             ParticleRender render = (ParticleRender) 0;
             render.position = float4(p.position, 1);
@@ -68,6 +65,12 @@ void main(uint3 DTid : SV_DispatchThreadID)
             render.color = particleColor;
             render.velocity = p.velocity;
             WriteRender(render, index * 17 * 4);
+
+            //生きてる分カウントを増やす
+            uint newAliveCount;
+            particleCount.InterlockedAdd(4, 1, newAliveCount);
+           // particleNewIndex[newAliveCount] = index;
+            particleNewIndex.Store(newAliveCount * 4, index);
 
         }
         else

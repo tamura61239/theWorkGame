@@ -16,6 +16,7 @@ class SceneResult :public Scene
 {
 public:
 	SceneResult(ID3D11Device* device);
+	void Editor();
 	void Update(float elapsed_time);
 	void Render(ID3D11DeviceContext* context, float elapsed_time);
 	~SceneResult();
@@ -41,7 +42,6 @@ private:
 			loading_thread->join();
 		}
 	}
-	bool ImGuiUpdate();
 private:
 	std::unique_ptr<Sprite>mNumberText;
 	float mNowGameTime;
@@ -51,6 +51,7 @@ private:
 	bool nowLoading;
 	bool mScreenShot;
 	int mTextureNo;
+	bool renderFlag;
 	std::vector<std::unique_ptr<BlendState>>mBlend;
 	std::shared_ptr<FrameBuffer>frameBuffer;
 	std::unique_ptr<FrameBuffer>frameBuffer2;

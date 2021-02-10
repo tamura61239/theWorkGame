@@ -3,6 +3,7 @@
 #include<d3d11.h>
 #include<wrl.h>
 #include"drow_shader.h"
+#include"constant_buffer.h"
 #include<memory>
 
 class SelectSceneParticle
@@ -13,19 +14,22 @@ public:
 	void Update(float elapsdTime, ID3D11DeviceContext* context);
 	void Render(ID3D11DeviceContext* context);
 private:
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbStartBuffer;
+	//バッファ
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mRenderBuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbBuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mNumberBuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mParticleBuffer;
+	Microsoft::WRL::ComPtr<ID3D11Buffer>mParticleCountBuffer;
+	Microsoft::WRL::ComPtr<ID3D11Buffer>mParticleIndexBuffer[2];
+	//srv
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>mSRV;
-	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mUAV;
+	//uav
+	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mParticleUAV;
+	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mParticleCountUAV;
+	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mParticleIndexUAV[2];
+	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mDeleteIndexUAV;
 	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mRenderUAV;
-	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mNumberUAV;
+	//シェーダー
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCreateShader;
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSShader;
-	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mRenderSetCSShader;
-	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mClearCSShader;
+	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSEndShader;
 	std::unique_ptr<DrowShader>mShader;
 	struct Particle
 	{
@@ -49,7 +53,15 @@ private:
 		VECTOR3F velocity;
 		VECTOR3F scale;
 	};
-	struct CbStart
+	struct ParticleCount
+	{
+		UINT aliveParticleCount;
+		UINT aliveNewParticleCount;
+		UINT deActiveParticleCount;
+		UINT dummy;
+	};
+
+	struct CbCreate
 	{
 		VECTOR3F angleMovement;
 		float speed;
@@ -59,16 +71,17 @@ private:
 		float range;
 		VECTOR3F scope;
 	};
-	struct Cb
+	struct CbUpdate
 	{
 		VECTOR3F defVelocity;
 		float elapsdTime;
 		VECTOR3F endPosition;
 		float dummy2;
 	};
-	CbStart mCbStart;
-	Cb mCb;
-	float particleSize;
+	std::unique_ptr<ConstantBuffer<CbCreate>> mCbCreate;
+	std::unique_ptr<ConstantBuffer<CbUpdate>> mCbUpdate;
 	float newIndex;
+	int mIndexCount;
 	float mMaxParticle;
+	UINT mRenderCount;
 };

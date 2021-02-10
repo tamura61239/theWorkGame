@@ -380,6 +380,10 @@ void Sprite::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView* srv,
 	ID3D11SamplerState* defSampler = nullptr;
 	context->PSSetShaderResources(0, 1, &defSRV);
 	context->PSSetSamplers(0, 1, &defSampler);
+	ID3D11Buffer* buffer = nullptr;
+	pstrides = 0;
+	context->IASetVertexBuffers(0, 1, &buffer, &pstrides, &poff);
+
 
 }
 
@@ -460,6 +464,10 @@ void Sprite::Render(ID3D11DeviceContext* context, DrowShader* shader, const VECT
 	ID3D11SamplerState* defSampler = nullptr;
 	context->PSSetShaderResources(0, 1, &defSRV);
 	context->PSSetSamplers(0, 1, &defSampler);
+	ID3D11Buffer* buffer = nullptr;
+	pstrides = 0;
+	context->IASetVertexBuffers(0, 1, &buffer, &pstrides, &poff);
+
 }
 
 void Sprite::Render(ID3D11DeviceContext* context, DrowShader* shader, ID3D11ShaderResourceView* srv, const VECTOR2F& position, const VECTOR2F& size, const VECTOR2F& texPosition, const VECTOR2F& texSize, float angle, const VECTOR4F& color)
@@ -546,5 +554,8 @@ void Sprite::Render(ID3D11DeviceContext* context, DrowShader* shader, ID3D11Shad
 	ID3D11SamplerState* defSampler = nullptr;
 	context->PSSetShaderResources(0, 1, &defSRV);
 	context->PSSetSamplers(0, 1, &defSampler);
+	ID3D11Buffer* buffer = nullptr;
+	pstrides = 0;
+	context->IASetVertexBuffers(0, 1, &buffer, &pstrides, &poff);
 
 }

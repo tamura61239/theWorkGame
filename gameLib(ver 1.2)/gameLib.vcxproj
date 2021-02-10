@@ -277,6 +277,7 @@
     <ClInclude Include="Source\model_resource.h" />
     <ClInclude Include="Source\motionblur.h" />
     <ClInclude Include="Source\obj3d.h" />
+    <ClInclude Include="Source\particle.h" />
     <ClInclude Include="Source\player_ai.h" />
     <ClInclude Include="Source\player_character.h" />
     <ClInclude Include="Source\play_camera_operation.h" />

@@ -50,15 +50,14 @@ BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHi
 		D3D11_SAMPLER_DESC desc;
 		ZeroMemory(&desc, sizeof(desc));
 		desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-		desc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
-		desc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
-		desc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+		desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+		desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+		desc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
 		desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
 		desc.MipLODBias = 0;
 		desc.MaxAnisotropy = 16;
 		desc.MinLOD = 0;
 		desc.MaxLOD = D3D11_FLOAT32_MAX;
-		desc.MaxAnisotropy = 16;
 		memcpy(desc.BorderColor, &VECTOR4F(.0f, .0f, .0f, .0f), sizeof(VECTOR4F));
 		hr = device->CreateSamplerState(&desc, mSamplerState.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
@@ -67,10 +66,10 @@ BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHi
 	{
 		D3D11_DEPTH_STENCIL_DESC desc;
 		ZeroMemory(&desc, sizeof(desc));
-		desc.DepthEnable = false;
+		desc.DepthEnable = true;
 		desc.StencilEnable = false;
 		desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-		desc.DepthFunc = D3D11_COMPARISON_LESS;
+		desc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 		desc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
 		desc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
 		desc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
@@ -89,7 +88,7 @@ BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHi
 	{
 		D3D11_RASTERIZER_DESC rasterizerDesc = {};
 		rasterizerDesc.FillMode = D3D11_FILL_SOLID; //D3D11_FILL_WIREFRAME, D3D11_FILL_SOLID
-		rasterizerDesc.CullMode = D3D11_CULL_BACK; //D3D11_CULL_NONE, D3D11_CULL_FRONT, D3D11_CULL_BACK   
+		rasterizerDesc.CullMode = D3D11_CULL_NONE; //D3D11_CULL_NONE, D3D11_CULL_FRONT, D3D11_CULL_BACK   
 		rasterizerDesc.FrontCounterClockwise = false;
 		rasterizerDesc.DepthBias = 0;
 		rasterizerDesc.DepthBiasClamp = 0;
@@ -97,7 +96,7 @@ BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHi
 		rasterizerDesc.DepthClipEnable = true;
 		rasterizerDesc.ScissorEnable = FALSE;
 		rasterizerDesc.MultisampleEnable = true;
-		rasterizerDesc.AntialiasedLineEnable = true;
+		rasterizerDesc.AntialiasedLineEnable = false;
 
 
 		hr = device->CreateRasterizerState(&rasterizerDesc, mRasterizeState.GetAddressOf());
@@ -252,6 +251,22 @@ void BloomRender::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView*
 	context->IASetVertexBuffers(0, 0, 0, 0, 0);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	context->Draw(4, 0);
+
+	context->OMSetDepthStencilState(nullptr, 0);
+	context->RSSetState(nullptr);
+	for (int i = 0; i < 6; i++)
+	{
+		ID3D11ShaderResourceView* srv = nullptr;
+		context->PSSetShaderResources(i, 1, &srv);
+	}
+	context->VSSetShader(nullptr, 0, 0);
+	context->PSSetShader(nullptr, 0, 0);
+	buffer[0] = nullptr;
+	buffer[1] = nullptr;
+	context->PSSetConstantBuffers(0, 2, buffer);
+	context->VSSetConstantBuffers(0, 2, buffer);
+	ID3D11SamplerState* sampler = nullptr;
+	context->PSSetSamplers(0, 1, &sampler);
 
 }
 

@@ -33,6 +33,7 @@ void Model::PlayAnimation(int animation_index, bool loop, float changeTime)
 	mCurrentSeconds = 0.0f;
 	mChangeTime = changeTime;
 	if (mChangeTime > 0.f)mChangeAnimation = true;
+	else mChangeAnimation = false;
 	memcpy(&mChangeSceneNodes[0], &mNodes[0], sizeof(Node) * mNodes.size());
 
 }

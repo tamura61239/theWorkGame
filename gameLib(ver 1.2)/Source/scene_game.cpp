@@ -113,139 +113,13 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 	textureNo = 0;
 }
 
-
-/***************************************************************/
-//                          更新
-/***************************************************************/
-void SceneGame::Update(float elapsed_time)
+void SceneGame::Editor()
 {
+#ifdef USE_IMGUI
 	if (mNowLoading)
 	{
-
-		if (!IsNowLoading() && pKeyBoad.RisingState(KeyLabel::SPACE))
-		{
-			mLoadEnd = true;
-		}
 		return;
 	}
-	EndLoading();
-	/********************Editor************************/
-#ifdef USE_IMGUI
-	if (ImGuiUpdate())return;
-	if (stop)
-	{
-		pCameraManager->Update(elapsed_time);
-		return;
-	}
-	elapsed_time *= elapsedTimemMagnification;
-#endif
-	fadeOut->Update(elapsed_time);
-	/**********************SelectSceneの更新*******************************/
-	if (selectSceneFlag)
-	{
-		pCameraManager->Update(elapsed_time);
-		pGpuParticleManager->Update(elapsed_time);
-		mStageSelect->Update(elapsed_time, mSManager.get());
-		if (fadeOut->GetEndFlag())
-		{
-			if (fadeOut->GetFadeScene() == Fade::FADE_MODO::FADEOUT)
-			{
-				mSManager->Load();
-				HitAreaRender::GetInctance()->SetObjSize(mSManager->GetStages().size() + 1);
-				selectSceneFlag = false;
-				mStageSelect->SetSelectFlag(true);
-				fadeOut->Clear();
-				fadeOut->SetFadeScene(Fade::FADE_SCENE::GAME);
-				fadeOut->Clear();
-				fadeOut->StartFadeIn();
-				pGpuParticleManager->SetState(GpuParticleManager::STATE::GAME);
-				pCameraManager->GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::PLAY);
-				bloom->SetNowScene(2);
-				return;
-			}
-		}
-		if (!mStageSelect->GetSelectFlag())
-		{
-			fadeOut->StartFadeOut();
-		}
-		return;
-
-	}
-	/**********************GameSceneの更新*******************************/
-
-	//フェートインの時
-	if (fadeOut->GetFadeScene() == Fade::FADE_MODO::FADEIN)
-	{
-		if (fadeOut->GetEndFlag())
-		{
-			fadeOut->Clear();
-			if (!editorFlag)UIManager::GetInctance()->GetGameUIMove()->Start();
-		}
-	}
-	//フェートインの時
-	else if (fadeOut->GetFadeScene() == Fade::FADE_MODO::FADEOUT)
-	{
-
-		if (fadeOut->GetEndFlag())
-		{
-			fadeOut->Clear();
-			UIManager::GetInctance()->ClearUI();
-			Ranking::SetStageNo(mSManager->GrtStageNo());
-			Relese();
-
-			pSceneManager.ChangeScene(SceneManager::SCENETYPE::RESULT);
-
-			return;
-		}
-
-	}
-	//フェートインでもフェードアウトでもない時
-	else
-	{
-		//カウントが0かつStartFlagがtrueの時
-		if (UIManager::GetInctance()->GetGameUIMove()->GetCount() <= 0)
-		{
-			if (UIManager::GetInctance()->GetGameUIMove()->GetStartFlag())
-			{
-				if (!player->GetPlayFlag())player->SetPlayFlag(true);
-			}
-		}
-
-	}
-	if (mSManager->GrtStageNo() == 0)
-	{
-		{
-			mStageOperation->Update(elapsed_time, mSManager.get(), player->GetPlayFlag()&&(mTutorialState->GetKeyFlag()));
-		}
-		elapsed_time *= mTutorialState->Update(elapsed_time, player->GetCharacter());
-	}
-	else
-	{
-		mStageOperation->Update(elapsed_time, mSManager.get(), player->GetPlayFlag());
-	}
-	UIManager::GetInctance()->Update(elapsed_time);
-
-	if (player->GetPlayFlag())
-	{
-		if (UIManager::GetInctance()->GetGameUIMove()->GetTime() <= 0 || player->GetCharacter()->GetGorlFlag())
-		{
-			if (!testGame) fadeOut->StartFadeOut();
-			elapsed_time *= 0.3f;
-		}
-	}
-
-	sky->GetPosData()->CalculateTransform();
-	player->Update(elapsed_time, mSManager.get(), mStageOperation.get());
-
-
-	mSManager->Update(elapsed_time);
-	pCameraManager->Update(elapsed_time);
-	pGpuParticleManager->Update(elapsed_time);
-}
-/**********************Editor*********************/
-bool SceneGame::ImGuiUpdate()
-{
-#ifdef USE_IMGUI
 	/********************Sceneの選択結果処理***************************/
 	switch (pSceneManager.GetSceneEditor()->Editor(&editorFlag, StageManager::GetMaxStageCount()))
 	{
@@ -254,7 +128,7 @@ bool SceneGame::ImGuiUpdate()
 		Relese();
 		pSceneManager.ChangeScene(SceneManager::SCENETYPE::TITLE);
 
-		return true;
+		return;
 		break;
 	case 2:
 		if (!selectSceneFlag)
@@ -305,11 +179,11 @@ bool SceneGame::ImGuiUpdate()
 		Relese();
 		pSceneManager.ChangeScene(SceneManager::SCENETYPE::RESULT);
 
-		return true;
+		return;
 		break;
 	}
 	//editorFlagがfalseの時
-	if (!editorFlag)return false;
+	if (!editorFlag)return;
 	//前のフレームのeditorNoを保存
 	int beforeEditorNo = editorNo;
 	//エディターの名前を決める
@@ -488,8 +362,139 @@ bool SceneGame::ImGuiUpdate()
 		ImGui::End();
 	}
 #endif
-	return false;
+
 }
+
+
+/***************************************************************/
+//                          更新
+/***************************************************************/
+void SceneGame::Update(float elapsed_time)
+{
+	if (mNowLoading)
+	{
+
+		if (!IsNowLoading() && pKeyBoad.RisingState(KeyLabel::SPACE))
+		{
+			mLoadEnd = true;
+		}
+		return;
+	}
+	EndLoading();
+	/********************Editor************************/
+#ifdef USE_IMGUI
+	if (stop)
+	{
+		pCameraManager->Update(elapsed_time);
+		return;
+	}
+	elapsed_time *= elapsedTimemMagnification;
+#endif
+	fadeOut->Update(elapsed_time);
+	/**********************SelectSceneの更新*******************************/
+	if (selectSceneFlag)
+	{
+		pCameraManager->Update(elapsed_time);
+		pGpuParticleManager->Update(elapsed_time);
+		mStageSelect->Update(elapsed_time, mSManager.get());
+		if (fadeOut->GetEndFlag())
+		{
+			if (fadeOut->GetFadeScene() == Fade::FADE_MODO::FADEOUT)
+			{
+				mSManager->Load();
+				HitAreaRender::GetInctance()->SetObjSize(mSManager->GetStages().size() + 1);
+				selectSceneFlag = false;
+				mStageSelect->SetSelectFlag(true);
+				fadeOut->Clear();
+				fadeOut->SetFadeScene(Fade::FADE_SCENE::GAME);
+				fadeOut->Clear();
+				fadeOut->StartFadeIn();
+				pGpuParticleManager->SetState(GpuParticleManager::STATE::GAME);
+				pCameraManager->GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::PLAY);
+				bloom->SetNowScene(2);
+				return;
+			}
+		}
+		if (!mStageSelect->GetSelectFlag())
+		{
+			fadeOut->StartFadeOut();
+		}
+		return;
+
+	}
+	/**********************GameSceneの更新*******************************/
+
+	//フェートインの時
+	if (fadeOut->GetFadeScene() == Fade::FADE_MODO::FADEIN)
+	{
+		if (fadeOut->GetEndFlag())
+		{
+			fadeOut->Clear();
+			if (!editorFlag)UIManager::GetInctance()->GetGameUIMove()->Start();
+		}
+	}
+	//フェートインの時
+	else if (fadeOut->GetFadeScene() == Fade::FADE_MODO::FADEOUT)
+	{
+
+		if (fadeOut->GetEndFlag())
+		{
+			fadeOut->Clear();
+			UIManager::GetInctance()->ClearUI();
+			Ranking::SetStageNo(mSManager->GrtStageNo());
+			Relese();
+
+			pSceneManager.ChangeScene(SceneManager::SCENETYPE::RESULT);
+
+			return;
+		}
+
+	}
+	//フェートインでもフェードアウトでもない時
+	else
+	{
+		UIManager::GetInctance()->Update(elapsed_time);
+
+		//カウントが0かつStartFlagがtrueの時
+		if (UIManager::GetInctance()->GetGameUIMove()->GetCount() <= 0)
+		{
+			if (UIManager::GetInctance()->GetGameUIMove()->GetStartFlag())
+			{
+				if (!player->GetPlayFlag())player->SetPlayFlag(true);
+			}
+		}
+
+	}
+	if (mSManager->GrtStageNo() == 0)
+	{
+		{
+			mStageOperation->Update(elapsed_time, mSManager.get(), player->GetPlayFlag() && (mTutorialState->GetKeyFlag()));
+		}
+		elapsed_time *= mTutorialState->Update(elapsed_time, player->GetCharacter());
+	}
+	else
+	{
+		mStageOperation->Update(elapsed_time, mSManager.get(), player->GetPlayFlag());
+	}
+
+	if (player->GetPlayFlag())
+	{
+		if (UIManager::GetInctance()->GetGameUIMove()->GetTime() <= 0 || player->GetCharacter()->GetGorlFlag())
+		{
+			if (!testGame) fadeOut->StartFadeOut();
+			elapsed_time *= 0.3f;
+		}
+	}
+
+	sky->GetPosData()->CalculateTransform();
+	player->Update(elapsed_time, mSManager.get(), mStageOperation.get());
+
+
+	mSManager->Update(elapsed_time);
+	pCameraManager->Update(elapsed_time);
+	pGpuParticleManager->Update(elapsed_time);
+}
+/**********************Editor*********************/
 
 /***************************************************************/
 //                          描画
@@ -562,6 +567,7 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	/*****************GameSceneの描画 ******************/
 	else
 	{
+#if 1
 		FLOAT4X4 viewProjection;
 
 		DirectX::XMStoreFloat4x4(&viewProjection, DirectX::XMLoadFloat4x4(&view) * DirectX::XMLoadFloat4x4(&projection));
@@ -605,28 +611,28 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 		mSManager->RenderVelocity(context, view, projection, mStageOperation->GetColorType());
 
 		velocityMap->Deactivate(context);
-		/************************シャドウマップテクスチャの作成***********************/
-		shadowMap->Clear(context);
-		shadowMap->Activate(context);
+		///************************シャドウマップテクスチャの作成***********************/
+		//shadowMap->Clear(context);
+		//shadowMap->Activate(context);
 
-		//light視点のカメラの更新と情報の取得
-		mLightView->Update(player->GetCharacter()->GetPosition(), context);
-		FLOAT4X4 lightVP, lightV = mLightView->GetLightCamera()->GetView(), lightP = mLightView->GetLightCamera()->GetProjection();
-		DirectX::XMStoreFloat4x4(&lightVP, DirectX::XMLoadFloat4x4(&lightV) * DirectX::XMLoadFloat4x4(&lightP));
+		////light視点のカメラの更新と情報の取得
+		//mLightView->Update(player->GetCharacter()->GetPosition(), context);
+		//FLOAT4X4 lightVP, lightV = mLightView->GetLightCamera()->GetView(), lightP = mLightView->GetLightCamera()->GetProjection();
+		//DirectX::XMStoreFloat4x4(&lightVP, DirectX::XMLoadFloat4x4(&lightV) * DirectX::XMLoadFloat4x4(&lightP));
 
-		//light視点から見たシーンの描画
-		modelRenderer->ShadowBegin(context, lightVP);
-		modelRenderer->ShadowDraw(context, *player->GetCharacter()->GetModel());
-		modelRenderer->ShadowEnd(context);
-		mSManager->RenderShadow(context, lightV, lightP);
+		////light視点から見たシーンの描画
+		//modelRenderer->ShadowBegin(context, lightVP);
+		//modelRenderer->ShadowDraw(context, *player->GetCharacter()->GetModel());
+		//modelRenderer->ShadowEnd(context);
+		//mSManager->RenderShadow(context, lightV, lightP);
 
-		shadowMap->Deactivate(context);
+		//shadowMap->Deactivate(context);
 
-		shadowRenderBuffer->Clear(context);
-		shadowRenderBuffer->Activate(context);
-		renderEffects->ShadowRender(context, frameBuffer3->GetRenderTargetShaderResourceView().Get(), frameBuffer3->GetDepthStencilShaderResourceView().Get(), shadowMap->GetDepthStencilShaderResourceView().Get()
-			, view, projection, lightV, lightP);
-		shadowRenderBuffer->Deactivate(context);
+		//shadowRenderBuffer->Clear(context);
+		//shadowRenderBuffer->Activate(context);
+		//renderEffects->ShadowRender(context, frameBuffer3->GetRenderTargetShaderResourceView().Get(), frameBuffer3->GetDepthStencilShaderResourceView().Get(), shadowMap->GetDepthStencilShaderResourceView().Get()
+		//	, view, projection, lightV, lightP);
+		//shadowRenderBuffer->Deactivate(context);
 
 		frameBuffer->Clear(context);
 		frameBuffer->Activate(context);
@@ -634,7 +640,7 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 		//	, view, projection, lightV, lightP);
 
 		velocityMap->SetPsTexture(context, 1);
-		siro->Render(context, motionBlurShader.get(), shadowRenderBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+		siro->Render(context, motionBlurShader.get(), frameBuffer3->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 		//if (screenShot) 
 		//{
 		//	if (target[0])
@@ -678,6 +684,42 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 
 		blend[0]->deactivate(context);
 		frameBuffer->Deactivate(context);
+#else 
+		FLOAT4X4 viewProjection;
+
+		DirectX::XMStoreFloat4x4(&viewProjection, DirectX::XMLoadFloat4x4(&view) * DirectX::XMLoadFloat4x4(&projection));
+		pLight.ConstanceLightBufferSetShader(context);
+		/************************カラーマップテクスチャの作成***********************/
+
+		frameBuffer->Clear(context);
+		frameBuffer->Activate(context);
+		blend[0]->activate(context);
+
+		if (mSManager->GetStageEditor()->GetEditorFlag())
+		{
+			modelRenderer->Begin(context, viewProjection);
+			modelRenderer->Draw(context, *player->GetCharacter()->GetModel(), VECTOR4F(0.5, 0.5, 0.5, 1));
+			modelRenderer->End(context);
+
+			mSManager->Render(context, view, projection, mStageOperation->GetColorType());
+		}
+		else
+		{
+			sky->Render(context, view, projection);
+			pGpuParticleManager->Render(context, view, projection);
+			modelRenderer->Begin(context, viewProjection);
+			modelRenderer->Draw(context, *player->GetCharacter()->GetModel(), VECTOR4F(0.5, 0.5, 0.5, 1));
+			modelRenderer->End(context);
+
+			mSManager->Render(context, view, projection, mStageOperation->GetColorType());
+			if (hitArea)HitAreaRender::GetInctance()->Render(context, view, projection);
+		}
+		UIManager::GetInctance()->Render(context);
+		mTutorialState->RenderButton(context);
+
+		frameBuffer->Deactivate(context);
+
+#endif
 	}
 	/****************ブルームをかける******************/
 	frameBuffer2->Clear(context);

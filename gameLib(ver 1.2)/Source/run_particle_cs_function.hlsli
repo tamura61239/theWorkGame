@@ -40,6 +40,6 @@ RWStructuredBuffer<Particle> particle : register(u0);
 RWByteAddressBuffer particleCount : register(u1);
 StructuredBuffer<Mesh> vertexBuffer : register(t0);
 StructuredBuffer<int> indexBuffer : register(t1);
-RWStructuredBuffer<uint> particleIndex : register(u3);
-RWStructuredBuffer<uint> particleNewIndex : register(u4);
+RWByteAddressBuffer particleIndex : register(u3);
+RWByteAddressBuffer particleNewIndex : register(u4);
 RWStructuredBuffer<uint> deleteIndex : register(u5);

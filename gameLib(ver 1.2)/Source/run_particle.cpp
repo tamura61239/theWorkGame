@@ -4,7 +4,7 @@
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
-#define TYPE 0
+#define TYPE 1
 
 RunParticles::RunParticles(ID3D11Device* device, std::shared_ptr<PlayerAI>player) :mMaxParticle(0), mCreateTime(0), mTimer(0), mCreateCount(3), mIndexNum(0), mRenderCount(0)
 {
@@ -82,12 +82,14 @@ RunParticles::RunParticles(ID3D11Device* device, std::shared_ptr<PlayerAI>player
 			data.pSysMem = &particles[0];
 			hr = device->CreateBuffer(&desc, &data, particleBuffer.GetAddressOf());
 			_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+			ZeroMemory(&desc, sizeof(desc));
+
 			//indexバッファ
 			desc.ByteWidth = sizeof(UINT) * mMaxParticle;
 			desc.Usage = D3D11_USAGE_DEFAULT;//ステージの入出力はOK。GPUの入出力OK。
-			desc.BindFlags = /*D3D11_BIND_INDEX_BUFFER |*/ D3D11_BIND_UNORDERED_ACCESS;
-			desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED; // 構造化バッファ
-			desc.StructureByteStride = sizeof(UINT);
+			desc.BindFlags = D3D11_BIND_INDEX_BUFFER | D3D11_BIND_UNORDERED_ACCESS;
+			desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS; // 構造化バッファ
+			desc.StructureByteStride = 0;
 			std::vector<UINT>indices;
 			indices.resize(mMaxParticle);
 			memset(indices.data(), 0, sizeof(UINT) * mMaxParticle);
@@ -97,6 +99,7 @@ RunParticles::RunParticles(ID3D11Device* device, std::shared_ptr<PlayerAI>player
 				hr = device->CreateBuffer(&desc, &data, index.GetAddressOf());
 				_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 			}
+			//deleteindexバッファ
 			for (int i = 0; i < mMaxParticle; i++)
 			{
 				indices[i] = i;
@@ -104,6 +107,10 @@ RunParticles::RunParticles(ID3D11Device* device, std::shared_ptr<PlayerAI>player
 			ZeroMemory(&data, sizeof(data));
 			data.pSysMem = &indices[0];
 			desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
+			desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED; // 構造化バッファ
+			desc.StructureByteStride = sizeof(UINT);
+			desc.Usage = D3D11_USAGE_DEFAULT;//ステージの入出力はOK。GPUの入出力OK。
+
 			hr = device->CreateBuffer(&desc, &data, deleteIndexBuffer.GetAddressOf());
 			_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
@@ -135,13 +142,6 @@ RunParticles::RunParticles(ID3D11Device* device, std::shared_ptr<PlayerAI>player
 			_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 			ZeroMemory(&desc, sizeof(desc));
 
-			desc.ByteWidth = sizeof(UINT) * mMaxParticle;
-			desc.Usage = D3D11_USAGE_DEFAULT;
-			desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-			data.pSysMem = &indices[0];
-			hr = device->CreateBuffer(&desc, &data, mRenderIndexBuffer.GetAddressOf());
-			_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
 		}
 		D3D11_UNORDERED_ACCESS_VIEW_DESC desc;
 		ZeroMemory(&desc, sizeof(desc));
@@ -152,11 +152,23 @@ RunParticles::RunParticles(ID3D11Device* device, std::shared_ptr<PlayerAI>player
 		hr = device->CreateUnorderedAccessView(particleBuffer.Get(), &desc, mParticleUAV.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		//indexバッファのUAV
+		desc.Format = DXGI_FORMAT_R32_TYPELESS;
+		desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+		desc.Buffer.FirstElement = 0;
+		desc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_RAW;
+		desc.Buffer.NumElements = sizeof(UINT) * mMaxParticle / 4;
+
 		for (int i = 0; i < 2; i++)
 		{
 			hr = device->CreateUnorderedAccessView(mParticleIndexBuffer[i].Get(), &desc, mParticleIndexUAV[i].GetAddressOf());
 			_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		}
+		ZeroMemory(&desc, sizeof(desc));
+
+		desc.Buffer.NumElements = mMaxParticle;
+		desc.Format = DXGI_FORMAT_UNKNOWN;
+		desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+
 		hr = device->CreateUnorderedAccessView(deleteIndexBuffer.Get(), &desc, mDeleteIndexUAV.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		ZeroMemory(&desc, sizeof(desc));
@@ -350,8 +362,9 @@ void RunParticles::Update(ID3D11DeviceContext* context, float elapsd_time)
 
 	context->Dispatch(mMaxParticle/100, 1, 1);
 	mCbUpdateBuffer->DeActivate(context);
-	ID3D11UnorderedAccessView* uav[3] = { nullptr };
-	context->CSSetUnorderedAccessViews(0, 3, uav, nullptr);
+	ID3D11UnorderedAccessView* uav =  nullptr ;
+	context->CSSetUnorderedAccessViews(0, 1, &uav, nullptr);
+	context->CSSetUnorderedAccessViews(2, 1, &uav, nullptr);
 	context->CSSetShader(nullptr, nullptr, 0);
 #elif (TYPE==1)
 	/*******************UAVをGPUに渡す******************/
@@ -435,7 +448,8 @@ void RunParticles::Update(ID3D11DeviceContext* context, float elapsd_time)
 	ParticleCount* particleCount = (ParticleCount*)ms.pData;
 	mRenderCount = particleCount->aliveParticleCount;
 	context->Unmap(mParticleCountBuffer.Get(), NULL);
-	context->CopyResource(mParticleIndexBuffer[mIndexNum].Get(), mRenderIndexBuffer.Get());
+
+	//context->CopyResource(mParticleIndexBuffer[mIndexNum].Get(), mRenderIndexBuffer.Get());
 #endif
 }
 
@@ -453,18 +467,22 @@ void RunParticles::Render(ID3D11DeviceContext* context)
 
 	context->Draw(mMaxParticle, 0);
 	mShader->Deactivate(context);
+	stride = 0;
+	ID3D11Buffer* buffer = nullptr;
+	context->IASetVertexBuffers(0, 1,&buffer, &stride, &offset);
+
 #elif (TYPE==1)
 	mShader->Activate(context);
 
 	u_int stride = sizeof(RenderParticle);
 	u_int offset = 0;
 	ID3D11Buffer* vertex = mRenderBuffer.Get();
-	ID3D11Buffer* index = mRenderIndexBuffer.Get();
+	ID3D11Buffer* index = mParticleIndexBuffer[mIndexNum].Get();
 	context->IASetVertexBuffers(0, 1, &vertex, &stride, &offset);
 	context->IASetIndexBuffer(index, DXGI_FORMAT_R32_UINT, 0);
-	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST);
 
-	context->Draw(mRenderCount, 0);
+	context->DrawIndexed(mRenderCount, 0,0);
 	mShader->Deactivate(context);
 	offset = 0;
 	vertex = nullptr;

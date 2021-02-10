@@ -22,6 +22,7 @@ SceneTitle::SceneTitle(ID3D11Device* device):mEditorFlag(true), mTestMove(false)
 			pCameraManager->GetCamera()->SetEye(VECTOR3F(0, 0, -200));
 			pCameraManager->GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::TITLE_CAMERA);
 			pCameraManager->GetCameraOperation()->GetTitleCamera()->Load(pCameraManager->GetCamera());
+
 			bloom = std::make_unique<BloomRender>(device, static_cast<float>(SCREEN_WIDTH), static_cast<float>(SCREEN_HEIGHT), 0);
 			//bloom = std::make_unique<BloomRender>(device, 1920, 1080);
 			frameBuffer[0] = std::make_unique<FrameBuffer>(device, SCREEN_WIDTH, SCREEN_HEIGHT, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
@@ -56,134 +57,52 @@ SceneTitle::SceneTitle(ID3D11Device* device):mEditorFlag(true), mTestMove(false)
 					fclose(fp);
 				}
 			}
+			test = std::make_unique<Sprite>(device/*, L"Data/image/change_color.png"*/);
+			blend[0] = std::make_unique<BlendState>(device, BLEND_MODE::ADD);
+			blend[1] = std::make_unique<BlendState>(device, BLEND_MODE::ALPHA);
+
 		}, device);
-	test = std::make_unique<Sprite>(device/*, L"Data/image/change_color.png"*/);
-	blend[0] = std::make_unique<BlendState>(device, BLEND_MODE::ADD);
-	blend[1] = std::make_unique<BlendState>(device, BLEND_MODE::ALPHA);
 	mLoading = true;
 	screenShot = false;
 	textureNo = 0;
 	stop = false;
+	renderFlag = false;
 }
 
-void SceneTitle::Update(float elapsed_time)
-{
-	mLoading = IsNowLoading();
-	if (mLoading)
-	{
-		return;
-	}
-	EndLoading();
-	if (ImGuiUpdate())return;
-	if (stop) elapsed_time = 0;
-	elapsed_time *= elapsedTimemMagnification;
-	mFade->Update(elapsed_time);
-	UIManager::GetInctance()->Update(elapsed_time);
-	pCameraManager->Update(elapsed_time);
-	pGpuParticleManager->GetTitleParticle()->SetChangeFlag(pCameraManager->GetCameraOperation()->GetTitleCamera()->GetTitleSceneChangeFlag());
-	pGpuParticleManager->Update(elapsed_time);
-	if (pCameraManager->GetCameraOperation()->GetTitleCamera()->GetEndTitleFlag())
-	{
-		GpuParticleManager::Destroy();
-		UIManager::Destroy();
-		pCameraManager->DestroyCamera();
-		pSceneManager.ChangeScene(SceneManager::SCENETYPE::GAME);
-
-		return;
-	}
-	if (UIManager::GetInctance()->GetTitleUIMove()->GetMoveChangeFlag())
-	{
-		if (pKeyBoad.RisingState(KeyLabel::SPACE))
-		{
-			UIManager::GetInctance()->GetTitleUIMove()->SetMoveChangeFlag(false);
-			pCameraManager->GetCameraOperation()->GetTitleCamera()->SetTitleSceneChangeFlag(true);
-			pGpuParticleManager->GetTitleTextureParticle()->SetFullDrowFlag(true);
-			UIManager::GetInctance()->ClearUI();
-		}
-	}
-}
-
-void SceneTitle::Render(ID3D11DeviceContext* context, float elapsed_time)
-{
-	if (mLoading)
-	{
-		return;
-	}
-	frameBuffer[0]->Clear(context);
-	frameBuffer[0]->Activate(context);
-	FLOAT4X4 view = pCameraManager->GetCamera()->GetView();
-	FLOAT4X4 projection = pCameraManager->GetCamera()->GetProjection();
-    blend[1]->activate(context);
-	pGpuParticleManager->Render(context, view, projection);
-	
-	if(!screenShot)UIManager::GetInctance()->Render(context);
-	blend[1]->deactivate(context);
-
-	frameBuffer[0]->Deactivate(context);
-
-	frameBuffer[1]->Clear(context);
-	frameBuffer[1]->Activate(context);
-
-	blend[0]->activate(context);
-	test->Render(context, frameBuffer[0]->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
-	bloom->Render(context, frameBuffer[0]->GetRenderTargetShaderResourceView().Get(), true);
-	frameBuffer[1]->Deactivate(context);
-	frameBuffer[2]->Clear(context);
-	frameBuffer[2]->Activate(context);
-	if (pCameraManager->GetCameraOperation()->GetTitleCamera()->GetMoveFlag())
-	{
-		mCbZoomBuffer->Activate(context, 0, true, true);
-		test->Render(context,mBluer.get(), frameBuffer[1]->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
-		mCbZoomBuffer->DeActivate(context);
-
-	}
-	else
-	{
-		test->Render(context, frameBuffer[1]->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
-
-	}
-	frameBuffer[2]->Deactivate(context);
-	test->Render(context, frameBuffer[2]->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
-	if (screenShot)
-	{
-		std::wstring fileName = L"Data/image/screen_shot/screenShot" + std::to_wstring(textureNo) + L".dds";
-		frameBuffer[2]->SaveDDSFile(context, fileName.c_str(), frameBuffer[2]->GetRenderTargetShaderResourceView().Get());
-
-	}
-	mFade->Render(context);
-	blend[0]->deactivate(context);
-
-}
-
-SceneTitle::~SceneTitle()
-{
-
-}
-
-bool SceneTitle::ImGuiUpdate()
+void SceneTitle::Editor()
 {
 #ifdef USE_IMGUI
-	switch (pSceneManager.GetSceneEditor()->Editor(&mEditorFlag, StageManager::GetMaxStageCount()))
+	if (mLoading)
 	{
-	case 2:
-	case 3:
-		GpuParticleManager::Destroy();
-		UIManager::GetInctance()->Clear();
-		UIManager::Destroy();
-
-		pSceneManager.ChangeScene(SceneManager::SCENETYPE::GAME);
-		return true;
-		break;
-	case 4:
-		GpuParticleManager::Destroy();
-		UIManager::GetInctance()->Clear();
-		UIManager::Destroy();
-
-		pSceneManager.ChangeScene(SceneManager::SCENETYPE::RESULT);
-		return true;
-		break;
+		return;
 	}
-	if (!mEditorFlag)return false;
+	int newtScene = pSceneManager.GetSceneEditor()->Editor(&mEditorFlag, StageManager::GetMaxStageCount());
+	if (newtScene >= 2 && newtScene <= 4)
+	{
+		switch (newtScene)
+		{
+		case 2:
+		case 3:
+			GpuParticleManager::Destroy();
+			UIManager::GetInctance()->Clear();
+			UIManager::Destroy();
+
+			pSceneManager.ChangeScene(SceneManager::SCENETYPE::GAME);
+			return;
+			break;
+		case 4:
+			GpuParticleManager::Destroy();
+			UIManager::GetInctance()->Clear();
+			UIManager::Destroy();
+
+			pSceneManager.ChangeScene(SceneManager::SCENETYPE::RESULT);
+			return;
+			break;
+		}
+
+		return;
+	}
+	if (!mEditorFlag)return;
 	screenShot = false;
 	ImGui::Begin("scene title");
 	ImGui::Checkbox("stop", &stop);
@@ -247,5 +166,100 @@ bool SceneTitle::ImGuiUpdate()
 	}
 #endif
 
-	return false;
 }
+
+void SceneTitle::Update(float elapsed_time)
+{
+	if (IsNowLoading()||!renderFlag)
+	{
+		return;
+	}
+	mLoading = false;
+	EndLoading();
+	if (stop) elapsed_time = 0;
+	elapsed_time *= elapsedTimemMagnification;
+	mFade->Update(elapsed_time);
+	UIManager::GetInctance()->Update(elapsed_time);
+	pCameraManager->Update(elapsed_time);
+	pGpuParticleManager->GetTitleParticle()->SetChangeFlag(pCameraManager->GetCameraOperation()->GetTitleCamera()->GetTitleSceneChangeFlag());
+	pGpuParticleManager->Update(elapsed_time);
+	if (pCameraManager->GetCameraOperation()->GetTitleCamera()->GetEndTitleFlag())
+	{
+		GpuParticleManager::Destroy();
+		UIManager::Destroy();
+		pCameraManager->DestroyCamera();
+		pSceneManager.ChangeScene(SceneManager::SCENETYPE::GAME);
+
+		return;
+	}
+	if (UIManager::GetInctance()->GetTitleUIMove()->GetMoveChangeFlag())
+	{
+		if (pKeyBoad.RisingState(KeyLabel::SPACE))
+		{
+			UIManager::GetInctance()->GetTitleUIMove()->SetMoveChangeFlag(false);
+			pCameraManager->GetCameraOperation()->GetTitleCamera()->SetTitleSceneChangeFlag(true);
+			pGpuParticleManager->GetTitleTextureParticle()->SetFullDrowFlag(true);
+			UIManager::GetInctance()->ClearUI();
+		}
+	}
+}
+
+void SceneTitle::Render(ID3D11DeviceContext* context, float elapsed_time)
+{
+	if (mLoading)
+	{
+		renderFlag = true;
+		return;
+	}
+
+	frameBuffer[0]->Clear(context);
+	frameBuffer[0]->Activate(context);
+	FLOAT4X4 view = pCameraManager->GetCamera()->GetView();
+	FLOAT4X4 projection = pCameraManager->GetCamera()->GetProjection();
+    blend[1]->activate(context);
+	pGpuParticleManager->Render(context, view, projection);
+	
+	if(!screenShot)UIManager::GetInctance()->Render(context);
+	blend[1]->deactivate(context);
+
+	frameBuffer[0]->Deactivate(context);
+
+	frameBuffer[1]->Clear(context);
+	frameBuffer[1]->Activate(context);
+
+	blend[0]->activate(context);
+	test->Render(context, frameBuffer[0]->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+	bloom->Render(context, frameBuffer[0]->GetRenderTargetShaderResourceView().Get(), true);
+	frameBuffer[1]->Deactivate(context);
+	frameBuffer[2]->Clear(context);
+	frameBuffer[2]->Activate(context);
+	if (pCameraManager->GetCameraOperation()->GetTitleCamera()->GetMoveFlag())
+	{
+		mCbZoomBuffer->Activate(context, 0, true, true);
+		test->Render(context,mBluer.get(), frameBuffer[1]->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+		mCbZoomBuffer->DeActivate(context);
+
+	}
+	else
+	{
+		test->Render(context, frameBuffer[1]->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+
+	}
+	frameBuffer[2]->Deactivate(context);
+	test->Render(context, frameBuffer[2]->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+	if (screenShot)
+	{
+		std::wstring fileName = L"Data/image/screen_shot/screenShot" + std::to_wstring(textureNo) + L".dds";
+		frameBuffer[2]->SaveDDSFile(context, fileName.c_str(), frameBuffer[2]->GetRenderTargetShaderResourceView().Get());
+
+	}
+	mFade->Render(context);
+	blend[0]->deactivate(context);
+
+}
+
+SceneTitle::~SceneTitle()
+{
+
+}
+

@@ -4,6 +4,7 @@
 #include<wrl.h>
 #include<vector>
 #include"drow_shader.h"
+#include"constant_buffer.h"
 #include<memory>
 
 class StageSceneParticle
@@ -20,14 +21,18 @@ private:
 	//シェーダー
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSCreateShader;
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSShader;
+	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSEndShader;
 	std::vector<std::unique_ptr<DrowShader>>mShader;
 	//UAV
 	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mParticleUAV;
 	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mRenderUAV;
+	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mParticleCountUAV;
+	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mParticleIndexUAV[2];
+	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mParticleDeleteIndexUAV;
 	//バッファ
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mRenderBuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbCreateBuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbUpdateBuffer;
+	Microsoft::WRL::ComPtr<ID3D11Buffer>mParticleCountBuffer;
+	Microsoft::WRL::ComPtr<ID3D11Buffer>mParticleIndexBuffer[2];
 	//SRV
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>mTextureSRV;
 	//
@@ -50,6 +55,14 @@ private:
 		VECTOR3F velocity;
 		VECTOR3F scale;
 	};
+	struct ParticleCount
+	{
+		UINT aliveParticleCount;
+		UINT aliveNewParticleCount;
+		UINT deActiveParticleCount;
+		UINT dummy;
+	};
+
 	struct CbCreate
 	{
 		int startIndex;
@@ -70,6 +83,8 @@ private:
 		VECTOR3F dummy2;
 
 	};
+	std::unique_ptr<ConstantBuffer<CbCreate>>mCbCreate;
+	std::unique_ptr<ConstantBuffer<CbUpdate>>mCbUpdate;
 	struct EditorData
 	{
 		float randX;
@@ -85,8 +100,9 @@ private:
 		VECTOR4F color2;
 		int shaderType;
 	};
-	float mIndexCount;
-	float mBeforeIndex;
+	int mIndexCount;
+	float mCreateCount;
 	int mMaxCount;
+	UINT mRenderCount;
 	EditorData mEditorData;
 };

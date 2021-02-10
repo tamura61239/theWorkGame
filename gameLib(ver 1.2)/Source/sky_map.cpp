@@ -138,6 +138,11 @@ void SkyMap::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FL
 	ID3D11ShaderResourceView* srv = nullptr;
 	context->PSSetShaderResources(0, 1, &srv);
 	mShader->Deactivate(context);
+	stride = 0;
+	ID3D11Buffer* vertexBuffer = nullptr;
+	context->IASetVertexBuffers(0, 1,&vertexBuffer, &stride, &offset);
+	context->IASetIndexBuffer(nullptr, DXGI_FORMAT_R32_UINT, 0);
+
 }
 
 void SkyMap::Render(ID3D11DeviceContext* context, DrowShader* shader, const FLOAT4X4& view, const FLOAT4X4& projection, const VECTOR4F& color)
@@ -176,5 +181,8 @@ void SkyMap::Render(ID3D11DeviceContext* context, DrowShader* shader, const FLOA
 	context->DrawIndexed(mObjData->GetIndexNum(), 0, 0);
 
 	shader->Deactivate(context);
+	stride = 0;
+	context->IASetVertexBuffers(0, 1, nullptr, &stride, &offset);
+	context->IASetIndexBuffer(nullptr, DXGI_FORMAT_R32_UINT, 0);
 
 }

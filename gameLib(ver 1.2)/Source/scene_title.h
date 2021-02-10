@@ -17,6 +17,7 @@ class SceneTitle :public Scene
 {
 public:
 	SceneTitle(ID3D11Device* device);
+	void Editor();
 	void Update(float elapsed_time);
 	void Render(ID3D11DeviceContext* context, float elapsed_time);
 	~SceneTitle();
@@ -43,7 +44,6 @@ private:
 		}
 	}
 private:
-	bool ImGuiUpdate();
 	std::unique_ptr<Sprite>test;
 	std::unique_ptr<BloomRender>bloom;
 	std::unique_ptr<FrameBuffer>frameBuffer[3];
@@ -63,5 +63,6 @@ private:
 	bool screenShot;
 	int textureNo;
 	bool stop;
+	bool renderFlag;
 	float elapsedTimemMagnification = 1.f;
 };

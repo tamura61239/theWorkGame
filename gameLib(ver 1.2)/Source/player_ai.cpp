@@ -73,6 +73,11 @@ void PlayerAI::ImGuiUpdate()
 	{
 		Save();
 	}
+	if (ImGui::Button("load"))
+	{
+		Load();
+	}
+
 	if (ImGui::Button("replay"))
 	{
 		mCharacter->SetPosition(VECTOR3F(0, 10, 0));

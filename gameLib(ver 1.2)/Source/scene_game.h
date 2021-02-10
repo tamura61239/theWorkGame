@@ -30,6 +30,7 @@ class SceneGame :public Scene
 {
 public:
 	SceneGame(ID3D11Device*device);
+	void Editor();
 	void Update(float elapsed_time);
 	void Render(ID3D11DeviceContext* context, float elapsed_time);
 	~SceneGame();
@@ -57,7 +58,6 @@ private:
 		}
 	}
 private:
-	bool ImGuiUpdate();
 	std::unique_ptr<Sprite>test;
 	std::unique_ptr<Sprite>nowLoading;
 	std::unique_ptr<Sprite>siro;

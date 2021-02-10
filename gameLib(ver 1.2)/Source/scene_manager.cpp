@@ -13,6 +13,7 @@
 void SceneManager::Update(float elapsed_time)
 {
 	pKeyBoad.Update();
+	mScene->Editor();
 	mScene->Update(elapsed_time);
 }
 
