@@ -87,16 +87,26 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mStartCSShader;
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCreateCSShader;
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSShader;
+	//SRV
+	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>>mParticleSRV;
+
+	struct EditorData
+	{
+		float mColor[4];
+		float life;
+		float speed;
+		float mCreateTime;
+		int mCreateCount;
+		UINT textureType;
+	};
 	void Load();
 	void Save();
-	
+	EditorData mEditorData;
 	std::weak_ptr<PlayerAI>mPlayer;
 	int mMaxParticle;
 	float mTimer;
 	//パラメーター
-	float mColor[4] = { 1,1,1,1 };
-	float mCreateTime;
-	int mCreateCount;
 	int mIndexNum;
 	UINT mRenderCount;
+	bool mTestFlag;
 };

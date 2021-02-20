@@ -50,9 +50,6 @@ ModelRenderer::ModelRenderer(ID3D11Device* device)
 		hr = device->CreateBuffer(&desc, 0, mCbMesh.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-		hr = device->CreateBuffer(&desc, 0, mCbBeforeMesh.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
 		// サブセット用バッファ
 		desc.ByteWidth = sizeof(CbSubset);
 
@@ -184,9 +181,9 @@ void ModelRenderer::Begin(ID3D11DeviceContext* context, const FLOAT4X4& view_pro
 		mCbSubset.Get()
 	};
 	context->VSSetConstantBuffers(0, ARRAYSIZE(constant_buffers), constant_buffers);
+	context->GSSetConstantBuffers(0, ARRAYSIZE(constant_buffers), constant_buffers);
 	context->PSSetConstantBuffers(0, ARRAYSIZE(constant_buffers), constant_buffers);
 
-	const float blend_factor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
 	context->RSSetState(mRasterizerState.Get());
 
@@ -223,11 +220,16 @@ void ModelRenderer::Draw(ID3D11DeviceContext* context, Model& model, const VECTO
 				DirectX::XMMATRIX world_transform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.nodeIndices.at(i)).worldTransform);
 				DirectX::XMMATRIX bone_transform = inverse_transform * world_transform;
 				DirectX::XMStoreFloat4x4(&cb_mesh.boneTransforms[i], bone_transform);
+				DirectX::XMMATRIX beforeWorldTransform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.nodeIndices.at(i)).beforeWorldTransform);
+				bone_transform = inverse_transform * beforeWorldTransform;
+				DirectX::XMStoreFloat4x4(&cb_mesh.beforeBoneTransforms[i], bone_transform);
+
 			}
 		}
 		else
 		{
 			cb_mesh.boneTransforms[0] = nodes.at(mesh.nodeIndex).worldTransform;
+			cb_mesh.beforeBoneTransforms[0] = nodes.at(mesh.nodeIndex).beforeWorldTransform;
 		}
 		context->UpdateSubresource(mCbMesh.Get(), 0, 0, &cb_mesh, 0, 0);
 
@@ -281,12 +283,15 @@ void ModelRenderer::Draw(ID3D11DeviceContext* context, DrowShader* shader, Model
 				DirectX::XMMATRIX bone_transform = inverse_transform * world_transform;
 				DirectX::XMStoreFloat4x4(&cb_mesh.boneTransforms[i], bone_transform);
 				DirectX::XMMATRIX beforeWorldTransform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.nodeIndices.at(i)).beforeWorldTransform);
+				bone_transform = inverse_transform * beforeWorldTransform;
+				DirectX::XMStoreFloat4x4(&cb_mesh.beforeBoneTransforms[i], bone_transform);
 
 			}
 		}
 		else
 		{
 			cb_mesh.boneTransforms[0] = nodes.at(mesh.nodeIndex).worldTransform;
+			cb_mesh.beforeBoneTransforms[0] = nodes.at(mesh.nodeIndex).beforeWorldTransform;
 		}
 		context->UpdateSubresource(mCbMesh.Get(), 0, 0, &cb_mesh, 0, 0);
 
@@ -318,6 +323,14 @@ void ModelRenderer::Draw(ID3D11DeviceContext* context, DrowShader* shader, Model
 void ModelRenderer::End(ID3D11DeviceContext* context)
 {
 	//context->GSSetShader(d_m_g_shader.Get(), 0, 0);
+	ID3D11Buffer* buffers[3] = { nullptr };
+	context->VSSetConstantBuffers(0, ARRAYSIZE(buffers), buffers);
+	context->GSSetConstantBuffers(0, ARRAYSIZE(buffers), buffers);
+	context->PSSetConstantBuffers(0, ARRAYSIZE(buffers), buffers);
+	context->OMSetDepthStencilState(nullptr, 0);
+	context->RSSetState(nullptr);
+
+
 }
 /*********************************************************************/
 //    影の描画
@@ -364,11 +377,16 @@ void ModelRenderer::ShadowDraw(ID3D11DeviceContext* context, Model& model, const
 				DirectX::XMMATRIX world_transform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.nodeIndices.at(i)).worldTransform);
 				DirectX::XMMATRIX bone_transform = inverse_transform * world_transform;
 				DirectX::XMStoreFloat4x4(&cb_mesh.boneTransforms[i], bone_transform);
+				DirectX::XMMATRIX beforeWorldTransform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.nodeIndices.at(i)).beforeWorldTransform);
+				bone_transform = inverse_transform * beforeWorldTransform;
+				DirectX::XMStoreFloat4x4(&cb_mesh.beforeBoneTransforms[i], bone_transform);
+
 			}
 		}
 		else
 		{
 			cb_mesh.boneTransforms[0] = nodes.at(mesh.nodeIndex).worldTransform;
+			cb_mesh.beforeBoneTransforms[0] = nodes.at(mesh.nodeIndex).beforeWorldTransform;
 		}
 		context->UpdateSubresource(mCbMesh.Get(), 0, 0, &cb_mesh, 0, 0);
 
@@ -392,6 +410,11 @@ void ModelRenderer::ShadowDraw(ID3D11DeviceContext* context, Model& model, const
 void ModelRenderer::ShadowEnd(ID3D11DeviceContext* context)
 {
 	mShadowShader->Deactivate(context);
+	ID3D11Buffer* buffers[3] = { nullptr };
+	context->VSSetConstantBuffers(0, ARRAYSIZE(buffers), buffers);
+	context->PSSetConstantBuffers(0, ARRAYSIZE(buffers), buffers);
+	context->OMSetDepthStencilState(nullptr, 0);
+	context->RSSetState(nullptr);
 
 }
 /*********************************************************************/
@@ -404,10 +427,10 @@ void ModelRenderer::VelocityBegin(ID3D11DeviceContext* context, const FLOAT4X4& 
 	ID3D11Buffer* constant_buffers[] =
 	{
 		mCbScene.Get(),
-		mCbMesh.Get(),
-		mCbBeforeMesh.Get()
+		mCbMesh.Get()
 	};
 	context->VSSetConstantBuffers(0, ARRAYSIZE(constant_buffers), constant_buffers);
+	context->GSSetConstantBuffers(0, ARRAYSIZE(constant_buffers), constant_buffers);
 	context->PSSetConstantBuffers(0, ARRAYSIZE(constant_buffers), constant_buffers);
 
 	const float blend_factor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -429,7 +452,7 @@ void ModelRenderer::VelocityDraw(ID3D11DeviceContext* context, Model& model)
 	for (const ModelResource::Mesh& mesh : model_resource->GetMeshes())
 	{
 		// メッシュ用定数バッファ更新
-		CbMesh cb_mesh, cbBeforeMesh;
+		CbMesh cb_mesh;
 		::memset(&cb_mesh, 0, sizeof(cb_mesh));
 		if (mesh.nodeIndices.size() > 0)
 		{
@@ -441,17 +464,16 @@ void ModelRenderer::VelocityDraw(ID3D11DeviceContext* context, Model& model)
 				DirectX::XMStoreFloat4x4(&cb_mesh.boneTransforms[i], bone_transform);
 				DirectX::XMMATRIX beforeWorldTransform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.nodeIndices.at(i)).beforeWorldTransform);
 				bone_transform = inverse_transform * beforeWorldTransform;
-				DirectX::XMStoreFloat4x4(&cbBeforeMesh.boneTransforms[i], bone_transform);
+				DirectX::XMStoreFloat4x4(&cb_mesh.beforeBoneTransforms[i], bone_transform);
 
 			}
 		}
 		else
 		{
 			cb_mesh.boneTransforms[0] = nodes.at(mesh.nodeIndex).worldTransform;
-			cbBeforeMesh.boneTransforms[0] = nodes.at(mesh.nodeIndex).beforeWorldTransform;
+			cb_mesh.beforeBoneTransforms[0] = nodes.at(mesh.nodeIndex).beforeWorldTransform;
 		}
 		context->UpdateSubresource(mCbMesh.Get(), 0, 0, &cb_mesh, 0, 0);
-		context->UpdateSubresource(mCbBeforeMesh.Get(), 0, 0, &cbBeforeMesh, 0, 0);
 
 		UINT stride = sizeof(ModelData::Vertex);
 		UINT offset = 0;
@@ -470,5 +492,11 @@ void ModelRenderer::VelocityDraw(ID3D11DeviceContext* context, Model& model)
 void ModelRenderer::VelocityEnd(ID3D11DeviceContext* context)
 {
 	mShader[2]->Deactivate(context);
+	ID3D11Buffer* buffers[2] = { nullptr };
+	context->VSSetConstantBuffers(0, ARRAYSIZE(buffers), buffers);
+	context->GSSetConstantBuffers(0, ARRAYSIZE(buffers), buffers);
+	context->PSSetConstantBuffers(0, ARRAYSIZE(buffers), buffers);
+	context->OMSetDepthStencilState(nullptr, 0);
+	context->RSSetState(nullptr);
 
 }

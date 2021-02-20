@@ -57,7 +57,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     particle.centerPosition = particle.position.xyz;
     particle.sinAngle = (rand_1_normal(float2(newParticleIndex % 712, newParticleIndex % 583), 0.2f) - 1) * 3.14f;
     particle.sinAngleMovement = (rand_1_normal(float2(newParticleIndex % 645, newParticleIndex % 377), 0.2f) - 1) * 3.14f * 0.75f;
-    particle.sinLength = 10 + (rand_1_normal(float2(newParticleIndex % 213, newParticleIndex % 491), 1) - 1);
+    particle.sinLength = sinLeng + (rand_1_normal(float2(newParticleIndex % 213, newParticleIndex % 491), 1) - 1);
     particleBuffer[newParticleIndex] = particle;
 	
     uint particleCont;

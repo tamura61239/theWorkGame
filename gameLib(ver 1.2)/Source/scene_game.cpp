@@ -121,6 +121,7 @@ void SceneGame::Editor()
 		return;
 	}
 	/********************Sceneの選択結果処理***************************/
+	bool beforeEditorFlag = editorFlag;
 	switch (pSceneManager.GetSceneEditor()->Editor(&editorFlag, StageManager::GetMaxStageCount()))
 	{
 	case 1:
@@ -183,7 +184,26 @@ void SceneGame::Editor()
 		break;
 	}
 	//editorFlagがfalseの時
-	if (!editorFlag)return;
+	if (!editorFlag)
+	{
+		if (beforeEditorFlag&& fadeOut->GetFadeScene() == Fade::FADE_MODO::NONE)
+		{
+			UIManager::GetInctance()->GetGameUIMove()->Start();
+		}
+		return;
+	}
+	if (!beforeEditorFlag)
+	{
+		player->GetCharacter()->SetBeforePosition(VECTOR3F(0, 10, 0));
+		player->GetCharacter()->SetPosition(VECTOR3F(0, 10, 0));
+		player->GetCharacter()->SetAngle(VECTOR3F(0, 0, 0));
+		player->GetCharacter()->SetVelocity(VECTOR3F(0, 0, 0));
+		player->GetCharacter()->SetGorlFlag(false);
+		player->SetPlayFlag(false);
+		UIManager::GetInctance()->GetGameUIMove()->SetStartFlag(false);
+		UIManager::GetInctance()->ResetGameUI();
+		mTutorialState->ResetParameter();
+	}
 	//前のフレームのeditorNoを保存
 	int beforeEditorNo = editorNo;
 	//エディターの名前を決める
@@ -197,6 +217,7 @@ void SceneGame::Editor()
 	ImGui::SliderFloat("time", &elapsedTimemMagnification, 0, 1);
 	if (selectSceneFlag)
 	{
+#ifdef _DEBUG
 		if (ImGui::CollapsingHeader("screen shot"))
 		{
 			ImGui::InputInt("No", &textureNo, 1);
@@ -206,10 +227,13 @@ void SceneGame::Editor()
 			}
 		}
 
+#endif
 		ImGui::RadioButton("SELECT_SCENE", &editorNo, 1);
 	}
 	else
 	{
+#ifdef _DEBUG
+
 		if (ImGui::CollapsingHeader("screen shot"))
 		{
 			ImGui::Selectable("player", &target[0]);
@@ -224,6 +248,7 @@ void SceneGame::Editor()
 				screenShot = true;
 			}
 		}
+#endif
 		if (!testGame)
 		{
 			if (ImGui::Button("testGame"))
@@ -268,7 +293,7 @@ void SceneGame::Editor()
 		ImGui::RadioButton("TUTORIAL", &editorNo, 13);
 		ImGui::RadioButton("ZOOM BLUR", &editorNo, 14);
 	}
-	ImGui::RadioButton("PARTICLE", &editorNo, 5);
+	ImGui::RadioButton("GPU PARTICLE", &editorNo, 5);
 	ImGui::RadioButton("CAMERA", &editorNo, 6);
 	ImGui::RadioButton("BLOOM", &editorNo, 7);
 	ImGui::RadioButton("FADE", &editorNo, 8);
@@ -423,6 +448,17 @@ void SceneGame::Update(float elapsed_time)
 
 	}
 	/**********************GameSceneの更新*******************************/
+	if (mSManager->GrtStageNo() == 0)
+	{
+		{
+			mStageOperation->Update(elapsed_time, mSManager.get(), player->GetPlayFlag() && (mTutorialState->GetKeyFlag()));
+		}
+		elapsed_time *= mTutorialState->Update(elapsed_time, player->GetCharacter());
+	}
+	else
+	{
+		mStageOperation->Update(elapsed_time, mSManager.get(), player->GetPlayFlag());
+	}
 
 	//フェートインの時
 	if (fadeOut->GetFadeScene() == Fade::FADE_MODO::FADEIN)
@@ -464,17 +500,6 @@ void SceneGame::Update(float elapsed_time)
 			}
 		}
 
-	}
-	if (mSManager->GrtStageNo() == 0)
-	{
-		{
-			mStageOperation->Update(elapsed_time, mSManager.get(), player->GetPlayFlag() && (mTutorialState->GetKeyFlag()));
-		}
-		elapsed_time *= mTutorialState->Update(elapsed_time, player->GetCharacter());
-	}
-	else
-	{
-		mStageOperation->Update(elapsed_time, mSManager.get(), player->GetPlayFlag());
 	}
 
 	if (player->GetPlayFlag())
@@ -612,27 +637,27 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 
 		velocityMap->Deactivate(context);
 		///************************シャドウマップテクスチャの作成***********************/
-		//shadowMap->Clear(context);
-		//shadowMap->Activate(context);
+		shadowMap->Clear(context);
+		shadowMap->Activate(context);
 
-		////light視点のカメラの更新と情報の取得
-		//mLightView->Update(player->GetCharacter()->GetPosition(), context);
-		//FLOAT4X4 lightVP, lightV = mLightView->GetLightCamera()->GetView(), lightP = mLightView->GetLightCamera()->GetProjection();
-		//DirectX::XMStoreFloat4x4(&lightVP, DirectX::XMLoadFloat4x4(&lightV) * DirectX::XMLoadFloat4x4(&lightP));
+		//light視点のカメラの更新と情報の取得
+		mLightView->Update(player->GetCharacter()->GetPosition(), context);
+		FLOAT4X4 lightVP, lightV = mLightView->GetLightCamera()->GetView(), lightP = mLightView->GetLightCamera()->GetProjection();
+		DirectX::XMStoreFloat4x4(&lightVP, DirectX::XMLoadFloat4x4(&lightV) * DirectX::XMLoadFloat4x4(&lightP));
 
-		////light視点から見たシーンの描画
-		//modelRenderer->ShadowBegin(context, lightVP);
-		//modelRenderer->ShadowDraw(context, *player->GetCharacter()->GetModel());
-		//modelRenderer->ShadowEnd(context);
-		//mSManager->RenderShadow(context, lightV, lightP);
+		//light視点から見たシーンの描画
+		modelRenderer->ShadowBegin(context, lightVP);
+		modelRenderer->ShadowDraw(context, *player->GetCharacter()->GetModel());
+		modelRenderer->ShadowEnd(context);
+		mSManager->RenderShadow(context, lightV, lightP);
 
-		//shadowMap->Deactivate(context);
+		shadowMap->Deactivate(context);
 
-		//shadowRenderBuffer->Clear(context);
-		//shadowRenderBuffer->Activate(context);
-		//renderEffects->ShadowRender(context, frameBuffer3->GetRenderTargetShaderResourceView().Get(), frameBuffer3->GetDepthStencilShaderResourceView().Get(), shadowMap->GetDepthStencilShaderResourceView().Get()
-		//	, view, projection, lightV, lightP);
-		//shadowRenderBuffer->Deactivate(context);
+		shadowRenderBuffer->Clear(context);
+		shadowRenderBuffer->Activate(context);
+		renderEffects->ShadowRender(context, frameBuffer3->GetRenderTargetShaderResourceView().Get(), frameBuffer3->GetDepthStencilShaderResourceView().Get(), shadowMap->GetDepthStencilShaderResourceView().Get()
+			, view, projection, lightV, lightP);
+		shadowRenderBuffer->Deactivate(context);
 
 		frameBuffer->Clear(context);
 		frameBuffer->Activate(context);
@@ -640,7 +665,7 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 		//	, view, projection, lightV, lightP);
 
 		velocityMap->SetPsTexture(context, 1);
-		siro->Render(context, motionBlurShader.get(), frameBuffer3->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+		siro->Render(context, motionBlurShader.get(), shadowRenderBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 		//if (screenShot) 
 		//{
 		//	if (target[0])

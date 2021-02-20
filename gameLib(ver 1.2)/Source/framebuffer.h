@@ -8,6 +8,7 @@
 class FrameBuffer
 {
 public:
+	FrameBuffer() = default;
 	FrameBuffer(ID3D11Device* device, int width, int height, bool msaaFlag = false, int subsamples = 1, DXGI_FORMAT renderTargetTexture2dFormat = DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT depthStencilTexture2dFormat = DXGI_FORMAT_R24G8_TYPELESS,
 		bool renderTargetShaderResourceViewFlag = true, bool depthStencilShaderResourceViewFlag = true, bool mipsFlag = false);
 	//èâä˙âª
@@ -27,7 +28,9 @@ public:
 	void SetPsDepth(ID3D11DeviceContext* context, const int number);
 
 	void SaveDDSFile(ID3D11DeviceContext* context, const wchar_t* fileName, ID3D11ShaderResourceView* srv);
-private:
+	virtual~FrameBuffer() {}
+
+protected:
 	//render target view data
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView>mRenderTargetView;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>mRenderTargetShaderResourceView;

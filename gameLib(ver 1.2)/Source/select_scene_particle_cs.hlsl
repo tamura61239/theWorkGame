@@ -81,9 +81,9 @@ void main(uint3 DTid : SV_DispatchThreadID)
 		
             right = cross(vec3, up);
 		
-            particle.velocity = normalize(vec3 * particle.speed + right * sin(particle.sinAngle) * particle.sinLength) * particle.speed * 2.5f;
+            particle.velocity = normalize(vec3 * particle.speed + right * sin(particle.sinAngle) * particle.sinLength) * particle.speed * 1.5f;
 		
-            particle.centerPosition += vec3 * particle.speed * 2.5f * elapsdTime;
+            particle.centerPosition += vec3 * particle.speed * 1.5f * elapsdTime;
 		
             particle.position.xyz += particle.velocity * elapsdTime;
 		

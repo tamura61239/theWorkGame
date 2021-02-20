@@ -189,6 +189,15 @@ void RenderEffects::ShadowRender(ID3D11DeviceContext* context, ID3D11ShaderResou
 
 	ID3D11ShaderResourceView* nullSRV[3] = {};
 	context->PSSetShaderResources(0, 3, nullSRV);
+	ID3D11Buffer* buffer = nullptr;
+	context->VSSetConstantBuffers(0, 1, &buffer);
+	context->PSSetConstantBuffers(0, 1, &buffer);
+
+	context->OMSetDepthStencilState(nullptr, 0);
+	context->RSSetState(nullptr);
+	ID3D11SamplerState* samplers[2] = { nullptr };
+	context->PSSetSamplers(0, 2, samplers);
+
 }
 
 void RenderEffects::DeferrdShadowRender(ID3D11DeviceContext* context, DrowShader* shader, const FLOAT4X4& view, const FLOAT4X4& projection, const FLOAT4X4& lightView, const FLOAT4X4& lightProjection)

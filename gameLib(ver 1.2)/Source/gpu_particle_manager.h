@@ -50,6 +50,7 @@ private:
 	std::unique_ptr<FireworksParticle>mFireworksParticle;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState>mDepth;
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState>mRasterizer;
+	Microsoft::WRL::ComPtr<ID3D11SamplerState>mSamplerState;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbScene;
 	struct CbScene
 	{

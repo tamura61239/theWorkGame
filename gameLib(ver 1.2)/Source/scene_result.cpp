@@ -104,6 +104,8 @@ void SceneResult::Editor()
 	}
 	if (nextScene <= 3 && nextScene >= 1)return;
 	if (!mEditorFlag)return;
+#ifdef _DEBUG
+
 	ImGui::Begin("scene result");
 	if (ImGui::CollapsingHeader("screen shot"))
 	{
@@ -114,6 +116,7 @@ void SceneResult::Editor()
 			mScreenShot = true;
 		}
 	}
+#endif
 	ImVec2 view = ImVec2(192 * 3, 108 * 3);
 	ImGui::Image(frameBuffer->GetRenderTargetShaderResourceView().Get(), view); ImGui::SameLine();
 	ImGui::Image(velocityBuffer->GetRenderTargetShaderResourceView().Get(), view);
@@ -124,7 +127,7 @@ void SceneResult::Editor()
 	ImGui::RadioButton("BLOOM", &mEditorNo, 4);
 	ImGui::RadioButton("CAMERA", &mEditorNo, 5);
 	ImGui::RadioButton("SKY MAP", &mEditorNo, 6);
-	ImGui::RadioButton("PARTICLE", &mEditorNo, 7);
+	ImGui::RadioButton("GPU PARTICLE", &mEditorNo, 7);
 
 	ImGui::End();
 	switch (mEditorNo)

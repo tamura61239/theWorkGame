@@ -117,8 +117,8 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>.\External_Libraries\FBX SDK\2016.1.2\include;.\External_Libraries\cereal-1.2.2\include;.\Source;.\External_Libraries\DirectXTex;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.\External_Libraries\FBX SDK\2016.1.2\include;.\External_Libraries\cereal-1.2.2\include;.\Source;.\External_Libraries\DirectXTex;.\External_Libraries\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;USE_IMGUI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <UseFullPaths>false</UseFullPaths>
       <PrecompiledHeader />
@@ -166,6 +166,7 @@
     <ClCompile Include="Source\camera_operation.cpp" />
     <ClCompile Include="Source\character.cpp" />
     <ClCompile Include="Source\collision.cpp" />
+    <ClCompile Include="Source\cubebuffer.cpp" />
     <ClCompile Include="Source\depth_of_field.cpp" />
     <ClCompile Include="Source\direct_input.cpp" />
     <ClCompile Include="Source\drow_shader.cpp" />
@@ -249,6 +250,7 @@
     <ClInclude Include="Source\character.h" />
     <ClInclude Include="Source\collision.h" />
     <ClInclude Include="Source\constant_buffer.h" />
+    <ClInclude Include="Source\cubebuffer.h" />
     <ClInclude Include="Source\depth_of_field.h" />
     <ClInclude Include="Source\direct_input.h" />
     <ClInclude Include="Source\drow_shader.h" />
@@ -277,7 +279,6 @@
     <ClInclude Include="Source\model_resource.h" />
     <ClInclude Include="Source\motionblur.h" />
     <ClInclude Include="Source\obj3d.h" />
-    <ClInclude Include="Source\particle.h" />
     <ClInclude Include="Source\player_ai.h" />
     <ClInclude Include="Source\player_character.h" />
     <ClInclude Include="Source\play_camera_operation.h" />

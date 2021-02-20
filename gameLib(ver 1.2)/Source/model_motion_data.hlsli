@@ -17,9 +17,11 @@ cbuffer CbScene : register(b0)
 cbuffer CbMesh : register(b1)
 {
     row_major float4x4 boneTransforms[MAX_BONES];
+    row_major float4x4 beforeBoneTransforms[MAX_BONES];
+
 };
 
-cbuffer CbBeforeMesh : register(b2)
-{
-    row_major float4x4 beforeBoneTransforms[MAX_BONES];
-};
+//cbuffer CbBeforeMesh : register(b2)
+//{
+//    row_major float4x4 beforeBoneTransforms[MAX_BONES];
+//};

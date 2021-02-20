@@ -1,13 +1,18 @@
 #include "run_particle.h"
 #include"misc.h"
 #include"shader.h"
+#include"texture.h"
+
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
 #define TYPE 1
 
-RunParticles::RunParticles(ID3D11Device* device, std::shared_ptr<PlayerAI>player) :mMaxParticle(0), mCreateTime(0), mTimer(0), mCreateCount(3), mIndexNum(0), mRenderCount(0)
+RunParticles::RunParticles(ID3D11Device* device, std::shared_ptr<PlayerAI>player) :mMaxParticle(0), mTimer(0), mIndexNum(0), mRenderCount(0), mTestFlag(false)
 {
+	memset(&mEditorData, 0, sizeof(mEditorData));
+	memset(&mEditorData.mColor, 1, sizeof(mEditorData.mColor));
+	mEditorData.mCreateCount = 3;
 	/************定数バッファ作成**************/
 	mCbBoneBuffer = std::make_unique<ConstantBuffer<CbBone>>(device);
 	mCbCreateBuffer = std::make_unique<ConstantBuffer<CbCreate>>(device);
@@ -265,10 +270,35 @@ RunParticles::RunParticles(ID3D11Device* device, std::shared_ptr<PlayerAI>player
 		{"VELOCITY",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 		{"SCALE",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 	};
-	mShader = std::make_unique<DrowShader>(device, "Data/shader/particle_render_vs.cso", "Data/shader/particle_render_billboard_gs.cso", "Data/shader/particle_render_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
-	mCbCreateBuffer->data.startIndex = 0;
-	mCbCreateBuffer->data.life = 0.5f;
-	mCreateTime = 0.05f;
+	mShader = std::make_unique<DrowShader>(device, "Data/shader/particle_render_vs.cso", "Data/shader/particle_render_billboard_gs.cso", "Data/shader/particle_render_text_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
+	wchar_t* names[] =
+	{
+		L"Data/image/○.png",
+		L"",
+		L"Data/image/無題1.png",
+		L"Data/image/無題2.png",
+		L"Data/image/無題3.png",
+		L"Data/image/無題4.png",
+		L"Data/image/無題5.png",
+		L"Data/image/無題6.png",
+		L"Data/image/無題7.png",
+		L"Data/image/無題8.png",
+	};
+	for (auto& name : names)
+	{
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>srv;
+		if (wcscmp(name, L"") == 0)
+		{
+			hr = MakeDummyTexture(device, srv.GetAddressOf());
+		}
+		else
+		{
+			hr = LoadTextureFromFile(device, name, srv.GetAddressOf());
+		}
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		mParticleSRV.push_back(srv);
+	}
+
 	Load();
 }
 
@@ -278,12 +308,27 @@ void RunParticles::ImGuiUpdate()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("run particle");
-	ImGui::ColorEdit4("color", mColor);
-	ImGui::SliderInt(u8"1メッシュから出るパーティクル数", &mCreateCount, 0, 10);
-	ImGui::InputFloat(u8"パーティクルを出す間隔", &mCreateTime, 0.1f);
-	ImGui::InputFloat(u8"速度", &mCbCreateBuffer->data.speed, 0.1f);
-	ImGui::InputFloat("life", &mCbCreateBuffer->data.life, 0.1f);
+	ImGui::ColorEdit4("color", mEditorData.mColor);
+	ImGui::SliderInt(u8"1メッシュから出るパーティクル数", &mEditorData.mCreateCount, 0, 10);
+	ImGui::InputFloat(u8"パーティクルを出す間隔", &mEditorData.mCreateTime, 0.1f);
+	ImGui::InputFloat(u8"速度", &mEditorData.speed, 0.1f);
+	ImGui::InputFloat("life", &mEditorData.life, 0.1f);
+	ImGui::Checkbox("test", &mTestFlag);
+	ImVec2 size = ImVec2(75, 75);
+	for (UINT i = 0; i < static_cast<UINT>(mParticleSRV.size()); i++)
+	{
+		if (ImGui::ImageButton(mParticleSRV[i].Get(), size))
+		{
+			mEditorData.textureType = i;
+		}
+		if (i % 4 < 3 && i < static_cast<UINT>(mParticleSRV.size() - 1))ImGui::SameLine();
+	}
+	ImGui::Text(u8"今のテクスチャ");
+	size = ImVec2(150, 150);
+	ImGui::Image(mParticleSRV[mEditorData.textureType].Get(), size);
+
 	ImGui::Text("%d", mRenderCount);
+
 	if (ImGui::Button("save"))
 	{
 		Save();
@@ -375,22 +420,24 @@ void RunParticles::Update(ID3D11DeviceContext* context, float elapsd_time)
 	context->CSSetUnorderedAccessViews(4, 1, mParticleIndexUAV[1 - mIndexNum].GetAddressOf(), nullptr);
 	context->CSSetUnorderedAccessViews(5, 1, mDeleteIndexUAV.GetAddressOf(), nullptr);
 	/****************パーティクル生成*****************/
-	if (mPlayer.lock()->GetPlayFlag())mTimer += elapsd_time;
+	if (mPlayer.lock()->GetPlayFlag()|| mTestFlag)mTimer += elapsd_time;
 	mIndexNum++;
 	if (mIndexNum >= 2)mIndexNum = 0;
 
-	if (mTimer >= mCreateTime)
+	if (mTimer >= mEditorData.mCreateTime)
 	{
 		context->CSSetShader(mCreateCSShader.Get(), nullptr, 0);
 		const ModelResource* resouce = mPlayer.lock()->GetCharacter()->GetModel()->GetModelResource();
 		const std::vector<Model::Node>& nodes = mPlayer.lock()->GetCharacter()->GetModel()->GetNodes();
 		mCbCreateBuffer->data.color = 0;
-		mCbCreateBuffer->data.color |= (static_cast<UINT>(mColor[0] * 255) & 0x00FFFFFF) << 24;
-		mCbCreateBuffer->data.color |= (static_cast<UINT>(mColor[1] * 255) & 0x00FFFFFF) << 16;
-		mCbCreateBuffer->data.color |= (static_cast<UINT>(mColor[2] * 255) & 0x00FFFFFF) << 8;
-		mCbCreateBuffer->data.color |= (static_cast<UINT>(mColor[3] * 255) & 0x00FFFFFF) << 0;
-		if (mCreateCount > 0)
+		mCbCreateBuffer->data.color |= (static_cast<UINT>(mEditorData.mColor[0] * 255) & 0x00FFFFFF) << 24;
+		mCbCreateBuffer->data.color |= (static_cast<UINT>(mEditorData.mColor[1] * 255) & 0x00FFFFFF) << 16;
+		mCbCreateBuffer->data.color |= (static_cast<UINT>(mEditorData.mColor[2] * 255) & 0x00FFFFFF) << 8;
+		mCbCreateBuffer->data.color |= (static_cast<UINT>(mEditorData.mColor[3] * 255) & 0x00FFFFFF) << 0;
+		if (mEditorData.mCreateCount > 0)
 		{
+			mCbCreateBuffer->data.speed = mEditorData.speed;
+			mCbCreateBuffer->data.life = mEditorData.life;
 
 			for (int i = 0; i < mMeshs.size(); i++)
 			{
@@ -416,7 +463,7 @@ void RunParticles::Update(ID3D11DeviceContext* context, float elapsd_time)
 				mCbBoneBuffer->Activate(context, 0, false, false, false, true);
 				ID3D11ShaderResourceView* srv[2] = { mesh.mVertexBuffer.Get(),mesh.mIndexBuffer.Get() };
 				context->CSSetShaderResources(0, 2, srv);
-				context->Dispatch(mesh.mMwshSize * mCreateCount, 1, 1);
+				context->Dispatch(mesh.mMwshSize * mEditorData.mCreateCount, 1, 1);
 				mCbCreateBuffer->DeActivate(context);
 				mCbBoneBuffer->DeActivate(context);
 				srv[0] = nullptr;
@@ -473,6 +520,7 @@ void RunParticles::Render(ID3D11DeviceContext* context)
 
 #elif (TYPE==1)
 	mShader->Activate(context);
+	context->PSSetShaderResources(0, 1, mParticleSRV[mEditorData.textureType].GetAddressOf());
 
 	u_int stride = sizeof(RenderParticle);
 	u_int offset = 0;
@@ -484,6 +532,9 @@ void RunParticles::Render(ID3D11DeviceContext* context)
 
 	context->DrawIndexed(mRenderCount, 0,0);
 	mShader->Deactivate(context);
+	ID3D11ShaderResourceView* srv = nullptr;
+	context->PSSetShaderResources(0, 1, &srv);
+
 	offset = 0;
 	vertex = nullptr;
 	index = nullptr;
@@ -538,11 +589,11 @@ void RunParticles::Load()
 	FILE* fp;
 	if (fopen_s(&fp, "Data/file/run_particle.bin", "rb") == 0)
 	{
-		fread(&mColor[0], sizeof(float), 4, fp);
-		fread(&mCbCreateBuffer->data.life, sizeof(float), 1, fp);
-		fread(&mCbCreateBuffer->data.speed, sizeof(float), 1, fp);
-		fread(&mCreateTime, sizeof(float), 1, fp);
+		fseek(fp, 0, SEEK_END);
+		long size = ftell(fp);
+		fseek(fp, 0, SEEK_SET);
 
+		fread(&mEditorData, size, 1, fp);
 		fclose(fp);
 	}
 }
@@ -551,9 +602,6 @@ void RunParticles::Save()
 {
 	FILE* fp;
 	fopen_s(&fp, "Data/file/run_particle.bin", "wb");
-	fwrite(&mColor[0], sizeof(float), 4, fp);
-	fwrite(&mCbCreateBuffer->data.life, sizeof(float), 1, fp);
-	fwrite(&mCbCreateBuffer->data.speed, sizeof(float), 1, fp);
-	fwrite(&mCreateTime, sizeof(float), 1, fp);
+	fwrite(&mEditorData, sizeof(EditorData), 1, fp);
 	fclose(fp);
 }

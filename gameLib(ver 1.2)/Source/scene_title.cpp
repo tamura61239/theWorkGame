@@ -107,7 +107,8 @@ void SceneTitle::Editor()
 	ImGui::Begin("scene title");
 	ImGui::Checkbox("stop", &stop);
 	ImGui::SliderFloat("time", &elapsedTimemMagnification, 0, 1);
-
+	static int editorNum = 1;
+#ifdef _DEBUG
 	if (ImGui::CollapsingHeader("screen shot"))
 	{
 		ImGui::InputInt("No", &textureNo, 1);
@@ -117,7 +118,7 @@ void SceneTitle::Editor()
 		}
 
 	}
-	static int editorNum = 1;
+#endif
 	ImGui::RadioButton("LIGHT", &editorNum, 0);
 	ImGui::RadioButton("UI", &editorNum, 1);
 	ImGui::RadioButton("GPU PARTICLE", &editorNum, 2);
@@ -219,7 +220,7 @@ void SceneTitle::Render(ID3D11DeviceContext* context, float elapsed_time)
     blend[1]->activate(context);
 	pGpuParticleManager->Render(context, view, projection);
 	
-	if(!screenShot)UIManager::GetInctance()->Render(context);
+	if(!screenShot&&pGpuParticleManager->GetTitleTextureParticle()->GetTextuteFlag())UIManager::GetInctance()->Render(context);
 	blend[1]->deactivate(context);
 
 	frameBuffer[0]->Deactivate(context);

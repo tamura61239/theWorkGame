@@ -5,6 +5,8 @@
 #include"drow_shader.h"
 #include"constant_buffer.h"
 #include<memory>
+#include<vector>
+
 
 class SelectSceneParticle
 {
@@ -14,12 +16,14 @@ public:
 	void Update(float elapsdTime, ID3D11DeviceContext* context);
 	void Render(ID3D11DeviceContext* context);
 private:
+	void Save();
+	void Load();
 	//バッファ
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mRenderBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mParticleCountBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mParticleIndexBuffer[2];
 	//srv
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>mSRV;
+	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>>mParticleSRV;
 	//uav
 	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mParticleUAV;
 	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mParticleCountUAV;
@@ -66,7 +70,7 @@ private:
 		VECTOR3F angleMovement;
 		float speed;
 		VECTOR4F color;
-		float startIndex;
+		float sinLeng;
 		VECTOR3F eye;
 		float range;
 		VECTOR3F scope;
@@ -78,6 +82,19 @@ private:
 		VECTOR3F endPosition;
 		float dummy2;
 	};
+	struct EditorData
+	{
+		VECTOR3F angleMovement;
+		float speed;
+		VECTOR4F color;
+		float range;
+		VECTOR3F scope;
+		VECTOR3F defVelocity;
+		VECTOR3F endPosition;
+		UINT textureType;
+		float sinLeng;
+	};
+	EditorData mEditorData;
 	std::unique_ptr<ConstantBuffer<CbCreate>> mCbCreate;
 	std::unique_ptr<ConstantBuffer<CbUpdate>> mCbUpdate;
 	float newIndex;

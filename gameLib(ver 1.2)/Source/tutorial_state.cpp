@@ -172,7 +172,7 @@ float TutorialState::CheckEndExplanation(float elapsdTime)
 	{
 		mCount = mCount - 1 == -1 ? 1 : 0;
 	}
-	if (pKeyBoad.RisingState(KeyLabel::SPACE))
+	if (pKeyBoad.RisingState(KeyLabel::SPACE)&& mCount==1)
 	{
 		mTextAlpha = 1;
 		mTimer = 0;

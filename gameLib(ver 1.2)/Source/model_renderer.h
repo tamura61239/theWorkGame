@@ -36,8 +36,8 @@ private:
 	struct CbMesh
 	{
 		FLOAT4X4	boneTransforms[MaxBones];
+		FLOAT4X4	beforeBoneTransforms[MaxBones];
 	};
-
 	struct CbSubset
 	{
 		VECTOR4F	materialColor;

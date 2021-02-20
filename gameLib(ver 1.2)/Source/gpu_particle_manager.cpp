@@ -59,6 +59,22 @@ void GpuParticleManager::CreateBuffer(ID3D11Device* device)
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 	}
+	{
+		D3D11_SAMPLER_DESC desc;
+		ZeroMemory(&desc, sizeof(desc));
+		desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+		desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+		desc.MinLOD = -FLT_MAX;
+		desc.MaxLOD = FLT_MAX;
+		desc.MaxAnisotropy = 16;
+		memcpy(desc.BorderColor, &VECTOR4F(1.0f, 1.0f, 1.0f, 1.0f), sizeof(VECTOR4F));
+		hr = device->CreateSamplerState(&desc, mSamplerState.GetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+	}
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
 	{
 		{"POSITION",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
@@ -223,9 +239,12 @@ void GpuParticleManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& vi
 {
 	context->OMSetDepthStencilState(mDepth.Get(), 0);
 	context->RSSetState(mRasterizer.Get());
-	context->VSSetConstantBuffers(0, 1, mCbScene.GetAddressOf());
-	context->GSSetConstantBuffers(0, 1, mCbScene.GetAddressOf());
-	context->PSSetConstantBuffers(0, 1, mCbScene.GetAddressOf());
+	ID3D11Buffer* buffer = mCbScene.Get();
+	ID3D11SamplerState* sampler = mSamplerState.Get();
+	context->VSSetConstantBuffers(0, 1, &buffer);
+	context->GSSetConstantBuffers(0, 1, &buffer);
+	context->PSSetConstantBuffers(0, 1, &buffer);
+	context->PSSetSamplers(0, 1, &sampler);
 
 	CbScene cbScene;
 	cbScene.view = view;
@@ -248,15 +267,25 @@ void GpuParticleManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& vi
 		mFireworksParticle->Render(context);
 		break;
 	}
+	context->OMSetDepthStencilState(nullptr, 0);
+	context->RSSetState(nullptr);
+	buffer = nullptr;
+	context->VSSetConstantBuffers(0, 1, &buffer);
+	context->GSSetConstantBuffers(0, 1, &buffer);
+	context->PSSetConstantBuffers(0, 1, &buffer);
+	sampler = nullptr;
+	context->PSSetSamplers(0, 1, &sampler);
+
 }
 
 void GpuParticleManager::VelocityRender(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection)
 {
 	context->OMSetDepthStencilState(mDepth.Get(), 0);
 	context->RSSetState(mRasterizer.Get());
-	context->VSSetConstantBuffers(0, 1, mCbScene.GetAddressOf());
-	context->GSSetConstantBuffers(0, 1, mCbScene.GetAddressOf());
-	context->PSSetConstantBuffers(0, 1, mCbScene.GetAddressOf());
+	ID3D11Buffer* buffer = mCbScene.Get();
+	context->VSSetConstantBuffers(0, 1, &buffer);
+	context->GSSetConstantBuffers(0, 1, &buffer);
+	context->PSSetConstantBuffers(0, 1, &buffer);
 
 	CbScene cbScene;
 	cbScene.view = view;
@@ -279,6 +308,12 @@ void GpuParticleManager::VelocityRender(ID3D11DeviceContext* context, const FLOA
 #endif
 		break;
 	}
+	context->OMSetDepthStencilState(nullptr, 0);
+	context->RSSetState(nullptr);
+	buffer = nullptr;
+	context->VSSetConstantBuffers(0, 1, &buffer);
+	context->GSSetConstantBuffers(0, 1, &buffer);
+	context->PSSetConstantBuffers(0, 1, &buffer);
 
 }
 

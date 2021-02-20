@@ -141,23 +141,32 @@ StageSceneParticle::StageSceneParticle(ID3D11Device* device) :mMaxCount(100000),
 
 	mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/particle_render_vs.cso", "", "Data/shader/particle_render_point_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc)));
 	//テクスチャの読み込み
-	hr = LoadTextureFromFile(device, L"Data/image/○.png", mTextureSRV.GetAddressOf());
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	//SamplerStateの生成
+	wchar_t* names[] =
 	{
-		D3D11_SAMPLER_DESC desc;
-		ZeroMemory(&desc, sizeof(desc));
-		desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-		desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-		desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-		desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-		desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-		desc.MinLOD = -FLT_MAX;
-		desc.MaxLOD = FLT_MAX;
-		desc.MaxAnisotropy = 16;
-		memcpy(desc.BorderColor, &VECTOR4F(1.0f, 1.0f, 1.0f, 1.0f), sizeof(VECTOR4F));
-		hr = device->CreateSamplerState(&desc, mSamplerState.GetAddressOf());
+		L"Data/image/○.png",
+		L"",
+		L"Data/image/無題1.png",
+		L"Data/image/無題2.png",
+		L"Data/image/無題3.png",
+		L"Data/image/無題4.png",
+		L"Data/image/無題5.png",
+		L"Data/image/無題6.png",
+		L"Data/image/無題7.png",
+		L"Data/image/無題8.png",
+	};
+	for (auto& name : names)
+	{
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>srv;
+		if (wcscmp(name, L"") == 0)
+		{
+			hr = MakeDummyTexture(device, srv.GetAddressOf());
+		}
+		else
+		{
+			hr = LoadTextureFromFile(device, name, srv.GetAddressOf());
+		}
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		mParticleSRV.push_back(srv);
 	}
 
 	Load();
@@ -193,6 +202,20 @@ void StageSceneParticle::ImGuiUpdate()
 	ImGui::RadioButton("cube", &mEditorData.shaderType, 0); ImGui::SameLine();
 	ImGui::RadioButton("texe", &mEditorData.shaderType, 1); ImGui::SameLine();
 	ImGui::RadioButton("point", &mEditorData.shaderType, 2);
+
+	ImVec2 size = ImVec2(75, 75);
+	for (UINT i = 0; i < static_cast<UINT>(mParticleSRV.size()); i++)
+	{
+		if (ImGui::ImageButton(mParticleSRV[i].Get(), size))
+		{
+			mEditorData.textureType = i;
+		}
+		if (i % 4 < 3 && i < static_cast<UINT>(mParticleSRV.size() - 1))ImGui::SameLine();
+	}
+	ImGui::Text(u8"今のテクスチャ");
+	size = ImVec2(150, 150);
+	ImGui::Image(mParticleSRV[mEditorData.textureType].Get(), size);
+
 	if (ImGui::Button("save"))
 	{
 		Save();
@@ -322,8 +345,7 @@ void StageSceneParticle::Render(ID3D11DeviceContext* context)
 {
 	mShader[mEditorData.shaderType]->Activate(context);
 
-	context->PSSetShaderResources(0, 1, mTextureSRV.GetAddressOf());
-	context->PSSetSamplers(0, 1, mSamplerState.GetAddressOf());
+	context->PSSetShaderResources(0, 1, mParticleSRV[mEditorData.textureType].GetAddressOf());
 	u_int stride = sizeof(RenderParticle);
 	u_int offset = 0;
 	ID3D11Buffer* vertex = mRenderBuffer.Get();
@@ -336,9 +358,7 @@ void StageSceneParticle::Render(ID3D11DeviceContext* context)
 	mShader[mEditorData.shaderType]->Deactivate(context);
 
 	ID3D11ShaderResourceView* srv = nullptr;
-	ID3D11SamplerState* sample = nullptr;
 	context->PSSetShaderResources(0, 1, &srv);
-	context->PSSetSamplers(0, 1, &sample);
 	offset = 0;
 	vertex = nullptr;
 	index = nullptr;
@@ -351,8 +371,7 @@ void StageSceneParticle::Render(ID3D11DeviceContext* context, DrowShader* shader
 {
 	shader->Activate(context);
 
-	context->PSSetShaderResources(0, 1, mTextureSRV.GetAddressOf());
-	context->PSSetSamplers(0, 1, mSamplerState.GetAddressOf());
+	context->PSSetShaderResources(0, 1, mParticleSRV[mEditorData.textureType].GetAddressOf());
 	u_int stride = sizeof(RenderParticle);
 	u_int offset = 0;
 	ID3D11Buffer* vertex = mRenderBuffer.Get();
@@ -365,9 +384,7 @@ void StageSceneParticle::Render(ID3D11DeviceContext* context, DrowShader* shader
 	shader->Deactivate(context);
 
 	ID3D11ShaderResourceView* srv = nullptr;
-	ID3D11SamplerState* sample = nullptr;
 	context->PSSetShaderResources(0, 1, &srv);
-	context->PSSetSamplers(0, 1, &sample);
 	offset = 0;
 	vertex = nullptr;
 	index = nullptr;

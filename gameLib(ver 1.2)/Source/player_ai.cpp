@@ -105,6 +105,7 @@ void PlayerAI::Update(float elapsd_time, StageManager* manager, StageOperation* 
 		pCameraManager->GetCameraOperation()->GetPlayCamera()->SetPlayerPosition(mCharacter->GetPosition());
 		mCharacter->AnimUpdate(0);
 		mCharacter->SetGorlFlag(false);
+		mCharacter->SetGroundFlag(false);
 		HitAreaRender::GetInctance()->SetObjData(mCharacter->GetPosition() + VECTOR3F(0, 3.3f, 0) * mCharacter->GetScale(), VECTOR3F(1.15f, 3.3f, 1.3f) * mCharacter->GetScale());
 		mCharacter->SetMoveState(PlayerCharacter::MOVESTATE::LANDING);
 		return;

@@ -4,6 +4,8 @@
 #include<wrl.h>
 #include"drow_shader.h"
 #include<memory>
+#include<vector>
+
 
 class TitleParticle
 {
@@ -14,16 +16,21 @@ public:
 	void Render(ID3D11DeviceContext* context);
 	void SetChangeFlag(const bool changeFlag) { mSceneChange = changeFlag; }
 private:
+	//バッファ
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbStartBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbStart2Buffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mRenderBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mNumberBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mParticleBuffer;
+	//srv
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>mSRV;
+	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>>mParticleSRV;
+	//uav
 	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mUAV;
 	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mRenderUAV;
 	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mNumberUAV;
+	//シェーダー
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCreateShader;
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSShader;
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mSceneChangeCSShader;
@@ -84,9 +91,26 @@ private:
 		float elapsdTime;
 		VECTOR3F angleMovement;
 	};
-	CbStart mCbStart;
-	CbStart2 mCbStart2;
-	Cb mCb;
+	struct EditorData
+	{
+		VECTOR3F startPosition;
+		float leng;
+		VECTOR3F sphereRatio;
+		VECTOR4F color;
+		float life;
+		float moveLen;
+		float randSpeed;
+		float defSpeed;
+		float randMoveLength;
+		float defMoveLength;
+		float randMoveAngle;
+		float randScale;
+		VECTOR3F defVelocity;
+		VECTOR3F angleMovement;
+		UINT textureType;
+	};
+	EditorData mEditorData;
+	float mStartIdex;
 	float particleSize;
 	int mMaxParticle;
 	float mNewIndex;

@@ -20,9 +20,12 @@ public:
 	void SetFullDrowFlag(const bool flag) { mFullCreateFlag = flag; }
 	void Update(float elapsdTime, ID3D11DeviceContext*context);
 	void Render(ID3D11DeviceContext* context);
+	const bool GetTextuteFlag() {
+		return mTextureFlag;
+	}
 private:
-	void TitleSceneUpdate(float elapsdTime, ID3D11DeviceContext* context);
 	void SceneChangeUpdate(float elapsdTime, ID3D11DeviceContext* context);
+	void Create1(float elapsdTime, ID3D11DeviceContext* context);
 	//パーティクルにするTextureのデータ
 	struct TextureData
 	{
@@ -38,7 +41,7 @@ private:
 		TextureData data;
 	};
 	std::vector<Texture>mTextures;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>mParticleSRV;
+	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>>mParticleSRV;
 	//パーティクルデータ
 	struct Particle
 	{
@@ -63,7 +66,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mRenderUAV;
 	//シェーダー
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSShader;
-	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mSceneChangeCreateCSShader;
+	std::vector<Microsoft::WRL::ComPtr<ID3D11ComputeShader>>mCreateCSShader;
 
 	std::unique_ptr<DrowShader>mShader;
 	//定数
@@ -99,7 +102,7 @@ private:
 		float scale;
 		float speed;
 		float screenSplit;
-
+		UINT textureType;
 	};
 	std::vector<Board>boards;
 	EditorData mEditorData;
@@ -107,8 +110,14 @@ private:
 	bool mParticleFlag;
 	bool mTestFlag;
 	int mMaxParticle;
+	float mMoveParticle;
 	float mSceneParticleIndex;
 	int mChangeMaxParticle;
+	float mTimer;
+	UINT mMaxTexture;
+	float mBeforeTime;
+	float mBeforeParsent;
+	bool mTextureFlag;
 	std::unique_ptr<BlendState>blend;
 	void Load();
 	void Save();

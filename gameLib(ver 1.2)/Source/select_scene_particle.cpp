@@ -1,8 +1,8 @@
 #include "select_scene_particle.h"
 #include"misc.h"
-#include<vector>
 #include"shader.h"
 #include"camera_manager.h"
+#include"texture.h"
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
@@ -12,7 +12,7 @@ SelectSceneParticle::SelectSceneParticle(ID3D11Device* device):mIndexCount(0), m
 {
 	Microsoft::WRL::ComPtr<ID3D11Buffer>particleBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>deleteIndexBuffer;
-
+	memset(&mEditorData, 0, sizeof(mEditorData));
 	HRESULT hr;
 	//{
 	//	D3D11_BUFFER_DESC desc;
@@ -206,6 +206,33 @@ SelectSceneParticle::SelectSceneParticle(ID3D11Device* device):mIndexCount(0), m
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	hr = CreateCSFromCso(device, "Data/shader/particle_count_cs.cso", mCSEndShader.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	wchar_t* names[] =
+	{
+		L"Data/image/○.png",
+		L"",
+		L"Data/image/無題1.png",
+		L"Data/image/無題2.png",
+		L"Data/image/無題3.png",
+		L"Data/image/無題4.png",
+		L"Data/image/無題5.png",
+		L"Data/image/無題6.png",
+		L"Data/image/無題7.png",
+		L"Data/image/無題8.png",
+	};
+	for (auto& name : names)
+	{
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>srv;
+		if (wcscmp(name, L"") == 0)
+		{
+			hr = MakeDummyTexture(device, srv.GetAddressOf());
+		}
+		else
+		{
+			hr = LoadTextureFromFile(device, name, srv.GetAddressOf());
+		}
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		mParticleSRV.push_back(srv);
+	}
 
 
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
@@ -216,30 +243,49 @@ SelectSceneParticle::SelectSceneParticle(ID3D11Device* device):mIndexCount(0), m
 		{"VELOCITY",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 		{"SCALE",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 	};
-	mShader = std::make_unique<DrowShader>(device, "Data/shader/particle_render_vs.cso", "Data/shader/particle_render_cube_mesh_gs.cso", "Data/shader/particle_render_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
+	mShader = std::make_unique<DrowShader>(device, "Data/shader/particle_render_vs.cso", "Data/shader/particle_render_billboard_gs.cso", "Data/shader/particle_render_text_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
 
-	mCbCreate->data.angleMovement = VECTOR3F(3.14f / 2.f, 3.14f, 0);
-	mCbCreate->data.color = VECTOR4F(0, 1, 0.5f, 1);
-	mCbCreate->data.range = 200;
-	mCbCreate->data.scope = VECTOR3F(1, 1, 0.3f);
-	mCbCreate->data.speed = 200;
-	mCbCreate->data.startIndex = 0;
-	mCbUpdate->data.endPosition = VECTOR3F(0, 0, 1000);
-	mCbUpdate->data.defVelocity = VECTOR3F(0, 0, 1);
+	mEditorData.angleMovement = VECTOR3F(3.14f / 2.f, 3.14f, 0);
+	mEditorData.color = VECTOR4F(0, 1, 0.5f, 1);
+	mEditorData.range = 200;
+	mEditorData.scope = VECTOR3F(1, 1, 0.3f);
+	mEditorData.speed = 200;
+	mEditorData.endPosition = VECTOR3F(0, 0, 1000);
+	mEditorData.defVelocity = VECTOR3F(0, 0, 1);
+	mEditorData.sinLeng = 10;
+	Load();
 }
 
 void SelectSceneParticle::ImGuiUpdate()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("select scene particle");
-	ImGui::InputFloat("speed", &mCbCreate->data.speed, 0.5f);
-	ImGui::InputFloat("range", &mCbCreate->data.range, 1);
-	float* color[4] = { &mCbCreate->data.color.x,&mCbCreate->data.color.y,&mCbCreate->data.color.z,&mCbCreate->data.color.w };
+	ImGui::InputFloat("speed", &mEditorData.speed, 0.5f);
+	ImGui::InputFloat("range", &mEditorData.range, 1);
+	float* color[4] = { &mEditorData.color.x,&mEditorData.color.y,&mEditorData.color.z,&mEditorData.color.w };
 	ImGui::ColorEdit4("def color", *color);
-	float* scope[3] = { &mCbCreate->data.scope.x,&mCbCreate->data.scope.y,&mCbCreate->data.scope.z };
+	float* scope[3] = { &mEditorData.scope.x,&mEditorData.scope.y,&mEditorData.scope.z };
 	ImGui::SliderFloat3("scope", *scope, 0, 1);
-	float* angleMovement[3] = { &mCbCreate->data.angleMovement.x,&mCbCreate->data.angleMovement.y ,&mCbCreate->data.angleMovement.z };
+	float* angleMovement[3] = { &mEditorData.angleMovement.x,&mEditorData.angleMovement.y ,&mEditorData.angleMovement.z };
 	ImGui::SliderFloat3("def angleMovement", *angleMovement, -3.14f, 3.14f);
+	ImGui::InputFloat("sinLeng", &mEditorData.sinLeng, 0.1f);
+	ImVec2 size = ImVec2(75, 75);
+	for (UINT i = 0; i < static_cast<UINT>(mParticleSRV.size()); i++)
+	{
+		if (ImGui::ImageButton(mParticleSRV[i].Get(), size))
+		{
+			mEditorData.textureType = i;
+		}
+		if (i % 4 < 3 && i < static_cast<UINT>(mParticleSRV.size() - 1))ImGui::SameLine();
+	}
+	ImGui::Text(u8"今のテクスチャ");
+	size = ImVec2(150, 150);
+	ImGui::Image(mParticleSRV[mEditorData.textureType].Get(), size);
+
+	if (ImGui::Button("save"))
+	{
+		Save();
+	}
 	ImGui::Text("%f", newIndex);
 	ImGui::End();
 #endif
@@ -296,6 +342,14 @@ void SelectSceneParticle::Update(float elapsdTime, ID3D11DeviceContext* context)
 		mDeleteIndexUAV.Get()
 	};
 	context->CSSetUnorderedAccessViews(0, 6, uavs, nullptr);
+	mCbCreate->data.angleMovement = mEditorData.angleMovement;
+	mCbCreate->data.color = mEditorData.color;
+	mCbCreate->data.range = mEditorData.range;
+	mCbCreate->data.scope = mEditorData.scope;
+	mCbCreate->data.speed = mEditorData.speed;
+	mCbCreate->data.sinLeng = mEditorData.sinLeng;
+	mCbUpdate->data.endPosition = mEditorData.endPosition;
+	mCbUpdate->data.defVelocity = mEditorData.defVelocity;
 
 	mIndexCount++;
 	if (mIndexCount >= 2)mIndexCount = 0;
@@ -342,7 +396,7 @@ void SelectSceneParticle::Render(ID3D11DeviceContext* context)
 {
 
 	mShader->Activate(context);
-
+	context->PSSetShaderResources(0, 1, mParticleSRV[mEditorData.textureType].GetAddressOf());
 	u_int stride = sizeof(RenderParticle);
 	u_int offset = 0;
 	ID3D11Buffer* vertex = mRenderBuffer.Get();
@@ -358,5 +412,33 @@ void SelectSceneParticle::Render(ID3D11DeviceContext* context)
 	index = nullptr;
 	context->IASetVertexBuffers(0, 1, &vertex, &stride, &offset);
 	context->IASetIndexBuffer(index, DXGI_FORMAT_R32_UINT, 0);
+	ID3D11ShaderResourceView* srv = nullptr;
+	context->PSSetShaderResources(0, 1, &srv);
+
+}
+
+void SelectSceneParticle::Save()
+{
+	FILE* fp;
+	fopen_s(&fp, "Data/file/selete_scene_particle_data.bin", "wb");
+	{
+		fwrite(&mEditorData, sizeof(EditorData), 1, fp);
+		fclose(fp);
+	}
+
+}
+
+void SelectSceneParticle::Load()
+{
+	FILE* fp;
+	long size = 0;
+	if (fopen_s(&fp, "Data/file/selete_scene_particle_data.bin", "rb") == 0)
+	{
+		fseek(fp, 0, SEEK_END);
+		size = ftell(fp);
+		fseek(fp, 0, SEEK_SET);
+		fread(&mEditorData, size, 1, fp);
+		fclose(fp);
+	}
 
 }

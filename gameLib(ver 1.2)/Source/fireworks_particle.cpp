@@ -3,14 +3,15 @@
 #include"misc.h"
 #include"shader.h"
 #include"vector_combo.h"
+#include"texture.h"
 
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
 
 FireworksParticle::FireworksParticle(ID3D11Device* device) :mCreateFlag(false), mMaxParticle(350000)
-, mEmitorTimer(0), mMaxEmitorTime(0), mParameterEditFlag(false), mIndex(0), mStartMaxTime(0), mOneRankEmitorCount(0)
-, mDefRanking(0), mNowPlayRanking(0), mState(0), mDefStartState(0), mFireworksCount(0)
+, mEmitorTimer(0), mParameterEditFlag(false), mIndex(0), mDefRanking(0), mNowPlayRanking(0), 
+mState(0), mDefStartState(0), mFireworksCount(0)
 {
 	HRESULT hr;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>buffer;
@@ -92,8 +93,36 @@ FireworksParticle::FireworksParticle(ID3D11Device* device) :mCreateFlag(false), 
 #if 0
 	mShader = std::make_unique<DrowShader>(device, "Data/shader/particle_render_vs.cso", "Data/shader/particle_render_billboard_gs.cso", "Data/shader/particle_render_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
 #else
-	mShader = std::make_unique<DrowShader>(device, "Data/shader/particle_motion_data_render_vs.cso", "Data/shader/particle_motiom_blur_gs.cso", "Data/shader/particle_motion_blur_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
+	mShader = std::make_unique<DrowShader>(device, "Data/shader/particle_motion_data_render_vs.cso", "Data/shader/particle_motiom_blur_gs.cso", "Data/shader/particle_motion_blur_text_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
 #endif
+	wchar_t* names[] =
+	{
+		L"Data/image/○.png",
+		L"",
+		L"Data/image/無題1.png",
+		L"Data/image/無題2.png",
+		L"Data/image/無題3.png",
+		L"Data/image/無題4.png",
+		L"Data/image/無題5.png",
+		L"Data/image/無題6.png",
+		L"Data/image/無題7.png",
+		L"Data/image/無題8.png",
+	};
+	for (auto& name : names)
+	{
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>srv;
+		if (wcscmp(name, L"") == 0)
+		{
+			hr = MakeDummyTexture(device, srv.GetAddressOf());
+		}
+		else
+		{
+			hr = LoadTextureFromFile(device, name, srv.GetAddressOf());
+		}
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		mParticleSRV.push_back(srv);
+	}
+
 	Load();
 }
 /**********************エディタ関数***************************/
@@ -160,9 +189,9 @@ void FireworksParticle::ImGuiUpdate()
 			std::string name = "rank:" + std::to_string(i + 1);
 			ImGui::RadioButton(name.c_str(), &mDefRanking, i);
 		}
-		ImGui::InputFloat("start time line", &mStartMaxTime);
-		ImGui::InputInt("one rank emitor count", &mOneRankEmitorCount, 1);
-		int size = 5 * mOneRankEmitorCount + mOneRankEmitorCount / 2;
+		ImGui::InputFloat("start time line", &mEditorData.mStartMaxTime);
+		ImGui::InputInt("one rank emitor count", &mEditorData.mOneRankEmitorCount, 1);
+		int size = 5 * mEditorData.mOneRankEmitorCount + mEditorData.mOneRankEmitorCount / 2;
 		if (size > static_cast<int>(mStartEmitorData.size()))
 		{
 			int s = size - mStartEmitorData.size();
@@ -187,7 +216,7 @@ void FireworksParticle::ImGuiUpdate()
 		{
 			std::string emitorName = "start emitor" + std::to_string(i);
 			i++;
-			ImGui::SliderFloat((emitorName + "time line").c_str(), &emitor.emitorStartTime, 0, mStartMaxTime);
+			ImGui::SliderFloat((emitorName + "time line").c_str(), &emitor.emitorStartTime, 0, mEditorData.mStartMaxTime);
 
 			if (mParameterEditFlag)
 			{
@@ -217,7 +246,7 @@ void FireworksParticle::ImGuiUpdate()
 
 	if (ImGui::CollapsingHeader("loop emitor data"))
 	{
-		ImGui::InputFloat("max time line", &mMaxEmitorTime);
+		ImGui::InputFloat("max time line", &mEditorData.mMaxEmitorTime);
 		if (ImGui::Button("New Emitor"))
 		{
 			mEmitorData.emplace_back();
@@ -229,7 +258,7 @@ void FireworksParticle::ImGuiUpdate()
 		{
 			std::string emitorName = "emitor" + std::to_string(i);
 			i++;
-			ImGui::SliderFloat((emitorName + "time line").c_str(), &emitor.emitorStartTime, 0, mMaxEmitorTime);
+			ImGui::SliderFloat((emitorName + "time line").c_str(), &emitor.emitorStartTime, 0, mEditorData.mMaxEmitorTime);
 			//パラメーターフラグがtrueの時
 			if (mParameterEditFlag)
 			{
@@ -287,6 +316,19 @@ void FireworksParticle::ImGuiUpdate()
 			}
 		}
 	}
+	ImVec2 size = ImVec2(75, 75);
+	for (UINT i = 0; i < static_cast<UINT>(mParticleSRV.size()); i++)
+	{
+		if (ImGui::ImageButton(mParticleSRV[i].Get(), size))
+		{
+			mEditorData.textureType = i;
+		}
+		if (i % 4 < 3 && i < static_cast<UINT>(mParticleSRV.size() - 1))ImGui::SameLine();
+	}
+	ImGui::Text(u8"今のテクスチャ");
+	size = ImVec2(150, 150);
+	ImGui::Image(mParticleSRV[mEditorData.textureType].Get(), size);
+
 	ImGui::End();
 #endif
 }
@@ -384,6 +426,7 @@ void FireworksParticle::Update(float elapsdTime, ID3D11DeviceContext* context)
 void FireworksParticle::Render(ID3D11DeviceContext* context)
 {
 	mShader->Activate(context);
+	context->PSSetShaderResources(0, 1, mParticleSRV[mEditorData.textureType].GetAddressOf());
 
 	u_int stride = sizeof(RenderParticle);
 	u_int offset = 0;
@@ -393,11 +436,14 @@ void FireworksParticle::Render(ID3D11DeviceContext* context)
 
 	context->Draw(mMaxParticle, 0);
 	mShader->Deactivate(context);
+	ID3D11ShaderResourceView* srv = nullptr;
+	context->PSSetShaderResources(0, 1, &srv);
 
 }
 void FireworksParticle::Render(ID3D11DeviceContext* context, DrowShader* shader)
 {
 	shader->Activate(context);
+	context->PSSetShaderResources(0, 1, mParticleSRV[mEditorData.textureType].GetAddressOf());
 
 	u_int stride = sizeof(RenderParticle);
 	u_int offset = 0;
@@ -407,6 +453,8 @@ void FireworksParticle::Render(ID3D11DeviceContext* context, DrowShader* shader)
 
 	context->Draw(mMaxParticle, 0);
 	shader->Deactivate(context);
+	ID3D11ShaderResourceView* srv = nullptr;
+	context->PSSetShaderResources(0, 1, &srv);
 
 }
 /*****************************ファイルロード***************************/
@@ -415,28 +463,41 @@ void FireworksParticle::Load()
 	FILE* fp;
 	if (fopen_s(&fp, "Data/file/fireworks_particle.bin", "rb") == 0)
 	{
+		long size = 0;
+		fseek(fp, 0, SEEK_END);
+		size = ftell(fp);
+		fseek(fp, 0, SEEK_SET);
+
 		int fireworksSize = 0, emitorSize = 0, startEditorSize = 0;
 		fread(&fireworksSize, sizeof(int), 1, fp);
+		size -= sizeof(int);
 		fread(&emitorSize, sizeof(int), 1, fp);
+		size -= sizeof(int);
 		fread(&startEditorSize, sizeof(int), 1, fp);
-		fread(&mMaxEmitorTime, sizeof(float), 1, fp);
-		fread(&mStartMaxTime, sizeof(float), 1, fp);
-		fread(&mOneRankEmitorCount, sizeof(int), 1, fp);
+		size -= sizeof(int);
+		//fread(&mEditorData.mMaxEmitorTime, sizeof(float), 1, fp);
+		//fread(&mEditorData.mStartMaxTime, sizeof(float), 1, fp);
+		//fread(&mEditorData.mOneRankEmitorCount, sizeof(float), 1, fp);
 		if (fireworksSize != 0)
 		{
 			mFireworkDatas.resize(fireworksSize);
 			fread(&mFireworkDatas[0], sizeof(FireworksData), fireworksSize, fp);
+			size -= sizeof(FireworksData)* fireworksSize;
 		}
 		if (emitorSize != 0)
 		{
 			mEmitorData.resize(emitorSize);
 			fread(&mEmitorData[0], sizeof(EmitorData), emitorSize, fp);
+			size -= sizeof(EmitorData) * emitorSize;
 		}
 		if (startEditorSize != 0)
 		{
 			mStartEmitorData.resize(startEditorSize);
 			fread(&mStartEmitorData[0], sizeof(EmitorData), startEditorSize, fp);
+			size -= sizeof(EmitorData) * startEditorSize;
+
 		}
+		fread(&mEditorData, size, 1, fp);
 
 		fclose(fp);
 	}
@@ -450,9 +511,6 @@ void FireworksParticle::Save()
 	fwrite(&fireworksSize, sizeof(int), 1, fp);
 	fwrite(&emitorSize, sizeof(int), 1, fp);
 	fwrite(&startEditorSize, sizeof(int), 1, fp);
-	fwrite(&mMaxEmitorTime, sizeof(float), 1, fp);
-	fwrite(&mStartMaxTime, sizeof(float), 1, fp);
-	fwrite(&mOneRankEmitorCount, sizeof(int), 1, fp);
 	if (fireworksSize != 0)
 	{
 		fwrite(&mFireworkDatas[0], sizeof(FireworksData), fireworksSize, fp);
@@ -465,6 +523,8 @@ void FireworksParticle::Save()
 	{
 		fwrite(&mStartEmitorData[0], sizeof(EmitorData), startEditorSize, fp);
 	}
+	fwrite(&mEditorData, sizeof(EditorData), 1, fp);
+
 	fclose(fp);
 
 }
@@ -509,7 +569,7 @@ void FireworksParticle::StartFireworksEmitorUpdate(float elapsdTime, CbCreate* s
 
 
 	}
-	if (mEmitorTimer >= mStartMaxTime)
+	if (mEmitorTimer >= mEditorData.mStartMaxTime)
 	{
 		mState++;
 		mEmitorTimer = 0;
@@ -561,7 +621,7 @@ void FireworksParticle::LoopFireworksEmitorUpdate(float elapsdTime, CbCreate* sm
 		}
 	}
 
-	if (mEmitorTimer >= mMaxEmitorTime)
+	if (mEmitorTimer >= mEditorData.mMaxEmitorTime)
 	{
 		//mEmitors.clear();
 		//mCreateFlag = false;

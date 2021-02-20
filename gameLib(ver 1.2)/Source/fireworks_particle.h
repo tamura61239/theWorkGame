@@ -21,7 +21,7 @@ public:
 		mIndex = 0;
 		mState = 0;
 		mNowPlayRanking = ranking;
-		SetStartList((5 - mNowPlayRanking) * mOneRankEmitorCount+ mOneRankEmitorCount/2);
+		SetStartList((5 - mNowPlayRanking) * mEditorData.mOneRankEmitorCount+ mEditorData.mOneRankEmitorCount/2);
 	}
 	void ClearEmitor()
 	{
@@ -49,6 +49,9 @@ private:
 	//UAV
 	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mRenderUAV;
 	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mParticleUAV;
+	//SRV
+	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>>mParticleSRV;
+
 	struct EmitorData
 	{
 		EmitorData() :position(0, 0, 0), velocity(0, 0, 0), type(0), maxLife(0), speed(0), emitorStartTime(0) {}
@@ -125,13 +128,18 @@ private:
 		float elapsdime;
 		VECTOR3F dummy;
 	};
+	struct EditorData
+	{
+		float mMaxEmitorTime;
+		float mStartMaxTime;
+		int mOneRankEmitorCount;
+		UINT textureType;
+	};
 	/************editorParameter*************/
 	std::vector<EmitorData>mEmitorData;
 	std::vector<EmitorData>mStartEmitorData;
 	std::vector<FireworksData>mFireworkDatas;
-	float mMaxEmitorTime;
-	float mStartMaxTime;
-	int mOneRankEmitorCount;
+	EditorData mEditorData;
 	//ÉZÅ[ÉuÇµÇ»Ç¢ïœêî
 	bool mParameterEditFlag;
 	bool mCreateFlag;

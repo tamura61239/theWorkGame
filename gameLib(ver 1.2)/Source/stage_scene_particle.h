@@ -34,9 +34,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mParticleCountBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mParticleIndexBuffer[2];
 	//SRV
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>mTextureSRV;
-	//
-	Microsoft::WRL::ComPtr<ID3D11SamplerState>mSamplerState;
+	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>>mParticleSRV;
 
 	struct Particle
 	{
@@ -99,6 +97,7 @@ private:
 		VECTOR2F colorRatio;
 		VECTOR4F color2;
 		int shaderType;
+		UINT textureType;
 	};
 	int mIndexCount;
 	float mCreateCount;

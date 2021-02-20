@@ -18,7 +18,7 @@ cbuffer CbStart:register(b0)
 	float3 angleMovement;
 	float speed;
 	float4 color;
-	float startIndex;
+    float sinLeng;
 	float3 eye;
 	float range;
 	float3 scope;
