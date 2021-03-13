@@ -5,6 +5,7 @@
 #include"drow_shader.h"
 #include<memory>
 #include<string>
+#include"constant_buffer.h"
 
 class RenderEffects
 {
@@ -18,11 +19,6 @@ public:
 private:
 	void Load(std::string fileName);
 	void Save(std::string fileName);
-	std::unique_ptr<DrowShader>mShader;
-	Microsoft::WRL::ComPtr<ID3D11RasterizerState>mRasterizerState;
-	Microsoft::WRL::ComPtr<ID3D11SamplerState>mSamplerState[2];
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilState>mDepthStencilState;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbBuffer;
 	struct SaveData
 	{
 		VECTOR3F shadowColor = VECTOR3F(0.65f, 0.65f, 0.65f);
@@ -35,9 +31,13 @@ private:
 	{
 		FLOAT4X4 inverseViewProjection;
 		FLOAT4X4 lightViewProjection;
-		SaveData data;
+		SaveData saveData;
 	};
+	std::unique_ptr<DrowShader>mShader;
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState>mRasterizerState;
+	Microsoft::WRL::ComPtr<ID3D11SamplerState>mSamplerState[2];
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilState>mDepthStencilState;
+	std::unique_ptr<ConstantBuffer<CbScene>>mCbBuffer;
 	std::string mFileName = "";
-	CbScene mCbScene;
 
 };

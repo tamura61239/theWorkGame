@@ -439,14 +439,14 @@ void RunParticles::Update(ID3D11DeviceContext* context, float elapsd_time)
 			mCbCreateBuffer->data.speed = mEditorData.speed;
 			mCbCreateBuffer->data.life = mEditorData.life;
 
-			for (int i = 0; i < mMeshs.size(); i++)
+			for (int i = 0; i < static_cast<int>(mMeshs.size()); i++)
 			{
 				const auto& mesh = mMeshs[i];
 				const auto& boneData = resouce->GetMeshes()[i];
 				if (boneData.nodeIndices.size() > 0)
 				{
 					//ボーンのワールド行列の計算
-					for (int j = 0; j < boneData.nodeIndices.size(); j++)
+					for (int j = 0; j < static_cast<int>(boneData.nodeIndices.size()); j++)
 					{
 						DirectX::XMMATRIX inverseTransform = DirectX::XMLoadFloat4x4(boneData.inverseTransforms[j]);
 						DirectX::XMMATRIX worldTransform = DirectX::XMLoadFloat4x4(&nodes[boneData.nodeIndices[j]].worldTransform);

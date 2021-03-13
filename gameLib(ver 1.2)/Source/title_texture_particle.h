@@ -110,9 +110,9 @@ private:
 	bool mParticleFlag;
 	bool mTestFlag;
 	int mMaxParticle;
-	float mMoveParticle;
+	UINT mMoveParticle;
 	float mSceneParticleIndex;
-	int mChangeMaxParticle;
+	UINT mChangeMaxParticle;
 	float mTimer;
 	UINT mMaxTexture;
 	float mBeforeTime;

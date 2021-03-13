@@ -1,7 +1,7 @@
 #include"bloom.hlsli"
 
 Texture2D deffault_map:register(t0);
-SamplerState deffault_map_sampler:register(s0);
+SamplerState deffault_map_sampler:register(s2);
 
 float4 main(VS_OUT pin) : SV_TARGET
 {

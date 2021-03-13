@@ -2,14 +2,17 @@
 #include"vector.h"
 #include<d3d11.h>
 #include<wrl.h>
+#include"constant_buffer.h"
+#include<memory>
 
 class Camera
 {
 public:
-	Camera(ID3D11Device*device);
+	Camera(ID3D11Device* device);
 	void CalculateMatrix();
 	void CalculateParallelMatrix();
-	void ShaderSetBeforeBuffer(ID3D11DeviceContext* context,const int number);
+	void BeforeActive(ID3D11DeviceContext* context, const int number, const bool vs = false, const bool ps = false, const bool gs = false) { mBeforeFrame->Activate(context, number, vs, ps, gs); }
+	void BeforeDactive(ID3D11DeviceContext* context) { mBeforeFrame->DeActivate(context); }
 	//setter
 	void SetPerspective(float fov, float aspect, float nearZ, float farZ)
 	{
@@ -44,13 +47,11 @@ public:
 private:
 	struct Cb
 	{
-		FLOAT4X4 v;
-		FLOAT4X4 p;
+		FLOAT4X4 view;
+		FLOAT4X4 projection;
 	};
 	FLOAT4X4 mView;//ビュー行列
 	FLOAT4X4 mProjection;//プロジェクション行列
-	FLOAT4X4 mBeforeView;//ビュー行列
-	FLOAT4X4 mBeforeProjection;//プロジェクション行列
 	VECTOR3F mEye;// 視点 
 	VECTOR3F mFocus;//注視点
 	VECTOR3F mUp;//上ベクトル
@@ -62,5 +63,6 @@ private:
 	float mAspect;//アスペクト比
 	float mNearZ; // 表示最近面までの距離
 	float mFarZ;//表紙最遠面までの距離
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mBeforeFrame;
+
+	std::unique_ptr<ConstantBuffer<Cb>>mBeforeFrame;
 };

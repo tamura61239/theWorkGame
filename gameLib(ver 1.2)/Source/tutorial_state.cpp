@@ -88,7 +88,7 @@ void TutorialState::RenderButton(ID3D11DeviceContext* context)
 {
 	if (mState == 1)
 	{
-		mRender->Render(context, mTexts[0].Get(), mTextPosition, mTextSize, VECTOR2F(0, 0), VECTOR2F(500, 100), 0, VECTOR4F(0.6, 0.6, 0.6, mTextAlpha));
+		mRender->Render(context, mTexts[0].Get(), mTextPosition, mTextSize, VECTOR2F(0, 0), VECTOR2F(500, 100), 0, VECTOR4F(0.6f, 0.6f, 0.6f, mTextAlpha));
 	}
 	
 }

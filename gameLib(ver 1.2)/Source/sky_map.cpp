@@ -11,7 +11,7 @@ SkyMap::SkyMap(ID3D11Device* device, const wchar_t* textureName, MAPTYPE mapType
 		mObjData = std::make_unique<GeometricCube>(device);
 		break;
 	case MAPTYPE::SPHERE:
-		mObjData = std::make_unique<GeometricSphere>(device,32,16);
+		mObjData = std::make_unique<GeometricSphere>(device, 32, 16);
 		break;
 	}
 	mPosData = std::make_unique<Obj3D>();
@@ -69,26 +69,9 @@ SkyMap::SkyMap(ID3D11Device* device, const wchar_t* textureName, MAPTYPE mapType
 	}
 	//定数バッファ作成
 	{
-		D3D11_BUFFER_DESC desc;
-		ZeroMemory(&desc, sizeof(desc));
-		desc.ByteWidth = sizeof(CbScene);
-		desc.Usage = D3D11_USAGE_DEFAULT;
-		desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		desc.CPUAccessFlags = 0;
-		desc.MiscFlags = 0;
-		desc.StructureByteStride = 0;
-
-		hr = device->CreateBuffer(&desc, nullptr, mCbSceneBuffer.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-		desc.ByteWidth = sizeof(Cb);
-		hr = device->CreateBuffer(&desc, nullptr, mCbObjBuffer.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-		desc.ByteWidth = sizeof(FLOAT4X4);
-		hr = device->CreateBuffer(&desc, nullptr, mCbBeforeObjBuffer.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
+		mCbSceneBuffer = std::make_unique<ConstantBuffer<CbScene>>(device);
+		mCbObjBuffer = std::make_unique<ConstantBuffer<Cb>>(device);
+		mCbBeforeObjBuffer = std::make_unique<ConstantBuffer<FLOAT4X4>>(device);
 	}
 	D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
 	{
@@ -105,28 +88,18 @@ SkyMap::SkyMap(ID3D11Device* device, const wchar_t* textureName, MAPTYPE mapType
 
 void SkyMap::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const VECTOR4F& color)
 {
-	CbScene cbScene;
-	cbScene.view = view;
-	cbScene.projection = projection;
-	Cb cb;
-	cb.color = color * mPosData->GetColor();
-	cb.world = mPosData->GetWorld();
-	ID3D11Buffer* buffer[] =
-	{
-		mCbSceneBuffer.Get(),
-		mCbObjBuffer.Get(),
-	};
-	context->PSSetConstantBuffers(0, 2, buffer);
-	context->VSSetConstantBuffers(0, 2, buffer);
+	mCbSceneBuffer->data.view = view;
+	mCbSceneBuffer->data.projection = projection;
+	mCbObjBuffer->data.color = color * mPosData->GetColor();
+	mCbObjBuffer->data.world = mPosData->GetWorld();
 
-	context->UpdateSubresource(mCbSceneBuffer.Get(), 0, 0, &cbScene, 0, 0);
-	context->UpdateSubresource(mCbObjBuffer.Get(), 0, 0, &cb, 0, 0);
-
-	context->PSSetSamplers(0, 1, mSapmleState.GetAddressOf());
+	mCbSceneBuffer->Activate(context, 0, true, true);
+	mCbObjBuffer->Activate(context, 1, true, true);
+	//context->PSSetSamplers(0, 1, mSapmleState.GetAddressOf());
 	context->PSSetShaderResources(0, 1, mSRV.GetAddressOf());
 
 	mShader->Activate(context);
-	context->RSSetState(mRasterizerState.Get());
+	//context->RSSetState(mRasterizerState.Get());
 
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	UINT stride = sizeof(GeometricPrimitive::Vertex);
@@ -138,39 +111,31 @@ void SkyMap::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FL
 	ID3D11ShaderResourceView* srv = nullptr;
 	context->PSSetShaderResources(0, 1, &srv);
 	mShader->Deactivate(context);
+	mCbSceneBuffer->DeActivate(context);
+	mCbObjBuffer->DeActivate(context);
 	stride = 0;
 	ID3D11Buffer* vertexBuffer = nullptr;
-	context->IASetVertexBuffers(0, 1,&vertexBuffer, &stride, &offset);
+	context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
 	context->IASetIndexBuffer(nullptr, DXGI_FORMAT_R32_UINT, 0);
 
 }
 
 void SkyMap::Render(ID3D11DeviceContext* context, DrowShader* shader, const FLOAT4X4& view, const FLOAT4X4& projection, const VECTOR4F& color)
 {
-	CbScene cbScene;
-	cbScene.view = view;
-	cbScene.projection = projection;
-	Cb cb;
-	cb.color = color;
-	cb.world = mPosData->GetWorld();
-	ID3D11Buffer* buffer[] =
-	{
-		mCbSceneBuffer.Get(),
-		mCbObjBuffer.Get(),
-		mCbBeforeObjBuffer.Get(),
-	};
-	context->PSSetConstantBuffers(0, 3, buffer);
-	context->VSSetConstantBuffers(0, 3, buffer);
+	mCbSceneBuffer->data.view = view;
+	mCbSceneBuffer->data.projection = projection;
+	mCbObjBuffer->data.color = color * mPosData->GetColor();
+	mCbObjBuffer->data.world = mPosData->GetWorld();
 
-	context->UpdateSubresource(mCbSceneBuffer.Get(), 0, 0, &cbScene, 0, 0);
-	context->UpdateSubresource(mCbObjBuffer.Get(), 0, 0, &cb, 0, 0);
-	context->UpdateSubresource(mCbBeforeObjBuffer.Get(), 0, 0, &beforeWorld, 0, 0);
+	mCbSceneBuffer->Activate(context, 0, true, true);
+	mCbObjBuffer->Activate(context, 1, true, true);
+	mCbBeforeObjBuffer->Activate(context, 2, true, true);
 
-	context->PSSetSamplers(0, 1, mSapmleState.GetAddressOf());
+	//context->PSSetSamplers(0, 1, mSapmleState.GetAddressOf());
 	context->PSSetShaderResources(0, 1, mSRV.GetAddressOf());
 
 	shader->Activate(context);
-	context->RSSetState(mRasterizerState.Get());
+	//context->RSSetState(mRasterizerState.Get());
 
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	UINT stride = sizeof(GeometricPrimitive::Vertex);
@@ -181,6 +146,10 @@ void SkyMap::Render(ID3D11DeviceContext* context, DrowShader* shader, const FLOA
 	context->DrawIndexed(mObjData->GetIndexNum(), 0, 0);
 
 	shader->Deactivate(context);
+	mCbSceneBuffer->DeActivate(context);
+	mCbObjBuffer->DeActivate(context);
+	mCbBeforeObjBuffer->DeActivate(context);
+
 	stride = 0;
 	context->IASetVertexBuffers(0, 1, nullptr, &stride, &offset);
 	context->IASetIndexBuffer(nullptr, DXGI_FORMAT_R32_UINT, 0);

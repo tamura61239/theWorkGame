@@ -284,8 +284,10 @@
     <ClInclude Include="Source\play_camera_operation.h" />
     <ClInclude Include="Source\ranking.h" />
     <ClInclude Include="Source\render_effects.h" />
+    <ClInclude Include="Source\render_state.h" />
     <ClInclude Include="Source\result_ui_move.h" />
     <ClInclude Include="Source\run_particle.h" />
+    <ClInclude Include="Source\sampler_state.h" />
     <ClInclude Include="Source\scene.h" />
     <ClInclude Include="Source\scene_editor.h" />
     <ClInclude Include="Source\scene_game.h" />

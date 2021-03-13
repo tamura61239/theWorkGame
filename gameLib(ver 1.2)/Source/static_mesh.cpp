@@ -26,13 +26,13 @@ void fbxamatrix_to_xmfloat4x4(const FbxAMatrix& fbxamatrix, DirectX::XMFLOAT4X4&
 StaticMesh::StaticMesh(ID3D11Device* device, const char* fileName, SHADER_TYPE shaderType, bool pathOrganize, int organizeType)
 {
 	std::string fbxName = fileName;
-    size_t engineer = fbxName.find_last_of(".") + 1;
-    std::string name = fbxName.substr(0, engineer);
+	size_t engineer = fbxName.find_last_of(".") + 1;
+	std::string name = fbxName.substr(0, engineer);
 	name += "bin";
 	if (PathFileExistsA((name).c_str()))
 	{
 		std::ifstream ifs;
-		
+
 		ifs.open((name).c_str(), std::ios::binary);
 		cereal::BinaryInputArchive i_archive(ifs);
 		i_archive(*this);
@@ -48,7 +48,7 @@ StaticMesh::StaticMesh(ID3D11Device* device, const char* fileName, SHADER_TYPE s
 	}
 	SetMinAndMaxPosition();
 	CreateBuffers(device);
-	CreateShaderResourceView(device,shaderType);
+	CreateShaderResourceView(device, shaderType);
 	mShaderType = shaderType;
 }
 
@@ -165,7 +165,7 @@ void StaticMesh::CreateMesh(ID3D11Device* device, const char* fileName, bool pat
 
 			const FbxSurfaceMaterial* surfaceMaterial = fbxMesh->GetNode()->GetMaterial(indexOfMaterial);
 
-			FbxTettureNameLoad(FbxSurfaceMaterial::sDiffuse, FbxSurfaceMaterial::sDiffuseFactor, subset.diffuse, surfaceMaterial, fileName, pathOrganize,organizeType);
+			FbxTettureNameLoad(FbxSurfaceMaterial::sDiffuse, FbxSurfaceMaterial::sDiffuseFactor, subset.diffuse, surfaceMaterial, fileName, pathOrganize, organizeType);
 			FbxTettureNameLoad(FbxSurfaceMaterial::sNormalMap, FbxSurfaceMaterial::sBumpFactor, subset.normal, surfaceMaterial, fileName, pathOrganize, organizeType);
 			FbxTettureNameLoad(FbxSurfaceMaterial::sBump, FbxSurfaceMaterial::sBumpFactor, subset.bump, surfaceMaterial, fileName, pathOrganize, organizeType);
 		}
@@ -402,7 +402,7 @@ void StaticMesh::CreateShaderResourceView(ID3D11Device* device, SHADER_TYPE shad
 			{
 				MakeDummyTexture(device, subset.diffuse.SRV.GetAddressOf());
 			}
-			if (wcscmp(subset.normal.textureName.c_str(), L"") != 0&& shaderType==SHADER_TYPE::NORMAL)
+			if (wcscmp(subset.normal.textureName.c_str(), L"") != 0 && shaderType == SHADER_TYPE::NORMAL)
 			{
 				D3D11_TEXTURE2D_DESC texture2dDesc;
 				LoadTextureFromFile(device, subset.normal.textureName.c_str(), subset.normal.SRV.GetAddressOf(), &texture2dDesc);
@@ -591,28 +591,11 @@ MeshRender::MeshRender(ID3D11Device* device)
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 	}
-	// create constant buffer
+	// 定数バッファ作成
 	{
-		D3D11_BUFFER_DESC bufferDesc = {};
-		bufferDesc.ByteWidth = sizeof(CbScene);
-		bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		bufferDesc.CPUAccessFlags = 0;
-		bufferDesc.MiscFlags = 0;
-		bufferDesc.StructureByteStride = 0;
-		hr = device->CreateBuffer(&bufferDesc, nullptr, mCbScene.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-		bufferDesc.ByteWidth = sizeof(CbObj);
-
-		hr = device->CreateBuffer(&bufferDesc, nullptr, mCbObj.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-		bufferDesc.ByteWidth = sizeof(FLOAT4X4);
-
-		hr = device->CreateBuffer(&bufferDesc, nullptr, mCbBeforeObj.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
+		mCbScene = std::make_unique<ConstantBuffer<CbScene>>(device);
+		mCbObj = std::make_unique<ConstantBuffer<CbObj>>(device);
+		mCbBeforeObj = std::make_unique<ConstantBuffer<FLOAT4X4>>(device);
 	}
 
 	// create sampler state
@@ -654,23 +637,15 @@ MeshRender::MeshRender(ID3D11Device* device)
 void MeshRender::ShadowBegin(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection)
 {
 	mShadowShader->Activate(context);
-	ID3D11Buffer* constant_buffers[] =
-	{
-		mCbScene.Get(),
-		mCbObj.Get(),
-	};
-	context->VSSetConstantBuffers(0, ARRAYSIZE(constant_buffers), constant_buffers);
-	context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
-	context->RSSetState(mRasterizerState.Get());
-	CbScene cbScene;
+	//context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
+	//context->RSSetState(mRasterizerState.Get());
 
-	cbScene.view = view;
-	cbScene.projection = projection;
-	context->UpdateSubresource(mCbScene.Get(), 0, 0, &cbScene, 0, 0);
-
+	mCbScene->data.view = view;
+	mCbScene->data.projection = projection;
+	mCbScene->Activate(context, 0, true);
 }
 
-void MeshRender::ShadowRender(ID3D11DeviceContext* context, StaticMesh* obj, const FLOAT4X4& world, const VECTOR4F&color)
+void MeshRender::ShadowRender(ID3D11DeviceContext* context, StaticMesh* obj, const FLOAT4X4& world, const VECTOR4F& color)
 {
 
 	for (StaticMesh::Mesh& mesh : obj->mMeshes)
@@ -681,45 +656,37 @@ void MeshRender::ShadowRender(ID3D11DeviceContext* context, StaticMesh* obj, con
 		context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		CbObj data;
-		data.color = color;
-		DirectX::XMStoreFloat4x4(&data.world, DirectX::XMLoadFloat4x4(&mesh.globalTransform) * DirectX::XMLoadFloat4x4(&world));
-		context->UpdateSubresource(mCbObj.Get(), 0, 0, &data, 0, 0);
+		mCbObj->data.color = color;
+		DirectX::XMStoreFloat4x4(&mCbObj->data.world, DirectX::XMLoadFloat4x4(&mesh.globalTransform) * DirectX::XMLoadFloat4x4(&world));
+		mCbObj->Activate(context, 1, true);
 		for (StaticMesh::Subset& subset : mesh.subsets)
 		{
 			context->DrawIndexed(subset.indexCount, subset.indexStart, 0);
 		}
+		mCbObj->DeActivate(context);
 	}
 }
 
 void MeshRender::ShadowEnd(ID3D11DeviceContext* context)
 {
 	mShadowShader->Deactivate(context);
-
+	mCbScene->DeActivate(context);
 }
 
 void MeshRender::Begin(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const bool w)
 {
 
-	ID3D11Buffer* constant_buffers[] =
-	{
-		mCbScene.Get(),
-		mCbObj.Get(),
-	};
-	context->VSSetConstantBuffers(0, ARRAYSIZE(constant_buffers), constant_buffers);
-	context->PSSetConstantBuffers(0, ARRAYSIZE(constant_buffers), constant_buffers);
 
-	context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
-	if (!w)context->RSSetState(mRasterizerState.Get());
-	else context->RSSetState(mShadowRasterizerState.Get());
-	context->PSSetSamplers(0, 1, mDiffuseSamplerState.GetAddressOf());
-	context->PSSetSamplers(1, 1, mNormalSamplerState.GetAddressOf());
+	//context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
+	//if (!w)context->RSSetState(mRasterizerState.Get());
+	//else context->RSSetState(mShadowRasterizerState.Get());
+	//context->PSSetSamplers(0, 1, mDiffuseSamplerState.GetAddressOf());
+	//context->PSSetSamplers(1, 1, mNormalSamplerState.GetAddressOf());
 
-	CbScene cbScene;
 
-	cbScene.view = view;
-	cbScene.projection = projection;
-	context->UpdateSubresource(mCbScene.Get(), 0, 0, &cbScene, 0, 0);
+	mCbScene->data.view = view;
+	mCbScene->data.projection = projection;
+	mCbScene->Activate(context, 0, true, true, true);
 
 }
 
@@ -736,23 +703,23 @@ void MeshRender::Render(ID3D11DeviceContext* context, StaticMesh* obj, const FLO
 		context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		CbObj data;
 
-		DirectX::XMStoreFloat4x4(&data.world, DirectX::XMLoadFloat4x4(&mesh.globalTransform) * DirectX::XMLoadFloat4x4(&world));
+		DirectX::XMStoreFloat4x4(&mCbObj->data.world, DirectX::XMLoadFloat4x4(&mesh.globalTransform) * DirectX::XMLoadFloat4x4(&world));
 
 		for (StaticMesh::Subset& subset : mesh.subsets)
 		{
-			data.color.x = subset.diffuse.color.x * color.x;
-			data.color.y = subset.diffuse.color.y * color.y;
-			data.color.z = subset.diffuse.color.z * color.z;
-			data.color.w = color.w;
-			context->UpdateSubresource(mCbObj.Get(), 0, 0, &data, 0, 0);
+			mCbObj->data.color.x = subset.diffuse.color.x * color.x;
+			mCbObj->data.color.y = subset.diffuse.color.y * color.y;
+			mCbObj->data.color.z = subset.diffuse.color.z * color.z;
+			mCbObj->data.color.w = color.w;
+			mCbObj->Activate(context, 1, true, true, true);
 			obj->SetShaderResouceView(context, subset);
 			context->DrawIndexed(subset.indexCount, subset.indexStart, 0);
+			mCbObj->DeActivate(context);
 		}
 	}
 	ID3D11ShaderResourceView* srv = nullptr;
-	for (int i = 0;i < 3;i++)
+	for (int i = 0; i < 3; i++)
 	{
 		context->PSSetShaderResources(i, 1, &srv);
 	}
@@ -771,19 +738,19 @@ void MeshRender::Render(ID3D11DeviceContext* context, DrowShader* shader, Static
 		context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		CbObj data;
 
-		DirectX::XMStoreFloat4x4(&data.world, DirectX::XMLoadFloat4x4(&mesh.globalTransform) * DirectX::XMLoadFloat4x4(&world));
+		DirectX::XMStoreFloat4x4(&mCbObj->data.world, DirectX::XMLoadFloat4x4(&mesh.globalTransform) * DirectX::XMLoadFloat4x4(&world));
 
 		for (StaticMesh::Subset& subset : mesh.subsets)
 		{
-			data.color.x = subset.diffuse.color.x * color.x;
-			data.color.y = subset.diffuse.color.y * color.y;
-			data.color.z = subset.diffuse.color.z * color.z;
-			data.color.w = color.w;
-			context->UpdateSubresource(mCbObj.Get(), 0, 0, &data, 0, 0);
+			mCbObj->data.color.x = subset.diffuse.color.x * color.x;
+			mCbObj->data.color.y = subset.diffuse.color.y * color.y;
+			mCbObj->data.color.z = subset.diffuse.color.z * color.z;
+			mCbObj->data.color.w = color.w;
+			mCbObj->Activate(context, 1, true, true, true);
 			obj->SetShaderResouceView(context, subset);
 			context->DrawIndexed(subset.indexCount, subset.indexStart, 0);
+			mCbObj->DeActivate(context);
 		}
 	}
 	ID3D11ShaderResourceView* srv = nullptr;
@@ -797,6 +764,7 @@ void MeshRender::Render(ID3D11DeviceContext* context, DrowShader* shader, Static
 
 void MeshRender::End(ID3D11DeviceContext* context)
 {
+	mCbScene->DeActivate(context);
 }
 /*****************************************************/
 //  速度マップの描画
@@ -804,24 +772,14 @@ void MeshRender::End(ID3D11DeviceContext* context)
 void MeshRender::VelocityBegin(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const bool w)
 {
 	mShader[2]->Activate(context);
-	ID3D11Buffer* constant_buffers[] =
-	{
-		mCbScene.Get(),
-		mCbObj.Get(),
-		mCbBeforeObj.Get(),
-	};
-	context->VSSetConstantBuffers(0, ARRAYSIZE(constant_buffers), constant_buffers);
-	context->PSSetConstantBuffers(0, ARRAYSIZE(constant_buffers), constant_buffers);
 
-	context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
-	if (!w)context->RSSetState(mRasterizerState.Get());
-	else context->RSSetState(mShadowRasterizerState.Get());
+	//context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
+	//if (!w)context->RSSetState(mRasterizerState.Get());
+	//else context->RSSetState(mShadowRasterizerState.Get());
 
-	CbScene cbScene;
-
-	cbScene.view = view;
-	cbScene.projection = projection;
-	context->UpdateSubresource(mCbScene.Get(), 0, 0, &cbScene, 0, 0);
+	mCbScene->data.view = view;
+	mCbScene->data.projection = projection;
+	mCbScene->Activate(context, 0, true, true, true);
 
 }
 
@@ -835,24 +793,22 @@ void MeshRender::VelocityRender(ID3D11DeviceContext* context, StaticMesh* obj, c
 		context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		CbObj data;
 
-		DirectX::XMStoreFloat4x4(&data.world, DirectX::XMLoadFloat4x4(&mesh.globalTransform) * DirectX::XMLoadFloat4x4(&world));
+		DirectX::XMStoreFloat4x4(&mCbObj->data.world, DirectX::XMLoadFloat4x4(&mesh.globalTransform) * DirectX::XMLoadFloat4x4(&world));
 
-		FLOAT4X4 beforeData;
-		DirectX::XMStoreFloat4x4(&beforeData, DirectX::XMLoadFloat4x4(&mesh.globalTransform) * DirectX::XMLoadFloat4x4(&beforeWorld));
-
+		DirectX::XMStoreFloat4x4(&mCbBeforeObj->data, DirectX::XMLoadFloat4x4(&mesh.globalTransform) * DirectX::XMLoadFloat4x4(&beforeWorld));
+		mCbBeforeObj->Activate(context, 2, true, true, true);
 		for (StaticMesh::Subset& subset : mesh.subsets)
 		{
-			data.color.x = subset.diffuse.color.x * color.x;
-			data.color.y = subset.diffuse.color.y * color.y;
-			data.color.z = subset.diffuse.color.z * color.z;
-			data.color.w = color.w;
-			context->UpdateSubresource(mCbObj.Get(), 0, 0, &data, 0, 0);
-			context->UpdateSubresource(mCbBeforeObj.Get(), 0, 0, &beforeData, 0, 0);
-
+			mCbObj->data.color.x = subset.diffuse.color.x * color.x;
+			mCbObj->data.color.y = subset.diffuse.color.y * color.y;
+			mCbObj->data.color.z = subset.diffuse.color.z * color.z;
+			mCbObj->data.color.w = color.w;
+			mCbObj->Activate(context, 1, true, true, true);
 			context->DrawIndexed(subset.indexCount, subset.indexStart, 0);
+			mCbObj->DeActivate(context);
 		}
+		mCbBeforeObj->DeActivate(context);
 	}
 
 }
@@ -860,5 +816,6 @@ void MeshRender::VelocityRender(ID3D11DeviceContext* context, StaticMesh* obj, c
 void MeshRender::VelocityEnd(ID3D11DeviceContext* context)
 {
 	mShader[2]->Deactivate(context);
+	mCbScene->DeActivate(context);
 
 }

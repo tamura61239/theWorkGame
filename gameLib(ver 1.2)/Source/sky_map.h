@@ -3,6 +3,7 @@
 #include"obj3d.h"
 #include<memory>
 #include"drow_shader.h"
+#include"constant_buffer.h"
 
 enum class MAPTYPE
 {
@@ -19,7 +20,7 @@ public:
 	void Render(ID3D11DeviceContext* context, DrowShader* shader, const FLOAT4X4& view, const FLOAT4X4& projection, const VECTOR4F& color = VECTOR4F(1, 1, 1, 1));
 	void SaveBeforeWorld()
 	{
-		beforeWorld = mPosData->GetWorld();
+		mCbBeforeObjBuffer->data = mPosData->GetWorld();
 	}
 private:
 	struct Cb
@@ -33,13 +34,12 @@ private:
 		FLOAT4X4 view;
 		FLOAT4X4 projection;
 	};
-	FLOAT4X4 beforeWorld;
 	std::unique_ptr<Obj3D>mPosData;
 	std::unique_ptr<GeometricPrimitive>mObjData;
 	std::unique_ptr<DrowShader>mShader;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbSceneBuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbObjBuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbBeforeObjBuffer;
+	std::unique_ptr<ConstantBuffer<CbScene>>mCbSceneBuffer;
+	std::unique_ptr<ConstantBuffer<Cb>>mCbObjBuffer;
+	std::unique_ptr<ConstantBuffer<FLOAT4X4>>mCbBeforeObjBuffer;
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState>mRasterizerState;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState>mDepthStencilState;
 	Microsoft::WRL::ComPtr<ID3D11SamplerState>mSapmleState;

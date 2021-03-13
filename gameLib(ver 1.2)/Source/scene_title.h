@@ -12,6 +12,8 @@
 #include"fade.h"
 #include"constant_buffer.h"
 #include"zoom_blur_parameter.h"
+#include"render_state.h"
+#include"sampler_state.h"
 
 class SceneTitle :public Scene
 {
@@ -50,13 +52,18 @@ private:
 	std::unique_ptr<BlendState>blend[2];
 	std::unique_ptr<ModelRenderer>modelRender;
 	std::unique_ptr<Character>character;
-	//std::unique_ptr<ModelRenderer>modelRender;
-	//std::unique_ptr<Character>character;
 	std::unique_ptr<StaticObj>obj;
 	std::unique_ptr<MeshRender>mRender;
 	std::unique_ptr<Fade>mFade;
 	std::unique_ptr<DrowShader>mBluer;
 	std::unique_ptr<ConstantBuffer<CbZoom>>mCbZoomBuffer;
+	std::unique_ptr<RasterizerState>mRasterizer;
+	std::unique_ptr<DepthStencilState>mDepthStencil;
+	enum samplerType
+	{
+		wrap,clamp,max
+	};
+	std::unique_ptr<SamplerState>mSampler[samplerType::max];
 	bool mEditorFlag;
 	bool mTestMove;
 	bool mLoading;

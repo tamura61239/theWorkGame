@@ -2,6 +2,8 @@
 #include"framebuffer.h"
 #include<vector>
 #include"vector.h"
+#include"constant_buffer.h"
+#include"drow_shader.h"
 
 class BloomRender
 {
@@ -20,16 +22,6 @@ private:
 	void Save(const int scene);
 	void Blur01(ID3D11DeviceContext* context);
 	void Blur02(ID3D11DeviceContext* context);
-	std::vector<std::unique_ptr<FrameBuffer>>mFrameBuffer;
-	std::vector<std::unique_ptr<FrameBuffer>>mSidoFrameBuffer;
-	Microsoft::WRL::ComPtr<ID3D11PixelShader>mPSShader[2];
-	Microsoft::WRL::ComPtr<ID3D11PixelShader>mPSBlurShader[2];
-	Microsoft::WRL::ComPtr<ID3D11VertexShader>mVSShader;
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilState>mDepthStencilState;
-	Microsoft::WRL::ComPtr<ID3D11RasterizerState>mRasterizeState;
-	Microsoft::WRL::ComPtr<ID3D11SamplerState>mSamplerState;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mCBbuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbBluerbuffer;
 	struct CbBloom
 	{
 		float threshold;
@@ -52,9 +44,14 @@ private:
 		float multiply;
 		int count;
 	};
+
+	std::vector<std::unique_ptr<FrameBuffer>>mFrameBuffer;
+	std::vector<std::unique_ptr<FrameBuffer>>mSidoFrameBuffer;
+	std::vector<std::unique_ptr<DrowShader>>mShader;
+	std::unique_ptr<ConstantBuffer<CbBloom>>mCBbuffer;
+	std::unique_ptr<ConstantBuffer<CbBluer>>mCbBluerbuffer;
 	float GaussianDistribution(const VECTOR2F& position, const float rho);
 	void CalucurateBluer(const float width, const float hight, const VECTOR2F& dir, const float deviation, const float multiply);
-	CbBluer mCbBluer;
 	EditorData mEditorData[4];
 	int mNowEditorNo;
 	int mNowScene;

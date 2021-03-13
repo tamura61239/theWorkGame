@@ -4,8 +4,9 @@
 #include"misc.h"
 
 template <class T>
-struct ConstantBuffer
+class ConstantBuffer
 {
+public:
 	T data{};
 	ConstantBuffer(ID3D11Device* device)
 	{

@@ -629,6 +629,12 @@
     <ClInclude Include="Source\cubebuffer.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Source\sampler_state.h">
+      <Filter>gameLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\render_state.h">
+      <Filter>gameLib\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\board.hlsli">

@@ -21,21 +21,26 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 	loading_thread = std::make_unique<std::thread>([&](ID3D11Device* device)
 		{
 			std::lock_guard<std::mutex> lock(loading_mutex);
+
+			//カメラ
 			pCameraManager->Initialize(device, 1);
 			pCameraManager->GetCamera()->SetEye(VECTOR3F(0, 0, -200));
 
+			//ディファードレンダリング用のテクスチャを作成
 			frameBuffer = std::make_shared<FrameBuffer>(device, SCREEN_WIDTH, SCREEN_HEIGHT, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
 			frameBuffer3 = std::make_shared<FrameBuffer>(device, SCREEN_WIDTH, SCREEN_HEIGHT, true, 8, DXGI_FORMAT_R16G16B16A16_FLOAT);
 			velocityMap = std::make_shared<FrameBuffer>(device, SCREEN_WIDTH, SCREEN_HEIGHT, true, 8, DXGI_FORMAT_R16G16B16A16_FLOAT);
-			saveFrameBuffer = std::make_shared<FrameBuffer>(device, SCREEN_WIDTH, SCREEN_HEIGHT, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
 			frameBuffer2 = std::make_shared<FrameBuffer>(device, SCREEN_WIDTH, SCREEN_HEIGHT, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
 			shadowMap = std::make_unique<FrameBuffer>(device, 1024 * 5, 1024 * 5, false, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
 			shadowRenderBuffer = std::make_shared<FrameBuffer>(device, SCREEN_WIDTH, SCREEN_HEIGHT, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
-
+			//影を付けるようクラスの作成
 			renderEffects = std::make_unique<RenderEffects>(device, "testShadow");
+			//GPUパーティクルマネージャーを作成
 			GpuParticleManager::Create();
 			player = std::make_shared<PlayerAI>(device, "Data/FBX/new_player_anim.fbx");
+			//PUパーティクルマネージャーにプレイヤーのデータをセットする
 			pGpuParticleManager->CreateGameBuffer(device, player);
+			
 			pGpuParticleManager->SetState(GpuParticleManager::STATE::SELECT);
 #if (RUNPARTICLE_TYPE==1)
 			pGpuParticleManager->GetRunParticle()->SetMeshData(player->GetCharacter()->GetModel(), device);
@@ -46,7 +51,6 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 			mStageOperation = std::make_unique<StageOperation>();
 			pHitAreaDrow.CreateObj(device);
 			pLight.CreateLightBuffer(device);
-			//sky = std::make_unique<SkyMap>(device, L"Data/image/mp_totality.dds", MAPTYPE::BOX);
 			{
 				D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
 				{
@@ -100,6 +104,8 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 				}
 
 			}
+
+
 		}, device);
 	test = std::make_unique<Sprite>(device, L"Data/image/操作説明.png");
 	nowLoading = std::make_unique<Sprite>(device, L"Data/image/now.png");
@@ -111,6 +117,14 @@ SceneGame::SceneGame(ID3D11Device* device) : selectSceneFlag(true), editorFlag(f
 	stop = false;
 	editorNo = 0;
 	textureNo = 0;
+	mSampler[samplerType::warp] = std::make_unique<SamplerState>(device, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
+	mSampler[samplerType::border] = std::make_unique<SamplerState>(device, D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_BORDER, D3D11_COMPARISON_LESS_EQUAL);
+	mSampler[samplerType::clamp] = std::make_unique<SamplerState>(device, D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_CLAMP);
+
+
+	mDepthStencil = std::make_unique<DepthStencilState>(device, true, D3D11_DEPTH_WRITE_MASK_ALL, D3D11_COMPARISON_LESS_EQUAL);
+	mRasterizer = std::make_unique<RasterizerState>(device, D3D11_FILL_SOLID, D3D11_CULL_NONE, false, true, false, true, false);
+
 }
 
 void SceneGame::Editor()
@@ -531,6 +545,12 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	UINT num_viewports = 1;
 	context->RSGetViewports(&num_viewports, &viewport);
 
+	mSampler[samplerType::warp]->Activate(context, 0,false, true);
+	mSampler[samplerType::border]->Activate(context, 1, false, true);
+	mSampler[samplerType::clamp]->Activate(context,2, false, true);
+
+	mDepthStencil->Activate(context);
+	mRasterizer->Activate(context);
 	if (mNowLoading)
 	{
 		if (mLoadEnd)mNowLoading = false;
@@ -560,6 +580,11 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 		if (IsNowLoading())nowLoading->Render(context, VECTOR2F(1300, 900), VECTOR2F(600, 100), VECTOR2F(0, 0), VECTOR2F(600, 100), 0, color);
 		else pushKey->Render(context, VECTOR2F(1300, 900), VECTOR2F(575, 90), VECTOR2F(0, 0), VECTOR2F(230, 36), 0, color);
 		blend[0]->deactivate(context);
+		mSampler[samplerType::warp]->DeActivate(context);
+		mSampler[samplerType::border]->DeActivate(context);
+
+		mDepthStencil->DeActive(context);
+		mRasterizer->DeActivate(context);
 
 		return;
 	}
@@ -620,17 +645,18 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 			modelRenderer->End(context);
 
 			mSManager->Render(context, view, projection, mStageOperation->GetColorType());
-			if (hitArea)HitAreaRender::GetInctance()->Render(context, view, projection);
+			//if (hitArea)HitAreaRender::GetInctance()->Render(context, view, projection);
 		}
 		frameBuffer3->Deactivate(context);
 
 		/************************速度マップテクスチャの作成***********************/
 		velocityMap->Clear(context);
 		velocityMap->Activate(context);
-		pCameraManager->GetCamera()->ShaderSetBeforeBuffer(context, 5);
+		pCameraManager->GetCamera()->BeforeActive(context, 5, true, true, true);
 		modelRenderer->VelocityBegin(context, viewProjection);
 		modelRenderer->VelocityDraw(context, *player->GetCharacter()->GetModel());
 		modelRenderer->VelocityEnd(context);
+		pCameraManager->GetCamera()->BeforeDactive(context);
 		pGpuParticleManager->VelocityRender(context, view, projection);
 
 		mSManager->RenderVelocity(context, view, projection, mStageOperation->GetColorType());
@@ -661,48 +687,9 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 
 		frameBuffer->Clear(context);
 		frameBuffer->Activate(context);
-		//renderEffects->ShadowRender(context, frameBuffer3->GetRenderTargetShaderResourceView().Get(), frameBuffer3->GetDepthStencilShaderResourceView().Get(), shadowMap->GetDepthStencilShaderResourceView().Get()
-		//	, view, projection, lightV, lightP);
 
 		velocityMap->SetPsTexture(context, 1);
 		siro->Render(context, motionBlurShader.get(), shadowRenderBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
-		//if (screenShot) 
-		//{
-		//	if (target[0])
-		//	{
-		//		modelRenderer->Begin(context, viewProjection);
-		//		modelRenderer->Draw(context, *player->GetCharacter()->GetModel(), VECTOR4F(0.5, 0.5, 0.5, 1));
-		//		modelRenderer->End(context);
-		//	}
-		//	
-		//	if (target[5])sky->RenderButton(context, view, projection);
-		//	if (target[2])pGpuParticleManager->RenderButton(context, view, projection);
-
-		//	if(target[1])mSManager->RenderButton(context, view, projection, mStageOperation->GetColorType());
-		//	if (target[4])if (hitArea)HitAreaRender::GetInctance()->RenderButton(context, view, projection);
-		//	if (target[3])UIManager::GetInctance()->RenderButton(context);
-
-		//}
-		//else
-		//{
-		//	modelRenderer->Begin(context, viewProjection);
-		//	modelRenderer->Draw(context, *player->GetCharacter()->GetModel(), VECTOR4F(0.5, 0.5, 0.5, 1));
-		//	modelRenderer->End(context);
-		//	if (mSManager->GetStageEditor()->GetEditorFlag())
-		//	{
-		//		mSManager->RenderButton(context, view, projection, mStageOperation->GetColorType());
-		//	}
-		//	else
-		//	{
-		//		sky->RenderButton(context, view, projection);
-		//		pGpuParticleManager->RenderButton(context, view, projection);
-
-		//		mSManager->RenderButton(context, view, projection, mStageOperation->GetColorType());
-		//		if (hitArea)HitAreaRender::GetInctance()->RenderButton(context, view, projection);
-		//		UIManager::GetInctance()->RenderButton(context);
-		//	}
-
-		//}
 
 		UIManager::GetInctance()->Render(context);
 		mTutorialState->RenderButton(context);
@@ -794,6 +781,11 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	mTutorialState->RenderText(context);
 
 	blend[0]->deactivate(context);
+	mSampler[samplerType::warp]->DeActivate(context);
+	mSampler[samplerType::border]->DeActivate(context);
+
+	mDepthStencil->DeActive(context);
+	mRasterizer->DeActivate(context);
 
 	//siro->RenderButton(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 	HitAreaRender::GetInctance()->ClearCount();

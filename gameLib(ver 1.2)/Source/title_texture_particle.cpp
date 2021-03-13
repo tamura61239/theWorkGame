@@ -199,7 +199,7 @@ void TitleTextureParticle::LoadTexture(ID3D11Device* device, std::wstring name, 
 		boards.back().position = VECTOR3F(0, 0, 0);
 		boards.back().scale = VECTOR3F(0, 0, 0);
 	}
-	mMaxTexture += uvSize.x;
+	mMaxTexture += static_cast<UINT>(uvSize.x);
 }
 /**************************************************/
 //       çXêV

@@ -31,15 +31,16 @@ Board::Board(ID3D11Device* device, const wchar_t* fileName)
 	}
 	//定数バッファの生成
 	{
-		D3D11_BUFFER_DESC desc = {};
-		desc.Usage = D3D11_USAGE_DEFAULT;
-		desc.ByteWidth = sizeof(CbScene);
-		desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		desc.CPUAccessFlags = 0;
-		desc.MiscFlags = 0;
-		desc.StructureByteStride = 0;
-		hr = device->CreateBuffer(&desc, nullptr, mCbBuffer.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		//D3D11_BUFFER_DESC desc = {};
+		//desc.Usage = D3D11_USAGE_DEFAULT;
+		//desc.ByteWidth = sizeof(CbScene);
+		//desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		//desc.CPUAccessFlags = 0;
+		//desc.MiscFlags = 0;
+		//desc.StructureByteStride = 0;
+		//hr = device->CreateBuffer(&desc, nullptr, mCbBuffer.GetAddressOf());
+		//_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		mCbBuffer = std::make_unique<ConstantBuffer<CbScene>>(device);
 	}
 	//シェーダーの生成
 	{
@@ -49,10 +50,11 @@ Board::Board(ID3D11Device* device, const wchar_t* fileName)
 			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 		};
-		hr = CreateVSFromCso(device, "Data/shader/board_vs.cso", mVSShader.GetAddressOf(), mInput.GetAddressOf(), inputElementDesc, ARRAYSIZE(inputElementDesc));
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-		hr = CreatePSFromCso(device, "Data/shader/board_ps.cso", mPSShader.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		//hr = CreateVSFromCso(device, "Data/shader/board_vs.cso", mVSShader.GetAddressOf(), mInput.GetAddressOf(), inputElementDesc, ARRAYSIZE(inputElementDesc));
+		//_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		//hr = CreatePSFromCso(device, "Data/shader/board_ps.cso", mPSShader.GetAddressOf());
+		//_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		mShader = std::make_unique<DrowShader>(device, "Data/shader/board_vs.cso", "", "Data/shader/board_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
 	}
 	//ラスタライザーステートの設定
 	{
@@ -155,9 +157,7 @@ void Board::Render(ID3D11DeviceContext* context, const VECTOR3F& position, const
 
 	context->RSSetState(mRasterizerState.Get());
 
-	context->VSSetShader(mVSShader.Get(), nullptr, 0);
-
-	context->PSSetShader(mPSShader.Get(), nullptr, 0);
+	mShader->Activate(context);
 	context->PSSetSamplers(0, 1, mSamplerState.GetAddressOf());
 	context->PSSetShaderResources(0, 1, mShaderResourceView.GetAddressOf());
 
@@ -179,12 +179,13 @@ void Board::Render(ID3D11DeviceContext* context, const VECTOR3F& position, const
 		inverseView._44 = 1.0f;
 		DirectX::XMMATRIX inverseMatrixView;
 		inverseMatrixView = DirectX::XMLoadFloat4x4(&inverseView);
-		CbScene cbScene;
-		DirectX::XMStoreFloat4x4(&cbScene.worldViewProjection, inverseMatrixView * W * V * P);
-		cbScene.color = color;
-		context->UpdateSubresource(mCbBuffer.Get(), 0, nullptr, &cbScene, 0, 0);
-		context->VSSetConstantBuffers(0, 1, mCbBuffer.GetAddressOf());
-		context->PSSetConstantBuffers(0, 1, mCbBuffer.GetAddressOf());
+		DirectX::XMStoreFloat4x4(&mCbBuffer->data.worldViewProjection, inverseMatrixView * W * V * P);
+		mCbBuffer->data.color = color;
 	}
+	mCbBuffer->Activate(context, 0, true, true);
+
 	context->Draw(4, 0);
+	mShader->Deactivate(context);
+	mCbBuffer->DeActivate(context);
+
 }

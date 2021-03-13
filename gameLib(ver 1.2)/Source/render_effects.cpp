@@ -15,18 +15,18 @@ RenderEffects::RenderEffects(ID3D11Device* device, std::string fileName)
 	Microsoft::WRL::ComPtr<ID3D11InputLayout>input;
 
 	mShader = std::make_unique<DrowShader>(device, "Data/shader/render_effects_vs.cso", "", "Data/shader/render_effects_ps.cso");
-
+	//定数バッファ作成
 	{
-		D3D11_BUFFER_DESC bufferDesc = {};
-		bufferDesc.ByteWidth = sizeof(CbScene);
-		bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		bufferDesc.CPUAccessFlags = 0;
-		bufferDesc.MiscFlags = 0;
-		bufferDesc.StructureByteStride = 0;
-		hr = device->CreateBuffer(&bufferDesc, nullptr, mCbBuffer.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
+		//D3D11_BUFFER_DESC bufferDesc = {};
+		//bufferDesc.ByteWidth = sizeof(CbScene);
+		//bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		//bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		//bufferDesc.CPUAccessFlags = 0;
+		//bufferDesc.MiscFlags = 0;
+		//bufferDesc.StructureByteStride = 0;
+		//hr = device->CreateBuffer(&bufferDesc, nullptr, mCbBuffer.GetAddressOf());
+		//_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		mCbBuffer = std::make_unique<ConstantBuffer<CbScene>>(device);
 	}
 	//SamplerStateの生成
 	{
@@ -59,7 +59,7 @@ RenderEffects::RenderEffects(ID3D11Device* device, std::string fileName)
 	{
 		D3D11_DEPTH_STENCIL_DESC desc;
 		ZeroMemory(&desc, sizeof(desc));
-		desc.DepthEnable = false;
+		desc.DepthEnable = true;
 		desc.StencilEnable = false;
 		desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 		desc.DepthFunc = D3D11_COMPARISON_LESS;
@@ -74,33 +74,6 @@ RenderEffects::RenderEffects(ID3D11Device* device, std::string fileName)
 		desc.BackFace.StencilPassOp = D3D11_STENCIL_OP_INCR;
 		desc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 
-		//desc.DepthEnable = TRUE;
-		//desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-		//desc.DepthFunc = D3D11_COMPARISON_LESS;
-		//desc.StencilEnable = FALSE;
-		//desc.StencilReadMask = 0xFF;
-		//desc.StencilWriteMask = 0xFF;
-		//desc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-		//desc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
-		//desc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-		//desc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-		//desc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-		//desc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
-		//desc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-		//desc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-
-		//desc.DepthEnable = false;
-		//desc.StencilEnable = false;
-		//desc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
-		//desc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
-		//desc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-		//desc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
-		//desc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_INCR;
-		//desc.FrontFace.StencilFunc = D3D11_COMPARISON_GREATER_EQUAL;
-		//desc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-		//desc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
-		//desc.BackFace.StencilPassOp = D3D11_STENCIL_OP_INCR;
-		//desc.BackFace.StencilFunc = D3D11_COMPARISON_GREATER_EQUAL;
 
 		hr = device->CreateDepthStencilState(&desc, mDepthStencilState.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
@@ -119,16 +92,6 @@ RenderEffects::RenderEffects(ID3D11Device* device, std::string fileName)
 		rasterizerDesc.MultisampleEnable = true;
 		rasterizerDesc.AntialiasedLineEnable = true;
 
-		//rasterizerDesc.FillMode = D3D11_FILL_SOLID; //D3D11_FILL_WIREFRAME, D3D11_FILL_SOLID
-		//rasterizerDesc.CullMode = D3D11_CULL_BACK; //D3D11_CULL_NONE, D3D11_CULL_FRONT, D3D11_CULL_BACK   
-		//rasterizerDesc.FrontCounterClockwise = FALSE;
-		//rasterizerDesc.DepthBias = 0;
-		//rasterizerDesc.DepthBiasClamp = 0;
-		//rasterizerDesc.SlopeScaledDepthBias = 0;
-		//rasterizerDesc.DepthClipEnable = true;
-		//rasterizerDesc.ScissorEnable = FALSE;
-		//rasterizerDesc.MultisampleEnable = false;
-		//rasterizerDesc.AntialiasedLineEnable = FALSE;
 
 
 		hr = device->CreateRasterizerState(&rasterizerDesc, mRasterizerState.GetAddressOf());
@@ -141,11 +104,11 @@ void RenderEffects::ImGuiUpdate()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("shadow map data");
-	float* color[3] = { &mCbScene.data.shadowColor.x,&mCbScene.data.shadowColor.y,&mCbScene.data.shadowColor.z };
+	float* color[3] = { &mCbBuffer->data.saveData.shadowColor.x,&mCbBuffer->data.saveData.shadowColor.y,&mCbBuffer->data.saveData.shadowColor.z };
 	ImGui::ColorEdit3("shadow color", *color);
-	ImGui::InputFloat("shadow bisa", &mCbScene.data.shadowbisa, 0.0001f, 0, "%f");
-	ImGui::InputFloat("slope scale bias", &mCbScene.data.slopeScaledBias, 0.0001f, 0, "%f");
-	ImGui::InputFloat("depth bias clamp", &mCbScene.data.depthBiasClamp,0.0001f,0,"%f");
+	ImGui::InputFloat("shadow bisa", &mCbBuffer->data.saveData.shadowbisa, 0.0001f, 0, "%f");
+	ImGui::InputFloat("slope scale bias", &mCbBuffer->data.saveData.slopeScaledBias, 0.0001f, 0, "%f");
+	ImGui::InputFloat("depth bias clamp", &mCbBuffer->data.saveData.depthBiasClamp,0.0001f,0,"%f");
 	static char name[256] = "";
 	ImGui::InputText("file name", name, 256);
 	if (ImGui::Button("save"))
@@ -161,12 +124,10 @@ void RenderEffects::ImGuiUpdate()
 void RenderEffects::ShadowRender(ID3D11DeviceContext* context, ID3D11ShaderResourceView* colorMapSRV, ID3D11ShaderResourceView* depthMapSRV, ID3D11ShaderResourceView* shadowMapSRV
 	, const FLOAT4X4& view, const FLOAT4X4& projection, const FLOAT4X4& lightView, const FLOAT4X4& lightProjection)
 {
-	DirectX::XMStoreFloat4x4(&mCbScene.lightViewProjection, DirectX::XMLoadFloat4x4(&lightView) * DirectX::XMLoadFloat4x4(&lightProjection));
-	DirectX::XMStoreFloat4x4(&mCbScene.inverseViewProjection, DirectX::XMMatrixInverse(nullptr, DirectX::XMLoadFloat4x4(&view) * DirectX::XMLoadFloat4x4(&projection)));
+	DirectX::XMStoreFloat4x4(&mCbBuffer->data.lightViewProjection, DirectX::XMLoadFloat4x4(&lightView) * DirectX::XMLoadFloat4x4(&lightProjection));
+	DirectX::XMStoreFloat4x4(&mCbBuffer->data.inverseViewProjection, DirectX::XMMatrixInverse(nullptr, DirectX::XMLoadFloat4x4(&view) * DirectX::XMLoadFloat4x4(&projection)));
 
-	context->VSSetConstantBuffers(0, 1, mCbBuffer.GetAddressOf());
-	context->PSSetConstantBuffers(0, 1, mCbBuffer.GetAddressOf());
-	context->UpdateSubresource(mCbBuffer.Get(), 0, 0, &mCbScene, 0, 0);
+	mCbBuffer->Activate(context, 0, true, true);
 
 	mShader->Activate(context);
 
@@ -174,11 +135,11 @@ void RenderEffects::ShadowRender(ID3D11DeviceContext* context, ID3D11ShaderResou
 	context->PSSetShaderResources(1, 1, &depthMapSRV);
 	context->PSSetShaderResources(2, 1, &shadowMapSRV);
 
-	context->PSSetSamplers(0, 1, mSamplerState[0].GetAddressOf());
-	context->PSSetSamplers(1, 1, mSamplerState[1].GetAddressOf());
+	//context->PSSetSamplers(0, 1, mSamplerState[0].GetAddressOf());
+	//context->PSSetSamplers(1, 1, mSamplerState[1].GetAddressOf());
 
-	context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
-	context->RSSetState(mRasterizerState.Get());
+	//context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
+	//context->RSSetState(mRasterizerState.Get());
 	context->IASetInputLayout(nullptr);
 	context->IASetVertexBuffers(0, 0, 0, 0, 0);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
@@ -187,27 +148,23 @@ void RenderEffects::ShadowRender(ID3D11DeviceContext* context, ID3D11ShaderResou
 
 	mShader->Deactivate(context);
 
+	mCbBuffer->DeActivate(context);
 	ID3D11ShaderResourceView* nullSRV[3] = {};
 	context->PSSetShaderResources(0, 3, nullSRV);
-	ID3D11Buffer* buffer = nullptr;
-	context->VSSetConstantBuffers(0, 1, &buffer);
-	context->PSSetConstantBuffers(0, 1, &buffer);
 
-	context->OMSetDepthStencilState(nullptr, 0);
-	context->RSSetState(nullptr);
-	ID3D11SamplerState* samplers[2] = { nullptr };
-	context->PSSetSamplers(0, 2, samplers);
+	//context->OMSetDepthStencilState(nullptr, 0);
+	//context->RSSetState(nullptr);
+	//ID3D11SamplerState* samplers[2] = { nullptr };
+	//context->PSSetSamplers(0, 2, samplers);
 
 }
 
 void RenderEffects::DeferrdShadowRender(ID3D11DeviceContext* context, DrowShader* shader, const FLOAT4X4& view, const FLOAT4X4& projection, const FLOAT4X4& lightView, const FLOAT4X4& lightProjection)
 {
-	DirectX::XMStoreFloat4x4(&mCbScene.lightViewProjection, DirectX::XMLoadFloat4x4(&lightView) * DirectX::XMLoadFloat4x4(&lightProjection));
-	DirectX::XMStoreFloat4x4(&mCbScene.inverseViewProjection, DirectX::XMMatrixInverse(nullptr, DirectX::XMLoadFloat4x4(&view) * DirectX::XMLoadFloat4x4(&projection)));
+	DirectX::XMStoreFloat4x4(&mCbBuffer->data.lightViewProjection, DirectX::XMLoadFloat4x4(&lightView) * DirectX::XMLoadFloat4x4(&lightProjection));
+	DirectX::XMStoreFloat4x4(&mCbBuffer->data.inverseViewProjection, DirectX::XMMatrixInverse(nullptr, DirectX::XMLoadFloat4x4(&view) * DirectX::XMLoadFloat4x4(&projection)));
 
-	context->VSSetConstantBuffers(0, 1, mCbBuffer.GetAddressOf());
-	context->PSSetConstantBuffers(0, 1, mCbBuffer.GetAddressOf());
-	context->UpdateSubresource(mCbBuffer.Get(), 0, 0, &mCbScene, 0, 0);
+	mCbBuffer->Activate(context, 0, true, true);
 
 	shader->Activate(context);
 
@@ -224,6 +181,14 @@ void RenderEffects::DeferrdShadowRender(ID3D11DeviceContext* context, DrowShader
 	context->Draw(4, 0);
 
 	shader->Deactivate(context);
+	mCbBuffer->DeActivate(context);
+	ID3D11ShaderResourceView* nullSRV[3] = {};
+	context->PSSetShaderResources(0, 3, nullSRV);
+
+	context->OMSetDepthStencilState(nullptr, 0);
+	context->RSSetState(nullptr);
+	ID3D11SamplerState* samplers[2] = { nullptr };
+	context->PSSetSamplers(0, 2, samplers);
 
 }
 
@@ -234,7 +199,7 @@ void RenderEffects::Load(std::string fileName)
 	FILE* fp;
 	if (fopen_s(&fp, filePas.c_str(), "rb") == 0)
 	{
-		fread(&mCbScene.data, sizeof(SaveData), 1, fp);
+		fread(&mCbBuffer->data.saveData, sizeof(SaveData), 1, fp);
 		fclose(fp);
 	}
 }
@@ -246,7 +211,7 @@ void RenderEffects::Save(std::string fileName)
 	FILE* fp;
 	fopen_s(&fp, filePas.c_str(), "wb");
 	{
-		fwrite(&mCbScene.data, sizeof(SaveData), 1, fp);
+		fwrite(&mCbBuffer->data.saveData, sizeof(SaveData), 1, fp);
 		fclose(fp);
 	}
 

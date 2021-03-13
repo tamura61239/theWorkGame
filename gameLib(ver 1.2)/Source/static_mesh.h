@@ -7,6 +7,7 @@
 #include"serialize_function.h"
 #include"shader_type.h"
 #include"drow_shader.h"
+#include"constant_buffer.h"
 
 struct TextureMapData
 {
@@ -156,20 +157,6 @@ public:
 	void VelocityEnd(ID3D11DeviceContext* context);
 
 private:
-	std::vector<std::unique_ptr<DrowShader>>mShader;
-	std::unique_ptr<DrowShader>mShadowShader;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbScene;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbObj;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbBeforeObj;
-
-
-	Microsoft::WRL::ComPtr<ID3D11RasterizerState>mRasterizerState;
-	Microsoft::WRL::ComPtr<ID3D11RasterizerState>mShadowRasterizerState;
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilState>mDepthStencilState;
-
-	Microsoft::WRL::ComPtr<ID3D11SamplerState>mDiffuseSamplerState;
-	Microsoft::WRL::ComPtr<ID3D11SamplerState>mNormalSamplerState;
-
 	struct CbScene
 	{
 		FLOAT4X4 view;
@@ -180,5 +167,20 @@ private:
 		VECTOR4F color;
 		FLOAT4X4 world;
 	};
+
+	std::vector<std::unique_ptr<DrowShader>>mShader;
+	std::unique_ptr<DrowShader>mShadowShader;
+	std::unique_ptr<ConstantBuffer<CbScene>>mCbScene;
+	std::unique_ptr<ConstantBuffer<CbObj>>mCbObj;
+	std::unique_ptr<ConstantBuffer<FLOAT4X4>>mCbBeforeObj;
+
+
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState>mRasterizerState;
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState>mShadowRasterizerState;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilState>mDepthStencilState;
+
+	Microsoft::WRL::ComPtr<ID3D11SamplerState>mDiffuseSamplerState;
+	Microsoft::WRL::ComPtr<ID3D11SamplerState>mNormalSamplerState;
+
 
 };

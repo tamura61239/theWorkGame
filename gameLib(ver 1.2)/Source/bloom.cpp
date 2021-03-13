@@ -12,6 +12,7 @@ BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHi
 	memset(&mEditorData, 0, sizeof(mEditorData));
 	unsigned int wight = static_cast<unsigned int>(screenWidth);
 	unsigned int hight = static_cast<unsigned int>(screenHight);
+	//テクスチャを用意
 	for (int i = 0; i < 5; i++)
 	{
 		mFrameBuffer.push_back(std::make_unique<FrameBuffer>(device, static_cast<int>(wight >> i), static_cast<int>(hight >> i), true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R24G8_TYPELESS));
@@ -22,6 +23,7 @@ BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHi
 	}
 	mFrameBuffer.push_back(std::make_unique<FrameBuffer>(device, static_cast<int>(screenWidth), static_cast<int>(screenHight), true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R24G8_TYPELESS));
 
+	//シェーダーの作成
 	HRESULT hr;
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
 	{
@@ -29,94 +31,16 @@ BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHi
 	};
 	Microsoft::WRL::ComPtr<ID3D11InputLayout>input;
 
-	hr = CreateVSFromCso(device, "Data/shader/bloom_vs.cso", mVSShader.GetAddressOf(), input.GetAddressOf(), inputElementDesc, ARRAYSIZE(inputElementDesc));
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-	hr = CreatePSFromCso(device, "Data/shader/bloomStart_ps.cso", mPSShader[0].GetAddressOf());
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-	hr = CreatePSFromCso(device, "Data/shader/combined_bloom.cso", mPSShader[1].GetAddressOf());
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-	hr = CreatePSFromCso(device, "Data/shader/bloom_blur01_ps.cso", mPSBlurShader[0].GetAddressOf());
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-	hr = CreatePSFromCso(device, "Data/shader/bloom_blur02_ps.cso", mPSBlurShader[1].GetAddressOf());
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-
-	//SamplerStateの生成
+	mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/bloom_vs.cso", "", "Data/shader/bloomStart_ps.cso"));
+	mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/bloom_vs.cso", "", "Data/shader/combined_bloom.cso"));
+	mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/bloom_vs.cso", "", "Data/shader/bloom_blur01_ps.cso"));
+	mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/bloom_vs.cso", "", "Data/shader/bloom_blur02_ps.cso"));
+	//定数バッファの作成
 	{
-		D3D11_SAMPLER_DESC desc;
-		ZeroMemory(&desc, sizeof(desc));
-		desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-		desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-		desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-		desc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-		desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-		desc.MipLODBias = 0;
-		desc.MaxAnisotropy = 16;
-		desc.MinLOD = 0;
-		desc.MaxLOD = D3D11_FLOAT32_MAX;
-		memcpy(desc.BorderColor, &VECTOR4F(.0f, .0f, .0f, .0f), sizeof(VECTOR4F));
-		hr = device->CreateSamplerState(&desc, mSamplerState.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		mCBbuffer = std::make_unique<ConstantBuffer<CbBloom>>(device);
+		mCbBluerbuffer = std::make_unique<ConstantBuffer<CbBluer>>(device);
 	}
-	//DepthStencilStateの生成
-	{
-		D3D11_DEPTH_STENCIL_DESC desc;
-		ZeroMemory(&desc, sizeof(desc));
-		desc.DepthEnable = true;
-		desc.StencilEnable = false;
-		desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-		desc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-		desc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
-		desc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
-		desc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-		desc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
-		desc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-		desc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-		desc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-		desc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
-		desc.BackFace.StencilPassOp = D3D11_STENCIL_OP_INCR;
-		desc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-
-		hr = device->CreateDepthStencilState(&desc, mDepthStencilState.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	}
-	// create rasterizer state : solid mode
-	{
-		D3D11_RASTERIZER_DESC rasterizerDesc = {};
-		rasterizerDesc.FillMode = D3D11_FILL_SOLID; //D3D11_FILL_WIREFRAME, D3D11_FILL_SOLID
-		rasterizerDesc.CullMode = D3D11_CULL_NONE; //D3D11_CULL_NONE, D3D11_CULL_FRONT, D3D11_CULL_BACK   
-		rasterizerDesc.FrontCounterClockwise = false;
-		rasterizerDesc.DepthBias = 0;
-		rasterizerDesc.DepthBiasClamp = 0;
-		rasterizerDesc.SlopeScaledDepthBias = 0;
-		rasterizerDesc.DepthClipEnable = true;
-		rasterizerDesc.ScissorEnable = FALSE;
-		rasterizerDesc.MultisampleEnable = true;
-		rasterizerDesc.AntialiasedLineEnable = false;
-
-
-		hr = device->CreateRasterizerState(&rasterizerDesc, mRasterizeState.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	}
-	{
-		CD3D11_BUFFER_DESC desc;
-		ZeroMemory(&desc, sizeof(desc));
-		desc.Usage = D3D11_USAGE_DEFAULT;
-		desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		desc.CPUAccessFlags = 0;
-		desc.MiscFlags = 0;
-		desc.ByteWidth = sizeof(CbBloom);
-		desc.StructureByteStride = 0;
-		hr = device->CreateBuffer(&desc, nullptr, mCBbuffer.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-		desc.ByteWidth = sizeof(CbBluer);
-		hr = device->CreateBuffer(&desc, nullptr, mCbBluerbuffer.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	}
+	//ファイルからパラメーターを取得
 	for (int i = 0; i < 4; i++)
 	{
 		Load(i);
@@ -173,43 +97,28 @@ void BloomRender::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView*
 {
 
 	auto& editorData = mEditorData[mNowScene];
-	ID3D11Buffer* buffer[] =
-	{
-		mCBbuffer.Get(),
-		mCbBluerbuffer.Get()
-	};
-	context->PSSetConstantBuffers(0, 2, buffer);
-	context->VSSetConstantBuffers(0, 2, buffer);
-	context->PSSetSamplers(0, 1, mSamplerState.GetAddressOf());
 	mFrameBuffer[0]->Clear(context);
 	if (editorData.count <= 0)return;
-
 	mFrameBuffer[0]->Activate(context);
-	CbBloom cbBloom;
-	cbBloom.blurCount = editorData.blurCount;
-	cbBloom.hightBlur = editorData.hightBlur;
-	cbBloom.threshold = editorData.threshold;
-	cbBloom.widthBlur = editorData.widthBlur;
-	context->UpdateSubresource(mCBbuffer.Get(), 0, 0, &cbBloom, 0, 0);
-	context->VSSetShader(mVSShader.Get(), 0, 0);
-	context->PSSetShader(mPSShader[0].Get(), 0, 0);
+	//定数バッファの設定
+	mCBbuffer->data.blurCount = editorData.blurCount;
+	mCBbuffer->data.hightBlur = editorData.hightBlur;
+	mCBbuffer->data.threshold = editorData.threshold;
+	mCBbuffer->data.widthBlur = editorData.widthBlur;
+	mCBbuffer->Activate(context, 0, true, true);
+
+	//シーンから光らせたい部分を別のテクスチャに書き出す
+	mShader[0]->Activate(context);
 	context->PSSetShaderResources(0, 1, &colorSrv);
-	context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
-	context->RSSetState(mRasterizeState.Get());
 	context->IASetInputLayout(nullptr);
 	context->IASetVertexBuffers(0, 0, 0, 0, 0);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	context->Draw(4, 0);
+	mShader[0]->Deactivate(context);
+
 	mFrameBuffer[0]->Deactivate(context);
 
-	//設定
-	context->VSSetShader(mVSShader.Get(), 0, 0);
-	context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
-	context->RSSetState(mRasterizeState.Get());
-	context->IASetInputLayout(nullptr);
-	context->IASetVertexBuffers(0, 0, 0, 0, 0);
-	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-
+	//縮小したテクスチャを取得
 	switch (editorData.mBlurType)
 	{
 	case 0:
@@ -219,57 +128,48 @@ void BloomRender::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView*
 		Blur02(context);
 		break;
 	}
+	//全てのテクスチャを合成
+	mShader[1]->Activate(context);
 	if (!render)
 	{
 		mFrameBuffer[5]->Clear(context);
 		mFrameBuffer[5]->Activate(context);
-		context->VSSetShader(mVSShader.Get(), 0, 0);
-		context->PSSetShader(mPSShader[1].Get(), 0, 0);
 		for (int i = 0; i < 5; i++)
 		{
 			context->PSSetShaderResources(i, 1, mFrameBuffer[i]->GetRenderTargetShaderResourceView().GetAddressOf());
 		}
-		context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
-		context->RSSetState(mRasterizeState.Get());
 		context->IASetInputLayout(nullptr);
 		context->IASetVertexBuffers(0, 0, 0, 0, 0);
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 		context->Draw(4, 0);
 		mFrameBuffer[5]->Deactivate(context);
-		return;
 	}
-	context->VSSetShader(mVSShader.Get(), 0, 0);
-	context->PSSetShader(mPSShader[1].Get(), 0, 0);
-	context->PSSetShaderResources(0, 1, &colorSrv);
-	for (int i = 0; i < 5; i++)
+	else
 	{
-		context->PSSetShaderResources(i + 1, 1, mFrameBuffer[i]->GetRenderTargetShaderResourceView().GetAddressOf());
-	}
-	context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
-	context->RSSetState(mRasterizeState.Get());
-	context->IASetInputLayout(nullptr);
-	context->IASetVertexBuffers(0, 0, 0, 0, 0);
-	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	context->Draw(4, 0);
+		context->PSSetShaderResources(0, 1, &colorSrv);
+		for (int i = 0; i < 5; i++)
+		{
+			context->PSSetShaderResources(i + 1, 1, mFrameBuffer[i]->GetRenderTargetShaderResourceView().GetAddressOf());
+		}
+		context->IASetInputLayout(nullptr);
+		context->IASetVertexBuffers(0, 0, 0, 0, 0);
+		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+		context->Draw(4, 0);
 
-	context->OMSetDepthStencilState(nullptr, 0);
-	context->RSSetState(nullptr);
+
+	}
+	//後処理
+	mShader[1]->Deactivate(context);
+	mCBbuffer->DeActivate(context);
+
 	for (int i = 0; i < 6; i++)
 	{
 		ID3D11ShaderResourceView* srv = nullptr;
 		context->PSSetShaderResources(i, 1, &srv);
 	}
-	context->VSSetShader(nullptr, 0, 0);
-	context->PSSetShader(nullptr, 0, 0);
-	buffer[0] = nullptr;
-	buffer[1] = nullptr;
-	context->PSSetConstantBuffers(0, 2, buffer);
-	context->VSSetConstantBuffers(0, 2, buffer);
-	ID3D11SamplerState* sampler = nullptr;
-	context->PSSetSamplers(0, 1, &sampler);
 
 }
-
+/*********************ファイル操作********************/
 void BloomRender::Load(const int scene)
 {
 	FILE* fp;
@@ -295,7 +195,7 @@ void BloomRender::Blur01(ID3D11DeviceContext* context)
 {
 	auto& editorData = mEditorData[mNowScene];
 
-	context->PSSetShader(mPSBlurShader[0].Get(), 0, 0);
+	mShader[2]->Activate(context);
 
 	for (int i = 1; i < 5; i++)
 	{
@@ -309,12 +209,15 @@ void BloomRender::Blur01(ID3D11DeviceContext* context)
 		mFrameBuffer[i]->Activate(context);
 		D3D11_VIEWPORT viewport = mFrameBuffer[i]->GetViewPort();
 		CalucurateBluer(viewport.Width, viewport.Height, VECTOR2F(editorData.widthBlur, editorData.hightBlur), editorData.deviation, editorData.multiply);
-		context->UpdateSubresource(mCbBluerbuffer.Get(), 0, 0, &mCbBluer, 0, 0);
+		mCbBluerbuffer->Activate(context, 1, true, true);
 
 		context->PSSetShaderResources(0, 1, mFrameBuffer[i - 1]->GetRenderTargetShaderResourceView().GetAddressOf());
 		context->Draw(4, 0);
+		mCbBluerbuffer->DeActivate(context);
+
 		mFrameBuffer[i]->Deactivate(context);
 	}
+	mShader[2]->Deactivate(context);
 
 }
 
@@ -322,7 +225,7 @@ void BloomRender::Blur02(ID3D11DeviceContext* context)
 {
 	auto& editorData = mEditorData[mNowScene];
 
-	context->PSSetShader(mPSBlurShader[1].Get(), 0, 0);
+	mShader[3]->Activate(context);
 
 	for (int i = 1; i < 5; i++)
 	{
@@ -337,22 +240,25 @@ void BloomRender::Blur02(ID3D11DeviceContext* context)
 
 		D3D11_VIEWPORT viewport = mSidoFrameBuffer[i - 1]->GetViewPort();
 		CalucurateBluer(viewport.Width, viewport.Height, VECTOR2F(editorData.widthBlur, 0), editorData.deviation, editorData.multiply);
-		context->UpdateSubresource(mCbBluerbuffer.Get(), 0, 0, &mCbBluer, 0, 0);
+		mCbBluerbuffer->Activate(context,1, true, true);
 
 		context->PSSetShaderResources(0, 1, mFrameBuffer[i - 1]->GetRenderTargetShaderResourceView().GetAddressOf());
 		context->Draw(4, 0);
+		mCbBluerbuffer->DeActivate(context);
 
 		mSidoFrameBuffer[i - 1]->Deactivate(context);
 		mFrameBuffer[i]->Clear(context);
 		mFrameBuffer[i]->Activate(context);
 		viewport = mFrameBuffer[i]->GetViewPort();
 		CalucurateBluer(viewport.Width, viewport.Height, VECTOR2F(0, editorData.hightBlur), editorData.deviation, editorData.multiply);
-		context->UpdateSubresource(mCbBluerbuffer.Get(), 0, 0, &mCbBluer, 0, 0);
+		mCbBluerbuffer->Activate(context, 1, true, true);
 
 		context->PSSetShaderResources(0, 1, mSidoFrameBuffer[i - 1]->GetRenderTargetShaderResourceView().GetAddressOf());
 		context->Draw(4, 0);
+		mCbBluerbuffer->DeActivate(context);
 		mFrameBuffer[i]->Deactivate(context);
 	}
+	mShader[3]->Deactivate(context);
 
 }
 
@@ -366,27 +272,27 @@ void BloomRender::CalucurateBluer(const float width, const float hight, const VE
 	float uvX = 1.0f / width;
 	float uvY = 1.0f / hight;
 
-	mCbBluer.mOffset[0].z = GaussianDistribution(VECTOR2F(0, 0), deviation) * multiply;
-	float totalWeigh = mCbBluer.mOffset[0].z;
+	mCbBluerbuffer->data.mOffset[0].z = GaussianDistribution(VECTOR2F(0, 0), deviation) * multiply;
+	float totalWeigh = mCbBluerbuffer->data.mOffset[0].z;
 
-	mCbBluer.mOffset[0].x = 0;
-	mCbBluer.mOffset[0].y = 0;
+	mCbBluerbuffer->data.mOffset[0].x = 0;
+	mCbBluerbuffer->data.mOffset[0].y = 0;
 	for (int i = 1; i < 8; i++)
 	{
-		mCbBluer.mOffset[i].x = dir.x * i * uvX;
-		mCbBluer.mOffset[i].y = dir.y * i * uvY;
-		mCbBluer.mOffset[i].z = GaussianDistribution(dir * float(i), deviation) * multiply;
-		totalWeigh += mCbBluer.mOffset[i].z * 2.0f;
+		mCbBluerbuffer->data.mOffset[i].x = dir.x * i * uvX;
+		mCbBluerbuffer->data.mOffset[i].y = dir.y * i * uvY;
+		mCbBluerbuffer->data.mOffset[i].z = GaussianDistribution(dir * float(i), deviation) * multiply;
+		totalWeigh += mCbBluerbuffer->data.mOffset[i].z * 2.0f;
 	}
 	for (int i = 0; i < 8; i++)
 	{
-		mCbBluer.mOffset[i].z /= totalWeigh;
+		mCbBluerbuffer->data.mOffset[i].z /= totalWeigh;
 	}
 	for (auto i = 8; i < 15; ++i)
 	{
-		mCbBluer.mOffset[i].x = -mCbBluer.mOffset[i - 7].x;
-		mCbBluer.mOffset[i].y = -mCbBluer.mOffset[i - 7].y;
-		mCbBluer.mOffset[i].z = mCbBluer.mOffset[i - 7].z;
+		mCbBluerbuffer->data.mOffset[i].x = -mCbBluerbuffer->data.mOffset[i - 7].x;
+		mCbBluerbuffer->data.mOffset[i].y = -mCbBluerbuffer->data.mOffset[i - 7].y;
+		mCbBluerbuffer->data.mOffset[i].z = mCbBluerbuffer->data.mOffset[i - 7].z;
 	}
 
 }

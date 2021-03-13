@@ -19,62 +19,62 @@ void GpuParticleManager::CreateBuffer(ID3D11Device* device)
 		hr = device->CreateBuffer(&desc, nullptr, mCbScene.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
-	//ラスタライザーステート
-	{
-		D3D11_RASTERIZER_DESC desc = {};
-		ZeroMemory(&desc, sizeof(D3D11_RASTERIZER_DESC));
-		desc.FillMode = D3D11_FILL_SOLID; //D3D11_FILL_WIREFRAME, D3D11_FILL_SOLID
-		desc.CullMode = D3D11_CULL_NONE; //D3D11_CULL_NONE, D3D11_CULL_FRONT, D3D11_CULL_BACK   
-		desc.FrontCounterClockwise = FALSE;
-		desc.DepthBias = 0;
-		desc.DepthBiasClamp = 0;
-		desc.SlopeScaledDepthBias = 0;
-		desc.DepthClipEnable = true;
-		desc.ScissorEnable = FALSE;
-		desc.MultisampleEnable = true;
-		desc.AntialiasedLineEnable = FALSE;
-		hr = device->CreateRasterizerState(&desc, mRasterizer.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	////ラスタライザーステート
+	//{
+	//	D3D11_RASTERIZER_DESC desc = {};
+	//	ZeroMemory(&desc, sizeof(D3D11_RASTERIZER_DESC));
+	//	desc.FillMode = D3D11_FILL_SOLID; //D3D11_FILL_WIREFRAME, D3D11_FILL_SOLID
+	//	desc.CullMode = D3D11_CULL_NONE; //D3D11_CULL_NONE, D3D11_CULL_FRONT, D3D11_CULL_BACK   
+	//	desc.FrontCounterClockwise = FALSE;
+	//	desc.DepthBias = 0;
+	//	desc.DepthBiasClamp = 0;
+	//	desc.SlopeScaledDepthBias = 0;
+	//	desc.DepthClipEnable = true;
+	//	desc.ScissorEnable = FALSE;
+	//	desc.MultisampleEnable = true;
+	//	desc.AntialiasedLineEnable = FALSE;
+	//	hr = device->CreateRasterizerState(&desc, mRasterizer.GetAddressOf());
+	//	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-	}
-	//深度ステンシル
-	{
-		D3D11_DEPTH_STENCIL_DESC desc = {};
-		ZeroMemory(&desc, sizeof(desc));
-		desc.DepthEnable = TRUE;
-		desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-		desc.DepthFunc = D3D11_COMPARISON_NOT_EQUAL;
-		desc.StencilEnable = FALSE;
-		desc.StencilReadMask = 0xFF;
-		desc.StencilWriteMask = 0xFF;
-		desc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-		desc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
-		desc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-		desc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-		desc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-		desc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
-		desc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-		desc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-		hr = device->CreateDepthStencilState(&desc, mDepth.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	//}
+	////深度ステンシル
+	//{
+	//	D3D11_DEPTH_STENCIL_DESC desc = {};
+	//	ZeroMemory(&desc, sizeof(desc));
+	//	desc.DepthEnable = TRUE;
+	//	desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	//	desc.DepthFunc = D3D11_COMPARISON_NOT_EQUAL;
+	//	desc.StencilEnable = FALSE;
+	//	desc.StencilReadMask = 0xFF;
+	//	desc.StencilWriteMask = 0xFF;
+	//	desc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	//	desc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+	//	desc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	//	desc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+	//	desc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	//	desc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+	//	desc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	//	desc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+	//	hr = device->CreateDepthStencilState(&desc, mDepth.GetAddressOf());
+	//	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-	}
-	{
-		D3D11_SAMPLER_DESC desc;
-		ZeroMemory(&desc, sizeof(desc));
-		desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-		desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-		desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-		desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-		desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-		desc.MinLOD = -FLT_MAX;
-		desc.MaxLOD = FLT_MAX;
-		desc.MaxAnisotropy = 16;
-		memcpy(desc.BorderColor, &VECTOR4F(1.0f, 1.0f, 1.0f, 1.0f), sizeof(VECTOR4F));
-		hr = device->CreateSamplerState(&desc, mSamplerState.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	//}
+	//{
+	//	D3D11_SAMPLER_DESC desc;
+	//	ZeroMemory(&desc, sizeof(desc));
+	//	desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+	//	desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	//	desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	//	desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	//	desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	//	desc.MinLOD = -FLT_MAX;
+	//	desc.MaxLOD = FLT_MAX;
+	//	desc.MaxAnisotropy = 16;
+	//	memcpy(desc.BorderColor, &VECTOR4F(1.0f, 1.0f, 1.0f, 1.0f), sizeof(VECTOR4F));
+	//	hr = device->CreateSamplerState(&desc, mSamplerState.GetAddressOf());
+	//	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-	}
+	//}
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
 	{
 		{"POSITION",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
@@ -237,14 +237,11 @@ void GpuParticleManager::ResultImGui()
 
 void GpuParticleManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, bool drowMullti)
 {
-	context->OMSetDepthStencilState(mDepth.Get(), 0);
-	context->RSSetState(mRasterizer.Get());
 	ID3D11Buffer* buffer = mCbScene.Get();
 	ID3D11SamplerState* sampler = mSamplerState.Get();
 	context->VSSetConstantBuffers(0, 1, &buffer);
 	context->GSSetConstantBuffers(0, 1, &buffer);
 	context->PSSetConstantBuffers(0, 1, &buffer);
-	context->PSSetSamplers(0, 1, &sampler);
 
 	CbScene cbScene;
 	cbScene.view = view;
@@ -267,21 +264,17 @@ void GpuParticleManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& vi
 		mFireworksParticle->Render(context);
 		break;
 	}
-	context->OMSetDepthStencilState(nullptr, 0);
-	context->RSSetState(nullptr);
 	buffer = nullptr;
 	context->VSSetConstantBuffers(0, 1, &buffer);
 	context->GSSetConstantBuffers(0, 1, &buffer);
 	context->PSSetConstantBuffers(0, 1, &buffer);
-	sampler = nullptr;
-	context->PSSetSamplers(0, 1, &sampler);
 
 }
 
 void GpuParticleManager::VelocityRender(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection)
 {
-	context->OMSetDepthStencilState(mDepth.Get(), 0);
-	context->RSSetState(mRasterizer.Get());
+	//context->OMSetDepthStencilState(mDepth.Get(), 0);
+	//context->RSSetState(mRasterizer.Get());
 	ID3D11Buffer* buffer = mCbScene.Get();
 	context->VSSetConstantBuffers(0, 1, &buffer);
 	context->GSSetConstantBuffers(0, 1, &buffer);
@@ -308,8 +301,8 @@ void GpuParticleManager::VelocityRender(ID3D11DeviceContext* context, const FLOA
 #endif
 		break;
 	}
-	context->OMSetDepthStencilState(nullptr, 0);
-	context->RSSetState(nullptr);
+	//context->OMSetDepthStencilState(nullptr, 0);
+	//context->RSSetState(nullptr);
 	buffer = nullptr;
 	context->VSSetConstantBuffers(0, 1, &buffer);
 	context->GSSetConstantBuffers(0, 1, &buffer);

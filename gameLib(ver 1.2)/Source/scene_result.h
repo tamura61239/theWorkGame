@@ -10,6 +10,8 @@
 #include"fade.h"
 #include"sky_map.h"
 #include"stage_manager.h"
+#include"render_state.h"
+#include"sampler_state.h"
 
 
 class SceneResult :public Scene
@@ -64,4 +66,12 @@ private:
 	std::unique_ptr<SkyMap>sky;
 	std::unique_ptr<StageManager>mSManager;
 	std::unique_ptr<DrowShader>mMotionBlurShader;
+	std::unique_ptr<RasterizerState>mRasterizer;
+	std::unique_ptr<DepthStencilState>mDepthStencil;
+	enum samplerType
+	{
+		wrap, clamp, max
+	};
+	std::unique_ptr<SamplerState>mSampler[samplerType::max];
+
 };

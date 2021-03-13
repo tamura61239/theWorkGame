@@ -10,7 +10,7 @@
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
-SceneTitle::SceneTitle(ID3D11Device* device):mEditorFlag(true), mTestMove(false)
+SceneTitle::SceneTitle(ID3D11Device* device) :mEditorFlag(true), mTestMove(false)
 {
 	loading_thread = std::make_unique<std::thread>([&](ID3D11Device* device)
 		{
@@ -18,7 +18,7 @@ SceneTitle::SceneTitle(ID3D11Device* device):mEditorFlag(true), mTestMove(false)
 			GpuParticleManager::Create();
 			pGpuParticleManager->CreateTitleBuffer(device);
 			pGpuParticleManager->SetState(GpuParticleManager::STATE::TITLE);
-			pCameraManager->Initialize(device,0);
+			pCameraManager->Initialize(device, 0);
 			pCameraManager->GetCamera()->SetEye(VECTOR3F(0, 0, -200));
 			pCameraManager->GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::TITLE_CAMERA);
 			pCameraManager->GetCameraOperation()->GetTitleCamera()->Load(pCameraManager->GetCamera());
@@ -31,7 +31,7 @@ SceneTitle::SceneTitle(ID3D11Device* device):mEditorFlag(true), mTestMove(false)
 			//std::unique_ptr<ModelData>data = std::make_unique<ModelData>("Data/FBX/new_player_anim.fbx");
 			//std::shared_ptr<ModelResource>resouce = std::make_shared<ModelResource>(device, std::move(data));
 			pLight.CreateLightBuffer(device);
-			
+
 			//obj = std::make_unique<StaticObj>(device, "Data/FBX/Mr.Incredible/Mr.Incredible.fbx");
 			//mRender = std::make_unique<MeshRender>(device);
 			//character->GetModel()->PlayAnimation(0, true);
@@ -60,7 +60,10 @@ SceneTitle::SceneTitle(ID3D11Device* device):mEditorFlag(true), mTestMove(false)
 			test = std::make_unique<Sprite>(device/*, L"Data/image/change_color.png"*/);
 			blend[0] = std::make_unique<BlendState>(device, BLEND_MODE::ADD);
 			blend[1] = std::make_unique<BlendState>(device, BLEND_MODE::ALPHA);
-
+			mSampler[samplerType::wrap] = std::make_unique<SamplerState>(device);
+			mSampler[samplerType::clamp] = std::make_unique<SamplerState>(device, D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_CLAMP);
+			mRasterizer = std::make_unique<RasterizerState>(device, D3D11_FILL_SOLID, D3D11_CULL_NONE, false, true, false, true, false);
+			mDepthStencil = std::make_unique<DepthStencilState>(device, true, D3D11_DEPTH_WRITE_MASK_ALL, D3D11_COMPARISON_LESS_EQUAL);
 		}, device);
 	mLoading = true;
 	screenShot = false;
@@ -117,7 +120,7 @@ void SceneTitle::Editor()
 			screenShot = true;
 		}
 
-	}
+}
 #endif
 	ImGui::RadioButton("LIGHT", &editorNum, 0);
 	ImGui::RadioButton("UI", &editorNum, 1);
@@ -171,7 +174,7 @@ void SceneTitle::Editor()
 
 void SceneTitle::Update(float elapsed_time)
 {
-	if (IsNowLoading()||!renderFlag)
+	if (IsNowLoading() || !renderFlag)
 	{
 		return;
 	}
@@ -212,15 +215,19 @@ void SceneTitle::Render(ID3D11DeviceContext* context, float elapsed_time)
 		renderFlag = true;
 		return;
 	}
+	mRasterizer->Activate(context);
+	mDepthStencil->Activate(context);
+	mSampler[samplerType::wrap]->Activate(context, 0, true, true, true);
+	mSampler[samplerType::clamp]->Activate(context, 2, true, true, true);
 
 	frameBuffer[0]->Clear(context);
 	frameBuffer[0]->Activate(context);
 	FLOAT4X4 view = pCameraManager->GetCamera()->GetView();
 	FLOAT4X4 projection = pCameraManager->GetCamera()->GetProjection();
-    blend[1]->activate(context);
+	blend[1]->activate(context);
 	pGpuParticleManager->Render(context, view, projection);
-	
-	if(!screenShot&&pGpuParticleManager->GetTitleTextureParticle()->GetTextuteFlag())UIManager::GetInctance()->Render(context);
+
+	if (!screenShot && pGpuParticleManager->GetTitleTextureParticle()->GetTextuteFlag())UIManager::GetInctance()->Render(context);
 	blend[1]->deactivate(context);
 
 	frameBuffer[0]->Deactivate(context);
@@ -237,7 +244,7 @@ void SceneTitle::Render(ID3D11DeviceContext* context, float elapsed_time)
 	if (pCameraManager->GetCameraOperation()->GetTitleCamera()->GetMoveFlag())
 	{
 		mCbZoomBuffer->Activate(context, 0, true, true);
-		test->Render(context,mBluer.get(), frameBuffer[1]->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+		test->Render(context, mBluer.get(), frameBuffer[1]->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 		mCbZoomBuffer->DeActivate(context);
 
 	}
@@ -256,7 +263,10 @@ void SceneTitle::Render(ID3D11DeviceContext* context, float elapsed_time)
 	}
 	mFade->Render(context);
 	blend[0]->deactivate(context);
-
+	mRasterizer->DeActivate(context);
+	mDepthStencil->DeActive(context);
+	mSampler[samplerType::wrap]->DeActivate(context);
+	mSampler[samplerType::clamp]->DeActivate(context);
 }
 
 SceneTitle::~SceneTitle()

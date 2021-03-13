@@ -4,6 +4,7 @@
 #include "model.h"
 #include"drow_shader.h"
 #include<vector>
+#include"constant_buffer.h"
 
 class ModelRenderer
 {
@@ -44,18 +45,12 @@ private:
 	};
 
 
-	Microsoft::WRL::ComPtr<ID3D11Buffer>			mCbScene;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>			mCbMesh;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>			mCbSubset;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>            mCbBeforeMesh;
+	std::unique_ptr<ConstantBuffer<CbScene>>			mCbScene;
+	std::unique_ptr<ConstantBuffer<CbMesh>>			mCbMesh;
+	std::unique_ptr<ConstantBuffer<CbSubset>>			mCbSubset;
 
 	std::vector<std::unique_ptr<DrowShader>>mShader;
 	std::unique_ptr<DrowShader>mShadowShader;
 
-	Microsoft::WRL::ComPtr<ID3D11BlendState>		mBlendState;
-	Microsoft::WRL::ComPtr<ID3D11RasterizerState>	mRasterizerState;
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilState>	mDepthStencilState;
-
-	Microsoft::WRL::ComPtr<ID3D11SamplerState>		mSamplerState[2];
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	mDummySRV;
 };

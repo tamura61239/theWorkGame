@@ -98,7 +98,7 @@ SelectSceneParticle::SelectSceneParticle(ID3D11Device* device):mIndexCount(0), m
 		std::vector<Particle>particles;
 		particles.resize(static_cast<size_t>(mMaxParticle));
 		std::vector<RenderParticle>renderParticles;
-		renderParticles.resize(mMaxParticle);
+		renderParticles.resize(static_cast<size_t>(mMaxParticle));
 
 		D3D11_BUFFER_DESC desc;
 		ZeroMemory(&desc, sizeof(desc));
@@ -107,7 +107,7 @@ SelectSceneParticle::SelectSceneParticle(ID3D11Device* device):mIndexCount(0), m
 		desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED; // 構造化バッファ
 		desc.StructureByteStride = sizeof(Particle);
 		desc.Usage = D3D11_USAGE_DEFAULT;//ステージの入出力はOK。GPUの入出力OK。
-		desc.ByteWidth = sizeof(Particle) * mMaxParticle;
+		desc.ByteWidth = static_cast<UINT>(sizeof(Particle) * mMaxParticle);
 		D3D11_SUBRESOURCE_DATA data;
 		ZeroMemory(&data, sizeof(data));
 		data.pSysMem = &particles[0];
@@ -115,7 +115,7 @@ SelectSceneParticle::SelectSceneParticle(ID3D11Device* device):mIndexCount(0), m
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		//描画用バッファ
 		desc.BindFlags = D3D11_BIND_VERTEX_BUFFER | D3D11_BIND_UNORDERED_ACCESS;
-		desc.ByteWidth = sizeof(RenderParticle) * mMaxParticle;
+		desc.ByteWidth = static_cast<UINT>(sizeof(RenderParticle) * mMaxParticle);
 		desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS;
 		desc.CPUAccessFlags = 0;
 		desc.StructureByteStride = 0;
@@ -125,10 +125,10 @@ SelectSceneParticle::SelectSceneParticle(ID3D11Device* device):mIndexCount(0), m
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		//パーティクルのindexバッファ
 		desc.BindFlags = D3D11_BIND_INDEX_BUFFER | D3D11_BIND_UNORDERED_ACCESS;
-		desc.ByteWidth = sizeof(UINT) * mMaxParticle;
+		desc.ByteWidth = static_cast<UINT>(sizeof(UINT) * mMaxParticle);
 		std::vector<UINT>indices;
-		indices.resize(mMaxParticle);
-		memset(indices.data(), 0, sizeof(UINT)* mMaxParticle);
+		indices.resize(static_cast<size_t>(mMaxParticle));
+		memset(indices.data(), 0, static_cast<size_t>(sizeof(UINT)* mMaxParticle));
 		data.pSysMem = &indices[0];
 
 		for (auto& index : mParticleIndexBuffer)
@@ -142,7 +142,7 @@ SelectSceneParticle::SelectSceneParticle(ID3D11Device* device):mIndexCount(0), m
 		desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
 		ParticleCount particleCount;
 		memset(&particleCount, 0, sizeof(particleCount));
-		particleCount.deActiveParticleCount = mMaxParticle;
+		particleCount.deActiveParticleCount = static_cast<UINT>(mMaxParticle);
 		data.pSysMem = &particleCount;
 		hr = device->CreateBuffer(&desc, &data, mParticleCountBuffer.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
@@ -157,7 +157,7 @@ SelectSceneParticle::SelectSceneParticle(ID3D11Device* device):mIndexCount(0), m
 		desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED; // 構造化バッファ
 		desc.StructureByteStride = sizeof(UINT);
 		desc.Usage = D3D11_USAGE_DEFAULT;//ステージの入出力はOK。GPUの入出力OK。
-		desc.ByteWidth = sizeof(UINT) * mMaxParticle;
+		desc.ByteWidth = static_cast<UINT>(sizeof(UINT) * mMaxParticle);
 		hr = device->CreateBuffer(&desc, &data, deleteIndexBuffer.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
@@ -167,7 +167,7 @@ SelectSceneParticle::SelectSceneParticle(ID3D11Device* device):mIndexCount(0), m
 	{
 		D3D11_UNORDERED_ACCESS_VIEW_DESC desc;
 		ZeroMemory(&desc, sizeof(desc));
-		desc.Buffer.NumElements = mMaxParticle;
+		desc.Buffer.NumElements = static_cast<UINT>(mMaxParticle);
 		desc.Format = DXGI_FORMAT_UNKNOWN;
 		desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
 		hr = device->CreateUnorderedAccessView(particleBuffer.Get(), &desc, mParticleUAV.GetAddressOf());
@@ -180,11 +180,11 @@ SelectSceneParticle::SelectSceneParticle(ID3D11Device* device):mIndexCount(0), m
 		desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
 		desc.Buffer.FirstElement = 0;
 		desc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_RAW;
-		desc.Buffer.NumElements = sizeof(RenderParticle) * mMaxParticle / 4;
+		desc.Buffer.NumElements = static_cast<UINT>(sizeof(RenderParticle) * mMaxParticle / 4);
 		hr = device->CreateUnorderedAccessView(mRenderBuffer.Get(), &desc, mRenderUAV.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		//indexバッファのUAV
-		desc.Buffer.NumElements = sizeof(UINT) * mMaxParticle / 4;
+		desc.Buffer.NumElements = static_cast<UINT>(sizeof(UINT) * mMaxParticle / 4);
 		for (int i = 0; i < 2; i++)
 		{
 			hr = device->CreateUnorderedAccessView(mParticleIndexBuffer[i].Get(), &desc, mParticleIndexUAV[i].GetAddressOf());
@@ -370,7 +370,7 @@ void SelectSceneParticle::Update(float elapsdTime, ID3D11DeviceContext* context)
 	context->CSSetShader(mCSShader.Get(), nullptr, 0);
 	mCbUpdate->data.elapsdTime = elapsdTime;
 	mCbUpdate->Activate(context, 1, false, false, false, true);
-	context->Dispatch(mMaxParticle / 100, 1, 1);
+	context->Dispatch(static_cast<UINT>(mMaxParticle * 0.01f), 1, 1);
 	mCbUpdate->DeActivate(context);
 	//パーティクルカウントの更新
 	context->CSSetShader(mCSEndShader.Get(), nullptr, 0);

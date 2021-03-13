@@ -24,6 +24,8 @@
 #include"tutorial_state.h"
 #include"zoom_blur_parameter.h"
 #include"constant_buffer.h"
+#include"sampler_state.h"
+#include"render_state.h"
 
 
 class SceneGame :public Scene
@@ -62,16 +64,10 @@ private:
 	std::unique_ptr<Sprite>nowLoading;
 	std::unique_ptr<Sprite>siro;
 	std::unique_ptr<Sprite>pushKey;
-	std::unique_ptr<StaticMesh>mesh;
-	std::vector<std::unique_ptr<StaticMesh>>meshs;
-	std::vector<std::unique_ptr<StaticObj>>staticObjs;
-	std::unique_ptr<MeshRender>meshRender;
-	std::unique_ptr<MulltiRenderTargetFunction>mullti;
 	std::unique_ptr<FrameBuffer>shadowMap;
 	std::shared_ptr<FrameBuffer>frameBuffer;
 	std::shared_ptr<FrameBuffer>frameBuffer3;
 	std::shared_ptr<FrameBuffer>velocityMap;
-	std::shared_ptr<FrameBuffer>saveFrameBuffer;
 	std::shared_ptr<FrameBuffer>shadowRenderBuffer;
 	std::shared_ptr<FrameBuffer>frameBuffer2;
 	std::unique_ptr<RenderEffects>renderEffects;
@@ -90,6 +86,13 @@ private:
 	std::unique_ptr<LightView>mLightView;
 	std::unique_ptr<TutorialState>mTutorialState;
 	std::unique_ptr<ConstantBuffer<CbZoom>>mCbZoomBuffer;
+	enum samplerType
+	{
+		warp,border, clamp,max
+	};
+	std::unique_ptr<SamplerState>mSampler[samplerType::max];
+	std::unique_ptr<RasterizerState>mRasterizer;
+	std::unique_ptr<DepthStencilState>mDepthStencil;
 	bool stop;
 	int editorNo;
 	bool selectSceneFlag;
