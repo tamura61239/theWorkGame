@@ -1,5 +1,4 @@
 #pragma once
-#include"stage_manager.h"
 #include"stage_borad.h"
 
 class StageSelect
@@ -7,11 +6,10 @@ class StageSelect
 public:
 	StageSelect(ID3D11Device* device,const int maxCount);
 	void ImGuiUpdate();
-	void Update(float elapsdTime,StageManager*manager);
-	void Select(StageManager* manager);
+	bool Update(float elapsdTime);
+	void Select();
 	void Render(ID3D11DeviceContext* context);
-	const bool GetSelectFlag() { return mSelectSceneFlag; }
-	void SetSelectFlag(const bool flag) { mSelectSceneFlag = flag; }
+	const int GetSelectNumber() { return mSelectNumber; }
 private:
 	void Load();
 	void Save();

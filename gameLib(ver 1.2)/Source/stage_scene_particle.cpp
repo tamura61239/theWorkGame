@@ -359,11 +359,11 @@ void StageSceneParticle::Render(ID3D11DeviceContext* context)
 
 	ID3D11ShaderResourceView* srv = nullptr;
 	context->PSSetShaderResources(0, 1, &srv);
-	offset = 0;
-	vertex = nullptr;
-	index = nullptr;
-	context->IASetVertexBuffers(0, 1, &vertex, &stride, &offset);
-	context->IASetIndexBuffer(index, DXGI_FORMAT_R32_UINT, 0);
+	//offset = 0;
+	//vertex = nullptr;
+	//index = nullptr;
+	//context->IASetVertexBuffers(0, 1, &vertex, &stride, &offset);
+	//context->IASetIndexBuffer(index, DXGI_FORMAT_R32_UINT, 0);
 
 }
 

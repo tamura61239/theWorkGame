@@ -345,6 +345,9 @@
     <ClCompile Include="Source\cubebuffer.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
+    <ClCompile Include="Source\scene_select.cpp">
+      <Filter>ソース ファイル\Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="External_Libraries\imgui\imconfig.h">
@@ -634,6 +637,9 @@
     </ClInclude>
     <ClInclude Include="Source\render_state.h">
       <Filter>gameLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\scene_select.h">
+      <Filter>ヘッダー ファイル\Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

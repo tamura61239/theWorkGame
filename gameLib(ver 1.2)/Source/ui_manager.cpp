@@ -1,6 +1,8 @@
 #include "ui_manager.h"
 #include"gpu_particle_manager.h"
 #include"vector_combo.h"
+#include"stage_manager.h"
+#include"ranking.h"
 #ifdef USE_IMGUI
 #include"imgui.h"
 #endif
@@ -34,6 +36,7 @@ void UIManager::TitleInitialize(ID3D11Device* device)
 #else
 	mMoveStartFlag = true;
 #endif
+	mUIMaxCount = mUIs.size();
 
 }
 
@@ -56,6 +59,7 @@ void UIManager::GameInitialize(ID3D11Device* device)
 	mSceneName = "game";
 	Load(mSceneName.c_str());
 	mDebugUIFrameFlag = false;
+	mUIMaxCount = mUIs.size();
 
 }
 
@@ -64,18 +68,21 @@ void UIManager::ResultInitialize(ID3D11Device* device)
 	mDebugUIFrame = std::make_unique<UI>(device, L"Data/image/òg.png", VECTOR2F(500, 500), "");
 
 	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/Åõ.png", VECTOR2F(800, 800), "frame"));
-	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/retry.png", VECTOR2F(250, 80), "retry"));
-	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/title.png", VECTOR2F(250, 80), "title"));
-
+	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/retry.png", VECTOR2F(300, 80), "retry"));
+	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/title.png", VECTOR2F(300, 80), "title"));
+	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/stageselect.png", VECTOR2F(300, 80), "stage select"));
+	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/nextstage.png", VECTOR2F(300, 80), "next stage"));
+	mUIMaxCount = mUIs.size();
 	mResultMove = std::make_unique<ResultUIMove>();
-	for (auto& ui : mUIs)
-	{
-		mNames.push_back(ui->GetName());
-	}
 	mUINumber = 0;
 	mSceneName = "result";
 	Load(mSceneName.c_str());
 	mDebugUIFrameFlag = false;
+	if (Ranking::GetStageNo() == StageManager::GetMaxStageCount() - 1)mUIMaxCount--;
+	for (int i=0;i<mUIMaxCount;i++)
+	{
+		mNames.push_back(mUIs[i]->GetName());
+	}
 
 }
 
@@ -91,6 +98,7 @@ void UIManager::ClearUI()
 {
 	mUIs.clear();
 	mNames.clear();
+	mUIMaxCount = 0;
 }
 
 void UIManager::ImGuiUpdate()
@@ -214,18 +222,18 @@ void UIManager::Update(float elapsdTime)
 	}
 	else if (mSceneName._Equal("result"))
 	{
-		mResultMove->Update(elapsdTime, mUIs);
+		mResultMove->Update(elapsdTime, mUIs, mUIMaxCount);
 	}
 }
 
 void UIManager::Render(ID3D11DeviceContext* context)
 {
-	for (auto& ui : mUIs)
+	for (int i=0;i< mUIMaxCount;i++)
 	{
-		ui->Render(context);
+		mUIs[i]->Render(context);
 #ifdef USE_IMGUI
 		if (!mDebugUIFrameFlag)continue;
-		auto& data = ui->GetUIData();
+		auto& data = mUIs[i]->GetUIData();
 		auto& data2 = mDebugUIFrame->GetUIData();
 		data2.mLeftPosition = data.mLeftPosition;
 		data2.mDrowSize = data.mDrowSize;

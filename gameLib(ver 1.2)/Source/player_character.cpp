@@ -10,10 +10,12 @@ void PlayerCharacter::Move(float elapsd_time)
 {
 	mBeforePosition = mPosition;
 	mVelocity += mAccel * elapsd_time;
-	float speed = sqrtf(mVelocity.z * mVelocity.z);
+	float speed;
+	DirectX::XMVECTOR velocity = DirectX::XMLoadFloat3(&VECTOR3F(0,0,mVelocity.z));
+	DirectX::XMStoreFloat(&speed, DirectX::XMVector3Length(velocity));
 	if (speed > mMaxSpeed)
 	{
-		mVelocity.z =  mMaxSpeed;
+		mVelocity.z = mMaxSpeed;
 	}
 	mChangState = false;
 

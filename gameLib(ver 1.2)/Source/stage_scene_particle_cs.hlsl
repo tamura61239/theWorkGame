@@ -53,7 +53,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         if (particle.life > 0)
         {
             particle.accel += windDirection * elapsdTime;
-            particle.velocity += (normalize(snoise(normalize(particle.accel))) * 15 + particle.accel) * elapsdTime;
+            particle.velocity += (normalize(snoise(particle.accel)) * 15 + particle.accel) * elapsdTime;
             float speed = length(particle.velocity);
             if (speed > maxSpeed)
             {

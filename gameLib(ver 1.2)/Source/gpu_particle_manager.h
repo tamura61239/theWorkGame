@@ -13,6 +13,7 @@ class GpuParticleManager:public Singleton<GpuParticleManager>
 {
 public:
 	void CreateTitleBuffer(ID3D11Device* device);
+	void CreateSelectBuffer(ID3D11Device* device);
 	void CreateGameBuffer(ID3D11Device* device,std::shared_ptr<PlayerAI>player);
 	void CreateResultBuffer(ID3D11Device* device);
 	void ClearBuffer();
@@ -48,9 +49,6 @@ private:
 	std::unique_ptr<TitleTextureParticle>mTitleTextureParticle;
 	std::unique_ptr<SelectSceneParticle>mSelectSceneParticle;
 	std::unique_ptr<FireworksParticle>mFireworksParticle;
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilState>mDepth;
-	Microsoft::WRL::ComPtr<ID3D11RasterizerState>mRasterizer;
-	Microsoft::WRL::ComPtr<ID3D11SamplerState>mSamplerState;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbScene;
 	struct CbScene
 	{

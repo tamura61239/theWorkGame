@@ -27,10 +27,26 @@ public:
 	}
 	void Activate(ID3D11DeviceContext* context, UINT slot, bool vs = false, bool ps = false, bool gs = false, bool cs = false)
 	{
-		if (vs)context->VSSetSamplers(slot, 1, mSamplerState.GetAddressOf());
-		if (ps)context->PSSetSamplers(slot, 1, mSamplerState.GetAddressOf());
-		if (gs)context->GSSetSamplers(slot, 1, mSamplerState.GetAddressOf());
-		if (cs)context->CSSetSamplers(slot, 1, mSamplerState.GetAddressOf());
+		if (vs)
+		{
+			context->VSGetSamplers(slot, 1, mDefaltSampler[0].GetAddressOf());
+			context->VSSetSamplers(slot, 1, mSamplerState.GetAddressOf());
+		}
+		if (ps)
+		{
+			context->PSGetSamplers(slot, 1, mDefaltSampler[1].GetAddressOf());
+			context->PSSetSamplers(slot, 1, mSamplerState.GetAddressOf());
+		}
+		if (gs)
+		{
+			context->GSGetSamplers(slot, 1, mDefaltSampler[2].GetAddressOf());
+			context->GSSetSamplers(slot, 1, mSamplerState.GetAddressOf());
+		}
+		if (cs)
+		{
+			context->CSGetSamplers(slot, 1, mDefaltSampler[3].GetAddressOf());
+			context->CSSetSamplers(slot, 1, mSamplerState.GetAddressOf());
+		}
 		mSlotNum = slot;
 		mSetFlag[0] = vs;
 		mSetFlag[1] = ps;
@@ -40,14 +56,14 @@ public:
 	}
 	void DeActivate(ID3D11DeviceContext* context)
 	{
-		ID3D11Buffer* buffer = nullptr;
-		if (mSetFlag[0])context->VSSetConstantBuffers(mSlotNum, 1, &buffer);
-		if (mSetFlag[1])context->PSSetConstantBuffers(mSlotNum, 1, &buffer);
-		if (mSetFlag[2])context->GSSetConstantBuffers(mSlotNum, 1, &buffer);
-		if (mSetFlag[3])context->CSSetConstantBuffers(mSlotNum, 1, &buffer);
+		if (mSetFlag[0])context->VSSetSamplers(mSlotNum, 1, mDefaltSampler[0].GetAddressOf());
+		if (mSetFlag[1])context->PSSetSamplers(mSlotNum, 1, mDefaltSampler[1].GetAddressOf());
+		if (mSetFlag[2])context->GSSetSamplers(mSlotNum, 1, mDefaltSampler[2].GetAddressOf());
+		if (mSetFlag[3])context->CSSetSamplers(mSlotNum, 1, mDefaltSampler[3].GetAddressOf());
 	}
 private:
 	Microsoft::WRL::ComPtr<ID3D11SamplerState>mSamplerState;
+	Microsoft::WRL::ComPtr<ID3D11SamplerState>mDefaltSampler[4] = { 0 };
 	UINT mSlotNum;
 	bool mSetFlag[4] = { false };
 

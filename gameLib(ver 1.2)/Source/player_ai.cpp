@@ -6,7 +6,7 @@
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
-PlayerAI::PlayerAI(ID3D11Device* device, const char* fileName):mPlayFlag(false)
+PlayerAI::PlayerAI(ID3D11Device* device, const char* fileName):mPlayFlag(false), mGravity(0)
 {
 	std::unique_ptr<ModelData>data = std::make_unique<ModelData>(fileName);
 	std::shared_ptr<ModelResource>resouce = std::make_shared<ModelResource>(device, std::move(data));
@@ -22,7 +22,13 @@ void PlayerAI::Load()
 	FILE* fp;
 	if (fopen_s(&fp, "Data/file/playerParrameter.bin", "rb") == 0)
 	{
-		fread(&mParameter, sizeof(PlayerParameter), 1, fp);
+		fseek(fp, 0, SEEK_END);
+
+		int fileSize = ftell(fp);
+		//ファイルの先頭に戻す
+		fseek(fp, 0, SEEK_SET);
+
+		fread(&mParameter, fileSize, 1, fp);
 		fclose(fp);
 		mCharacter->SetMinSpeed(mParameter.minSpeed);
 		mCharacter->SetMaxSpeed(mParameter.maxSpeed);
@@ -100,6 +106,7 @@ void PlayerAI::ImGuiUpdate()
 
 void PlayerAI::Update(float elapsd_time, StageManager* manager, StageOperation* operation)
 {
+#if 0
 	if (!mPlayFlag)
 	{
 		pCameraManager->GetCameraOperation()->GetPlayCamera()->SetPlayerPosition(mCharacter->GetPosition());
@@ -182,4 +189,84 @@ void PlayerAI::Update(float elapsd_time, StageManager* manager, StageOperation* 
 	if (!mCharacter->GetGorlFlag())Judgment::Judge(mCharacter.get(), manager);
 	pCameraManager->GetCameraOperation()->GetPlayCamera()->SetPlayerPosition(mCharacter->GetPosition());
 	mCharacter->AnimUpdate(elapsd_time);
+#else
+	if (mPlayFlag)
+	{
+		if (mCharacter->GetPosition().y < -1000)
+		{
+			mCharacter->SetPosition(VECTOR3F(0, 10, 0));
+			mCharacter->SetBeforePosition(VECTOR3F(0, 10, 0));
+			mCharacter->SetVelocity(VECTOR3F(0, 0, 0));
+			mCharacter->SetAngle(VECTOR3F(0, 0, 0));
+			mCharacter->CalculateBoonTransform(0);
+			pCameraManager->GetCameraOperation()->GetPlayCamera()->SetPlayerPosition(mCharacter->GetPosition());
+			operation->Reset(manager);
+			mCharacter->SetAccel(VECTOR3F(0, 0, 0));
+			pCameraManager->Update(elapsd_time);
+			return;
+		}
+		//動けるとき
+		Move(elapsd_time);
+	}
+	else
+	{
+		//playerが動かない時
+		elapsd_time = 0;
+		mCharacter->SetGorlFlag(false);
+		mCharacter->SetGroundFlag(false);
+		mGravity = mParameter.gravity;
+	}
+	//ステージとの当たり判定
+	Judgment::Judge(mCharacter.get(), manager);
+	//カメラにplayerの位置を設定
+	pCameraManager->GetCameraOperation()->GetPlayCamera()->SetPlayerPosition(mCharacter->GetPosition());
+	//アニメーションの更新
+	mCharacter->AnimUpdate(elapsd_time);
+#endif
+}
+
+void PlayerAI::Move(float elapsd_time)
+{
+	VECTOR3F accel = mCharacter->GetAccel();
+	VECTOR3F velocity = mCharacter->GetVelocity();
+	accel.z = mParameter.accel.z;
+	auto state = mCharacter->GetMoveState();
+	mGravity += mParameter.gravity * elapsd_time;
+	accel.y += mGravity;
+	if (mCharacter->GetGroundFlag())
+	{
+		mGravity = mParameter.gravity;
+		velocity.y = 0;
+		accel.y = 0;
+	}
+	if (state == PlayerCharacter::MOVESTATE::JUMP)
+	{
+		velocity.y = mParameter.jump.y;
+		state = PlayerCharacter::MOVESTATE::LANDING;
+	}
+	if (state == PlayerCharacter::MOVESTATE::RAMP)
+	{
+		velocity.y = mParameter.ranp.y;
+		state = PlayerCharacter::MOVESTATE::LANDING;
+	}
+	//ゴールした時のキャラクターの動き
+	if (mCharacter->GetGorlFlag())
+	{
+		VECTOR3F angle = mCharacter->GetAngle();
+		if (angle.y < DirectX::XMConvertToRadians(135))
+		{
+			angle.y += 3.14f * elapsd_time * 1.05f;
+			mCharacter->SetAngle(angle);
+		}
+		accel.z = -velocity.z * 3.f;
+		accel.y = 0;
+		velocity.y = 0;
+	}
+	//更新したデータのセット
+	mCharacter->SetAccel(accel);
+	mCharacter->SetVelocity(velocity);
+	mCharacter->SetMoveState(state);
+	//座標などの更新
+	mCharacter->Move(elapsd_time);
+
 }

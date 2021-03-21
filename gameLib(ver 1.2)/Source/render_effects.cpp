@@ -140,8 +140,8 @@ void RenderEffects::ShadowRender(ID3D11DeviceContext* context, ID3D11ShaderResou
 
 	//context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
 	//context->RSSetState(mRasterizerState.Get());
-	context->IASetInputLayout(nullptr);
-	context->IASetVertexBuffers(0, 0, 0, 0, 0);
+	//context->IASetInputLayout(nullptr);
+	//context->IASetVertexBuffers(0, 0, 0, 0, 0);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
 	context->Draw(4, 0);

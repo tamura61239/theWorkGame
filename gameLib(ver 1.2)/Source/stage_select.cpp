@@ -115,13 +115,18 @@ void StageSelect::ImGuiUpdate()
 #endif
 }
 
-void StageSelect::Update(float elapsdTime, StageManager* manager)
+bool StageSelect::Update(float elapsdTime)
 {
-	if (!mSelectSceneFlag)return;
+	if (!mSelectSceneFlag)return false;
 	float time = elapsdTime*5.f;
 	if (mChangeSelect == 0)//選択するステージを変更してない時
 	{
-		Select(manager);
+		Select();
+		if (pKeyBoad.RisingState(KeyLabel::SPACE))//決定
+		{
+			mSelectSceneFlag = true;
+			return true;
+		}
 	}
 	else//選択するステージを変更してる時
 	{
@@ -151,9 +156,10 @@ void StageSelect::Update(float elapsdTime, StageManager* manager)
 
 		mChangeSelect = 0;
 	}
+	return false;
 }
 //ステージの選択関数
-void StageSelect::Select(StageManager* manager)
+void StageSelect::Select()
 {
 
 	if (pKeyBoad.PressedState(KeyLabel::RIGHT)&& mSelectNumber < static_cast<int>(mStageBoards.size()) - 1)//右に移動
@@ -165,11 +171,6 @@ void StageSelect::Select(StageManager* manager)
 	{
 		mMoveTimer = 0;
 		mChangeSelect =- 1;
-	}
-	if (pKeyBoad.RisingState(KeyLabel::SPACE))//決定
-	{
-		manager->SetStageNo(mSelectNumber);
-		mSelectSceneFlag = false;
 	}
 }
 

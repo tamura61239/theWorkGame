@@ -1,14 +1,14 @@
 #include "result_ui_move.h"
 #include"key_board.h"
 
-ResultUIMove::ResultUIMove():mMoveFlag(false),mType(0), mDecisionFlag(false)
+ResultUIMove::ResultUIMove() :mMoveFlag(false), mType(0), mDecisionFlag(false)
 {
 	mData.frameAlpth = 0.2f;
 	mData.alpthDifference = 0.65f;
 	Load();
 }
 
-void ResultUIMove::Update(float elapsdTime, std::vector<std::shared_ptr<UI>> uis)
+void ResultUIMove::Update(float elapsdTime, std::vector<std::shared_ptr<UI>> uis, size_t uiCount)
 {
 	if (!mMoveFlag)
 	{
@@ -28,11 +28,11 @@ void ResultUIMove::Update(float elapsdTime, std::vector<std::shared_ptr<UI>> uis
 	}
 	if (pKeyBoad.RisingState(KeyLabel::RIGHT))
 	{
-		mType = 1;
+		mType = mType < uiCount - 2 ? mType + 1 : mType;
 	}
 	if (pKeyBoad.RisingState(KeyLabel::LEFT))
 	{
-		mType = 0;
+		mType = mType > 0 ? mType - 1 : mType;
 	}
 	if (pKeyBoad.RisingState(KeyLabel::SPACE))
 	{
@@ -40,23 +40,19 @@ void ResultUIMove::Update(float elapsdTime, std::vector<std::shared_ptr<UI>> uis
 	}
 	VECTOR2F position = VECTOR2F(0, 0);
 	int frameNo = 0;
-	for (int i = 0; i < static_cast<int>(uis.size()); i++)
+	for (int i = 0; i < static_cast<int>(uiCount); i++)
 	{
 		auto& ui = uis[i];
 		auto& data = ui->GetUIData();
-		if (ui->GetName()._Equal("retry"))
+		if (!ui->GetName()._Equal("frame"))
 		{
-			data.mColor.w = 1.f - (mType) * mData.alpthDifference;
+			data.mColor.w = i - 1 == mType ? 1 : 1 - mData.alpthDifference/*1.f - (mType)*mData.alpthDifference*/;
+			if (data.mColor.w >= 1.0f)
+			{
+				position = data.mLeftPosition + data.mDrowSize * 0.5f;
+			}
 		}
-		if (ui->GetName()._Equal("title"))
-		{
-			data.mColor.w = 1.f - (1-mType) * mData.alpthDifference;
-		}
-		if (data.mColor.w >= 1.0f)
-		{
-			position = data.mLeftPosition + data.mDrowSize * 0.5f;
-		}
-		if (ui->GetName()._Equal("frame"))
+		else
 		{
 			frameNo = i;
 			data.mColor.w = mData.frameAlpth;

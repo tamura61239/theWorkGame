@@ -40,6 +40,7 @@ private:
 	std::string mSceneName;
 	bool mMoveStartFlag;
 	bool mDebugUIFrameFlag;
+	int mUIMaxCount;
 	void Load(const char* scene);
 	void Save(const char* scene);
 };

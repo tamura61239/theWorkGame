@@ -6,6 +6,8 @@
 #include"stage_manager.h"
 #include"gamepad.h"
 #include<time.h>
+#include"scene_select.h"
+#include"scene_game.h"
 Framework* Framework::mInst = nullptr;
 
 bool Framework::Initialize(HWND hwnd)
@@ -129,8 +131,7 @@ bool Framework::Initialize(HWND hwnd)
 	mDeviceContext.Get()->RSGetViewports(&num_viewports, &viewport);
 	CameraManager::Create();
 	pCameraManager->SetDefaultPerspective(30 * (3.14f / 180.f), viewport.Width / viewport.Height, 0.1f, 20000);
-	pSceneManager.SetDevice(mDevice.Get());
-	pSceneManager.ChangeScene(SceneManager::SCENETYPE::TITLE);
+	pSceneManager.Initialize(mDevice.Get());
 	StageManager::StageCount();
 	return true;
 }

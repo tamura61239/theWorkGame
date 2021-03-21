@@ -125,10 +125,11 @@ void FrameBuffer::Activate(ID3D11DeviceContext* context)
 {
 	mViewportsNumber = D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE;
 	context->RSGetViewports(&mViewportsNumber, mDefaultViewports);
-	context->RSSetViewports(1, &mViewport);
 
 	context->OMGetRenderTargets(1, mDefaultRenderTargetView.GetAddressOf(), mDefaultDepthStencilView.GetAddressOf());
+	context->RSSetViewports(1, &mViewport);
 	context->OMSetRenderTargets(1, mRenderTargetView.GetAddressOf(), mDepthStencilView.Get());
+
 }
 
 void FrameBuffer::Deactivate(ID3D11DeviceContext* context)

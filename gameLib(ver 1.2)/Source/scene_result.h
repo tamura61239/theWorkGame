@@ -1,7 +1,5 @@
 #pragma once
 #include"scene.h"
-#include <thread>
-#include <mutex>
 #include<memory>
 #include"sprite.h"
 #include"bloom.h"
@@ -17,44 +15,18 @@
 class SceneResult :public Scene
 {
 public:
-	SceneResult(ID3D11Device* device);
+	SceneResult(float timer,int nowStageNo);
+	void Initialize(ID3D11Device* device);
 	void Editor();
 	void Update(float elapsed_time);
 	void Render(ID3D11DeviceContext* context, float elapsed_time);
-	~SceneResult();
-private:
-	//Now Loading
-	std::unique_ptr<std::thread> loading_thread;
-	std::mutex loading_mutex;
-
-
-	bool IsNowLoading()
-	{
-		if (loading_thread && loading_mutex.try_lock())
-		{
-			loading_mutex.unlock();
-			return false;
-		}
-		return true;
-	}
-	void EndLoading()
-	{
-		if (loading_thread && loading_thread->joinable())
-		{
-			loading_thread->join();
-		}
-	}
+	void Relese();
 private:
 	std::unique_ptr<Sprite>mNumberText;
 	float mNowGameTime;
-	bool mEditorFlag;
-	int mEditorNo;
 	bool mPlayFlag;
 	bool nowLoading;
-	bool mScreenShot;
-	int mTextureNo;
 	bool renderFlag;
-	std::vector<std::unique_ptr<BlendState>>mBlend;
 	std::shared_ptr<FrameBuffer>frameBuffer;
 	std::unique_ptr<FrameBuffer>frameBuffer2;
 	std::shared_ptr<FrameBuffer>velocityBuffer;
@@ -66,12 +38,8 @@ private:
 	std::unique_ptr<SkyMap>sky;
 	std::unique_ptr<StageManager>mSManager;
 	std::unique_ptr<DrowShader>mMotionBlurShader;
-	std::unique_ptr<RasterizerState>mRasterizer;
-	std::unique_ptr<DepthStencilState>mDepthStencil;
 	enum samplerType
 	{
 		wrap, clamp, max
 	};
-	std::unique_ptr<SamplerState>mSampler[samplerType::max];
-
 };

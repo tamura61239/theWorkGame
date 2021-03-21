@@ -201,6 +201,7 @@
     <ClCompile Include="Source\scene_game.cpp" />
     <ClCompile Include="Source\scene_manager.cpp" />
     <ClCompile Include="Source\scene_result.cpp" />
+    <ClCompile Include="Source\scene_select.cpp" />
     <ClCompile Include="Source\scene_title.cpp" />
     <ClCompile Include="Source\select_scene_particle.cpp" />
     <ClCompile Include="Source\select_text.cpp" />
@@ -293,6 +294,7 @@
     <ClInclude Include="Source\scene_game.h" />
     <ClInclude Include="Source\scene_manager.h" />
     <ClInclude Include="Source\scene_result.h" />
+    <ClInclude Include="Source\scene_select.h" />
     <ClInclude Include="Source\scene_title.h" />
     <ClInclude Include="Source\screen_size.h" />
     <ClInclude Include="Source\select_scene_particle.h" />

@@ -6,12 +6,11 @@
 class SceneManager
 {
 public:
+	void Initialize(ID3D11Device* device);
 	void Update(float elapsed_time);
 	void Render(ID3D11DeviceContext* context, float elapsed_time);
-	void ChangeScene(const int sceneNum);
+	void ChangeScene(Scene*scene);
 	Scene* SceneSelect(const int sceneNum);
-	//setter
-	void SetDevice(ID3D11Device* device) { mDevice = device; }
 	//getter
 	SceneEditor* GetSceneEditor() { return mEditor.get(); }
 	static SceneManager& GetInctance()
@@ -21,7 +20,8 @@ public:
 	}
 	enum SCENETYPE
 	{
-		TITLE,
+		TITLE = 1,
+		SELECT,
 		GAME,
 		RESULT,
 	};
@@ -32,6 +32,7 @@ private:
 		mEditor = std::make_unique<SceneEditor>();
 	}
 	std::unique_ptr<Scene>mScene;
+	std::unique_ptr<Scene>mNextScene;
 	ID3D11Device* mDevice = nullptr;
 	std::unique_ptr<SceneEditor>mEditor;
 };

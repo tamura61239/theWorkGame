@@ -9,6 +9,12 @@ int SceneEditor::Editor(bool* editorFlag, const int maxStageNumber)
 {
 
 	int num = 0;
+	if (pKeyBoad.RisingState(KeyLabel::F1))mEditorFlag = true;
+	if (!mEditorFlag)
+	{
+		*editorFlag = mEditorFlag;
+		return num;
+	}
 #ifdef USE_IMGUI
 	if (ImGui::BeginMainMenuBar())
 	{
@@ -45,10 +51,6 @@ int SceneEditor::Editor(bool* editorFlag, const int maxStageNumber)
 		}
 		if (ImGui::BeginMenu("editor"))
 		{
-			if (ImGui::MenuItem("ON"))
-			{
-				mEditorFlag = true;
-			}
 			if (ImGui::MenuItem("OFF"))
 			{
 				mEditorFlag = false;

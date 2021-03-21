@@ -83,6 +83,15 @@ int StageEditor::Update(std::vector<std::shared_ptr<StageObj>>objs)
 			{
 				mDragObjNo = -1;
 			}
+			StageData stageData;
+			static float s = gameObjScale / 10.0f;
+
+			stageData.mPosition = obj->GetPosition()/ s;
+			stageData.mAngle = obj->GetAngle();
+			stageData.mScale = obj->GetScale()/ s;
+			stageData.mColorType = obj->GetStageData().mColorType;
+			stageData.mObjType = obj->GetStageData().mObjType;
+			obj->SetStageData(stageData);
 		}
 		else//obj‚ðƒhƒ‰ƒbƒO‚µ‚È‚¢Žž
 		{
@@ -123,7 +132,7 @@ int StageEditor::Update(std::vector<std::shared_ptr<StageObj>>objs)
 			mFileState = 1;
 		}
 		mSaveSceneFlag = false;
-		if (ImGui::Button("scene save"))
+		if (ImGui::Button("stage screne shot"))
 		{
 			mSaveSceneFlag = true;
 		}

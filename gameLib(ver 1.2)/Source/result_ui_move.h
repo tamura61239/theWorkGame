@@ -6,7 +6,7 @@ class ResultUIMove
 {
 public:
 	ResultUIMove();
-	void Update(float elapsdTime, std::vector<std::shared_ptr<UI>>uis);
+	void Update(float elapsdTime, std::vector<std::shared_ptr<UI>>uis,size_t uiCount);
 	struct ResultUIData
 	{
 		float frameAlpth;

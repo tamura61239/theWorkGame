@@ -31,78 +31,48 @@
 class SceneGame :public Scene
 {
 public:
-	SceneGame(ID3D11Device*device);
+	SceneGame(int stageNo);
+	void Initialize(ID3D11Device* device);
 	void Editor();
 	void Update(float elapsed_time);
 	void Render(ID3D11DeviceContext* context, float elapsed_time);
-	~SceneGame();
-private:
 	void Relese();
-	//Now Loading
-	std::unique_ptr<std::thread> loading_thread;
-	std::mutex loading_mutex;
-
-
-	bool IsNowLoading()
-	{
-		if (loading_thread && loading_mutex.try_lock())
-		{
-			loading_mutex.unlock();
-			return false;
-		}
-		return true;
-	}
-	void EndLoading()
-	{
-		if (loading_thread && loading_thread->joinable())
-		{
-			loading_thread->join();
-		}
-	}
 private:
+	//
 	std::unique_ptr<Sprite>test;
 	std::unique_ptr<Sprite>nowLoading;
 	std::unique_ptr<Sprite>siro;
 	std::unique_ptr<Sprite>pushKey;
+	//デプスバッファ
 	std::unique_ptr<FrameBuffer>shadowMap;
 	std::shared_ptr<FrameBuffer>frameBuffer;
 	std::shared_ptr<FrameBuffer>frameBuffer3;
 	std::shared_ptr<FrameBuffer>velocityMap;
 	std::shared_ptr<FrameBuffer>shadowRenderBuffer;
 	std::shared_ptr<FrameBuffer>frameBuffer2;
-	std::unique_ptr<RenderEffects>renderEffects;
+	//ゲームを動かすのに必要な変数
 	std::shared_ptr<PlayerAI>player;
-	std::unique_ptr<ModelRenderer>modelRenderer;
-	std::unique_ptr<BloomRender>bloom;
 	std::unique_ptr<StageManager>mSManager;
 	std::unique_ptr<StageOperation>mStageOperation;
-	std::unique_ptr<BlendState> blend[3];
-	std::unique_ptr<SkyMap>sky;
-	std::unique_ptr<DrowShader>blurShader;
+	std::unique_ptr<TutorialState>mTutorialState;
+	//描画に必要な変数
+	std::unique_ptr<RenderEffects>mRenderEffects;
+	std::unique_ptr<ModelRenderer>mModelRenderer;
+	std::unique_ptr<BloomRender>mBloom;
+	std::unique_ptr<SkyMap>mSky;
+	std::unique_ptr<DrowShader>mBlurShader;
 	std::unique_ptr<DrowShader>motionBlurShader;
 	std::unique_ptr<DrowShader>skymapMotionShader;
-	std::unique_ptr<StageSelect>mStageSelect;
-	std::unique_ptr<Fade>fadeOut;
 	std::unique_ptr<LightView>mLightView;
-	std::unique_ptr<TutorialState>mTutorialState;
 	std::unique_ptr<ConstantBuffer<CbZoom>>mCbZoomBuffer;
 	enum samplerType
 	{
 		warp,border, clamp,max
 	};
-	std::unique_ptr<SamplerState>mSampler[samplerType::max];
-	std::unique_ptr<RasterizerState>mRasterizer;
-	std::unique_ptr<DepthStencilState>mDepthStencil;
-	bool stop;
-	int editorNo;
-	bool selectSceneFlag;
-	bool editorFlag;
 	bool testGame;
 	bool hitArea;
-	bool screenShot;
-	bool target[6];
 	int textureNo;
 	bool mNowLoading;
 	bool mLoadEnd;
-	float elapsedTimemMagnification = 1.f;
+	int mStageNo;
 };

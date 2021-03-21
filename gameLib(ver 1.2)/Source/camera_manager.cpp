@@ -29,6 +29,6 @@ void CameraManager::ImGuiUpdate()
 
 void CameraManager::DestroyCamera()
 {
-	mCameraOperation.reset(nullptr);
-	mCamera.reset(nullptr);
+	mCameraOperation.reset();
+	mCamera.reset();
 }

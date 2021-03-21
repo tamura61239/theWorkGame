@@ -7,6 +7,7 @@
 #include<imgui.h>
 #endif
 
+/****************************初期化****************************/
 BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHight, const int nowScene) :mNowEditorNo(nowScene), mNowScene(nowScene)
 {
 	memset(&mEditorData, 0, sizeof(mEditorData));
@@ -45,8 +46,13 @@ BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHi
 	{
 		Load(i);
 	}
-}
+	mDepth = std::make_unique<DepthStencilState>(device, false, D3D11_DEPTH_WRITE_MASK_ZERO, D3D11_COMPARISON_ALWAYS);
+	mRasterizer = std::make_unique<RasterizerState>(device, D3D11_FILL_SOLID, D3D11_CULL_BACK);
+	mSampler[0] = std::make_unique<SamplerState>(device, D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP, D3D11_COMPARISON_ALWAYS, VECTOR4F(0, 0, 0, 0));
+	mSampler[1] = std::make_unique<SamplerState>(device, D3D11_FILTER_ANISOTROPIC, D3D11_TEXTURE_ADDRESS_CLAMP, D3D11_COMPARISON_ALWAYS, VECTOR4F(0, 0, 0, 0));
 
+}
+/*****************imguiでブルームのパラメーターを調整********************/
 void BloomRender::ImGuiUpdate()
 {
 #ifdef USE_IMGUI
@@ -92,13 +98,17 @@ void BloomRender::ImGuiUpdate()
 	ImGui::End();
 #endif
 }
-
-void BloomRender::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView* colorSrv, bool render)
+/*************************bloomの縮小しつつぼかしたテクスチャの作成******************************/
+void BloomRender::BlurTexture(ID3D11DeviceContext* context, ID3D11ShaderResourceView* colorSrv)
 {
-
 	auto& editorData = mEditorData[mNowScene];
-	mFrameBuffer[0]->Clear(context);
 	if (editorData.count <= 0)return;
+	mDepth->Activate(context);
+	mRasterizer->Activate(context);
+	mSampler[0]->Activate(context, 0, false, true);
+	mSampler[1]->Activate(context, 2, false, true);
+
+	mFrameBuffer[0]->Clear(context);
 	mFrameBuffer[0]->Activate(context);
 	//定数バッファの設定
 	mCBbuffer->data.blurCount = editorData.blurCount;
@@ -110,8 +120,8 @@ void BloomRender::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView*
 	//シーンから光らせたい部分を別のテクスチャに書き出す
 	mShader[0]->Activate(context);
 	context->PSSetShaderResources(0, 1, &colorSrv);
-	context->IASetInputLayout(nullptr);
-	context->IASetVertexBuffers(0, 0, 0, 0, 0);
+	//context->IASetInputLayout(nullptr);
+	//context->IASetVertexBuffers(0, 0, 0, 0, 0);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	context->Draw(4, 0);
 	mShader[0]->Deactivate(context);
@@ -128,45 +138,40 @@ void BloomRender::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView*
 		Blur02(context);
 		break;
 	}
+
+}
+/********************描画********************/
+void BloomRender::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView* colorSrv)
+{
+	auto& editorData = mEditorData[mNowScene];
+	if (editorData.count <= 0)return;
+	mDepth->Activate(context);
+	mRasterizer->Activate(context);
+	mSampler[0]->Activate(context, 0, false, true);
+	mSampler[1]->Activate(context, 2, false, true);
+
 	//全てのテクスチャを合成
 	mShader[1]->Activate(context);
-	if (!render)
+	context->PSSetShaderResources(0, 1, &colorSrv);
+	for (int i = 0; i < 3; i++)
 	{
-		mFrameBuffer[5]->Clear(context);
-		mFrameBuffer[5]->Activate(context);
-		for (int i = 0; i < 5; i++)
-		{
-			context->PSSetShaderResources(i, 1, mFrameBuffer[i]->GetRenderTargetShaderResourceView().GetAddressOf());
-		}
-		context->IASetInputLayout(nullptr);
-		context->IASetVertexBuffers(0, 0, 0, 0, 0);
-		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-		context->Draw(4, 0);
-		mFrameBuffer[5]->Deactivate(context);
+		context->PSSetShaderResources(i + 1, 1, mFrameBuffer[i]->GetRenderTargetShaderResourceView().GetAddressOf());
 	}
-	else
-	{
-		context->PSSetShaderResources(0, 1, &colorSrv);
-		for (int i = 0; i < 5; i++)
-		{
-			context->PSSetShaderResources(i + 1, 1, mFrameBuffer[i]->GetRenderTargetShaderResourceView().GetAddressOf());
-		}
-		context->IASetInputLayout(nullptr);
-		context->IASetVertexBuffers(0, 0, 0, 0, 0);
-		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-		context->Draw(4, 0);
 
-
-	}
+	context->Draw(4, 0);
 	//後処理
 	mShader[1]->Deactivate(context);
 	mCBbuffer->DeActivate(context);
 
-	for (int i = 0; i < 6; i++)
+	for (int i = 0; i < 4; i++)
 	{
 		ID3D11ShaderResourceView* srv = nullptr;
 		context->PSSetShaderResources(i, 1, &srv);
 	}
+	mDepth->DeActive(context);
+	mRasterizer->DeActivate(context);
+	mSampler[0]->DeActivate(context);
+	mSampler[1]->DeActivate(context);
 
 }
 /*********************ファイル操作********************/
@@ -190,7 +195,6 @@ void BloomRender::Save(const int scene)
 	fclose(fp);
 
 }
-
 void BloomRender::Blur01(ID3D11DeviceContext* context)
 {
 	auto& editorData = mEditorData[mNowScene];
@@ -204,7 +208,7 @@ void BloomRender::Blur01(ID3D11DeviceContext* context)
 			mFrameBuffer[i]->Clear(context);
 			continue;
 		}
-
+		//縮小したテクスチャ
 		mFrameBuffer[i]->Clear(context);
 		mFrameBuffer[i]->Activate(context);
 		D3D11_VIEWPORT viewport = mFrameBuffer[i]->GetViewPort();
@@ -214,6 +218,8 @@ void BloomRender::Blur01(ID3D11DeviceContext* context)
 		context->PSSetShaderResources(0, 1, mFrameBuffer[i - 1]->GetRenderTargetShaderResourceView().GetAddressOf());
 		context->Draw(4, 0);
 		mCbBluerbuffer->DeActivate(context);
+		ID3D11ShaderResourceView* srv = nullptr;
+		context->PSSetShaderResources(0, 1, &srv);
 
 		mFrameBuffer[i]->Deactivate(context);
 	}
@@ -240,11 +246,13 @@ void BloomRender::Blur02(ID3D11DeviceContext* context)
 
 		D3D11_VIEWPORT viewport = mSidoFrameBuffer[i - 1]->GetViewPort();
 		CalucurateBluer(viewport.Width, viewport.Height, VECTOR2F(editorData.widthBlur, 0), editorData.deviation, editorData.multiply);
-		mCbBluerbuffer->Activate(context,1, true, true);
+		mCbBluerbuffer->Activate(context, 1, true, true);
 
 		context->PSSetShaderResources(0, 1, mFrameBuffer[i - 1]->GetRenderTargetShaderResourceView().GetAddressOf());
 		context->Draw(4, 0);
 		mCbBluerbuffer->DeActivate(context);
+		ID3D11ShaderResourceView* srv = nullptr;
+		context->PSSetShaderResources(0, 1, &srv);
 
 		mSidoFrameBuffer[i - 1]->Deactivate(context);
 		mFrameBuffer[i]->Clear(context);
@@ -256,11 +264,15 @@ void BloomRender::Blur02(ID3D11DeviceContext* context)
 		context->PSSetShaderResources(0, 1, mSidoFrameBuffer[i - 1]->GetRenderTargetShaderResourceView().GetAddressOf());
 		context->Draw(4, 0);
 		mCbBluerbuffer->DeActivate(context);
+
+		context->PSSetShaderResources(0, 1, &srv);
+
 		mFrameBuffer[i]->Deactivate(context);
 	}
 	mShader[3]->Deactivate(context);
 
 }
+/***********************ブラーの計算*************************/
 
 float BloomRender::GaussianDistribution(const VECTOR2F& position, const float rho)
 {

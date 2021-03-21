@@ -18,58 +18,24 @@
 class SceneTitle :public Scene
 {
 public:
-	SceneTitle(ID3D11Device* device);
+	SceneTitle();
+	void Initialize(ID3D11Device* device);
 	void Editor();
 	void Update(float elapsed_time);
 	void Render(ID3D11DeviceContext* context, float elapsed_time);
+	void Relese();
 	~SceneTitle();
-private:
-	//Now Loading
-	std::unique_ptr<std::thread> loading_thread;
-	std::mutex loading_mutex;
-
-
-	bool IsNowLoading()
-	{
-		if (loading_thread && loading_mutex.try_lock())
-		{
-			loading_mutex.unlock();
-			return false;
-		}
-		return true;
-	}
-	void EndLoading()
-	{
-		if (loading_thread && loading_thread->joinable())
-		{
-			loading_thread->join();
-		}
-	}
 private:
 	std::unique_ptr<Sprite>test;
 	std::unique_ptr<BloomRender>bloom;
 	std::unique_ptr<FrameBuffer>frameBuffer[3];
-	std::unique_ptr<BlendState>blend[2];
-	std::unique_ptr<ModelRenderer>modelRender;
-	std::unique_ptr<Character>character;
-	std::unique_ptr<StaticObj>obj;
-	std::unique_ptr<MeshRender>mRender;
-	std::unique_ptr<Fade>mFade;
 	std::unique_ptr<DrowShader>mBluer;
 	std::unique_ptr<ConstantBuffer<CbZoom>>mCbZoomBuffer;
-	std::unique_ptr<RasterizerState>mRasterizer;
-	std::unique_ptr<DepthStencilState>mDepthStencil;
 	enum samplerType
 	{
 		wrap,clamp,max
 	};
-	std::unique_ptr<SamplerState>mSampler[samplerType::max];
-	bool mEditorFlag;
 	bool mTestMove;
 	bool mLoading;
-	bool screenShot;
-	int textureNo;
-	bool stop;
 	bool renderFlag;
-	float elapsedTimemMagnification = 1.f;
 };

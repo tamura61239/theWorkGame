@@ -17,9 +17,10 @@ public:
 	void SetPlayFlag(const bool flag) { mPlayFlag = flag; }
 	//getter
 	const bool GetPlayFlag() { return mPlayFlag; }
+	PlayerCharacter* GetCharacter() { return mCharacter.get(); }
 	//çXêV
 	void Update(float elapsd_time,StageManager*manager,StageOperation*operation);
-	PlayerCharacter*GetCharacter() { return mCharacter.get(); }
+	void Move(float elapsd_time);
 private:
 	std::unique_ptr<PlayerCharacter>mCharacter;
 	struct PlayerParameter
@@ -32,5 +33,6 @@ private:
 		float gravity;
 	};
 	PlayerParameter mParameter;
+	float mGravity;
 	bool mPlayFlag;
 };

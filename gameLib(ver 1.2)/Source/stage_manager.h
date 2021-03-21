@@ -25,8 +25,6 @@ public:
 	static const int GetMaxStageCount() { return mMaxStage; }
 	const int GrtStageNo() { return mStageNo; }
 private:
-	void ScreenToWorld(VECTOR3F* worldPosition, const VECTOR3F& screenPosition, const FLOAT4X4& view, const FLOAT4X4& projection, const float height, const float width);
-	bool FrustumCulling(StageObj* obj, const FLOAT4X4& view, const FLOAT4X4& projection, const VECTOR3F* nears, const VECTOR3F* fars,const float height,const float width);
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbBeforeBuffer;
 	std::unique_ptr<DrowShader>mVelocityShader;
 	std::unique_ptr<DrowShader>mDeferredShader;

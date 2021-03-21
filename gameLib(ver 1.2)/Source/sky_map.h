@@ -4,6 +4,8 @@
 #include<memory>
 #include"drow_shader.h"
 #include"constant_buffer.h"
+#include"render_state.h"
+#include"sampler_state.h"
 
 enum class MAPTYPE
 {
@@ -40,8 +42,7 @@ private:
 	std::unique_ptr<ConstantBuffer<CbScene>>mCbSceneBuffer;
 	std::unique_ptr<ConstantBuffer<Cb>>mCbObjBuffer;
 	std::unique_ptr<ConstantBuffer<FLOAT4X4>>mCbBeforeObjBuffer;
-	Microsoft::WRL::ComPtr<ID3D11RasterizerState>mRasterizerState;
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilState>mDepthStencilState;
-	Microsoft::WRL::ComPtr<ID3D11SamplerState>mSapmleState;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>mSRV;
+	std::unique_ptr<SamplerState>mSampler;
+	std::unique_ptr<RasterizerState>mRasterizer;
 };
