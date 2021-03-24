@@ -1,4 +1,5 @@
 #include "stage_operation.h"
+#include"file_function.h"
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
@@ -7,6 +8,7 @@
 StageOperation::StageOperation():mChangFlag(false),mColorType(0)
 {
 	Load();
+	//FileFunction::LoadArray(mColor, "Data/file/stageColor.txt", "r");
 }
 
 void StageOperation::Load()

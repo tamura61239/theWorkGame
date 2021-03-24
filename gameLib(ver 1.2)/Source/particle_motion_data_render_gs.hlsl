@@ -1,7 +1,6 @@
 #include"particle_motiom_data_render.hlsli"
 #include"before_camera_view_data.hlsli"
-#define BLUER_TYPE 0
-static const float value = 0.5f;
+#include"velocity_map_parameter.hlsli"
 [maxvertexcount(4 * 9)]
 void main(
 	point VS_OUT input[1],
@@ -25,20 +24,6 @@ void main(
     };
     float4 nowPosition, beforePosition, vec, p0;
     GS_OUT gout = (GS_OUT) 0;
-#if BLUER_TYPE
-	//[unroll]
- //   for (int i = 0; i < 4; i++)
- //   {
- //       nowPosition = mul(mul(float4(input[0].worldPosition, 1), view) + texPosition[i] * input[0].scale.x, projection);
- //       beforePosition = mul(mul(float4(input[0].worldPosition - input[0].velocity, 1), beforeView) + texPosition[i] * input[0].scale.x, beforeProjection);
- //       gout.position = nowPosition;
- //       gout.velocity = nowPosition.xyz - beforePosition.xyz;
- //       gout.texcoord = texcoord[i];
- //       gout.color = input[0].color;
- //       output.Append(gout);
-
- //   }
-#else
     [unroll]
     for (int i = 0; i < 4; i++)
     {
@@ -135,7 +120,6 @@ void main(
         output.Append(gout);
 
     }
-#endif
     output.RestartStrip();
 
 }

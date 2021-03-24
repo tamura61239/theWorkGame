@@ -6,6 +6,7 @@
 #include"camera_manager.h"
 #include <codecvt>
 #include <locale>
+#include"file_function.h"
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
@@ -93,10 +94,7 @@ TitleTextureParticle::TitleTextureParticle(ID3D11Device* device) :mFullCreateFla
 		{"VELOCITY",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 		{"SCALE",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 	};
-	//mShader = std::make_unique<DrowShader>(device, "Data/shader/particle_render_vs.cso", "", "Data/shader/particle_render_point_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
 	mShader = std::make_unique<DrowShader>(device, "Data/shader/particle_render_vs.cso", "Data/shader/particle_render_billboard_gs.cso", "Data/shader/particle_render_text_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
-	//mShader = std::make_unique<DrowShader>(device, "Data/shader/particle_render_vs.cso", "Data/shader/particle_render_cube_mesh_gs.cso", "Data/shader/particle_render_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
-	//hr = MakeDummyTexture(device, mParticleSRV.GetAddressOf());
 	wchar_t* names[] =
 	{
 		L"Data/image/○.png",
@@ -128,7 +126,6 @@ TitleTextureParticle::TitleTextureParticle(ID3D11Device* device) :mFullCreateFla
 	mEditorData.scale = 0.00015f;
 	mEditorData.screenSplit = 10;
 	Load();
-
 }
 using convert_t = std::codecvt_utf8<wchar_t>;
 std::wstring_convert<convert_t, wchar_t> strconverter;
@@ -208,7 +205,6 @@ void TitleTextureParticle::Update(float elapsdTime, ID3D11DeviceContext* context
 {
 	context->CSSetUnorderedAccessViews(0, 1, mParticleUAV.GetAddressOf(), nullptr);
 
-	//TitleSceneUpdate(elapsdTime, context);
 	SceneChangeUpdate(elapsdTime, context);
 	if (mMoveParticle <= 0)return;
 	if (mTestFlag && !mParticleFlag)elapsdTime = 0;
@@ -232,53 +228,6 @@ void TitleTextureParticle::Update(float elapsdTime, ID3D11DeviceContext* context
 
 }
 
-//void TitleTextureParticle::TitleSceneUpdate(float elapsdTime, ID3D11DeviceContext* context)
-//{
-//	if (mParticleFlag|| mFullCreateFlag)return;
-//	context->CSSetConstantBuffers(0, 1, mCbCreateBuffer.GetAddressOf());
-//
-//	context->CSSetShader(mCreateCSShader.Get(), nullptr, 0);
-//	FLOAT4X4 view = pCameraManager->GetCamera()->GetView();
-//	view._41 = view._42 = view._43 = 0.0f;
-//	view._44 = 1.0f;
-//
-//	for (int i = 0; i < mTextures.size(); i++)
-//	{
-//		auto& texture = mTextures.at(i);
-//		auto& board = boards.at(i);
-//		context->CSSetShaderResources(0, 1, texture.SRV.GetAddressOf());
-//
-//		CbCreate cbCreate;
-//		cbCreate.uvSize = texture.data.mUVSize;
-//		cbCreate.screenSplit = mEditorData.screenSplit;
-//		cbCreate.startIndex = mSceneParticleIndex;
-//		float aspect = texture.data.mUVSize.x / texture.data.mUVSize.y;
-//		DirectX::XMMATRIX W;
-//		{
-//			DirectX::XMMATRIX S, T;
-//			S = DirectX::XMMatrixScaling(board.scale.x * aspect, board.scale.y, 0);
-//			T = DirectX::XMMatrixTranslation(board.position.x, board.position.y, board.position.z);
-//			W = S * T;
-//
-//		}
-//
-//		DirectX::XMStoreFloat4x4(&cbCreate.mWorld, DirectX::XMLoadFloat4x4(&view) * W);
-//		context->UpdateSubresource(mCbCreateBuffer.Get(), 0, 0, &cbCreate, 0, 0);
-//		float drowCount = elapsdTime * (static_cast<float>(mEditorData.mSceneMaxParticle) / 2.f);
-//
-//		mSceneParticleIndex += drowCount;
-//		if (mSceneParticleIndex >= mEditorData.mSceneMaxParticle)
-//		{
-//			drowCount -= mSceneParticleIndex - mEditorData.mSceneMaxParticle;
-//			mSceneParticleIndex = 0;
-//		}
-//		context->Dispatch(drowCount, 1, 1);
-//	}
-//
-//
-//	context->CSSetShader(nullptr, nullptr, 0);
-//
-//}
 //シーンが変わる時のパーティクルの生成
 void TitleTextureParticle::SceneChangeUpdate(float elapsdTime, ID3D11DeviceContext* context)
 {
@@ -334,67 +283,6 @@ void TitleTextureParticle::SceneChangeUpdate(float elapsdTime, ID3D11DeviceConte
 
 }
 
-void TitleTextureParticle::Create1(float elapsdTime, ID3D11DeviceContext* context)
-{
-	//if (mTestFlag)
-	//{
-
-	//	mMoveParticle = 0;
-	//	mTimer = 0;
-
-	//}
-	////前の時間を取得
-	//float beforeTime = mTimer;
-	//mTimer += elapsdTime;
-	//float parsent = mTimer / mEditorData.createTime;
-	//if (parsent > 1)parsent = 1.f;
-	//float textureX = parsent * mMaxTexture;
-	//float beforeTextureX = mBeforeParsent * mMaxTexture;
-	//int count = 0;
-	//float texX = 0;
-	//for (auto& texture : mTextures)
-	//{
-	//	float x = textureX - texture.data.mUVSize.x;
-	//	if (x < 0)break;
-	//	count++;
-	//	texX + texture.data.mUVSize.x;
-	//}
-
-
-	//context->CSSetConstantBuffers(0, 1, mCbCreateBuffer.GetAddressOf());
-
-	//context->CSSetShader(mCreateCSShader[0].Get(), nullptr, 0);
-	//FLOAT4X4 view = pCameraManager->GetCamera()->GetView();
-	//view._41 = view._42 = view._43 = 0.0f;
-	//view._44 = 1.0f;
-	//{
-	//	auto& texture = mTextures.at(count);
-	//	auto& board = boards.at(count);
-	//	context->CSSetShaderResources(0, 1, texture.mSRV.GetAddressOf());
-
-	//	CbCreate cbCreate;
-	//	cbCreate.leftTop = VECTOR2F(textureX - texX, 0);
-	//	cbCreate.uvSize = texture.data.mUVSize;
-	//	cbCreate.screenSplit = mEditorData.screenSplit;
-	//	cbCreate.startIndex = mMoveParticle;
-	//	float aspect = texture.data.mUVSize.x / texture.data.mUVSize.y;
-	//	DirectX::XMMATRIX W;
-	//	{
-	//		DirectX::XMMATRIX S, T;
-	//		S = DirectX::XMMatrixScaling(board.scale.x * aspect, board.scale.y, 0);
-	//		T = DirectX::XMMatrixTranslation(board.position.x, board.position.y, board.position.z);
-	//		W = S * T;
-
-	//	}
-
-	//	DirectX::XMStoreFloat4x4(&cbCreate.world, DirectX::XMLoadFloat4x4(&view) * W);
-	//	context->UpdateSubresource(mCbCreateBuffer.Get(), 0, 0, &cbCreate, 0, 0);
-
-	//	mBeforeParsent = parsent;
-
-	//}
-
-}
 
 /****************************************************/
 //    描画
@@ -421,14 +309,7 @@ void TitleTextureParticle::Load()
 {
 	FILE* fp;
 	long size = 0;
-	if (fopen_s(&fp, "Data/file/title_texture_data1.bin", "rb") == 0)
-	{
-		fseek(fp, 0, SEEK_END);
-		size = ftell(fp);
-		fseek(fp, 0, SEEK_SET);
-		fread(&mEditorData, size, 1, fp);
-		fclose(fp);
-	}
+	FileFunction::Load(mEditorData, "Data/file/title_texture_data1.bin", "rb");
 	if (fopen_s(&fp, "Data/file/title_texture_data2.bin", "rb") == 0)
 	{
 		fseek(fp, 0, SEEK_END);
@@ -445,9 +326,7 @@ void TitleTextureParticle::Load()
 void TitleTextureParticle::Save()
 {
 	FILE* fp;
-	fopen_s(&fp, "Data/file/title_texture_data1.bin", "wb");
-	fwrite(&mEditorData, sizeof(EditorData), 1, fp);
-	fclose(fp);
+	FileFunction::Save(mEditorData, "Data/file/title_texture_data1.bin", "wb");
 
 	fopen_s(&fp, "Data/file/title_texture_data2.bin", "wb");
 	fwrite(&boards[0], sizeof(Board) * boards.size(), 1, fp);

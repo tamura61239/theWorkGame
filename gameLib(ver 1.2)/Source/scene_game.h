@@ -1,7 +1,5 @@
 #pragma once
 #include"scene.h"
-#include <thread>
-#include <mutex>
 #include<memory>
 #include"sprite.h"
 #include"static_obj.h"
@@ -13,19 +11,17 @@
 #include"player_ai.h"
 #include"stage_manager.h"
 #include"stage_operation.h"
-#include"blend_state.h"
 #include"sky_map.h"
 #include"drow_shader.h"
-#include"motionblur.h"
 #include"depth_of_field.h"
 #include"stage_select.h"
-#include"fade.h"
 #include"light_view.h"
 #include"tutorial_state.h"
 #include"zoom_blur_parameter.h"
 #include"constant_buffer.h"
 #include"sampler_state.h"
 #include"render_state.h"
+#include"motion_blur_parameter.h"
 
 
 class SceneGame :public Scene
@@ -65,6 +61,7 @@ private:
 	std::unique_ptr<DrowShader>skymapMotionShader;
 	std::unique_ptr<LightView>mLightView;
 	std::unique_ptr<ConstantBuffer<CbZoom>>mCbZoomBuffer;
+	std::unique_ptr<ConstantBuffer<MotionBlurParameter>>mCbMotionBlur;
 	enum samplerType
 	{
 		warp,border, clamp,max

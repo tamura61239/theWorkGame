@@ -2,7 +2,7 @@
 #include"misc.h"
 #include"shader.h"
 #include"texture.h"
-
+#include"file_function.h"
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
@@ -299,7 +299,7 @@ RunParticles::RunParticles(ID3D11Device* device, std::shared_ptr<PlayerAI>player
 		mParticleSRV.push_back(srv);
 	}
 
-	Load();
+	FileFunction::Load(mEditorData, "Data/file/run_particle.bin", "rb");
 }
 
 
@@ -331,7 +331,7 @@ void RunParticles::ImGuiUpdate()
 
 	if (ImGui::Button("save"))
 	{
-		Save();
+		FileFunction::Save(mEditorData, "Data/file/run_particle.bin", "wb");
 	}
 	ImGui::End();
 #endif
@@ -583,25 +583,3 @@ void RunParticles::Render(ID3D11DeviceContext* context, DrowShader* shader)
 }
 
 
-
-void RunParticles::Load()
-{
-	FILE* fp;
-	if (fopen_s(&fp, "Data/file/run_particle.bin", "rb") == 0)
-	{
-		fseek(fp, 0, SEEK_END);
-		long size = ftell(fp);
-		fseek(fp, 0, SEEK_SET);
-
-		fread(&mEditorData, size, 1, fp);
-		fclose(fp);
-	}
-}
-
-void RunParticles::Save()
-{
-	FILE* fp;
-	fopen_s(&fp, "Data/file/run_particle.bin", "wb");
-	fwrite(&mEditorData, sizeof(EditorData), 1, fp);
-	fclose(fp);
-}

@@ -189,7 +189,6 @@
     <ClCompile Include="Source\model_data.cpp" />
     <ClCompile Include="Source\model_renderer.cpp" />
     <ClCompile Include="Source\model_resource.cpp" />
-    <ClCompile Include="Source\motionblur.cpp" />
     <ClCompile Include="Source\player_ai.cpp" />
     <ClCompile Include="Source\player_character.cpp" />
     <ClCompile Include="Source\play_camera_operation.cpp" />
@@ -258,6 +257,7 @@
     <ClInclude Include="Source\Easing.h" />
     <ClInclude Include="Source\fade.h" />
     <ClInclude Include="Source\fbx_load.h" />
+    <ClInclude Include="Source\file_function.h" />
     <ClInclude Include="Source\fireworks_particle.h" />
     <ClInclude Include="Source\framebuffer.h" />
     <ClInclude Include="Source\framework.h" />
@@ -278,7 +278,7 @@
     <ClInclude Include="Source\model_data.h" />
     <ClInclude Include="Source\model_renderer.h" />
     <ClInclude Include="Source\model_resource.h" />
-    <ClInclude Include="Source\motionblur.h" />
+    <ClInclude Include="Source\motion_blur_parameter.h" />
     <ClInclude Include="Source\obj3d.h" />
     <ClInclude Include="Source\player_ai.h" />
     <ClInclude Include="Source\player_character.h" />
@@ -363,6 +363,7 @@
     <None Include="Source\static_mesh_normal.hlsli" />
     <None Include="Source\title_psrticle_compute.hlsli" />
     <None Include="Source\title_texture_particle.hlsli" />
+    <None Include="Source\velocity_map_parameter.hlsli" />
     <None Include="Source\zoom_blur.hlsli" />
   </ItemGroup>
   <ItemGroup>

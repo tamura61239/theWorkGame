@@ -58,8 +58,6 @@ public:
 	void ImGuiUpdate();
 private:
 	Light();
-	void Load();
-	void Save();
 	struct CbLight
 	{
 		PointLight pointLight[POINTMAX];

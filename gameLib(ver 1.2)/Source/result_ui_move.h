@@ -20,9 +20,7 @@ public:
 	const bool GetDecisionFlag() { return mDecisionFlag; }
 	ResultUIData GetResultUIData(){ return mData; }
 
-	void Save();
 private:
-	void Load();
 	int mType;
 	bool mMoveFlag;
 	bool mDecisionFlag;

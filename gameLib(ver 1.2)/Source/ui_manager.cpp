@@ -3,6 +3,7 @@
 #include"vector_combo.h"
 #include"stage_manager.h"
 #include"ranking.h"
+#include"file_function.h"
 #ifdef USE_IMGUI
 #include"imgui.h"
 #endif
@@ -164,7 +165,7 @@ void UIManager::ImGuiUpdate()
 				mGameMove->SetGameUIData(gameData);
 				if (ImGui::Button("game move data save"))
 				{
-					mGameMove->Save();
+					FileFunction::Save(gameData, "Data/file/gameUIData.bin", "wb");
 				}
 
 				if (!mGameMove->GetTestFlag()&&!mGameMove->GetStartFlag())
@@ -192,7 +193,7 @@ void UIManager::ImGuiUpdate()
 				ImGui::SliderFloat("alpth difference", &resultData.alpthDifference, 0, 1);
 				if (ImGui::Button("save"))
 				{
-					mResultMove->Save();
+					FileFunction::Save(resultData, "Data/file/resultUIData.bin", "wb");
 				}
 				mResultMove->SetResultUIData(resultData);
 			}

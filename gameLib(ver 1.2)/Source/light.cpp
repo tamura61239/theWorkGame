@@ -1,6 +1,7 @@
 #include "light.h"
 #include "misc.h"
 #include"camera_manager.h"
+#include"file_function.h"
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
@@ -10,32 +11,8 @@ Light::Light()
 {
 	ZeroMemory(mPointLight, sizeof(PointLight) * POINTMAX);
 	ZeroMemory(mSpotLight, sizeof(SpotLight) * SPOTMAX);
-	Load();
-}
-
-void Light::Load()
-{
-	FILE* fp;
-	if (fopen_s(&fp, "Data/file/light.bin", "rb") == 0)
-	{
-		fread(&mDefLight, sizeof(CbDefLight), 1, fp);
-		fclose(fp);
-		return;
-	}
-	mDefLight.mLightDirection = VECTOR4F(1, 1, 1, 0);
-	mDefLight.mLightColor = VECTOR4F(1, 1, 1, 1);
-	mDefLight.mAmbientColor = VECTOR4F(1, 1, 1, 1);
-	mDefLight.mEyePosition = VECTOR4F(1, 1, 1, 1);
-	mDefLight.mSkyColor = VECTOR3F(1, 1, 1);
-	mDefLight.mGroundColor = VECTOR3F(1, 1, 1);
-}
-
-void Light::Save()
-{
-	FILE* fp;
-	fopen_s(&fp, "Data/file/light.bin", "wb");
-	fwrite(&mDefLight, sizeof(CbDefLight), 1, fp);
-	fclose(fp);
+	memset(&mDefLight, 1, sizeof(mDefLight));
+	FileFunction::Load(mDefLight, "Data/file/light.bin", "rb");
 }
 
 void Light::CreateLightBuffer(ID3D11Device* device)
@@ -78,7 +55,7 @@ void Light::ImGuiUpdate()
 	float* groundColor[3] = { &mDefLight.mGroundColor.x,&mDefLight.mGroundColor.y ,&mDefLight.mGroundColor.z  };
 	ImGui::ColorEdit3("ground color", *groundColor);
 
-	if (ImGui::Button("save"))Save();
+	if (ImGui::Button("save"))FileFunction::Save(mDefLight, "Data/file/light.bin", "wb");
 	ImGui::End();
 #endif
 }

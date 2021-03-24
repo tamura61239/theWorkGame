@@ -3,6 +3,7 @@
 #include"shader.h"
 #include"camera_manager.h"
 #include"texture.h"
+#include"file_function.h"
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
@@ -14,84 +15,7 @@ SelectSceneParticle::SelectSceneParticle(ID3D11Device* device):mIndexCount(0), m
 	Microsoft::WRL::ComPtr<ID3D11Buffer>deleteIndexBuffer;
 	memset(&mEditorData, 0, sizeof(mEditorData));
 	HRESULT hr;
-	//{
-	//	D3D11_BUFFER_DESC desc;
-	//	ZeroMemory(&desc, sizeof(desc));
-	//	desc.ByteWidth = sizeof(Cb);
-	//	desc.Usage = D3D11_USAGE_DEFAULT;
-	//	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	//	desc.CPUAccessFlags = 0;
-	//	desc.MiscFlags = 0;
-	//	desc.StructureByteStride = 0;
-	//	hr = device->CreateBuffer(&desc, nullptr, mCbBuffer.GetAddressOf());
-	//	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	//	desc.ByteWidth = sizeof(CbStart);
-	//	hr = device->CreateBuffer(&desc, nullptr, mCbStartBuffer.GetAddressOf());
-	//	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	//	desc.ByteWidth = sizeof(Particle) * particles.size();
-	//	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER | D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
-	//	desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS;
-	//	D3D11_SUBRESOURCE_DATA data;
-	//	ZeroMemory(&data, sizeof(data));
-	//	data.pSysMem = &particles[0];
-	//	hr = device->CreateBuffer(&desc, &data, mParticleBuffer.GetAddressOf());
-	//	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	//	//desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
-	//	desc.ByteWidth = sizeof(RenderParticle) * particles.size();
-	//	//desc.StructureByteStride = sizeof(RenderParticle);
-	//	hr = device->CreateBuffer(&desc, nullptr, mRenderBuffer.GetAddressOf());
-	//	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	//	desc.Usage = D3D11_USAGE_DEFAULT;
-	//	desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
 
-	//	desc.ByteWidth = sizeof(float);
-	//	desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
-	//	float num = 0;
-	//	data.pSysMem = &num;
-
-	//	hr = device->CreateBuffer(&desc, &data, mNumberBuffer.GetAddressOf());
-	//	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	//}
-	////SRV
-	//{
-	//	D3D11_SHADER_RESOURCE_VIEW_DESC desc;
-	//	ZeroMemory(&desc, sizeof(desc));
-	//	desc.Format = DXGI_FORMAT_R32_TYPELESS;
-	//	desc.ViewDimension = D3D11_SRV_DIMENSION_BUFFEREX;
-	//	desc.BufferEx.FirstElement = 0;
-	//	desc.BufferEx.Flags = D3D11_BUFFEREX_SRV_FLAG_RAW;
-	//	desc.BufferEx.NumElements = sizeof(Particle) * particles.size() / 4;
-	//	hr = device->CreateShaderResourceView(mParticleBuffer.Get(), &desc, mSRV.GetAddressOf());
-	//	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	//}
-	////UAV
-	//{
-	//	D3D11_UNORDERED_ACCESS_VIEW_DESC desc;
-	//	ZeroMemory(&desc, sizeof(desc));
-	//	desc.Format = DXGI_FORMAT_R32_TYPELESS;
-	//	desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-	//	desc.Buffer.FirstElement = 0;
-	//	desc.Buffer.Flags = D3D11_BUFFEREX_SRV_FLAG_RAW;
-	//	desc.Buffer.NumElements = sizeof(Particle) * particles.size() / 4;
-	//	hr = device->CreateUnorderedAccessView(mParticleBuffer.Get(), &desc, mUAV.GetAddressOf());
-	//	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	//	desc.Buffer.NumElements = sizeof(RenderParticle) * particles.size() / 4;
-	//	hr = device->CreateUnorderedAccessView(mRenderBuffer.Get(), &desc, mRenderUAV.GetAddressOf());
-	//	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	//	desc.Buffer.NumElements = sizeof(float) / 4;
-	//	hr = device->CreateUnorderedAccessView(mNumberBuffer.Get(), &desc, mNumberUAV.GetAddressOf());
-	//	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-	//}
-	//mCbCreate.angleMovement = VECTOR3F(3.14f / 2.f, 3.14f, 0);
-	//mCbCreate.color = VECTOR4F(0, 1, 0.5f, 1);
-	//mCbCreate.range = 200;
-	//mCbCreate.scope = VECTOR3F(1, 1, 0.3f);
-	//mCbCreate.speed = 200;
-	//mCbCreate.startIndex = 0;
-	//mCbUpdate.endPosition = VECTOR3F(0, 0, 1000);
-
-	//mCbUpdate.defVelocity = VECTOR3F(0, 0, 1);
 	mMaxParticle = 60000;
 	//バッファ
 	{
@@ -253,7 +177,7 @@ SelectSceneParticle::SelectSceneParticle(ID3D11Device* device):mIndexCount(0), m
 	mEditorData.endPosition = VECTOR3F(0, 0, 1000);
 	mEditorData.defVelocity = VECTOR3F(0, 0, 1);
 	mEditorData.sinLeng = 10;
-	Load();
+	FileFunction::Load(mEditorData, "Data/file/selete_scene_particle_data.bin", "rb");
 }
 
 void SelectSceneParticle::ImGuiUpdate()
@@ -284,7 +208,8 @@ void SelectSceneParticle::ImGuiUpdate()
 
 	if (ImGui::Button("save"))
 	{
-		Save();
+		FileFunction::Save(mEditorData, "Data/file/selete_scene_particle_data.bin", "wb");
+
 	}
 	ImGui::Text("%f", newIndex);
 	ImGui::End();
@@ -294,44 +219,6 @@ void SelectSceneParticle::ImGuiUpdate()
 
 void SelectSceneParticle::Update(float elapsdTime, ID3D11DeviceContext* context)
 {
-	//mCbUpdate.elapsdTime = elapsdTime;
-	//mCbCreate.eye = pCameraManager->GetCamera()->GetEye();
-	//mCbCreate.eye.y = 0;
-	//if (mUAV.Get() == nullptr)return;
-	//context->CSSetUnorderedAccessViews(2, 1, mRenderUAV.GetAddressOf(), nullptr);
-
-
-	//context->CSSetConstantBuffers(0, 1, mCbStartBuffer.GetAddressOf());
-	//context->CSSetConstantBuffers(1, 1, mCbBuffer.GetAddressOf());
-
-	//context->UpdateSubresource(mCbStartBuffer.Get(), 0, 0, &mCbCreate, 0, 0);
-	//context->UpdateSubresource(mCbBuffer.Get(), 0, 0, &mCbUpdate, 0, 0);
-
-	//context->CSSetUnorderedAccessViews(0, 1, mUAV.GetAddressOf(), nullptr);
-
-	//newIndex += 2000 * elapsdTime;
-	//float indexSize = newIndex - mCbCreate.startIndex;
-	//if (indexSize >= 1)
-	//{
-	//	context->CSSetShader(mCreateShader.Get(), nullptr, 0);
-
-	//	context->Dispatch(static_cast<UINT>(indexSize), 1, 1);
-	//	mCbCreate.startIndex = newIndex;
-	//}
-	//if (newIndex >= mMaxParticle)
-	//{
-	//	newIndex = 0;
-	//	mCbCreate.startIndex = 0;
-	//}
-	//context->CSSetShader(mCSShader.Get(), nullptr, 0);
-
-	//context->Dispatch(1000, 1, 1);
-
-	//context->CSSetShader(nullptr, nullptr, 0);
-	//ID3D11UnorderedAccessView* uav[3] = { nullptr,nullptr,nullptr };
-	//context->CSSetUnorderedAccessViews(0, 3, uav, nullptr);
-	//ID3D11Buffer* buffers[] = { nullptr,nullptr };
-	//context->CSSetConstantBuffers(0, 2, buffers);
 	ID3D11UnorderedAccessView* uavs[6] =
 	{
 		mParticleUAV.Get(),
@@ -417,28 +304,3 @@ void SelectSceneParticle::Render(ID3D11DeviceContext* context)
 
 }
 
-void SelectSceneParticle::Save()
-{
-	FILE* fp;
-	fopen_s(&fp, "Data/file/selete_scene_particle_data.bin", "wb");
-	{
-		fwrite(&mEditorData, sizeof(EditorData), 1, fp);
-		fclose(fp);
-	}
-
-}
-
-void SelectSceneParticle::Load()
-{
-	FILE* fp;
-	long size = 0;
-	if (fopen_s(&fp, "Data/file/selete_scene_particle_data.bin", "rb") == 0)
-	{
-		fseek(fp, 0, SEEK_END);
-		size = ftell(fp);
-		fseek(fp, 0, SEEK_SET);
-		fread(&mEditorData, size, 1, fp);
-		fclose(fp);
-	}
-
-}

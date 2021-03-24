@@ -18,6 +18,7 @@
 #include"scene_title.h"
 #include"scene_select.h"
 #include"scene_result.h"
+#include"file_function.h"
 
 SceneGame::SceneGame(int stageNo) : testGame(false), hitArea(false), mNowLoading(true), mLoadEnd(false), mStageNo(stageNo)
 {
@@ -48,15 +49,27 @@ void SceneGame::Initialize(ID3D11Device* device)
 			player = std::make_shared<PlayerAI>(device, "Data/FBX/new_player_anim.fbx");
 			//PUパーティクルマネージャーにプレイヤーのデータをセットする
 			pGpuParticleManager->CreateGameBuffer(device, player);
-
+			
+			//ステージの生成
 			mSManager = std::make_unique<StageManager>(device, SCREEN_WIDTH, SCREEN_HEIGHT);
 			mSManager->SetStageNo(mStageNo);
 			mSManager->Load();
+			//描画関連クラスの生成
 			mModelRenderer = std::make_unique<ModelRenderer>(device);
 			mBloom = std::make_unique<BloomRender>(device, static_cast<float>(SCREEN_WIDTH), static_cast<float>(SCREEN_HEIGHT), 1);
+			mLightView = std::make_unique<LightView>(device, "LightViewData1");
+			mCbZoomBuffer = std::make_unique<ConstantBuffer<CbZoom>>(device);
+			FileFunction::Load(mCbZoomBuffer->data, "Data/file/game_zoom_blur_parameter.bin", "rb");
+			mCbMotionBlur = std::make_unique<ConstantBuffer<MotionBlurParameter>>(device);
+			FileFunction::Load(mCbMotionBlur->data, "Data/file/game_velocity_map_parameter.bin", "rb");
+			mFade = std::make_unique<Fade>(device, Fade::FADE_SCENE::GAME);
+			mFade->StartFadeIn();
+
+			//ステージの操作クラスの生成
 			mStageOperation = std::make_unique<StageOperation>();
-			pHitAreaDrow.CreateObj(device);
+			//ライトクラスの生成
 			pLight.CreateLightBuffer(device);
+			//シェーダーの生成
 			{
 				D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
 				{
@@ -68,53 +81,35 @@ void SceneGame::Initialize(ID3D11Device* device)
 				mBlurShader = std::make_unique<DrowShader>(device, "Data/shader/sprite_vs.cso", "", "Data/shader/zoom_blur_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc));
 				motionBlurShader = std::make_unique<DrowShader>(device, "Data/shader/sprite_vs.cso", "", "Data/shader/motion_blur_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc));
 			}
+			//SkyMapの生成
 			mSky = std::make_unique<SkyMap>(device, L"Data/image/sor_sea.dds", MAPTYPE::BOX);
-			{
-				FILE* fp;
-				if (fopen_s(&fp, "Data/file/game_sky_map.bin", "rb") == 0)
-				{
-					fread(mSky->GetPosData(), sizeof(Obj3D), 1, fp);
-					fclose(fp);
-				}
-			}
-
-			mFade = std::make_unique<Fade>(device, Fade::FADE_SCENE::GAME);
-			mFade->StartFadeIn();
+			FileFunction::Load(*mSky->GetPosData(), "Data/file/game_sky_map.bin", "rb");
+			//当たり判定の描画用クラス
 			HitAreaRender::Create();
 			HitAreaRender::GetInctance()->Initialize(device);
 			HitAreaRender::GetInctance()->SetObjSize(mSManager->GetStages().size() + 1);
-
+			//UIクラスの生成
 			UIManager::Create();
 			UIManager::GetInctance()->GameInitialize(device);
-			mLightView = std::make_unique<LightView>(device, "LightViewData1");
+			//チュートリアルクラスの生成
 			mTutorialState = std::make_unique<TutorialState>(device);
-			mCbZoomBuffer = std::make_unique<ConstantBuffer<CbZoom>>(device);
-			{
-				FILE* fp;
-				if (fopen_s(&fp, "Data/file/game_zoom_blur_parameter.bin", "rb") == 0)
-				{
-					fread(&mCbZoomBuffer->data, sizeof(mCbZoomBuffer->data), 1, fp);
-					fclose(fp);
-				}
-
-			}
-
 			mPhotographTargets.resize(6);
 		}, device);
+	//画像
 	test = std::make_unique<Sprite>(device, L"Data/image/操作説明.png");
 	nowLoading = std::make_unique<Sprite>(device, L"Data/image/now.png");
 	siro = std::make_unique<Sprite>(device, L"Data/image/siro.png");
 	pushKey = std::make_unique<Sprite>(device, L"Data/image/push key.png");
+	//描画関連クラス
 	mBlend.push_back(std::make_unique<BlendState>(device, BLEND_MODE::ALPHA));
 	mBlend.push_back(std::make_unique<BlendState>(device, BLEND_MODE::ADD));
-	textureNo = 0;
 	mSampler.push_back(std::make_unique<SamplerState>(device, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP));
 	mSampler.push_back(std::make_unique<SamplerState>(device, D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_BORDER, D3D11_COMPARISON_LESS_EQUAL));
 	mSampler.push_back(std::make_unique<SamplerState>(device, D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_CLAMP));
-
-
 	mDepth = std::make_unique<DepthStencilState>(device, true, D3D11_DEPTH_WRITE_MASK_ALL, D3D11_COMPARISON_LESS_EQUAL);
 	mRasterizer = std::make_unique<RasterizerState>(device, D3D11_FILL_SOLID, D3D11_CULL_NONE, false, true, false, true, false);
+
+	textureNo = 0;
 
 }
 
@@ -237,6 +232,7 @@ void SceneGame::Editor()
 	ImGui::RadioButton("LIGHT VIEW", &mEditorNo, 12);
 	ImGui::RadioButton("TUTORIAL", &mEditorNo, 13);
 	ImGui::RadioButton("ZOOM BLUR", &mEditorNo, 14);
+	ImGui::RadioButton("MOTION BLUR", &mEditorNo, 15);
 
 	ImGui::RadioButton("GPU PARTICLE", &mEditorNo, 5);
 	ImGui::RadioButton("CAMERA", &mEditorNo, 6);
@@ -303,10 +299,7 @@ void SceneGame::Editor()
 		ImGui::ColorEdit4("color", *color);
 		if (ImGui::Button("save"))
 		{
-			FILE* fp;
-			fopen_s(&fp, "Data/file/game_sky_map.bin", "wb");
-			fwrite(mSky->GetPosData(), sizeof(Obj3D), 1, fp);
-			fclose(fp);
+			FileFunction::Save(*mSky->GetPosData(), "Data/file/game_sky_map.bin", "wb");
 		}
 		ImGui::End();
 		return;
@@ -318,14 +311,21 @@ void SceneGame::Editor()
 		ImGui::InputInt("division", &mCbZoomBuffer->data.division, 1);
 		if (ImGui::Button("save"))
 		{
-			FILE* fp;
-			fopen_s(&fp, "Data/file/game_zoom_blur_parameter.bin", "wb");
-			fwrite(&mCbZoomBuffer->data, sizeof(mCbZoomBuffer->data), 1, fp);
-			fclose(fp);
-
+			FileFunction::Save(mCbZoomBuffer->data, "Data/file/game_zoom_blur_parameter.bin", "wb");
 		}
 		ImGui::End();
 	}
+	if (mEditorNo == 15)
+	{
+		ImGui::Begin("motion blur");
+		ImGui::InputFloat("value", &mCbMotionBlur->data.value, 0.1f);
+		if (ImGui::Button("save"))
+		{
+			FileFunction::Save(mCbMotionBlur->data, "Data/file/game_velocity_map_parameter.bin", "wb");
+		}
+		ImGui::End();
+	}
+
 #endif
 
 }
@@ -498,14 +498,15 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	/************************速度マップテクスチャの作成***********************/
 	velocityMap->Clear(context);
 	velocityMap->Activate(context);
+	mCbMotionBlur->Activate(context, 6, true, true);
 	pCameraManager->GetCamera()->BeforeActive(context, 5, true, true, true);
 	mModelRenderer->VelocityBegin(context, viewProjection);
 	mModelRenderer->VelocityDraw(context, *player->GetCharacter()->GetModel());
 	mModelRenderer->VelocityEnd(context);
-	pCameraManager->GetCamera()->BeforeDactive(context);
 	pGpuParticleManager->VelocityRender(context, view, projection);
-
 	mSManager->RenderVelocity(context, view, projection, mStageOperation->GetColorType());
+	pCameraManager->GetCamera()->BeforeDactive(context);
+	mCbMotionBlur->DeActivate(context);
 
 	velocityMap->Deactivate(context);
 	/************************シャドウマップテクスチャの作成***********************/

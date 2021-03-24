@@ -66,8 +66,6 @@ private:
 		bool mEndFlag;
 	};
 
-	void Load(int scene);
-	void Save(int scene);
 	void Move(float elapsdTime, FadeScene* scene);
 	FadeScene mNowFadeData;
 	FadeScene mCheckFadeData;

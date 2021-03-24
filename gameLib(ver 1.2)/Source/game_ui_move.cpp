@@ -1,8 +1,9 @@
 #include "game_ui_move.h"
+#include"file_function.h"
 
 GameUiMove::GameUiMove() :mStartFlag(false), mState(0), mTime(0), mCount(0), mGameUIData(), mTestFlag(false)
 {
-	Load();
+	FileFunction::Load(mGameUIData, "Data/file/gameUIData.bin", "rb");
 }
 
 void GameUiMove::Update(float elapsdTime, std::vector<std::shared_ptr<UI>>uis)
@@ -74,24 +75,6 @@ void GameUiMove::SetUI(std::vector<std::shared_ptr<UI>> uis)
 		}
 
 		ui->SetUIData(data);
-	}
-}
-
-void GameUiMove::Save()
-{
-	FILE* fp;
-	fopen_s(&fp, "Data/file/gameUIData.bin", "wb");
-	fwrite(&mGameUIData, sizeof(GameUIData), 1, fp);
-	fclose(fp);
-}
-
-void GameUiMove::Load()
-{
-	FILE* fp;
-	if (fopen_s(&fp, "Data/file/gameUIData.bin", "rb") == 0)
-	{
-		fread(&mGameUIData, sizeof(GameUIData), 1, fp);
-		fclose(fp);
 	}
 }
 

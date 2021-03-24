@@ -252,9 +252,6 @@
     <ClCompile Include="Source\drow_shader.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Source\motionblur.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="Source\depth_of_field.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -524,9 +521,6 @@
     <ClInclude Include="Source\drow_shader.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\motionblur.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="Source\depth_of_field.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -641,6 +635,12 @@
     <ClInclude Include="Source\scene_select.h">
       <Filter>ヘッダー ファイル\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="Source\motion_blur_parameter.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\file_function.h">
+      <Filter>gameLib\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\board.hlsli">
@@ -726,6 +726,9 @@
     </None>
     <None Include="Source\zoom_blur.hlsli">
       <Filter>シェーダー\postEffect\ズームブラー</Filter>
+    </None>
+    <None Include="Source\velocity_map_parameter.hlsli">
+      <Filter>シェーダー\postEffect\モーションブラー</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

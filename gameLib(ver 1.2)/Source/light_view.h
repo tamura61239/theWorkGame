@@ -13,8 +13,6 @@ public:
 		return mLightCamera.get();
 	}
 private:
-	void Load(std::string fileName);
-	void Save(std::string fileName);
 	struct LightViewData
 	{
 		float lightEyeLength = 750.f;

@@ -2,11 +2,12 @@
 #include"camera_manager.h"
 #include"Judgment.h"
 #include"hit_area_render.h"
+#include"file_function.h"
 
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
-PlayerAI::PlayerAI(ID3D11Device* device, const char* fileName):mPlayFlag(false), mGravity(0)
+PlayerAI::PlayerAI(ID3D11Device* device, const char* fileName) :mPlayFlag(false), mGravity(0)
 {
 	std::unique_ptr<ModelData>data = std::make_unique<ModelData>(fileName);
 	std::shared_ptr<ModelResource>resouce = std::make_shared<ModelResource>(device, std::move(data));
@@ -14,52 +15,20 @@ PlayerAI::PlayerAI(ID3D11Device* device, const char* fileName):mPlayFlag(false),
 	mCharacter->SetPosition(VECTOR3F(0, 1, 0));
 	mCharacter->SetScale(VECTOR3F(gameObjScale, gameObjScale, gameObjScale));
 	mCharacter->CalculateBoonTransform(0);
-	Load();
-}
-
-void PlayerAI::Load()
-{
-	FILE* fp;
-	if (fopen_s(&fp, "Data/file/playerParrameter.bin", "rb") == 0)
-	{
-		fseek(fp, 0, SEEK_END);
-
-		int fileSize = ftell(fp);
-		//ファイルの先頭に戻す
-		fseek(fp, 0, SEEK_SET);
-
-		fread(&mParameter, fileSize, 1, fp);
-		fclose(fp);
-		mCharacter->SetMinSpeed(mParameter.minSpeed);
-		mCharacter->SetMaxSpeed(mParameter.maxSpeed);
-	}
-	else
-	{
-		mParameter.accel = VECTOR3F(0, 0, 0);
-		mParameter.maxSpeed = 0;
-		mParameter.minSpeed = 0;
-		mParameter.jump = VECTOR3F(0, 120, 0);
-		mParameter.ranp = VECTOR3F(0, 200, 0);
-		mParameter.gravity = -9.8f * 60;
-	}
-}
-
-void PlayerAI::Save()
-{
-	FILE* fp;
-	fopen_s(&fp, "Data/file/playerParrameter.bin", "wb");
-	fwrite(&mParameter, sizeof(PlayerParameter), 1, fp);
-	fclose(fp);
-
+	memset(&mParameter, 0, sizeof(mParameter));
+	FileFunction::Load(mParameter, "Data/file/playerParrameter.bin", "rb");
+	mCharacter->SetMinSpeed(mParameter.minSpeed);
+	mCharacter->SetMaxSpeed(mParameter.maxSpeed);
 
 }
+
 void PlayerAI::ImGuiUpdate()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("player");
 	float* accel[3] = { &mParameter.accel.x,&mParameter.accel.y ,&mParameter.accel.z };
 	//ImGui::SliderFloat3("accel", *accel, 0, 1000);
-	ImGui::InputFloat("accel", &mParameter.accel.z,10);
+	ImGui::InputFloat("accel", &mParameter.accel.z, 10);
 	float* j[3] = { &mParameter.jump.x,&mParameter.jump.y,&mParameter.jump.z };
 	//ImGui::SliderFloat3("jump", *j, 0, 1700);
 	ImGui::InputFloat("jump", &mParameter.jump.y, 10);
@@ -74,14 +43,16 @@ void PlayerAI::ImGuiUpdate()
 	{
 		mCharacter->SetMinSpeed(mParameter.minSpeed);
 	}
-	ImGui::InputFloat("gravity", &mParameter.gravity,10);
+	ImGui::InputFloat("gravity", &mParameter.gravity, 10);
 	if (ImGui::Button("save"))
 	{
-		Save();
+		FileFunction::Save(mParameter, "Data/file/playerParrameter.bin", "wb");
+
 	}
 	if (ImGui::Button("load"))
 	{
-		Load();
+		FileFunction::Load(mParameter, "Data/file/playerParrameter.bin", "rb");
+
 	}
 
 	if (ImGui::Button("replay"))
@@ -203,6 +174,7 @@ void PlayerAI::Update(float elapsd_time, StageManager* manager, StageOperation* 
 			operation->Reset(manager);
 			mCharacter->SetAccel(VECTOR3F(0, 0, 0));
 			pCameraManager->Update(elapsd_time);
+			mGravity = mParameter.gravity;
 			return;
 		}
 		//動けるとき
@@ -229,10 +201,12 @@ void PlayerAI::Move(float elapsd_time)
 {
 	VECTOR3F accel = mCharacter->GetAccel();
 	VECTOR3F velocity = mCharacter->GetVelocity();
-	accel.z = mParameter.accel.z;
 	auto state = mCharacter->GetMoveState();
+#if 1
+
+	accel.z = mParameter.accel.z;
 	mGravity += mParameter.gravity * elapsd_time;
-	accel.y += mGravity;
+	accel.y += mGravity * 60 * elapsd_time;
 	if (mCharacter->GetGroundFlag())
 	{
 		mGravity = mParameter.gravity;
@@ -262,6 +236,9 @@ void PlayerAI::Move(float elapsd_time)
 		accel.y = 0;
 		velocity.y = 0;
 	}
+#else
+
+#endif
 	//更新したデータのセット
 	mCharacter->SetAccel(accel);
 	mCharacter->SetVelocity(velocity);

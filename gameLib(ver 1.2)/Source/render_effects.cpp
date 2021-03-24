@@ -1,6 +1,7 @@
 #include "render_effects.h"
 #include"shader.h"
 #include"misc.h"
+#include"file_function.h"
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
@@ -16,18 +17,7 @@ RenderEffects::RenderEffects(ID3D11Device* device, std::string fileName)
 
 	mShader = std::make_unique<DrowShader>(device, "Data/shader/render_effects_vs.cso", "", "Data/shader/render_effects_ps.cso");
 	//定数バッファ作成
-	{
-		//D3D11_BUFFER_DESC bufferDesc = {};
-		//bufferDesc.ByteWidth = sizeof(CbScene);
-		//bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		//bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		//bufferDesc.CPUAccessFlags = 0;
-		//bufferDesc.MiscFlags = 0;
-		//bufferDesc.StructureByteStride = 0;
-		//hr = device->CreateBuffer(&bufferDesc, nullptr, mCbBuffer.GetAddressOf());
-		//_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-		mCbBuffer = std::make_unique<ConstantBuffer<CbScene>>(device);
-	}
+	mCbBuffer = std::make_unique<ConstantBuffer<CbScene>>(device);
 	//SamplerStateの生成
 	{
 		D3D11_SAMPLER_DESC desc;
@@ -97,7 +87,9 @@ RenderEffects::RenderEffects(ID3D11Device* device, std::string fileName)
 		hr = device->CreateRasterizerState(&rasterizerDesc, mRasterizerState.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
-	Load(fileName);
+	std::string filePas = "Data/file/" + fileName + ".bin";
+
+	FileFunction::Load(mCbBuffer->data.saveData, filePas.c_str(), "rb");
 }
 
 void RenderEffects::ImGuiUpdate()
@@ -108,12 +100,15 @@ void RenderEffects::ImGuiUpdate()
 	ImGui::ColorEdit3("shadow color", *color);
 	ImGui::InputFloat("shadow bisa", &mCbBuffer->data.saveData.shadowbisa, 0.0001f, 0, "%f");
 	ImGui::InputFloat("slope scale bias", &mCbBuffer->data.saveData.slopeScaledBias, 0.0001f, 0, "%f");
-	ImGui::InputFloat("depth bias clamp", &mCbBuffer->data.saveData.depthBiasClamp,0.0001f,0,"%f");
+	ImGui::InputFloat("depth bias clamp", &mCbBuffer->data.saveData.depthBiasClamp, 0.0001f, 0, "%f");
 	static char name[256] = "";
 	ImGui::InputText("file name", name, 256);
 	if (ImGui::Button("save"))
 	{
-		Save(name);
+		std::string fName = name;
+		std::string filePas = "Data/file/" + fName + ".bin";
+
+		FileFunction::Save(mCbBuffer->data.saveData, filePas.c_str(), "wb");
 		strcpy_s(name, "");
 	}
 
@@ -135,13 +130,6 @@ void RenderEffects::ShadowRender(ID3D11DeviceContext* context, ID3D11ShaderResou
 	context->PSSetShaderResources(1, 1, &depthMapSRV);
 	context->PSSetShaderResources(2, 1, &shadowMapSRV);
 
-	//context->PSSetSamplers(0, 1, mSamplerState[0].GetAddressOf());
-	//context->PSSetSamplers(1, 1, mSamplerState[1].GetAddressOf());
-
-	//context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
-	//context->RSSetState(mRasterizerState.Get());
-	//context->IASetInputLayout(nullptr);
-	//context->IASetVertexBuffers(0, 0, 0, 0, 0);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
 	context->Draw(4, 0);
@@ -151,12 +139,6 @@ void RenderEffects::ShadowRender(ID3D11DeviceContext* context, ID3D11ShaderResou
 	mCbBuffer->DeActivate(context);
 	ID3D11ShaderResourceView* nullSRV[3] = {};
 	context->PSSetShaderResources(0, 3, nullSRV);
-
-	//context->OMSetDepthStencilState(nullptr, 0);
-	//context->RSSetState(nullptr);
-	//ID3D11SamplerState* samplers[2] = { nullptr };
-	//context->PSSetSamplers(0, 2, samplers);
-
 }
 
 void RenderEffects::DeferrdShadowRender(ID3D11DeviceContext* context, DrowShader* shader, const FLOAT4X4& view, const FLOAT4X4& projection, const FLOAT4X4& lightView, const FLOAT4X4& lightProjection)
@@ -192,27 +174,3 @@ void RenderEffects::DeferrdShadowRender(ID3D11DeviceContext* context, DrowShader
 
 }
 
-void RenderEffects::Load(std::string fileName)
-{
-	std::string filePas = "Data/file/" + fileName + ".bin";
-
-	FILE* fp;
-	if (fopen_s(&fp, filePas.c_str(), "rb") == 0)
-	{
-		fread(&mCbBuffer->data.saveData, sizeof(SaveData), 1, fp);
-		fclose(fp);
-	}
-}
-
-void RenderEffects::Save(std::string fileName)
-{
-	std::string filePas = "Data/file/" + fileName + ".bin";
-
-	FILE* fp;
-	fopen_s(&fp, filePas.c_str(), "wb");
-	{
-		fwrite(&mCbBuffer->data.saveData, sizeof(SaveData), 1, fp);
-		fclose(fp);
-	}
-
-}

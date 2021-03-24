@@ -19,7 +19,12 @@ INT WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance, LPWSTR cmd_line
 {
 #if defined(DEBUG) | defined(_DEBUG)
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-	//_CrtSetBreakAlloc(241);
+	//_CrtSetBreakAlloc(369);
+	//_CrtSetBreakAlloc(358);
+	//_CrtSetBreakAlloc(356);
+	//_CrtSetBreakAlloc(352);
+	//_CrtSetBreakAlloc(351);
+	//_CrtSetBreakAlloc(350);
 #endif
 	HRESULT hr = CoInitializeEx(0, COINITBASE_MULTITHREADED);
 #if (_DEBUG)

@@ -99,8 +99,6 @@ private:
 		int mCreateCount;
 		UINT textureType;
 	};
-	void Load();
-	void Save();
 	EditorData mEditorData;
 	std::weak_ptr<PlayerAI>mPlayer;
 	int mMaxParticle;

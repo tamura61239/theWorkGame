@@ -1,6 +1,6 @@
 #include"static_mesh_motion_data.hlsli"
 #include"before_camera_view_data.hlsli"
-static const float value = 0.5f;
+#include"velocity_map_parameter.hlsli"
 
 VS_OUT main(float4 position : POSITION, float3 normal : NORMAL, float2 texcoord : TEXCOORD)
 {

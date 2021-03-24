@@ -1,28 +1,33 @@
 #include "fade.h"
 #include<string>
 #include"texture.h"
+#include"file_function.h"
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
 
 void Fade::StartLoad()
 {
-	FILE* fp;
 	for (int i = 0; i < static_cast<int>(FADE_SCENE::MAX); i++)
 	{
 		std::string fileName = { "Data/file/fade_out" };
 		fileName += std::to_string(i) + ".bin";
-		if (fopen_s(&fp, fileName.c_str(), "rb") == 0)
-		{
-			fread(&mFadeDatas[i].mData, sizeof(FadeData), 1, fp);
-			fclose(fp);
-		}
-		else
-		{
-			mFadeDatas[i].mData.mColor = VECTOR4F(0, 0, 0, 0);
-			mFadeDatas[i].mData.mInEndTime = 0;
-			mFadeDatas[i].mData.mOutEndTime = 0;
-		}
+		//if (fopen_s(&fp, fileName.c_str(), "rb") == 0)
+		//{
+		//	fread(&mFadeDatas[i].mData, sizeof(FadeData), 1, fp);
+		//	fclose(fp);
+		//}
+		//else
+		//{
+		//	mFadeDatas[i].mData.mColor = VECTOR4F(0, 0, 0, 0);
+		//	mFadeDatas[i].mData.mInEndTime = 0;
+		//	mFadeDatas[i].mData.mOutEndTime = 0;
+		//}
+		mFadeDatas[i].mData.mColor = VECTOR4F(0, 0, 0, 0);
+		mFadeDatas[i].mData.mInEndTime = 0;
+		mFadeDatas[i].mData.mOutEndTime = 0;
+
+		FileFunction::Load(mFadeDatas[i].mData, fileName.c_str(), "rb");
 		mFadeDatas[i].mScene = static_cast<FADE_SCENE>(i);
 		mFadeDatas[i].mEndFlag = false;
 	}
@@ -59,11 +64,16 @@ void Fade::ImGuiUpdate()
 		ImGui::InputFloat("fade out time", &mFadeDatas[mEditorScene].mData.mOutEndTime, 0.1f);
 		if (ImGui::Button("save"))
 		{
-			Save(mEditorScene);
+			std::string fileName = { "Data/file/fade_out" };
+			fileName += std::to_string(mEditorScene) + ".bin";
+			FileFunction::Save(mFadeDatas[mEditorScene].mData, fileName.c_str(), "rb");
 		}
 		if (ImGui::Button("load"))
 		{
-			Load(mEditorScene);
+			std::string fileName = { "Data/file/fade_out" };
+			fileName += std::to_string(mEditorScene) + ".bin";
+			FileFunction::Load(mFadeDatas[mEditorScene].mData, fileName.c_str(), "rb");
+
 		}
 	}
 	else
@@ -124,30 +134,6 @@ void Fade::Render(ID3D11DeviceContext* context)
 	}
 }
 
-void Fade::Load(int scene)
-{
-	FILE* fp;
-	int nowScene = scene;
-	std::string fileName = { "Data/file/fade_out" };
-	fileName += std::to_string(nowScene) + ".bin";
-	if (fopen_s(&fp, fileName.c_str(), "rb") == 0)
-	{
-		fread(&mFadeDatas[nowScene].mData, sizeof(FadeData), 1, fp);
-		fclose(fp);
-	}
-
-}
-
-void Fade::Save(int scene)
-{
-	FILE* fp;
-	int nowScene = scene;
-	std::string fileName = { "Data/file/fade_out" };
-	fileName += std::to_string(nowScene) + ".bin";
-	fopen_s(&fp, fileName.c_str(), "wb");
-	fwrite(&mFadeDatas[nowScene].mData, sizeof(FadeData), 1, fp);
-	fclose(fp);
-}
 
 void Fade::Move(float elapsdTime, FadeScene* scene)
 {

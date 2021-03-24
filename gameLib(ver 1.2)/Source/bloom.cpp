@@ -3,6 +3,7 @@
 #include"misc.h"
 #include"vector.h"
 #include<string>
+#include"file_function.h"
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
@@ -25,7 +26,6 @@ BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHi
 	mFrameBuffer.push_back(std::make_unique<FrameBuffer>(device, static_cast<int>(screenWidth), static_cast<int>(screenHight), true, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R24G8_TYPELESS));
 
 	//シェーダーの作成
-	HRESULT hr;
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -44,7 +44,9 @@ BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHi
 	//ファイルからパラメーターを取得
 	for (int i = 0; i < 4; i++)
 	{
-		Load(i);
+		std::string fileName = "Data/file/bloom" + std::to_string(i) + ".bin";
+
+		FileFunction::Load(mEditorData[i], fileName.c_str(), "rb");
 	}
 	mDepth = std::make_unique<DepthStencilState>(device, false, D3D11_DEPTH_WRITE_MASK_ZERO, D3D11_COMPARISON_ALWAYS);
 	mRasterizer = std::make_unique<RasterizerState>(device, D3D11_FILL_SOLID, D3D11_CULL_BACK);
@@ -86,13 +88,15 @@ void BloomRender::ImGuiUpdate()
 	{
 		editorData.blurCount = static_cast<float>(blurCount);
 	}
+	std::string fileName = "Data/file/bloom" + std::to_string(mNowEditorNo) + ".bin";
 
-	if (ImGui::Button("save"))Save(mNowEditorNo);
+	if (ImGui::Button("save"))FileFunction::Save(editorData, fileName.c_str(),"rb");
 	if (ImGui::Button("all save"))
 	{
 		for (int i = 0; i < 4; i++)
 		{
-			Save(i);
+			fileName = "Data/file/bloom" + std::to_string(i) + ".bin";
+			FileFunction::Save(mEditorData[i], fileName.c_str(), "wb");
 		}
 	}
 	ImGui::End();
@@ -172,27 +176,6 @@ void BloomRender::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView*
 	mRasterizer->DeActivate(context);
 	mSampler[0]->DeActivate(context);
 	mSampler[1]->DeActivate(context);
-
-}
-/*********************ファイル操作********************/
-void BloomRender::Load(const int scene)
-{
-	FILE* fp;
-	std::string fileName = "Data/file/bloom" + std::to_string(scene) + ".bin";
-	if (fopen_s(&fp, fileName.c_str(), "rb") == 0)
-	{
-		fread(&mEditorData[scene], sizeof(EditorData), 1, fp);
-		fclose(fp);
-	}
-}
-
-void BloomRender::Save(const int scene)
-{
-	FILE* fp;
-	std::string fileName = "Data/file/bloom" + std::to_string(scene) + ".bin";
-	fopen_s(&fp, fileName.c_str(), "wb");
-	fwrite(&mEditorData[scene], sizeof(EditorData), 1, fp);
-	fclose(fp);
 
 }
 void BloomRender::Blur01(ID3D11DeviceContext* context)

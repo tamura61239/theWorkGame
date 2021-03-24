@@ -17,8 +17,6 @@ public:
 	void DeferrdShadowRender(ID3D11DeviceContext* context, DrowShader* shader, const FLOAT4X4& view, const FLOAT4X4& projection, const FLOAT4X4& lightView, const FLOAT4X4& lightProjection);
 
 private:
-	void Load(std::string fileName);
-	void Save(std::string fileName);
 	struct SaveData
 	{
 		VECTOR3F shadowColor = VECTOR3F(0.65f, 0.65f, 0.65f);

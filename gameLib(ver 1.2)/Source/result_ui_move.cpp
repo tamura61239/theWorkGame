@@ -1,11 +1,12 @@
 #include "result_ui_move.h"
 #include"key_board.h"
+#include"file_function.h"
 
 ResultUIMove::ResultUIMove() :mMoveFlag(false), mType(0), mDecisionFlag(false)
 {
 	mData.frameAlpth = 0.2f;
 	mData.alpthDifference = 0.65f;
-	Load();
+	FileFunction::Load(mData, "Data/file/resultUIData.bin", "rb");
 }
 
 void ResultUIMove::Update(float elapsdTime, std::vector<std::shared_ptr<UI>> uis, size_t uiCount)
@@ -28,7 +29,7 @@ void ResultUIMove::Update(float elapsdTime, std::vector<std::shared_ptr<UI>> uis
 	}
 	if (pKeyBoad.RisingState(KeyLabel::RIGHT))
 	{
-		mType = mType < uiCount - 2 ? mType + 1 : mType;
+		mType = mType < static_cast<int>(uiCount) - 2 ? mType + 1 : mType;
 	}
 	if (pKeyBoad.RisingState(KeyLabel::LEFT))
 	{
@@ -64,22 +65,3 @@ void ResultUIMove::Update(float elapsdTime, std::vector<std::shared_ptr<UI>> uis
 	uis[frameNo]->SetUIData(frameData);
 }
 
-void ResultUIMove::Save()
-{
-	FILE* fp;
-	fopen_s(&fp, "Data/file/resultUIData.bin", "wb");
-	fwrite(&mData, sizeof(ResultUIData), 1, fp);
-	fclose(fp);
-
-}
-
-void ResultUIMove::Load()
-{
-	FILE* fp;
-	if (fopen_s(&fp, "Data/file/resultUIData.bin", "rb") == 0)
-	{
-		fread(&mData, sizeof(ResultUIData), 1, fp);
-		fclose(fp);
-	}
-
-}

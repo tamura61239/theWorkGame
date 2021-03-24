@@ -1,5 +1,6 @@
 #include "light_view.h"
 #include"light.h"
+#include"file_function.h"
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
@@ -7,7 +8,9 @@
 LightView::LightView(ID3D11Device* device, std::string fileName)
 {
 	mLightCamera = std::make_unique<Camera>(device);
-	Load(fileName);
+	std::string filePas = "Data/file/" + fileName + ".bin";
+
+	FileFunction::Load(mData, filePas.c_str(), "rb");
 }
 
 void LightView::Update(const VECTOR3F& targetPosition, ID3D11DeviceContext* context)
@@ -36,34 +39,15 @@ void LightView::ImGuiUpdate()
 	ImGui::InputText("file name", mFileName, 256);
 	if (ImGui::Button("save"))
 	{
-		Save(mFileName);
+		std::string fName = mFileName;
+		std::string filePas = "Data/file/" + fName + ".bin";
+
+		FileFunction::Save(mData, filePas.c_str(), "wb");
+
 		strcpy_s(mFileName, "");
 	}
 	ImGui::End();
 #endif
 }
 
-void LightView::Load(std::string fileName)
-{
-	std::string filePas = "Data/file/" + fileName + ".bin";
 
-	FILE* fp;
-	if (fopen_s(&fp, filePas.c_str(), "rb") == 0)
-	{
-		fread(&mData, sizeof(LightViewData), 1, fp);
-		fclose(fp);
-	}
-}
-
-void LightView::Save(std::string fileName)
-{
-	std::string filePas = "Data/file/" + fileName + ".bin";
-
-	FILE* fp;
-	fopen_s(&fp, filePas.c_str(), "wb");
-	{
-		fwrite(&mData, sizeof(LightViewData), 1, fp);
-		fclose(fp);
-	}
-
-}

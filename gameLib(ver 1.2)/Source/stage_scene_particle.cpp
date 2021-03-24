@@ -2,6 +2,7 @@
 #include"misc.h"
 #include"shader.h"
 #include"texture.h"
+#include"file_function.h"
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
@@ -169,7 +170,7 @@ StageSceneParticle::StageSceneParticle(ID3D11Device* device) :mMaxCount(100000),
 		mParticleSRV.push_back(srv);
 	}
 
-	Load();
+	FileFunction::Load(mEditorData, "Data/file/stage_scene_paricte_data.bin", "rb");
 }
 /************************エディター****************************/
 
@@ -218,7 +219,8 @@ void StageSceneParticle::ImGuiUpdate()
 
 	if (ImGui::Button("save"))
 	{
-		Save();
+		FileFunction::Save(mEditorData, "Data/file/stage_scene_paricte_data.bin", "wb");
+
 	}
 	ImGui::Text("position x:%f,y:%f,z:%f", mEditorData.createCentralPosition.x, mEditorData.createCentralPosition.y, mEditorData.createCentralPosition.z);
 	ImGui::End();
@@ -286,59 +288,6 @@ void StageSceneParticle::Update(ID3D11DeviceContext* context, float elapsdTime)
 	}
 	context->CSSetUnorderedAccessViews(0, 6, uavs, nullptr);
 	context->CSSetShader(nullptr, nullptr, 0);
-	//ID3D11Buffer* buffers[] =
-	//{
-	//	mCbCreateBuffer.Get(),
-	//	mCbUpdateBuffer.Get()
-	//};
-	//context->CSSetConstantBuffers(0, 2, buffers);
-	//mCreateCount += mEditorData.oneSecondCreateNumber * elapsdTime;
-	////パーティクルの生成
-	//if (size >= 1)
-	//{
-	//	context->CSSetShader(mCSCreateShader.Get(), nullptr, 0);
-	//	CbCreate create;
-	//	create.randX = mEditorData.randX;
-	//	create.startIndex = static_cast<int>(mBeforeIndex);
-	//	create.createArea = mEditorData.createArea;
-	//	create.createCentralPosition = mEditorData.createCentralPosition;
-	//	create.color = mEditorData.color;
-	//	create.maxLife = mEditorData.maxLife;
-	//	create.scale = mEditorData.scale;
-	//	create.colorRatio = mEditorData.colorRatio;
-	//	create.color2 = mEditorData.color2;
-	//	context->UpdateSubresource(mCbCreateBuffer.Get(), 0, 0, &create, 0, 0);
-	//	int count = static_cast<int>(size);
-	//	if (create.startIndex + count >= mMaxCount)
-	//	{
-	//		mIndexCount = 0;
-	//		count -= static_cast<int>(mIndexCount - mMaxCount);
-	//	}
-	//	context->Dispatch(count, 1, 1);
-	//	mBeforeIndex = mIndexCount;
-	//}
-	////更新
-	//CbUpdate update;
-	//update.elapsdTime = elapsdTime;
-	//update.windDirection = mEditorData.windDirection;
-	//update.maxSpeed = mEditorData.maxSpeed;
-
-	//context->UpdateSubresource(mCbUpdateBuffer.Get(), 0, 0, &update, 0, 0);
-	//context->CSSetShader(mCSShader.Get(), nullptr, 0);
-
-	//context->Dispatch(mMaxCount / 100, 1, 1);
-
-
-	//buffers[0] = nullptr;
-	//buffers[1] = nullptr;
-	//context->CSSetConstantBuffers(0, 2, buffers);
-
-	//ID3D11UnorderedAccessView* uav[2] = { nullptr };
-	//context->CSSetUnorderedAccessViews(0, 1, &uav[0], nullptr);
-	//context->CSSetUnorderedAccessViews(2, 1, &uav[1], nullptr);
-
-	//context->CSSetShader(nullptr, nullptr, 0);
-
 }
 /***********************描画***********************/
 void StageSceneParticle::Render(ID3D11DeviceContext* context)
@@ -359,12 +308,6 @@ void StageSceneParticle::Render(ID3D11DeviceContext* context)
 
 	ID3D11ShaderResourceView* srv = nullptr;
 	context->PSSetShaderResources(0, 1, &srv);
-	//offset = 0;
-	//vertex = nullptr;
-	//index = nullptr;
-	//context->IASetVertexBuffers(0, 1, &vertex, &stride, &offset);
-	//context->IASetIndexBuffer(index, DXGI_FORMAT_R32_UINT, 0);
-
 }
 
 void StageSceneParticle::Render(ID3D11DeviceContext* context, DrowShader* shader)
@@ -393,27 +336,3 @@ void StageSceneParticle::Render(ID3D11DeviceContext* context, DrowShader* shader
 
 }
 
-/*********************ファイル処理********************/
-void StageSceneParticle::Load()
-{
-	FILE* fp;
-	if (fopen_s(&fp, "Data/file/stage_scene_paricte_data.bin", "rb") == 0)
-	{
-		fseek(fp, 0, SEEK_END);
-		long size = ftell(fp);
-		fseek(fp, 0, SEEK_SET);
-
-		fread(&mEditorData, size, 1, fp);
-		fclose(fp);
-
-	}
-
-}
-
-void StageSceneParticle::Save()
-{
-	FILE* fp;
-	fopen_s(&fp, "Data/file/stage_scene_paricte_data.bin", "wb");
-	fwrite(&mEditorData, sizeof(EditorData), 1, fp);
-	fclose(fp);
-}

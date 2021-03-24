@@ -16,8 +16,6 @@ public:
 	void Update(float elapsdTime, ID3D11DeviceContext* context);
 	void Render(ID3D11DeviceContext* context);
 private:
-	void Save();
-	void Load();
 	//バッファ
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mRenderBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mParticleCountBuffer;

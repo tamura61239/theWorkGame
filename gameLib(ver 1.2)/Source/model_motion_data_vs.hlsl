@@ -1,6 +1,6 @@
 #include "model_motion_data.hlsli"
 #include"before_camera_view_data.hlsli"
-static const float value = 1.f;
+#include"velocity_map_parameter.hlsli"
 
 
 VS_OUT main(

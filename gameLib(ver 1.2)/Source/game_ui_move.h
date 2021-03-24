@@ -47,9 +47,7 @@ public:
 	const float GetTime() { return mTime; }
 	const bool GetStartFlag() { return mStartFlag; }
 	const bool GetTestFlag() { return mTestFlag; }
-	void Save();
 private:
-	void Load();
 	void CountMove(float elapsdTime, std::shared_ptr<UI>ui);
 	void TimeMove(float elapsdTime, std::shared_ptr<UI>ui);
 	GameUIData mGameUIData;

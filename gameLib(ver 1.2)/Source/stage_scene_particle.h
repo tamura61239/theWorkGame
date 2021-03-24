@@ -16,8 +16,6 @@ public:
 	void Render(ID3D11DeviceContext* context);
 	void Render(ID3D11DeviceContext* context,DrowShader*shader);
 private:
-	void Load();
-	void Save();
 	//シェーダー
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSCreateShader;
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSShader;

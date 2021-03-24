@@ -7,10 +7,6 @@ class PlayerAI
 {
 public:
 	PlayerAI(ID3D11Device* device, const char* fileName);
-	//load
-	void Load();
-	//save
-	void Save();
 	//imgui
 	void ImGuiUpdate();
 	//setter

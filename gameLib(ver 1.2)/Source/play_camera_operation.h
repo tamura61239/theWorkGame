@@ -10,9 +10,6 @@ public:
 	//更新
 	void ImGuiUpdate();
 	void Update(Camera* camera,float elapsedTime);
-	//ファイル操作
-	void Load();
-	void Save();
 	//setter
 	void SetPlayerPosition(const VECTOR3F& position) { mPlayerPosition = position; }
 	//getter
@@ -25,7 +22,6 @@ private:
 		float y;
 	};
 	CameraParameter mParameter;
-	CameraParameter mStartParameter;
 	bool mStartProduction;
 	VECTOR3F mPlayerPosition;
 };

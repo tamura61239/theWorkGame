@@ -10,23 +10,6 @@
 
 HRESULT CreateVSFromCso(ID3D11Device* device, const char* cso_name, ID3D11VertexShader** vertex_shader, ID3D11InputLayout** input_layout, D3D11_INPUT_ELEMENT_DESC* input_element_desc, UINT num_elements)
 {
-	struct set_of_vertex_shader_and_input_layout
-	{
-		set_of_vertex_shader_and_input_layout(ID3D11VertexShader* vertex_shader, ID3D11InputLayout* input_layout) : vertex_shader(vertex_shader), input_layout(input_layout) {}
-		Microsoft::WRL::ComPtr<ID3D11VertexShader> vertex_shader;
-		Microsoft::WRL::ComPtr<ID3D11InputLayout> input_layout;
-	};
-	static std::map<std::string, set_of_vertex_shader_and_input_layout> cache;
-
-	auto it = cache.find(cso_name);
-	if (it != cache.end())
-	{
-		*vertex_shader = it->second.vertex_shader.Get();
-		(*vertex_shader)->AddRef();
-		*input_layout = it->second.input_layout.Get();
-		(*input_layout)->AddRef();
-		return S_OK;
-	}
 
 	FILE* fp = nullptr;
 	fopen_s(&fp, cso_name, "rb");
@@ -47,7 +30,6 @@ HRESULT CreateVSFromCso(ID3D11Device* device, const char* cso_name, ID3D11Vertex
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 
-	cache.insert(std::make_pair(cso_name, set_of_vertex_shader_and_input_layout(*vertex_shader, *input_layout)));
 
 	return hr;
 }

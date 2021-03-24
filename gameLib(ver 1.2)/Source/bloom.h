@@ -21,8 +21,6 @@ public:
 		mNowEditorNo = mNowScene;
 	}
 private:
-	void Load(const int scene);
-	void Save(const int scene);
 	void Blur01(ID3D11DeviceContext* context);
 	void Blur02(ID3D11DeviceContext* context);
 	struct CbBloom
