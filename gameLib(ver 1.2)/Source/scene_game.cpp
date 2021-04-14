@@ -261,7 +261,7 @@ void SceneGame::Editor()
 		mSManager->ImGuiUpdate();
 		break;
 	case 4:
-		player->ImGuiUpdate();
+		player->Editor();
 		break;
 	case 5:
 		pGpuParticleManager->ImGuiUpdate();

@@ -4,9 +4,11 @@
 class PlayerCharacter :public Character
 {
 public:
+	//コンストラクタ
 	PlayerCharacter(std::shared_ptr<ModelResource>resouce);
 	//移動
 	void Move(float elapsd_time);
+	//アニメーション更新
 	void AnimUpdate(float elapsdTime);
 	//state
 	enum class MOVESTATE
@@ -22,7 +24,7 @@ public:
 	void SetAccel(const VECTOR3F& accel) { mAccel = accel; }
 	void SetExist(const bool exist) { mExist = exist; }
 	void SetMoveState(MOVESTATE state)
-	{
+	{//上程が変化した時の処理
 		if (mMoveState == state)return;
 		mChangState = true;
 		mMoveState = state;
@@ -45,16 +47,30 @@ public:
 	const float GetMaxSpeed() { return mMaxSpeed; }
 	const VECTOR3F& GetBeforePosition() { return mBeforePosition; }
 private:
+	/**********変数*********/
+
+	//速度
 	VECTOR3F mVelocity;
+	//加速度
 	VECTOR3F mAccel;
+	//前のフレームの座標
 	VECTOR3F mBeforePosition;
+	//存在フラグ
 	bool mExist;
+	//今の状態
 	MOVESTATE mMoveState;
+	//状態が変わったかどうかのflag
 	bool mChangState;
+	//空中でないかどうか
 	bool mGroundFlag;
+	//ゴールしたかどうか
 	bool mGorlFlag;
+	//最大速度
 	float mMaxSpeed;
+	//最小速度
 	float mMinSpeed;
+	//アニメーション速度
 	float mAnimSpeed;
+	//アニメーションNo
 	int mAnimNo;
 };

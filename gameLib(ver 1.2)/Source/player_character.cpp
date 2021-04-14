@@ -1,33 +1,41 @@
 #include "player_character.h"
 
+//コンストラクタ
 PlayerCharacter::PlayerCharacter(std::shared_ptr<ModelResource> resouce):Character(resouce),mVelocity(0,0,0),mAccel(0,0,0),mExist(true)
 ,mMoveState(MOVESTATE::LANDING),mChangState(false), mMaxSpeed(0),mMinSpeed(0),mGroundFlag(false), mGorlFlag(false), mAnimSpeed(0.f), mAnimNo(-1)
 {
 	mModel->PlayAnimation(0, true);
 }
 
+/********************移動関数**************************/
 void PlayerCharacter::Move(float elapsd_time)
 {
+	//前のフレームの座標を取得
 	mBeforePosition = mPosition;
+	//速度に加速度を足す
 	mVelocity += mAccel * elapsd_time;
+	//速度をfloat型で取得
 	float speed;
 	DirectX::XMVECTOR velocity = DirectX::XMLoadFloat3(&VECTOR3F(0,0,mVelocity.z));
 	DirectX::XMStoreFloat(&speed, DirectX::XMVector3Length(velocity));
+	//最大速度以上か調べる
 	if (speed > mMaxSpeed)
 	{
 		mVelocity.z = mMaxSpeed;
 	}
-	mChangState = false;
-
+	//ゲームのオブジェクトの全体のサイズに合わせた割合にする
 	static float s = mScale.x / 10;
+	//座標を更新
 	mPosition += mVelocity * elapsd_time * s;
 }
-
+/********************アニメーション更新関数***********************/
 void PlayerCharacter::AnimUpdate(float elapsdTime)
 {
+	//playerの状態が変化したかどうか
 	if (mChangState)
 	{
 		float blendTime = 0.f;
+		//状態に合わせてアニメーションNoとアニメーション速度を決める
 		switch (mMoveState)
 		{
 		case MOVESTATE::MOVE:
@@ -49,7 +57,11 @@ void PlayerCharacter::AnimUpdate(float elapsdTime)
 			}
 			break;
 		}
+		//アニメーション開始
 		mModel->PlayAnimation(mAnimNo, true, blendTime);
+		//flagをfalseにしておく
+		mChangState = false;
 	}
+	//アニメーション更新
 	CalculateBoonTransform(elapsdTime * mAnimSpeed);
 }
