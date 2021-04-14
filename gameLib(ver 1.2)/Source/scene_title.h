@@ -18,24 +18,34 @@
 class SceneTitle :public Scene
 {
 public:
+	//コンストラクタ
 	SceneTitle();
+	//初期化
 	void Initialize(ID3D11Device* device);
+	//エディター
 	void Editor();
+	//更新
 	void Update(float elapsed_time);
+	//描画
 	void Render(ID3D11DeviceContext* context, float elapsed_time);
+	//解放
 	void Relese();
-	~SceneTitle();
 private:
+	//画像描画用変数
 	std::unique_ptr<Sprite>test;
+	//描画用変数
 	std::unique_ptr<BloomRender>bloom;
 	std::unique_ptr<FrameBuffer>frameBuffer[3];
 	std::unique_ptr<DrowShader>mBluer;
 	std::unique_ptr<ConstantBuffer<CbZoom>>mCbZoomBuffer;
+	//samplerStateのタイプ
 	enum samplerType
 	{
 		wrap,clamp,max
 	};
+	//エディターで使う変数
 	bool mTestMove;
+	//NowLoading時に使う変数
 	bool mLoading;
 	bool renderFlag;
 };

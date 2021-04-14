@@ -8,23 +8,28 @@
 #include"sampler_state.h"
 #include"blend_state.h"
 #include<vector>
-
+/*******************シーンクラス(純仮想関数)*********************/
 class Scene
 {
 public:
 	Scene() = default;
 	virtual ~Scene() = default;
+	//初期化
 	virtual void Initialize(ID3D11Device* device) = 0;
+	//エディター
 	virtual void Editor() = 0;
+	//更新
 	virtual void Update(float elapsed_time) = 0;
+	//描画
 	virtual void Render(ID3D11DeviceContext* context, float elapsed_time) = 0;
+	//解放
 	virtual void Relese() = 0;
 protected:
 	//Now Loading
 	std::unique_ptr<std::thread> loading_thread;
 	std::mutex loading_mutex;
 
-
+	//NowLoading中かどうか
 	bool IsNowLoading()
 	{
 		if (loading_thread && loading_mutex.try_lock())
@@ -34,6 +39,7 @@ protected:
 		}
 		return true;
 	}
+	//NowLoadingの終了
 	void EndLoading()
 	{
 		if (loading_thread && loading_thread->joinable())

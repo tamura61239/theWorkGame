@@ -7,6 +7,7 @@
 class SceneSelect :public Scene
 {
 public:
+	//コンストラクタ
 	SceneSelect(){}
 	//初期化
 	void Initialize(ID3D11Device* device);
@@ -16,8 +17,8 @@ public:
 	void Update(float elapsed_time);
 	//描画
 	void Render(ID3D11DeviceContext* context, float elapsed_time);
+	//解放
 	void Relese();
-	~SceneSelect(){}
 
 private:
 	//描画用変数

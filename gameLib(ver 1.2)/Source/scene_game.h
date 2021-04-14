@@ -28,13 +28,20 @@ class SceneGame :public Scene
 {
 public:
 	SceneGame(int stageNo);
+	//初期化
 	void Initialize(ID3D11Device* device);
+	//エディター
 	void Editor();
+	//更新
 	void Update(float elapsed_time);
+	//描画
 	void Render(ID3D11DeviceContext* context, float elapsed_time);
+	//解放
 	void Relese();
 private:
-	//
+	//フェード時の動き
+	void FadeMove(float elapsdTime);
+	//画像描画変数
 	std::unique_ptr<Sprite>test;
 	std::unique_ptr<Sprite>nowLoading;
 	std::unique_ptr<Sprite>siro;
@@ -62,14 +69,18 @@ private:
 	std::unique_ptr<LightView>mLightView;
 	std::unique_ptr<ConstantBuffer<CbZoom>>mCbZoomBuffer;
 	std::unique_ptr<ConstantBuffer<MotionBlurParameter>>mCbMotionBlur;
+	//samplerStateのタイプ
 	enum samplerType
 	{
 		warp,border, clamp,max
 	};
+	//エディター変数
 	bool testGame;
 	bool hitArea;
 	int textureNo;
+	//NowLoadingの時に使う変数
 	bool mNowLoading;
 	bool mLoadEnd;
+	//ステージ番号保持変数
 	int mStageNo;
 };

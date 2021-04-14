@@ -10,7 +10,7 @@
 #include<imgui.h>
 #endif
 
-/***********************初期化****************************/
+/***********************初期化関数****************************/
 void SceneSelect::Initialize(ID3D11Device* device)
 {
 	//マルチスレッド
@@ -38,18 +38,18 @@ void SceneSelect::Initialize(ID3D11Device* device)
 	//NowLoadingの時に描画するもの
 	mRenderTexture = std::make_unique<Sprite>(device, L"Data/image/now.png");
 	
+	//描画用のステートの生成
 	mBlend.push_back(std::make_unique<BlendState>(device, BLEND_MODE::ALPHA));
 	mBlend.push_back(std::make_unique<BlendState>(device, BLEND_MODE::ADD));
-
 	mSampler.push_back(std::make_unique<SamplerState>(device, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP));
-
 	mDepth = std::make_unique<DepthStencilState>(device, true, D3D11_DEPTH_WRITE_MASK_ALL, D3D11_COMPARISON_LESS_EQUAL);
 	mRasterizer = std::make_unique<RasterizerState>(device, D3D11_FILL_SOLID, D3D11_CULL_NONE, false, true, false, true, false);
 
 }
-
+/*************************エディター関数(ImGuiを使ってパラメーターを調整する)**************************/
 void SceneSelect::Editor()
 {
+	//マルチスレッドの処理が終わったかどうかを調べる(終わってなかったらreturn)
 	if (IsNowLoading())
 	{
 		return;
@@ -67,9 +67,11 @@ void SceneSelect::Editor()
 		pSceneManager.ChangeScene(new SceneResult(0.f,0));
 		break;
 	}
+	//エディターがOFFの時
 	if (!mEditorFlag)return;
 	ImGui::Begin("scene select");
 #ifdef _DEBUG
+	//シーンを画像として保存するかどうかを選択する
 	if (ImGui::CollapsingHeader("screen shot"))
 	{
 		ImGui::Selectable("gpu particle", &mPhotographTargets[0]);
@@ -80,6 +82,7 @@ void SceneSelect::Editor()
 		}
 	}
 #endif
+	//どのエディターを操作するか選択する
 	ImGui::RadioButton("NONE", &mEditorNo, 0);
 	ImGui::RadioButton("SELECT_SCENE", &mEditorNo, 1);
 	ImGui::RadioButton("BLOOM", &mEditorNo, 2);
@@ -88,6 +91,7 @@ void SceneSelect::Editor()
 	ImGui::RadioButton("GPU PARTICLE", &mEditorNo, 5);
 
 	ImGui::End();
+	//選択されたエディタ関数を呼ぶ
 	switch (mEditorNo)
 	{
 	case 1:
@@ -107,43 +111,55 @@ void SceneSelect::Editor()
 		break;
 	}
 }
-/*******************更新**********************/
+/*******************更新関数**********************/
 void SceneSelect::Update(float elapsed_time)
 {
+	//マルチスレッドの処理が終わったかどうかを調べる(終わってなかったらreturn)
 	if (IsNowLoading())
 	{
 		return;
 	}
+	//マルチスレッドの終了関数
 	EndLoading();
 
 	if (mSelect->Update(elapsed_time))
-	{
+	{//フェードアウト開始
 		mFade->StartFadeOut();
 	}
+	//フェートの更新
 	mFade->Update(elapsed_time);
+	//パーティクルの更新
 	pGpuParticleManager->Update(elapsed_time);
+	//フェードアウトが終わったかどうか
 	if (mFade->GetEndFlag())
 	{
 		if (mFade->GetFadeScene() == Fade::FADE_MODO::FADEOUT)
 		{
+			//選択したステージに遷移
 			pSceneManager.ChangeScene(new SceneGame(mSelect->GetSelectNumber()));
 
 		}
 	}
+	//カメラの更新
 	pCameraManager->Update(elapsed_time);
 }
-/*********************描画******************/
+/*********************描画関数******************/
 void SceneSelect::Render(ID3D11DeviceContext* context, float elapsed_time)
 {
-	//描画のためのStateの設定
+	//描画用のステートの設定
 	mSampler[0]->Activate(context, 0, false, true);
 	mDepth->Activate(context);
 	mRasterizer->Activate(context);
 	mBlend[0]->activate(context);
-	//NowLoading中
+	
+
 	if (IsNowLoading())
-	{
+	{//NowLoading画面の時
 		mRenderTexture->Render(context, VECTOR2F(1300, 900), VECTOR2F(600, 100), VECTOR2F(0, 0), VECTOR2F(600, 100), 0, LoadColor(elapsed_time));
+		//描画用のステートのの解除
+		mSampler[0]->DeActivate(context);
+		mDepth->DeActive(context);
+		mRasterizer->DeActivate(context);
 		mBlend[0]->deactivate(context);
 		return;
 	}
@@ -163,7 +179,7 @@ void SceneSelect::Render(ID3D11DeviceContext* context, float elapsed_time)
 
 	/****************ブルーム***************/	
 	mBlend[1]->activate(context);
-	//ブルームのために縮小テクスチャを作成
+	//ブルームの準備
 	mBloom->BlurTexture(context, mColorMap->GetRenderTargetShaderResourceView().Get());
 	//ブルームをかける
 	mSceneFrame->Clear(context);
@@ -173,22 +189,23 @@ void SceneSelect::Render(ID3D11DeviceContext* context, float elapsed_time)
 	mSceneFrame->Deactivate(context);
 	mBlend[1]->deactivate(context);
 
-	//デプスバッファで描画したものをフロントバッファに描画する
+	//ブルームをかけたシーンをフロントバッファに描画する
 	mBlend[0]->activate(context);
 
 	mRenderTexture->Render(context, mSceneFrame->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 
 	mFade->Render(context);
-	//後処理
+	//描画用のステートのの解除
 	mSampler[0]->DeActivate(context);
 	mDepth->DeActive(context);
 	mRasterizer->DeActivate(context);
 	mBlend[0]->deactivate(context);
 
 }
-/***************消去****************/
+/***************解放関数****************/
 void SceneSelect::Relese()
 {
+	//シーンに使ったデータの解放
 	pGpuParticleManager->ClearBuffer();
 	pCameraManager->DestroyCamera();
 }

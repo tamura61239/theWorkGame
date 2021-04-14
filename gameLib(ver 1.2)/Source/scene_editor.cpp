@@ -4,12 +4,14 @@
 #ifdef USE_IMGUI
 #include <imgui.h>
 #endif
-
+/************************エディター関数(ImGuiを使って自由にシーンを遷移したりする)***************************/
 int SceneEditor::Editor(bool* editorFlag, const int maxStageNumber)
 {
 
 	int num = 0;
+	//F1キーでエディターをONにする
 	if (pKeyBoad.RisingState(KeyLabel::F1))mEditorFlag = true;
+	//エディターがOFFの時
 	if (!mEditorFlag)
 	{
 		*editorFlag = mEditorFlag;
@@ -18,6 +20,7 @@ int SceneEditor::Editor(bool* editorFlag, const int maxStageNumber)
 #ifdef USE_IMGUI
 	if (ImGui::BeginMainMenuBar())
 	{
+		//遷移先のシーンを選択する
 		if (ImGui::BeginMenu("scene"))
 		{
 			if (ImGui::MenuItem("title"))
@@ -30,6 +33,7 @@ int SceneEditor::Editor(bool* editorFlag, const int maxStageNumber)
 			}
 			if (ImGui::BeginMenu("game"))
 			{
+				//ゲームシーンでどのステージに遷移するか選択する
 				for (int i = 0; i < maxStageNumber; i++)
 				{
 					std::string name = "stage" + std::to_string(i);
@@ -49,6 +53,7 @@ int SceneEditor::Editor(bool* editorFlag, const int maxStageNumber)
 
 			ImGui::EndMenu();
 		}
+		//エディターをOFFにする
 		if (ImGui::BeginMenu("editor"))
 		{
 			if (ImGui::MenuItem("OFF"))
@@ -60,6 +65,7 @@ int SceneEditor::Editor(bool* editorFlag, const int maxStageNumber)
 		ImGui::EndMainMenuBar();
 	}
 #endif
+	//操作した結果を送る
 	*editorFlag = mEditorFlag;
 	mSceneNo = num;
 	return num;

@@ -24,11 +24,13 @@ SceneGame::SceneGame(int stageNo) : testGame(false), hitArea(false), mNowLoading
 {
 
 }
-
+/***********************初期化関数************************/
 void SceneGame::Initialize(ID3D11Device* device)
 {
+	//マルチスレッドでクラス変数の生成
 	loading_thread = std::make_unique<std::thread>([&](ID3D11Device* device)
 		{
+			//マルチスレッドの終了に必要な変数の生成
 			std::lock_guard<std::mutex> lock(loading_mutex);
 
 			//カメラ
@@ -95,12 +97,12 @@ void SceneGame::Initialize(ID3D11Device* device)
 			mTutorialState = std::make_unique<TutorialState>(device);
 			mPhotographTargets.resize(6);
 		}, device);
-	//画像
+	//NowLoading中に使う変数だけ先に生成
 	test = std::make_unique<Sprite>(device, L"Data/image/操作説明.png");
 	nowLoading = std::make_unique<Sprite>(device, L"Data/image/now.png");
 	siro = std::make_unique<Sprite>(device, L"Data/image/siro.png");
 	pushKey = std::make_unique<Sprite>(device, L"Data/image/push key.png");
-	//描画関連クラス
+	//描画用のステートの生成
 	mBlend.push_back(std::make_unique<BlendState>(device, BLEND_MODE::ALPHA));
 	mBlend.push_back(std::make_unique<BlendState>(device, BLEND_MODE::ADD));
 	mSampler.push_back(std::make_unique<SamplerState>(device, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP));
@@ -112,16 +114,18 @@ void SceneGame::Initialize(ID3D11Device* device)
 	textureNo = 0;
 
 }
+/***********************エディター関数(ImGuiを使ってパラメーターを調整する)*******************/
 
 void SceneGame::Editor()
 {
 #ifdef USE_IMGUI
+	//マルチスレッドの処理が終わったかどうかを調べる(終わってなかったらreturn)
 	if (mNowLoading)
 	{
 		return;
 	}
-	/********************Sceneの選択結果処理***************************/
 	bool beforeEditorFlag = mEditorFlag;
+	//シーンエディターを使ってシーン遷移する
 	switch (pSceneManager.GetSceneEditor()->Editor(&mEditorFlag, StageManager::GetMaxStageCount()))
 	{
 	case SceneManager::SCENETYPE::TITLE:
@@ -141,7 +145,7 @@ void SceneGame::Editor()
 		pSceneManager.ChangeScene(new SceneResult(0.f,mStageNo));
 		break;
 	}
-	//editorFlagがfalseの時
+	//エディターがOFFの時
 	if (!mEditorFlag)
 	{
 		if (beforeEditorFlag && mFade->GetFadeScene() == Fade::FADE_MODO::NONE)
@@ -164,8 +168,6 @@ void SceneGame::Editor()
 	}
 	//前のフレームのeditorNoを保存
 	int beforeEditorNo = mEditorNo;
-	//エディターの名前を決める
-	std::string editorName = { "scene game" };
 	/*******************Editor****************/
 	ImGui::Begin("scene game");
 	ImGui::Checkbox("stop", &mStopTime);
@@ -173,7 +175,7 @@ void SceneGame::Editor()
 	ImGui::SliderFloat("time", &mElapsdTimeSpeed, 0, 1);
 
 #ifdef _DEBUG
-
+	//シーンを画像として保存するかどうかを選択する
 	if (ImGui::CollapsingHeader("screen shot"))
 	{
 		ImGui::Selectable("player", &mPhotographTargets[0]);
@@ -191,11 +193,13 @@ void SceneGame::Editor()
 #endif
 	if (!testGame)
 	{
+		//テストプレイ開始
 		if (ImGui::Button("testGame"))
 		{
 			testGame = true;
 			UIManager::GetInctance()->GetGameUIMove()->Start();
 		}
+		//プレイ開始
 		if (ImGui::Button("playGame"))
 		{
 			UIManager::GetInctance()->GetGameUIMove()->Start();
@@ -203,9 +207,11 @@ void SceneGame::Editor()
 	}
 	else
 	{
+		//テストプレイを終了する
 		if (ImGui::Button("reset"))
 		{
 			testGame = false;
+			//パラメーターのリセット
 			player->GetCharacter()->SetBeforePosition(VECTOR3F(0, 10, 0));
 			player->GetCharacter()->SetPosition(VECTOR3F(0, 10, 0));
 			player->GetCharacter()->SetAngle(VECTOR3F(0, 0, 0));
@@ -218,11 +224,7 @@ void SceneGame::Editor()
 		}
 
 	}
-
-	ImVec2 view = ImVec2(192 * 3, 108 * 3);
-	ImGui::Image(shadowMap->GetDepthStencilShaderResourceView().Get(), view); ImGui::SameLine();
-	ImGui::Image(shadowMap->GetRenderTargetShaderResourceView().Get(), view);
-
+	//どのエディターを操作するか選択する
 	ImGui::RadioButton("LIGHT", &mEditorNo, 2);
 	ImGui::RadioButton("STAGE", &mEditorNo, 3);
 	ImGui::RadioButton("PLAYER", &mEditorNo, 4);
@@ -248,7 +250,7 @@ void SceneGame::Editor()
 		}
 	}
 	ImGui::End();
-	/******************何番目のエディターを操作するか*********************/
+	//選択されたエディタ関数を呼ぶ
 	switch (mEditorNo)
 	{
 	case 2:
@@ -290,15 +292,21 @@ void SceneGame::Editor()
 	}
 	if (mEditorNo == 10)
 	{
+		//スカイマップのパラメーターを操作する
 		ImGui::Begin("sky map");
 		float* position[3] = { &mSky->GetPosData()->GetPosition().x,&mSky->GetPosData()->GetPosition().y ,&mSky->GetPosData()->GetPosition().z };
+		//中心座標
 		ImGui::DragFloat3("position", *position, 10);
+		//スケール
 		float* scale[3] = { &mSky->GetPosData()->GetScale().x,&mSky->GetPosData()->GetScale().y ,&mSky->GetPosData()->GetScale().z };
 		ImGui::DragFloat3("scale", *scale, 10);
+		//色
 		float* color[4] = { &mSky->GetPosData()->GetColor().x,&mSky->GetPosData()->GetColor().y ,&mSky->GetPosData()->GetColor().z ,&mSky->GetPosData()->GetColor().w };
 		ImGui::ColorEdit4("color", *color);
+		//セーブ
 		if (ImGui::Button("save"))
 		{
+			//ファイル操作
 			FileFunction::Save(*mSky->GetPosData(), "Data/file/game_sky_map.bin", "wb");
 		}
 		ImGui::End();
@@ -306,9 +314,11 @@ void SceneGame::Editor()
 	}
 	if (mEditorNo == 14)
 	{
+		//ズームブラーのパラメーターを操作する
 		ImGui::Begin("zoom blur");
 		ImGui::InputFloat("length", &mCbZoomBuffer->data.lenght, 0.1f);
 		ImGui::InputInt("division", &mCbZoomBuffer->data.division, 1);
+		//セーブ
 		if (ImGui::Button("save"))
 		{
 			FileFunction::Save(mCbZoomBuffer->data, "Data/file/game_zoom_blur_parameter.bin", "wb");
@@ -317,8 +327,10 @@ void SceneGame::Editor()
 	}
 	if (mEditorNo == 15)
 	{
+		//モーションブラーのパラメーターを操作する
 		ImGui::Begin("motion blur");
 		ImGui::InputFloat("value", &mCbMotionBlur->data.value, 0.1f);
+		//セーブ
 		if (ImGui::Button("save"))
 		{
 			FileFunction::Save(mCbMotionBlur->data, "Data/file/game_velocity_map_parameter.bin", "wb");
@@ -331,44 +343,72 @@ void SceneGame::Editor()
 }
 
 
-/***************************************************************/
-//                          更新
-/***************************************************************/
+/**********************更新関数*******************************/
 void SceneGame::Update(float elapsed_time)
 {
+	//NowLoadingのシーンかどうか
 	if (mNowLoading)
 	{
-
-		if (!IsNowLoading() && pKeyBoad.RisingState(KeyLabel::SPACE))
+		//マルチスレッドの処理が終わったかどうかを調べる
+		if (!IsNowLoading())
 		{
-			mLoadEnd = true;
+			//マルチスレッドの処理が終わったらspaceキーを押せる
+			if (pKeyBoad.RisingState(KeyLabel::SPACE))
+			{
+				mLoadEnd = true;
+			}
+			//マルチスレッドの終了関数
+			EndLoading();
 		}
 		return;
 	}
-	EndLoading();
-	/********************Editor************************/
 #ifdef USE_IMGUI
+	//シーンを止める
 	if (mStopTime)
 	{
 		pCameraManager->Update(elapsed_time);
 		return;
 	}
+	//シーンの進行速度を変える
 	elapsed_time *= mElapsdTimeSpeed;
 #endif
-	mFade->Update(elapsed_time);
-	/**********************GameSceneの更新*******************************/
 	if (mSManager->GrtStageNo() == 0)
-	{
+	{//チュートリアルのステージの時
 		{
 			mStageOperation->Update(elapsed_time, mSManager.get(), player->GetPlayFlag() && (mTutorialState->GetKeyFlag()));
 		}
 		elapsed_time *= mTutorialState->Update(elapsed_time, player->GetCharacter());
 	}
 	else
-	{
+	{//通常時
 		mStageOperation->Update(elapsed_time, mSManager.get(), player->GetPlayFlag());
 	}
+	//フェード時の処理
+	FadeMove(elapsed_time);
 
+	//プレイ中かどうか
+	if (player->GetPlayFlag())
+	{
+		//プレイ中にタイムが0になるかゴールした時
+		if (UIManager::GetInctance()->GetGameUIMove()->GetTime() <= 0 || player->GetCharacter()->GetGorlFlag())
+		{
+			if (!testGame) mFade->StartFadeOut();
+			elapsed_time *= 0.3f;
+		}
+	}
+	//シーンのオブジェクトの更新
+	mSky->GetPosData()->CalculateTransform();
+	player->Update(elapsed_time, mSManager.get(), mStageOperation.get());
+	mSManager->Update(elapsed_time);
+	pGpuParticleManager->Update(elapsed_time);
+	//カメラの更新
+	pCameraManager->Update(elapsed_time);
+}
+
+//フェード時やその前後の処理関数
+void SceneGame::FadeMove(float elapsdTime)
+{
+	mFade->Update(elapsdTime);
 	//フェートインの時
 	if (mFade->GetFadeScene() == Fade::FADE_MODO::FADEIN)
 	{
@@ -385,7 +425,6 @@ void SceneGame::Update(float elapsed_time)
 		if (mFade->GetEndFlag())
 		{
 			pSceneManager.ChangeScene(new SceneResult(UIManager::GetInctance()->GetGameUIMove()->GetTime(), mStageNo));
-			//pSceneManager.ChangeScene(new SceneSelect);
 			return;
 		}
 
@@ -393,7 +432,7 @@ void SceneGame::Update(float elapsed_time)
 	//フェートインでもフェードアウトでもない時
 	else
 	{
-		UIManager::GetInctance()->Update(elapsed_time);
+		UIManager::GetInctance()->Update(elapsdTime);
 
 		//カウントが0かつStartFlagがtrueの時
 		if (UIManager::GetInctance()->GetGameUIMove()->GetCount() <= 0)
@@ -406,50 +445,31 @@ void SceneGame::Update(float elapsed_time)
 
 	}
 
-	if (player->GetPlayFlag())
-	{
-		if (UIManager::GetInctance()->GetGameUIMove()->GetTime() <= 0 || player->GetCharacter()->GetGorlFlag())
-		{
-			if (!testGame) mFade->StartFadeOut();
-			elapsed_time *= 0.3f;
-		}
-	}
-
-	mSky->GetPosData()->CalculateTransform();
-	player->Update(elapsed_time, mSManager.get(), mStageOperation.get());
-
-
-	mSManager->Update(elapsed_time);
-	pCameraManager->Update(elapsed_time);
-	pGpuParticleManager->Update(elapsed_time);
 }
-/**********************Editor*********************/
 
-/***************************************************************/
-//                          描画
-/***************************************************************/
-
+/***************************描画関数************************/
 void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 {
+	//viewportの取得
 	D3D11_VIEWPORT viewport;
 	UINT num_viewports = 1;
 	context->RSGetViewports(&num_viewports, &viewport);
-
+	//描画用のステートの設定
 	mSampler[samplerType::warp]->Activate(context, 0, false, true);
 	mSampler[samplerType::border]->Activate(context, 1, false, true);
 	mSampler[samplerType::clamp]->Activate(context, 2, false, true);
-
 	mDepth->Activate(context);
 	mRasterizer->Activate(context);
+	mBlend[0]->activate(context);
 
 	if (mNowLoading)
 	{
-		mBlend[0]->activate(context);
-
+		//NowLoading画面の時
 		if (mLoadEnd)mNowLoading = false;
 		test->Render(context, VECTOR2F(0, 0), VECTOR2F(viewport.Width, viewport.Height), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 		if (IsNowLoading())nowLoading->Render(context, VECTOR2F(1300, 900), VECTOR2F(600, 100), VECTOR2F(0, 0), VECTOR2F(600, 100), 0, LoadColor(elapsed_time));
 		else pushKey->Render(context, VECTOR2F(1300, 900), VECTOR2F(575, 90), VECTOR2F(0, 0), VECTOR2F(230, 36), 0, LoadColor(elapsed_time));
+		//描画用のステートの解除
 		mBlend[0]->deactivate(context);
 		mSampler[samplerType::warp]->DeActivate(context);
 		mSampler[samplerType::border]->DeActivate(context);
@@ -464,7 +484,6 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	FLOAT4X4 view = pCameraManager->GetCamera()->GetView();
 	FLOAT4X4 projection = pCameraManager->GetCamera()->GetProjection();
 
-	/*****************GameSceneの描画 ******************/
 	FLOAT4X4 viewProjection;
 
 	DirectX::XMStoreFloat4x4(&viewProjection, DirectX::XMLoadFloat4x4(&view) * DirectX::XMLoadFloat4x4(&projection));
@@ -473,10 +492,9 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 
 	frameBuffer3->Clear(context);
 	frameBuffer3->Activate(context);
-	mBlend[0]->activate(context);
-
+	//シーンの描画
 	if (mSManager->GetStageEditor()->GetEditorFlag())
-	{
+	{//ステージエディターの時
 		mModelRenderer->Begin(context, viewProjection);
 		mModelRenderer->Draw(context, *player->GetCharacter()->GetModel(), VECTOR4F(0.5, 0.5, 0.5, 1));
 		mModelRenderer->End(context);
@@ -484,7 +502,7 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 		mSManager->Render(context, view, projection, mStageOperation->GetColorType());
 	}
 	else
-	{
+	{//通常時
 		mSky->Render(context, view, projection);
 		pGpuParticleManager->Render(context, view, projection);
 		mModelRenderer->Begin(context, viewProjection);
@@ -498,16 +516,18 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	/************************速度マップテクスチャの作成***********************/
 	velocityMap->Clear(context);
 	velocityMap->Activate(context);
+	//定数バッファの設定
 	mCbMotionBlur->Activate(context, 6, true, true);
 	pCameraManager->GetCamera()->BeforeActive(context, 5, true, true, true);
+	//シーンのの描画
 	mModelRenderer->VelocityBegin(context, viewProjection);
 	mModelRenderer->VelocityDraw(context, *player->GetCharacter()->GetModel());
 	mModelRenderer->VelocityEnd(context);
 	pGpuParticleManager->VelocityRender(context, view, projection);
 	mSManager->RenderVelocity(context, view, projection, mStageOperation->GetColorType());
+	//定数バッファの解除
 	pCameraManager->GetCamera()->BeforeDactive(context);
 	mCbMotionBlur->DeActivate(context);
-
 	velocityMap->Deactivate(context);
 	/************************シャドウマップテクスチャの作成***********************/
 	shadowMap->Clear(context);
@@ -531,10 +551,10 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	mRenderEffects->ShadowRender(context, frameBuffer3->GetRenderTargetShaderResourceView().Get(), frameBuffer3->GetDepthStencilShaderResourceView().Get(), shadowMap->GetDepthStencilShaderResourceView().Get()
 		, view, projection, lightV, lightP);
 	shadowRenderBuffer->Deactivate(context);
-
+    /******************************モーションブラー************************/
 	frameBuffer->Clear(context);
 	frameBuffer->Activate(context);
-	//シーンにモーションブラーをかける
+	
 	velocityMap->SetPsTexture(context, 1);
 	siro->Render(context, motionBlurShader.get(), shadowRenderBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 	ID3D11ShaderResourceView* srv = nullptr;
@@ -545,10 +565,13 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 
 	mBlend[0]->deactivate(context);
 	frameBuffer->Deactivate(context);
-	/****************ブルームをかける******************/
 	mBlend[1]->activate(context);
-	mBloom->BlurTexture(context, frameBuffer->GetRenderTargetShaderResourceView().Get());
 
+
+	/******************************ブルーム************************/
+	//ブルームの準備
+	mBloom->BlurTexture(context, frameBuffer->GetRenderTargetShaderResourceView().Get());
+	//シーンにブルームをかける
 	frameBuffer2->Clear(context);
 	frameBuffer2->Activate(context);
 	siro->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
@@ -557,32 +580,33 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	mBlend[1]->deactivate(context);
 
 	mBlend[0]->activate(context);
-
+	/******************************ズームブラー************************/
 	if (player->GetCharacter()->GetGorlFlag())
-	{//ズームブラー
+	{//ゴール時
 		mCbZoomBuffer->Activate(context, 0, true, true);
 		siro->Render(context, mBlurShader.get(), frameBuffer2->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 		mCbZoomBuffer->DeActivate(context);
 	}
 	else if (mTutorialState->GetState() == 1 || mTutorialState->GetState() == 3)
-	{//チュートリアル
+	{//チュートリアル時
 		mTutorialState->GetCbZoom()->Activate(context, 0, true, true);
 		siro->Render(context, mBlurShader.get(), frameBuffer2->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0, mTutorialState->GetBackGroundColor());
 		mTutorialState->GetCbZoom()->DeActivate(context);
 
 	}
 	else
-	{//普段
+	{//かけない
 		siro->Render(context, frameBuffer2->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 
 	}
+	//描画結果を保存
 	if (mScreenShot)
-	{
+	{//通常時
 		std::wstring fileName = L"Data/image/screen_shot/screenShot" + std::to_wstring(textureNo) + L".dds";
 		frameBuffer2->SaveDDSFile(context, fileName.c_str(), frameBuffer2->GetRenderTargetShaderResourceView().Get());
 	}
 	else if (mSManager->GetStageEditor()->GetEditorFlag())
-	{
+	{//ステージエディター起動中
 		if (mSManager->GetStageEditor()->GetSceneSaveFlag())
 		{
 			std::wstring fileName = L"Data/image/stage" + std::to_wstring(mSManager->GrtStageNo()) + L"scne_map.dds";
@@ -593,8 +617,10 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 
 	if (mEditorNo == 3)mSManager->SidoViewRender(context);
 	mFade->Render(context);
+	//チュートリアルのテキストの描画
 	mTutorialState->RenderText(context);
 
+	//描画用のステートの解除
 	mBlend[0]->deactivate(context);
 	mSampler[samplerType::warp]->DeActivate(context);
 	mSampler[samplerType::border]->DeActivate(context);
@@ -606,9 +632,11 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	HitAreaRender::GetInctance()->ClearCount();
 }
 
+/************************解放関数***********************/
 
 void SceneGame::Relese()
 {
+	//シーンに使ったデータの解放
 	pGpuParticleManager->ClearBuffer();
 	pCameraManager->DestroyCamera();
 	UIManager::GetInctance()->ClearUI();
