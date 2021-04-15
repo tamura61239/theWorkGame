@@ -6,13 +6,15 @@
 class CameraOperation
 {
 public:
+	//コンストラクタ
 	CameraOperation(Camera*camera,int scene);
-	void ImGuiUpdate(Camera* camera);
+	//エディタ
+	void Editor(Camera* camera);
+	//更新
 	void Update(Camera* camera, float elapsedTime);
+	//デバックカメラ
 	void DebugCamera(Camera* camera);
-	TitleCameraOperation* GetTitleCamera() { return mTitleCamera.get(); }
-	PlayCameraOperation* GetPlayCamera() { return mPlayCamera.get(); }
-	StageEditorCameraOperation* GetStageEditorCamera(){ return mStageEditorCamera.get(); }
+	//カメラの種類
 	enum class CAMERA_TYPE
 	{
 		NORMAL,
@@ -25,10 +27,16 @@ public:
 	void SetCameraType(CAMERA_TYPE type) { mType = type; }
 	//getter
 	CAMERA_TYPE GetCameraType() { return mType; }
+	TitleCameraOperation* GetTitleCamera() { return mTitleCamera.get(); }
+	PlayCameraOperation* GetPlayCamera() { return mPlayCamera.get(); }
+	StageEditorCameraOperation* GetStageEditorCamera() { return mStageEditorCamera.get(); }
+
 private:
+	//カメラ操作クラス変数
 	std::unique_ptr<TitleCameraOperation>mTitleCamera;
 	std::unique_ptr<PlayCameraOperation>mPlayCamera;
 	std::unique_ptr<StageEditorCameraOperation>mStageEditorCamera;
+	//エディタ変数
 	CAMERA_TYPE mType;
 	//DebugCamera
 	VECTOR2F oldCursor;

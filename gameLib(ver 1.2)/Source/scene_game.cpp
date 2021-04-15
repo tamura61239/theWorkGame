@@ -267,7 +267,7 @@ void SceneGame::Editor()
 		pGpuParticleManager->ImGuiUpdate();
 		break;
 	case 6:
-		pCameraManager->ImGuiUpdate();
+		pCameraManager->Editor();
 		break;
 	case 7:
 		mBloom->ImGuiUpdate();

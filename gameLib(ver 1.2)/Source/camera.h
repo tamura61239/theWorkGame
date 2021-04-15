@@ -8,9 +8,13 @@
 class Camera
 {
 public:
+	//コンストラクタ
 	Camera(ID3D11Device* device);
+	//view projection行列の計算
 	void CalculateMatrix();
+	//view projection行列の計算
 	void CalculateParallelMatrix();
+	//前のフレームのview projection行列をGPUに送る
 	void BeforeActive(ID3D11DeviceContext* context, const int number, const bool vs = false, const bool ps = false, const bool gs = false) { mBeforeFrame->Activate(context, number, vs, ps, gs); }
 	void BeforeDactive(ID3D11DeviceContext* context) { mBeforeFrame->DeActivate(context); }
 	//setter
@@ -45,11 +49,6 @@ public:
 	const float GetNear() { return mNearZ; }
 	const float GetFar() { return mFarZ; }
 private:
-	struct Cb
-	{
-		FLOAT4X4 view;
-		FLOAT4X4 projection;
-	};
 	FLOAT4X4 mView;//ビュー行列
 	FLOAT4X4 mProjection;//プロジェクション行列
 	VECTOR3F mEye;// 視点 
@@ -63,6 +62,11 @@ private:
 	float mAspect;//アスペクト比
 	float mNearZ; // 表示最近面までの距離
 	float mFarZ;//表紙最遠面までの距離
-
+	//定数バッファ
+	struct Cb
+	{
+		FLOAT4X4 view;
+		FLOAT4X4 projection;
+	};
 	std::unique_ptr<ConstantBuffer<Cb>>mBeforeFrame;
 };

@@ -2,13 +2,13 @@
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
-
+//コンストラクタ
 TitleCameraOperation::TitleCameraOperation()
 	: mTitleSceneChangeFlag(false), mTime(0), mEndTitleFlag(false), mLerpMovement(0)
 {
 }
-
-void TitleCameraOperation::ImGuiUpdate(Camera* camera)
+/*****************************エディタ関数******************************/
+void TitleCameraOperation::Editor(Camera* camera)
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("title camera");
@@ -30,15 +30,16 @@ void TitleCameraOperation::ImGuiUpdate(Camera* camera)
 	ImGui::End();
 #endif
 }
-
+/*****************************更新関数******************************/
 void TitleCameraOperation::Update(Camera* camera, float elapsedTime)
 {
+	//spaceキーが押されたかどうか
 	if (!mTitleSceneChangeFlag)
 	{
 		camera->SetEye(mTitleData.mEye);
 		camera->SetFocus(mTitleData.mEye + mTitleData.mFront);
 
-		return;//spaceキーが押されたかどうか
+		return;
 	}
 	mTime += elapsedTime;
 	//押されてから一定時間がたったかどうか
@@ -64,7 +65,7 @@ void TitleCameraOperation::Update(Camera* camera, float elapsedTime)
 	}
 
 }
-
+/*************************ファイル操作***************************/
 void TitleCameraOperation::Load(Camera* camera)
 {
 	FILE* fp;

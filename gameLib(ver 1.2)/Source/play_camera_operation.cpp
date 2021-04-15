@@ -5,6 +5,7 @@
 #include<imgui.h>
 #endif
 
+//コンストラクタ
 PlayCameraOperation::PlayCameraOperation()
 {
 	mParameter.angle = 3.14f * 0.75f;
@@ -13,7 +14,8 @@ PlayCameraOperation::PlayCameraOperation()
 	FileFunction::Load(mParameter, "Data/file/playerCameraParameter.bin", "rb");
 }
 
-void PlayCameraOperation::ImGuiUpdate()
+/******************エディタ関数********************/
+void PlayCameraOperation::Editor()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("player camera");
@@ -29,9 +31,10 @@ void PlayCameraOperation::ImGuiUpdate()
 	ImGui::End();
 #endif
 }
-
+/*********************更新関数**************************/
 void PlayCameraOperation::Update(Camera* camera, float elapsedTime)
 {
+	//カメラがプレイヤー座標からの位置に調整
 	camera->SetFocus(mPlayerPosition);
 	camera->SetEye(mPlayerPosition + VECTOR3F(sinf(mParameter.angle) * mParameter.length, mParameter.y, cosf(mParameter.angle) * mParameter.length) * gameObjScale);
 }

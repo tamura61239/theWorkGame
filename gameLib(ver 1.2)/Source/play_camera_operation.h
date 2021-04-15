@@ -6,15 +6,16 @@
 class PlayCameraOperation
 {
 public:
+	//コンストラクタ
 	PlayCameraOperation();
+	//エディタ
+	void Editor();
 	//更新
-	void ImGuiUpdate();
 	void Update(Camera* camera,float elapsedTime);
 	//setter
 	void SetPlayerPosition(const VECTOR3F& position) { mPlayerPosition = position; }
-	//getter
-	const bool GetStartProductionFlag() { return mStartProduction; }
 private:
+	//エディタ変数
 	struct CameraParameter
 	{
 		float angle;
@@ -22,6 +23,6 @@ private:
 		float y;
 	};
 	CameraParameter mParameter;
-	bool mStartProduction;
+	//プレイヤー座標
 	VECTOR3F mPlayerPosition;
 };

@@ -6,9 +6,11 @@
 class TitleCameraOperation
 {
 public:
+	//コンストラクタ
 	TitleCameraOperation();
+	//エディタ
+	void Editor(Camera* camera);
 	//更新
-	void ImGuiUpdate(Camera* camera);
 	void Update(Camera*camera,float elapsedTime);
 	//ファイル操作
 	void Load(Camera* camera);
@@ -22,6 +24,7 @@ public:
 	const bool GetMoveFlag() { return mTime >= mTitleData.startTime ? true : false; }
 
 private:
+	//エディタ変数
 	struct TitleCameraData
 	{
 		VECTOR3F mEye;
@@ -33,6 +36,7 @@ private:
 		VECTOR3F endPosition;
 	};
 	TitleCameraData mTitleData;
+
 	bool mTitleSceneChangeFlag;
 	bool mEndTitleFlag;
 	float mLerpMovement;

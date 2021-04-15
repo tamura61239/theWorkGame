@@ -2,13 +2,14 @@
 #include<d3d11.h>
 #include"misc.h"
 
+//コンストラクタ
 Camera::Camera(ID3D11Device*device):mEye(0,0,-200.0f),mFocus(0,0,0),mUp(0,1,0),mFront(0,0,1),mRight(1,0,0),mView(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),mFov(0),mAspect(0),mNearZ(0),mFarZ(0), mWidth(0),mHight(0)
 {
 	{
 		mBeforeFrame = std::make_unique<ConstantBuffer<Cb>>(device);
 	}
 }
-
+/***********************view projection行列計算関数(透視投影)****************************/
 void Camera::CalculateMatrix()
 {
 	mBeforeFrame->data.view = mView;
@@ -33,6 +34,7 @@ void Camera::CalculateMatrix()
 	DirectX::XMStoreFloat4x4(&mProjection, P);
 
 }
+/***********************view projection行列計算関数(平行投影)****************************/
 
 void Camera::CalculateParallelMatrix()
 {

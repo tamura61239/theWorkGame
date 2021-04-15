@@ -144,7 +144,7 @@ void SceneResult::Editor()
 		mBloom->ImGuiUpdate();
 		break;
 	case 5:
-		pCameraManager->ImGuiUpdate();
+		pCameraManager->Editor();
 		break;
 	case 7:
 		pGpuParticleManager->ImGuiUpdate();

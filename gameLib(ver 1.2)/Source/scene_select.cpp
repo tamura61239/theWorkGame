@@ -101,7 +101,7 @@ void SceneSelect::Editor()
 		mBloom->ImGuiUpdate();
 		break;
 	case 3:
-		pCameraManager->ImGuiUpdate();
+		pCameraManager->Editor();
 		break;
 	case 4:
 		mFade->ImGuiUpdate();
