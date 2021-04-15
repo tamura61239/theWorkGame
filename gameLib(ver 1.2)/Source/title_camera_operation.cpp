@@ -1,11 +1,17 @@
 #include "title_camera_operation.h"
+#include"file_function.h"
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
 //コンストラクタ
-TitleCameraOperation::TitleCameraOperation()
+TitleCameraOperation::TitleCameraOperation(Camera* camera)
 	: mTitleSceneChangeFlag(false), mTime(0), mEndTitleFlag(false), mLerpMovement(0)
 {
+	mTitleData.mEye = camera->GetEye();
+	VECTOR3F front = camera->GetFocus() - mTitleData.mEye;
+	DirectX::XMStoreFloat3(&mTitleData.mFront, DirectX::XMVector3Normalize(DirectX::XMLoadFloat3(&front)));
+	mTitleData.endPosition = VECTOR3F(0, 0, 100);
+	FileFunction::Load(mTitleData, "Data/file/Title_camera.bin", "rb");
 }
 /*****************************エディタ関数******************************/
 void TitleCameraOperation::Editor(Camera* camera)
@@ -24,7 +30,7 @@ void TitleCameraOperation::Editor(Camera* camera)
 	ImGui::SliderFloat("lerp change amount", &mTitleData.mLerpChangeAmount, 0, 1);
 	if (ImGui::Button("save"))
 	{
-		Save();
+		FileFunction::Save(mTitleData, "Data/file/Title_camera.bin", "wb");
 	}
 
 	ImGui::End();
@@ -63,33 +69,5 @@ void TitleCameraOperation::Update(Camera* camera, float elapsedTime)
 			mEndTitleFlag = true;
 		}
 	}
-
-}
-/*************************ファイル操作***************************/
-void TitleCameraOperation::Load(Camera* camera)
-{
-	FILE* fp;
-	if (fopen_s(&fp, "Data/file/Title_camera.bin", "rb") == 0)
-	{
-		fread(&mTitleData, sizeof(TitleCameraData), 1, fp);
-		fclose(fp);
-	}
-	else
-	{
-		mTitleData.mEye = camera->GetEye();
-		VECTOR3F front = camera->GetFocus() - mTitleData.mEye;
-		DirectX::XMStoreFloat3(&mTitleData.mFront, DirectX::XMVector3Normalize(DirectX::XMLoadFloat3(&front)));
-		mTitleData.endPosition = VECTOR3F(0, 0, 100);
-	}
-
-}
-
-void TitleCameraOperation::Save()
-{
-	FILE* fp;
-	fopen_s(&fp, "Data/file/Title_camera.bin", "wb");
-
-	fwrite(&mTitleData, sizeof(TitleCameraData), 1, fp);
-	fclose(fp);
 
 }

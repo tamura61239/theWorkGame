@@ -3,7 +3,7 @@
 #include"scene_game.h"
 #include"scene_result.h"
 #include"key_board.h"
-
+#include"framework.h"
 #ifdef USE_IMGUI
 #include <imgui.h>
 #endif
@@ -13,7 +13,6 @@
 void SceneManager::Initialize(ID3D11Device* device)
 {
 	mScene = std::make_unique<SceneTitle>();
-	mDevice = device;
 	mScene->Initialize(device);
 }
 /********************更新関数***********************/
@@ -25,7 +24,7 @@ void SceneManager::Update(float elapsed_time)
 		//シーン遷移
 		if(mScene!=nullptr)mScene->Relese();
 		mScene.reset();
-		mNextScene->Initialize(mDevice);
+		mNextScene->Initialize(Framework::Instance().GetDevice().Get());
 		mScene = std::move(mNextScene);
 		//mNextScene.reset();
 	}

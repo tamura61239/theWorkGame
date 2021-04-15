@@ -16,7 +16,7 @@ CameraOperation::CameraOperation(Camera* camera, int scene) :mType(CAMERA_TYPE::
 	switch (mScene)
 	{
 	case 0://タイトル
-		mTitleCamera = std::make_unique<TitleCameraOperation>();
+		mTitleCamera = std::make_unique<TitleCameraOperation>(camera);
 		break;
 	case 1://ゲーム
 		mPlayCamera = std::make_unique<PlayCameraOperation>();

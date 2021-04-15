@@ -7,14 +7,11 @@ class TitleCameraOperation
 {
 public:
 	//コンストラクタ
-	TitleCameraOperation();
+	TitleCameraOperation(Camera* camera);
 	//エディタ
 	void Editor(Camera* camera);
 	//更新
 	void Update(Camera*camera,float elapsedTime);
-	//ファイル操作
-	void Load(Camera* camera);
-	void Save();
 	//setter
 	void SetEndPosition(const VECTOR3F& end) { mTitleData.endPosition = end; }
 	void SetTitleSceneChangeFlag(const bool flag) { mTitleSceneChangeFlag = flag; }

@@ -34,7 +34,6 @@ void SceneTitle::Initialize(ID3D11Device* device)
 			pCameraManager->Initialize(device, 0);
 			pCameraManager->GetCamera()->SetEye(VECTOR3F(0, 0, -200));
 			pCameraManager->GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::TITLE_CAMERA);
-			pCameraManager->GetCameraOperation()->GetTitleCamera()->Load(pCameraManager->GetCamera());
 			//ï`âÊä÷òAÇÃê∂ê¨
 			bloom = std::make_unique<BloomRender>(device, static_cast<float>(SCREEN_WIDTH), static_cast<float>(SCREEN_HEIGHT), 0);
 			frameBuffer[0] = std::make_unique<FrameBuffer>(device, SCREEN_WIDTH, SCREEN_HEIGHT, true, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
