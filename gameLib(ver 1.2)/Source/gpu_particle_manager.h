@@ -19,7 +19,7 @@ public:
 	void ClearBuffer();
 	//çXêV
 	void Update(float elapsd_time);
-	void ImGuiUpdate();
+	void Editor();
 	//getter
 	TitleTextureParticle* GetTitleTextureParticle() { return mTitleTextureParticle.get(); }
 	TitleParticle* GetTitleParticle() { return mTitleParticle.get(); }

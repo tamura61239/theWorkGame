@@ -4,12 +4,15 @@
 class StageOperation
 {
 public:
+	//コンストラクタ
 	StageOperation();
-	void Load();
-	void Save();
-	void ImGuiUpdate();
+	//エディタ
+	void Editor();
+	//更新
 	void Update(float elapsd_time, StageManager* manager,const bool playFlag);
+	//色の設定
 	void SetStageColor(StageManager* manager);
+	//リセット
 	void Reset(StageManager* manager)
 	{
 		mColorType = 0;

@@ -6,7 +6,6 @@
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
-#define TYPE 1
 
 RunParticles::RunParticles(ID3D11Device* device, std::shared_ptr<PlayerAI>player) :mMaxParticle(0), mTimer(0), mIndexNum(0), mRenderCount(0), mTestFlag(false)
 {
@@ -65,7 +64,6 @@ RunParticles::RunParticles(ID3D11Device* device, std::shared_ptr<PlayerAI>player
 	//パーティクルの最大数を計算
 	int count = totalIndex / 10000;
 	mMaxParticle = 100000 * (count + 1);
-#if (TYPE==1)
 	/*************************バッファとUAVの作成**********************/
 	{
 		Microsoft::WRL::ComPtr<ID3D11Buffer>particleBuffer;
@@ -190,70 +188,6 @@ RunParticles::RunParticles(ID3D11Device* device, std::shared_ptr<PlayerAI>player
 		hr = device->CreateUnorderedAccessView(mParticleCountBuffer.Get(), &desc, mParticleCountUAV.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
-#elif (TYPE==0)
-	//パーティクル
-	{
-		Microsoft::WRL::ComPtr<ID3D11Buffer>particleBuffer;
-		//Microsoft::WRL::ComPtr<ID3D11Buffer>deactiveParticleBuffer;
-		{
-			D3D11_BUFFER_DESC desc;
-			D3D11_SUBRESOURCE_DATA data;
-			ZeroMemory(&desc, sizeof(desc));
-			ZeroMemory(&data, sizeof(data));
-			desc.ByteWidth = sizeof(Particle) * mMaxParticle;
-			desc.Usage = D3D11_USAGE_DEFAULT;//ステージの入出力はOK。GPUの入出力OK。
-			desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
-			desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED; // 構造化バッファ
-			desc.StructureByteStride = sizeof(Particle);
-
-			std::vector<Particle>particles;
-			//std::vector<Particle>deactiveParticles;
-
-			particles.resize(mMaxParticle);
-			//deactiveParticles.resize(mMaxParticle);
-			memset(particles.data(), 0, sizeof(Particle) * mMaxParticle);
-
-			data.pSysMem = &particles[0];
-
-			hr = device->CreateBuffer(&desc, &data, particleBuffer.GetAddressOf());
-			_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-			//描画用バッファ
-			desc.BindFlags = D3D11_BIND_VERTEX_BUFFER | D3D11_BIND_UNORDERED_ACCESS;
-			desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS;
-			int size = sizeof(RenderParticle);
-
-			desc.ByteWidth = sizeof(RenderParticle) * mMaxParticle;
-			desc.Usage = D3D11_USAGE_DEFAULT;
-			desc.CPUAccessFlags = 0;
-			desc.StructureByteStride = 0;
-			std::vector<RenderParticle>renderParticles;
-			renderParticles.resize(mMaxParticle);
-			memset(renderParticles.data(), 0, sizeof(RenderParticle) * mMaxParticle);
-			data.pSysMem = &renderParticles[0];
-			hr = device->CreateBuffer(&desc, &data, mRenderBuffer.GetAddressOf());
-			_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-		}
-		D3D11_UNORDERED_ACCESS_VIEW_DESC desc;
-		ZeroMemory(&desc, sizeof(desc));
-		desc.Buffer.NumElements = mMaxParticle;
-		desc.Format = DXGI_FORMAT_UNKNOWN;
-		desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-		hr = device->CreateUnorderedAccessView(particleBuffer.Get(), &desc, mParticleUAV.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-		ZeroMemory(&desc, sizeof(desc));
-
-		desc.Format = DXGI_FORMAT_R32_TYPELESS;
-		desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-		desc.Buffer.FirstElement = 0;
-		desc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_RAW;
-
-		desc.Buffer.NumElements = sizeof(RenderParticle) * mMaxParticle / 4;
-		hr = device->CreateUnorderedAccessView(mRenderBuffer.Get(), &desc, mRenderUAV.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-	}
-#endif
 	hr = CreateCSFromCso(device, "Data/shader/run_particle_create_cs.cso", mCreateCSShader.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	hr = CreateCSFromCso(device, "Data/shader/run_particle_cs.cso", mCSShader.GetAddressOf());
@@ -304,7 +238,7 @@ RunParticles::RunParticles(ID3D11Device* device, std::shared_ptr<PlayerAI>player
 
 
 
-void RunParticles::ImGuiUpdate()
+void RunParticles::Editor()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("run particle");
@@ -340,78 +274,6 @@ void RunParticles::ImGuiUpdate()
 
 void RunParticles::Update(ID3D11DeviceContext* context, float elapsd_time)
 {
-#if (TYPE==0)
-	if (mPlayer.lock()->GetPlayFlag())mTimer += elapsd_time;
-	context->CSSetUnorderedAccessViews(0, 1, mParticleUAV.GetAddressOf(), nullptr);
-	//パーティクルの生成
-
-	if (mTimer > mCreateTime)
-	{
-		context->CSSetShader(mCreateCSShader.Get(), nullptr, 0);
-		const ModelResource* resouce = mPlayer.lock()->GetCharacter()->GetModel()->GetModelResource();
-		const std::vector<Model::Node>& nodes = mPlayer.lock()->GetCharacter()->GetModel()->GetNodes();
-		mCbCreateBuffer->data.color = 0;
-		mCbCreateBuffer->data.color |= (static_cast<UINT>(mColor[0] * 255) & 0x00FFFFFF) << 24;
-		mCbCreateBuffer->data.color |= (static_cast<UINT>(mColor[1] * 255) & 0x00FFFFFF) << 16;
-		mCbCreateBuffer->data.color |= (static_cast<UINT>(mColor[2] * 255) & 0x00FFFFFF) << 8;
-		mCbCreateBuffer->data.color |= (static_cast<UINT>(mColor[3] * 255) & 0x00FFFFFF) << 0;
-		if (mCreateCount > 0)
-		{
-			for (int i = 0; i < mMeshs.size(); i++)
-			{
-				const auto& mesh = mMeshs[i];
-				const auto& boneData = resouce->GetMeshes()[i];
-				if (mCbCreateBuffer->data.startIndex + mesh.mMwshSize * mCreateCount >= mMaxParticle)
-				{
-					mCbCreateBuffer->data.startIndex -= mMaxParticle;
-				}
-				if (boneData.nodeIndices.size() > 0)
-				{
-					//ボーンのワールド行列の計算
-					for (int j = 0; j < boneData.nodeIndices.size(); j++)
-					{
-						DirectX::XMMATRIX inverseTransform = DirectX::XMLoadFloat4x4(boneData.inverseTransforms[j]);
-						DirectX::XMMATRIX worldTransform = DirectX::XMLoadFloat4x4(&nodes[boneData.nodeIndices[j]].worldTransform);
-						DirectX::XMMATRIX boneTransform = inverseTransform * worldTransform;
-						DirectX::XMStoreFloat4x4(&mCbBoneBuffer->data.boneTransForm[j], boneTransform);
-					}
-				}
-				else
-				{
-					mCbBoneBuffer->data.boneTransForm[0] = nodes[boneData.nodeIndex].worldTransform;
-				}
-				mCbCreateBuffer->data.indexCount = mesh.mMwshSize;
-				mCbCreateBuffer->Activate(context, 1, false, false, false, true);
-				mCbBoneBuffer->Activate(context, 0, false, false, false, true);
-				ID3D11ShaderResourceView* srv[2] = { mesh.mVertexBuffer.Get(),mesh.mIndexBuffer.Get() };
-				context->CSSetShaderResources(0, 2, srv);
-				context->Dispatch(mesh.mMwshSize * mCreateCount, 1, 1);
-				mCbCreateBuffer->DeActivate(context);
-				mCbBoneBuffer->DeActivate(context);
-				srv[0] = nullptr;
-				srv[1] = nullptr;
-				context->CSSetShaderResources(0, 2, srv);
-				mCbCreateBuffer->data.startIndex += mesh.mMwshSize * mCreateCount;
-
-			}
-			mTimer = 0;
-
-		}
-	}
-	context->CSSetShader(mCSShader.Get(), nullptr, 0);
-
-	//パーティクルの更新
-	context->CSSetUnorderedAccessViews(2, 1, mRenderUAV.GetAddressOf(), nullptr);
-	mCbUpdateBuffer->data.elapsdTime = elapsd_time;
-	mCbUpdateBuffer->Activate(context, 2, false, false, false, true);
-
-	context->Dispatch(mMaxParticle/100, 1, 1);
-	mCbUpdateBuffer->DeActivate(context);
-	ID3D11UnorderedAccessView* uav =  nullptr ;
-	context->CSSetUnorderedAccessViews(0, 1, &uav, nullptr);
-	context->CSSetUnorderedAccessViews(2, 1, &uav, nullptr);
-	context->CSSetShader(nullptr, nullptr, 0);
-#elif (TYPE==1)
 	/*******************UAVをGPUに渡す******************/
 	context->CSSetUnorderedAccessViews(0, 1, mParticleUAV.GetAddressOf(), nullptr);
 	context->CSSetUnorderedAccessViews(1, 1, mParticleCountUAV.GetAddressOf(), nullptr);
@@ -496,29 +358,10 @@ void RunParticles::Update(ID3D11DeviceContext* context, float elapsd_time)
 	mRenderCount = particleCount->aliveParticleCount;
 	context->Unmap(mParticleCountBuffer.Get(), NULL);
 
-	//context->CopyResource(mParticleIndexBuffer[mIndexNum].Get(), mRenderIndexBuffer.Get());
-#endif
 }
 
 void RunParticles::Render(ID3D11DeviceContext* context)
 {
-#if (TYPE==0)
-
-	mShader->Activate(context);
-
-	u_int stride = sizeof(RenderParticle);
-	u_int offset = 0;
-
-	context->IASetVertexBuffers(0, 1, mRenderBuffer.GetAddressOf(), &stride, &offset);
-	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
-
-	context->Draw(mMaxParticle, 0);
-	mShader->Deactivate(context);
-	stride = 0;
-	ID3D11Buffer* buffer = nullptr;
-	context->IASetVertexBuffers(0, 1,&buffer, &stride, &offset);
-
-#elif (TYPE==1)
 	mShader->Activate(context);
 	context->PSSetShaderResources(0, 1, mParticleSRV[mEditorData.textureType].GetAddressOf());
 
@@ -534,51 +377,10 @@ void RunParticles::Render(ID3D11DeviceContext* context)
 	mShader->Deactivate(context);
 	ID3D11ShaderResourceView* srv = nullptr;
 	context->PSSetShaderResources(0, 1, &srv);
-
-	//offset = 0;
-	//vertex = nullptr;
-	//index = nullptr;
-	//context->IASetVertexBuffers(0, 1, &vertex, &stride, &offset);
-	//context->IASetIndexBuffer(index, DXGI_FORMAT_R32_UINT, 0);
-
-#endif
 }
 
 void RunParticles::Render(ID3D11DeviceContext* context, DrowShader* shader)
 {
-#if (TYPE==0)
-
-	//shader->Activate(context);
-
-	//u_int stride = sizeof(RenderParticle);
-	//u_int offset = 0;
-
-	//context->IASetVertexBuffers(0, 1, mRenderBuffer.GetAddressOf(), &stride, &offset);
-	//context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
-
-	//context->Draw(mMaxParticle, 0);
-	//shader->Deactivate(context);
-#elif (TYPE==1)
-	//shader->Activate(context);
-
-	//u_int stride = sizeof(RenderParticle);
-	//u_int offset = 0;
-
-	//ID3D11Buffer* vertex = mRenderBuffer.Get();
-	//ID3D11Buffer* index = mRenderIndexBuffer.Get();
-	//context->IASetVertexBuffers(0, 1, &vertex, &stride, &offset);
-	//context->IASetIndexBuffer(index, DXGI_FORMAT_R32_UINT, 0);
-	//context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
-
-	//context->Draw(mRenderCount, 0);
-	//shader->Deactivate(context);
-	//offset = 0;
-	//vertex = nullptr;
-	//index = nullptr;
-	//context->IASetVertexBuffers(0, 1, &vertex, &stride, &offset);
-	//context->IASetIndexBuffer(index, DXGI_FORMAT_R32_UINT, 0);
-
-#endif
 
 }
 

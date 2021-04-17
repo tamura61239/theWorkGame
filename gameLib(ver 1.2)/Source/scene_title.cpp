@@ -129,22 +129,22 @@ void SceneTitle::Editor()
 	switch (editorNum)
 	{
 	case 0:
-		pLight.ImGuiUpdate();
+		pLight.Editor();
 		break;
 	case 1:
-		UIManager::GetInctance()->ImGuiUpdate();
+		UIManager::GetInctance()->Editor();
 		break;
 	case 2:
-		pGpuParticleManager->ImGuiUpdate();
+		pGpuParticleManager->Editor();
 		break;
 	case 3:
 		pCameraManager->Editor();
 		break;
 	case 4:
-		bloom->ImGuiUpdate();
+		bloom->Editor();
 		break;
 	case 5:
-		mFade->ImGuiUpdate();
+		mFade->Editor();
 		break;
 
 	}

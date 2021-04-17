@@ -12,7 +12,7 @@ class SelectSceneParticle
 {
 public:
 	SelectSceneParticle(ID3D11Device* device);
-	void ImGuiUpdate();
+	void Editor();
 	void Update(float elapsdTime, ID3D11DeviceContext* context);
 	void Render(ID3D11DeviceContext* context);
 private:

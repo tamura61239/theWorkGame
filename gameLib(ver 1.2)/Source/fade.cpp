@@ -5,24 +5,13 @@
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
-
+//ファイルロード関数
 void Fade::StartLoad()
 {
 	for (int i = 0; i < static_cast<int>(FADE_SCENE::MAX); i++)
 	{
 		std::string fileName = { "Data/file/fade_out" };
 		fileName += std::to_string(i) + ".bin";
-		//if (fopen_s(&fp, fileName.c_str(), "rb") == 0)
-		//{
-		//	fread(&mFadeDatas[i].mData, sizeof(FadeData), 1, fp);
-		//	fclose(fp);
-		//}
-		//else
-		//{
-		//	mFadeDatas[i].mData.mColor = VECTOR4F(0, 0, 0, 0);
-		//	mFadeDatas[i].mData.mInEndTime = 0;
-		//	mFadeDatas[i].mData.mOutEndTime = 0;
-		//}
 		mFadeDatas[i].mData.mColor = VECTOR4F(0, 0, 0, 0);
 		mFadeDatas[i].mData.mInEndTime = 0;
 		mFadeDatas[i].mData.mOutEndTime = 0;
@@ -32,7 +21,7 @@ void Fade::StartLoad()
 		mFadeDatas[i].mEndFlag = false;
 	}
 }
-
+//コンストラクタ
 Fade::Fade(ID3D11Device* device, FADE_SCENE scene)
 	:mTestFlag(false), mState(FADE_MODO::NONE), mEditorScene(static_cast<int>(scene))
 {
@@ -41,33 +30,37 @@ Fade::Fade(ID3D11Device* device, FADE_SCENE scene)
 	mSprite = std::make_unique<Sprite>(device, L"Data/image/siro.png");
 	LoadTextureFromFile(device, L"Data/image/siro.png", mSRV.GetAddressOf());
 }
-
+//どのシーンかを設定
 void Fade::SetFadeScene(FADE_SCENE scene)
 {
 	mEditorScene = static_cast<int>(scene);
 	mNowFadeData = mFadeDatas[mEditorScene];
 }
 
-
-void Fade::ImGuiUpdate()
+/****************エディタ関数*******************/
+void Fade::Editor()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("fade out");
 	if (!mTestFlag)
-	{
+	{//テストプレイ中でない時
 		static const int sceneMax = static_cast<int>(FADE_SCENE::MAX);
 		static const char* fadeNames[sceneMax] = { "TITLE","SELECT","GAME","RESULT" };
+		//どのシーンのフェードデータを操作するか決める
 		ImGui::Combo("scene", &mEditorScene, fadeNames, sceneMax);
+		//データの操作
 		float* color[3] = { &mFadeDatas[mEditorScene].mData.mColor.x,&mFadeDatas[mEditorScene].mData.mColor.y ,&mFadeDatas[mEditorScene].mData.mColor.z };
 		ImGui::ColorEdit3("color", *color);
 		ImGui::InputFloat("fade in time", &mFadeDatas[mEditorScene].mData.mInEndTime, 0.1f);
 		ImGui::InputFloat("fade out time", &mFadeDatas[mEditorScene].mData.mOutEndTime, 0.1f);
+		//セーブ
 		if (ImGui::Button("save"))
 		{
 			std::string fileName = { "Data/file/fade_out" };
 			fileName += std::to_string(mEditorScene) + ".bin";
 			FileFunction::Save(mFadeDatas[mEditorScene].mData, fileName.c_str(), "rb");
 		}
+		//ロード
 		if (ImGui::Button("load"))
 		{
 			std::string fileName = { "Data/file/fade_out" };
@@ -77,22 +70,22 @@ void Fade::ImGuiUpdate()
 		}
 	}
 	else
-	{
+	{//テストプレイ中
 		int state = static_cast<int>(mState);
 		if (ImGui::RadioButton("in", &state, 1))
-		{
+		{//フェードイン開始
 			mState = FADE_MODO::FADEIN;
 			mCheckFadeData.mData.mColor.w = 1;
 		}
 		if (ImGui::RadioButton("out", &state, 2))
-		{
+		{//フェードアウト開始
 			mState = FADE_MODO::FADEOUT;
 			mCheckFadeData.mData.mColor.w = 0;
 		}
-		//mState = static_cast<FADE_MODO>(state);
 		ImGui::Text("state:%d", state);
 	}
 	int scene = static_cast<int>(mNowFadeData.mScene);
+	//テストプレイの開始と終了
 	if (ImGui::Checkbox("test move", &mTestFlag))
 	{
 		mCheckFadeData = mFadeDatas[scene];
@@ -100,7 +93,7 @@ void Fade::ImGuiUpdate()
 	}
 	ImGui::End();
 	if (mState == FADE_MODO::NONE)
-	{
+	{	//フェードインでもアウトでもない時
 		mNowFadeData = mFadeDatas[scene];
 	}
 #endif

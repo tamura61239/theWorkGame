@@ -138,7 +138,7 @@ TitleParticle::TitleParticle(ID3D11Device* device):mSceneChange(false), mStartId
 
 }
 //パーティクルの初期化や更新に必要なデータのimgui
-void TitleParticle::ImGuiUpdate()
+void TitleParticle::Editor()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("title particle");

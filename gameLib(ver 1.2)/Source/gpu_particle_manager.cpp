@@ -102,7 +102,7 @@ void GpuParticleManager::Update(float elapsd_time)
 }
 
 
-void GpuParticleManager::ImGuiUpdate()
+void GpuParticleManager::Editor()
 {
 	switch (mState)
 	{
@@ -130,11 +130,11 @@ void GpuParticleManager::TitleImGui()
 	ImGui::End();
 	if (selects[0])
 	{
-		mTitleParticle->ImGuiUpdate();
+		mTitleParticle->Editor();
 	}
 	if (selects[1])
 	{
-		mTitleTextureParticle->ImGuiUpdate();
+		mTitleTextureParticle->Editor();
 	}
 
 #endif
@@ -150,7 +150,7 @@ void GpuParticleManager::SelectImGui()
 	ImGui::End();
 	if (selects[0])
 	{
-		mSelectSceneParticle->ImGuiUpdate();
+		mSelectSceneParticle->Editor();
 	}
 
 #endif
@@ -167,11 +167,11 @@ void GpuParticleManager::GameImGui()
 	ImGui::End();
 	if (selects[0])
 	{
-		if (mRunParticle.get() != nullptr)mRunParticle->ImGuiUpdate();
+		if (mRunParticle.get() != nullptr)mRunParticle->Editor();
 	}
 	if (selects[1])
 	{
-		mStageSceneParticle->ImGuiUpdate();
+		mStageSceneParticle->Editor();
      }
 
 #endif
@@ -181,7 +181,7 @@ void GpuParticleManager::GameImGui()
 void GpuParticleManager::ResultImGui()
 {
 #if (RESULT_TYPE==0)
-	mFireworksParticle->ImGuiUpdate();
+	mFireworksParticle->Editor();
 #else
 #endif
 }

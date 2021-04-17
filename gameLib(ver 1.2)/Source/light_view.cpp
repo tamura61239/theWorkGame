@@ -29,7 +29,7 @@ void LightView::Update(const VECTOR3F& targetPosition, ID3D11DeviceContext* cont
 	mLightCamera->CalculateParallelMatrix();
 }
 
-void LightView::ImGuiUpdate()
+void LightView::Editor()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("light view data");

@@ -7,16 +7,20 @@
 #ifdef USE_IMGUI
 #include"imgui.h"
 #endif
-
+/*****************************初期化関数***********************************/
 void UIManager::TitleInitialize(ID3D11Device* device)
 {
+	//枠の生成
 	mDebugUIFrame = std::make_unique<UI>(device, L"Data/image/枠.png", VECTOR2F(500, 500), "");
+	//UIの生成
 	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/タイトル.png", VECTOR2F(1000, 200), "title"));
 	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/startKey.png", VECTOR2F(500, 100), "key"));
+	//動かすクラスの生成
 	mTitleMove = std::make_unique<TitleUIMove>(mUIs.size());
+	//ファイルのロード
 	mSceneName = "title";
 	Load(mSceneName.c_str());
-
+	//名前の取得
 	for (int i=0;i< static_cast<int>(mUIs.size());i++)
 	{
 		auto& ui = mUIs[i];
@@ -27,9 +31,10 @@ void UIManager::TitleInitialize(ID3D11Device* device)
 		data.mColor.w = moveData.startAlpha;
 		ui->SetUIData(data);
 	}
+	//タイトルシーンのパーティクルの生成
 	pGpuParticleManager->GetTitleTextureParticle()->LoadTexture(device, L"Data/image/タイトル.png", mUIs[0]->GetUIData().mLeftPosition, mUIs[0]->GetUIData().mDrowSize, mUIs[0]->GetUIData().mTextureLeftTop, mUIs[0]->GetUIData().mTextureSize);
 	pGpuParticleManager->GetTitleTextureParticle()->LoadTexture(device, L"Data/image/startKey.png", mUIs[1]->GetUIData().mLeftPosition, mUIs[1]->GetUIData().mDrowSize, mUIs[1]->GetUIData().mTextureLeftTop, mUIs[1]->GetUIData().mTextureSize);
-
+	
 	mUINumber = 0;
 	mDebugUIFrameFlag = false;
 #ifdef USE_IMGUI
@@ -43,20 +48,25 @@ void UIManager::TitleInitialize(ID3D11Device* device)
 
 void UIManager::GameInitialize(ID3D11Device* device)
 {
+	//枠の生成
 	mDebugUIFrame = std::make_unique<UI>(device, L"Data/image/枠.png", VECTOR2F(500, 500), "");
-
+	//UIの生成
 	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/number.png", VECTOR2F(62.f, 100), "count"));
 	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/number.png", VECTOR2F(62.f, 100), "time1000"));
 	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/number.png", VECTOR2F(62.f, 100), "time100"));
 	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/number.png", VECTOR2F(62.f, 100), "time10"));
 	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/number.png", VECTOR2F(62.f, 100), "time1"));
+	//動かすクラスの生成
 	mGameMove = std::make_unique<GameUiMove>();
+	//UIの初期化
 	mGameMove->SetUI(mUIs);
+	//名前の取得
 	for (auto& ui : mUIs)
 	{
 		mNames.push_back(ui->GetName());
 	}
 	mUINumber = 0;
+	//ファイルのロード
 	mSceneName = "game";
 	Load(mSceneName.c_str());
 	mDebugUIFrameFlag = false;
@@ -66,27 +76,31 @@ void UIManager::GameInitialize(ID3D11Device* device)
 
 void UIManager::ResultInitialize(ID3D11Device* device)
 {
+	//枠の生成
 	mDebugUIFrame = std::make_unique<UI>(device, L"Data/image/枠.png", VECTOR2F(500, 500), "");
-
+	//UIの生成
 	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/○.png", VECTOR2F(800, 800), "frame"));
 	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/retry.png", VECTOR2F(300, 80), "retry"));
 	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/title.png", VECTOR2F(300, 80), "title"));
 	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/stageselect.png", VECTOR2F(300, 80), "stage select"));
 	mUIs.push_back(std::make_shared<UI>(device, L"Data/image/nextstage.png", VECTOR2F(300, 80), "next stage"));
 	mUIMaxCount = mUIs.size();
+	//動かすクラスの生成
 	mResultMove = std::make_unique<ResultUIMove>();
 	mUINumber = 0;
+	//ファイルのロード
 	mSceneName = "result";
 	Load(mSceneName.c_str());
 	mDebugUIFrameFlag = false;
 	if (Ranking::GetStageNo() == StageManager::GetMaxStageCount() - 1)mUIMaxCount--;
+	//名前の取得
 	for (int i=0;i<mUIMaxCount;i++)
 	{
 		mNames.push_back(mUIs[i]->GetName());
 	}
 
 }
-
+//クリア関数
 void UIManager::Clear()
 {
 	mUIs.clear();
@@ -101,16 +115,19 @@ void UIManager::ClearUI()
 	mNames.clear();
 	mUIMaxCount = 0;
 }
-
-void UIManager::ImGuiUpdate()
+/*******************エディタ関数******************/
+void UIManager::Editor()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("ui");
+	//フレームを出すかどうかを選択する
 	ImGui::Checkbox("debug ui frame", &mDebugUIFrameFlag);
 	if (mUIs.size()!=0)
 	{
+		//UIを選ぶ
 		ImGui::Combo("name", &mUINumber, vector_getter, static_cast<void*>(&mNames), mNames.size());
 		{
+			//選んだUIのパラメーターを操作
 			UI::UIData data = mUIs[mUINumber]->GetUIData();
 			ImGui::Text("drow data");
 			float* color[3] = { &data.mColor.x,&data.mColor.y ,&data.mColor.z };
@@ -127,42 +144,52 @@ void UIManager::ImGuiUpdate()
 
 			ImGui::Text("texture data");
 			if (mSceneName._Equal("title"))
-			{
+			{//シーンがタイトルの時
+				//パラメーターを操作
 				ImGui::SliderFloat("texture life top x", &data.mTextureLeftTop.x, 0, 1920);
 				ImGui::SliderFloat("texture life top y", &data.mTextureLeftTop.y, 0, 1080);
 				ImGui::InputFloat("texture size x", &data.mTextureSize.x, 10);
 				ImGui::InputFloat("texture size y", &data.mTextureSize.y, 10);
 				ImGui::Separator();
+				//動かしたパラメーターを設定する
 				mUIs[mUINumber]->SetUIData(data);
-
+				//UIの動きのパラメーターを操作する
 				ImGui::Text("title data");
 				std::vector<TitleUIMove::TitleUIMoveData> titleData = mTitleMove->GetTitleUIMove();
 				ImGui::InputFloat("start time", &titleData[mUINumber].startTime, 0.1f);
 				ImGui::SliderFloat("start alpha", &titleData[mUINumber].startAlpha, 0, 1);
 				ImGui::SliderFloat("end alpha", &titleData[mUINumber].endAlpha, 0, 1);
 				ImGui::InputFloat("alpha amount", &titleData[mUINumber].alphaAmount, 0.1f);
+				//セーブ
 				if (ImGui::Button("title move data save"))
 				{
-					mTitleMove->Save();
+					FileFunction::SaveArray(&titleData[0], titleData.size(), "Data/file/titleUIMove.bin", "wb");
 				}
+				//操作したパラメーターを設定する
 				mTitleMove->SetTitleUIMove(titleData);
+				//テストプレイ
 				if (ImGui::Button("testMove"))
 				{
-					mTitleMove->TextMove(mUIs);
+					mTitleMove->TestPlay(mUIs);
 				}
 			}
 			else if (mSceneName._Equal("game"))
-			{
+			{//シーンがゲームの時
+				//パラメーターを操作する
 				ImGui::SliderFloat("texture life top x", &data.mTextureLeftTop.x, 0, 1920);
 				ImGui::SliderFloat("texture life top y", &data.mTextureLeftTop.y, 0, 1080);
 				ImGui::Separator();
+				//動かしたパラメーターを設定する
 				mUIs[mUINumber]->SetUIData(data);
 
+				//UIの動きのパラメーターを操作する
 				ImGui::Text("game data");
 				GameUiMove::GameUIData gameData = mGameMove->GetGameUIData();
 				ImGui::InputFloat("max time", &gameData.mMaxTime, 1);
 				ImGui::InputFloat("max count", &gameData.mMaxCount, 1);
+				//操作したパラメーターを設定する
 				mGameMove->SetGameUIData(gameData);
+				//セーブ
 				if (ImGui::Button("game move data save"))
 				{
 					FileFunction::Save(gameData, "Data/file/gameUIData.bin", "wb");
@@ -170,6 +197,7 @@ void UIManager::ImGuiUpdate()
 
 				if (!mGameMove->GetTestFlag()&&!mGameMove->GetStartFlag())
 				{
+					//テストプレイ
 					mGameMove->SetUI(mUIs);
 					if (ImGui::Button("testMove"))
 					{
@@ -178,6 +206,7 @@ void UIManager::ImGuiUpdate()
 				}
 				else
 				{
+					//テストプレイ終了
 					if (ImGui::Button("reset"))
 					{
 						ResetGameUI();
@@ -185,22 +214,25 @@ void UIManager::ImGuiUpdate()
 				}
 			}
 			else
-			{
-				
+			{//シーンがリザルトの時
+				//パラメーターを操作する
 				mUIs[mUINumber]->SetUIData(data);
 				auto& resultData = mResultMove->GetResultUIData();
 				ImGui::SliderFloat("frame alpth", &resultData.frameAlpth, 0, 1);
 				ImGui::SliderFloat("alpth difference", &resultData.alpthDifference, 0, 1);
+				//セーブ
 				if (ImGui::Button("save"))
 				{
 					FileFunction::Save(resultData, "Data/file/resultUIData.bin", "wb");
 				}
+				//操作したパラメーターを設定する
 				mResultMove->SetResultUIData(resultData);
 			}
 
 		}
 
 	}
+	//UIのデータのセーブ
 	if (ImGui::Button("ui data save"))
 	{
 		Save(mSceneName.c_str());
@@ -209,30 +241,31 @@ void UIManager::ImGuiUpdate()
 	ImGui::End();
 #endif
 }
-
+/*******************更新関数*********************/
 void UIManager::Update(float elapsdTime)
 {
 
 	if (mSceneName._Equal("title"))
-	{
+	{//タイトルのとき
 		mTitleMove->Update(elapsdTime, mUIs);
 	}
 	else if (mSceneName._Equal("game"))
-	{
+	{//ゲームのとき
 		mGameMove->Update(elapsdTime, mUIs);
 	}
 	else if (mSceneName._Equal("result"))
-	{
+	{//リザルトのとき
 		mResultMove->Update(elapsdTime, mUIs, mUIMaxCount);
 	}
 }
-
+/********************描画関数***********************/
 void UIManager::Render(ID3D11DeviceContext* context)
 {
 	for (int i=0;i< mUIMaxCount;i++)
 	{
 		mUIs[i]->Render(context);
 #ifdef USE_IMGUI
+		//枠を描画する時
 		if (!mDebugUIFrameFlag)continue;
 		auto& data = mUIs[i]->GetUIData();
 		auto& data2 = mDebugUIFrame->GetUIData();
@@ -243,7 +276,7 @@ void UIManager::Render(ID3D11DeviceContext* context)
 #endif
 	}
 }
-
+//ロード
 void UIManager::Load(const char* scene)
 {
 	FILE* fp;
@@ -251,26 +284,15 @@ void UIManager::Load(const char* scene)
 	fileName += scene;
 	fileName += "UI";
 	fileName += ".bin";
-	int fileSize = 0;
-	if (fopen_s(&fp, fileName.c_str(), "rb") == 0)
+	std::vector<UI::UIData>datas;
+	datas.resize(mUIs.size());
+	FileFunction::LoadArray(&datas[0], fileName.c_str(), "rb");
+	for (int i = 0; i < datas.size(); i++)
 	{
-		//ファイルサイズの取得
-		fseek(fp, 0, SEEK_END);
-
-		fileSize = ftell(fp);
-		//ファイルの先頭に戻す
-		fseek(fp, 0, SEEK_SET);
-
-		UI::UIData data;
-		for (int i=0;i< static_cast<int>(fileSize/sizeof(UI::UIData));i++)
-		{
-			fread(&data, sizeof(UI::UIData), 1, fp);
-			mUIs[i]->SetUIData(data);
-		}
-		fclose(fp);
+		mUIs[i]->SetUIData(datas[i]);
 	}
 }
-
+//セーブ
 void UIManager::Save(const char* scene)
 {
 	FILE* fp;
@@ -278,13 +300,10 @@ void UIManager::Save(const char* scene)
 	fileName += scene;
 	fileName += "UI";
 	fileName += ".bin";
-	fopen_s(&fp, fileName.c_str(), "wb");
+	std::vector<UI::UIData>datas;
+	for (auto& ui : mUIs)
 	{
-		for (auto&ui:mUIs)
-		{
-			UI::UIData data = ui->GetUIData();
-			fwrite(&data, sizeof(UI::UIData), 1, fp);
-		}
-		fclose(fp);
+		datas.push_back(ui->GetUIData());
 	}
+	FileFunction::SaveArray(&datas[0], datas.size(), fileName.c_str(), "wb");
 }

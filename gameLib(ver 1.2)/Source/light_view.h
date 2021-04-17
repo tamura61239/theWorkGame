@@ -8,7 +8,7 @@ class LightView
 public:
 	LightView(ID3D11Device* device,std::string fileName="");
 	void Update(const VECTOR3F&targetPosition,ID3D11DeviceContext*context);
-	void ImGuiUpdate();
+	void Editor();
 	Camera* GetLightCamera() {
 		return mLightCamera.get();
 	}

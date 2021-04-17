@@ -37,7 +37,7 @@ void Light::CreateLightBuffer(ID3D11Device* device)
 	}
 }
 
-void Light::ImGuiUpdate()
+void Light::Editor()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("light");

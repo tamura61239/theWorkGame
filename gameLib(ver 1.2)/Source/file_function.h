@@ -1,5 +1,6 @@
 #pragma once
 #include <stdio.h>
+#include<vector>
 
 class FileFunction
 {
@@ -34,6 +35,25 @@ public:
 		size = ftell(fp);
 		fseek(fp, 0, SEEK_SET);
 		int num = size / sizeof(T);
+		//ファイルからデータを読み取る
+		fread(&data[0], sizeof(T), num, fp);
+		//ファイルを閉じる
+		fclose(fp);
+	}
+	template<class T>
+	//ファイルの読み込み
+	static void LoadArray(std::vector<T>& data, const char* fileName, const char* readMode)
+	{
+		FILE* fp;
+		//ファイルを開くする
+		if (fopen_s(&fp, fileName, readMode) != 0)return;
+		//ファイルのサイズを読み取る
+		long size = 0;
+		fseek(fp, 0, SEEK_END);
+		size = ftell(fp);
+		fseek(fp, 0, SEEK_SET);
+		int num = size / sizeof(T);
+		data.resize(num);
 		//ファイルからデータを読み取る
 		fread(&data[0], sizeof(T), num, fp);
 		//ファイルを閉じる

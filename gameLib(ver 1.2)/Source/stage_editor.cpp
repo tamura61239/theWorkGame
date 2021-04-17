@@ -4,12 +4,10 @@
 #include"key_board.h"
 #include"camera_manager.h"
 
-/********************初期化*********************/
 //コンストラクタ
 StageEditor::StageEditor(ID3D11Device* device, int width, int height)
 	:mMousePosition(0, 0), mWorldFarPosition(0, 0, 0), mWorldNearPosition(0, 0, 0)
-	, mStageLeftPosition(0, 0, 0), mStageRightPosition(0, 0, 0), mWidth(width), mHeight(height)
-	, mSidoViewRenderPosition(1344, 756), mSidoViewRenderSize(576, 324), mEditorFlag(false)
+	, mWidth(width), mHeight(height), mSidoViewRenderPosition(1344, 756), mSidoViewRenderSize(576, 324), mEditorFlag(false)
 	, mDragObjNo(-1), mFileState(0), mEditorState(0),mCreateFlag(false), mDeleteNum(-1), mSaveSceneFlag(false)
 {
 	mSprite = std::make_unique<Sprite>(device);
@@ -19,6 +17,7 @@ StageEditor::StageEditor(ID3D11Device* device, int width, int height)
 	mObj = std::make_unique<Obj3D>();
 	ClearCreateData();
 }
+//オブジェクトの生成で使うパラメーターの初期化
 void StageEditor::ClearCreateData()
 {
 	mCreateData.mAngle = VECTOR3F(0, 0, 0);
@@ -32,28 +31,32 @@ void StageEditor::ClearCreateData()
 	mCreateFlag = false;
 
 }
-/****************更新**********************/
-//エディタ関数
-int StageEditor::Update(std::vector<std::shared_ptr<StageObj>>objs)
+/**********************エディタ関数*************************/
+
+int StageEditor::Editor(std::vector<std::shared_ptr<StageObj>>objs)
 {
 #ifdef USE_IMGUI
 	mDeleteNum = -1;
-	UpdateMouseData();
+	MousePosition();
 	//MouseToWorld();
 	ImGui::Begin("stage editor");
 	if (ImGui::CollapsingHeader("editor mode"))
-	{
+	{//エディタがONの時
 		mEditorFlag = true;
 		pCameraManager->GetCameraOperation()->SetCameraType(CameraOperation::CAMERA_TYPE::STAGE_EDITOR);
 		//左クリックをしたとき
 		if (pKeyBoad.RisingState(VK_LBUTTON))
 		{
+			//ミニマップをクリックしたとき
 			if (MouseJudg())
 			{
+				//新しい座標を算出
 				NewCameraPosition();
 			}
+			//ミニマップをクリックしてなくてかつcontrolキーを押していたら
 			else if(pKeyBoad.PressedState(KeyLabel::LCONTROL))
 			{
+				//どのオブジェクトをクリックしたかを調べる
 				SearchStageObj(objs);
 			}
 		}
@@ -62,9 +65,11 @@ int StageEditor::Update(std::vector<std::shared_ptr<StageObj>>objs)
 		//ドラッグするオブジェクトの操作
 		if (mDragObjNo != -1)
 		{
+			//オブジェクト情報の取得
 			auto& obj = objs[mDragObjNo];
-
+			//エディタの状態を設定する
 			mEditorState = 1;
+			//パラメーターの調整
 			float* position[3] = { &obj->GetPosition().x,&obj->GetPosition().y ,&obj->GetPosition().z };
 			ImGui::DragFloat3("position", *position);
 			float* angle[3] = { &obj->GetAngle().x,&obj->GetAngle().y ,&obj->GetAngle().z };
@@ -74,15 +79,18 @@ int StageEditor::Update(std::vector<std::shared_ptr<StageObj>>objs)
 			int colorType = obj->GetStageData().mColorType;
 			ImGui::SliderInt("color type", &colorType, 0, 1);
 			obj->SetColorType(colorType);
+			//オブジェクトを消す
 			if (ImGui::Button("delete"))
 			{
 				mDeleteNum = mDragObjNo;
 				mDragObjNo = -1;
 			}
+			//操作終了
 			if (ImGui::Button("end"))
 			{
 				mDragObjNo = -1;
 			}
+			//パラメーターをセットする
 			StageData stageData;
 			static float s = gameObjScale / 10.0f;
 
@@ -96,8 +104,10 @@ int StageEditor::Update(std::vector<std::shared_ptr<StageObj>>objs)
 		else//objをドラッグしない時
 		{
 			mEditorState = 3;
+			
 			if (ImGui::CollapsingHeader("create data set"))
 			{
+				//生成するオブジェクトのパラメーターを決める
 				mEditorState = 2;
 
 				float position[3] = { mObj->GetPosition().x,mObj->GetPosition().y ,mObj->GetPosition().z };
@@ -108,10 +118,12 @@ int StageEditor::Update(std::vector<std::shared_ptr<StageObj>>objs)
 				ImGui::DragFloat3("scale", scale);
 				ImGui::SliderInt("color type", &mCreateData.mColorType, 0, 1);
 				ImGui::SliderInt("obj type", &mCreateData.mObjType, 0, 2);
+				//生成
 				if (ImGui::Button("create"))
 				{
 					CreateDataSetTransformData();
 				}
+				//オブジェクトにパラメーターを設定する
 				mObj->SetAngle(VECTOR3F(angle[0], angle[1], angle[2]));
 				mObj->SetPosition(VECTOR3F(position[0], position[1], position[2]));
 				mObj->SetScale(VECTOR3F(scale[0], scale[1], scale[2]));
@@ -123,24 +135,28 @@ int StageEditor::Update(std::vector<std::shared_ptr<StageObj>>objs)
 			}
 		}
 		ImGui::Separator();
+		//セーブ
 		if (ImGui::Button("save"))
 		{
 			mFileState = 2;
 		}
+		//ロード
 		if (ImGui::Button("load"))
 		{
 			mFileState = 1;
 		}
 		mSaveSceneFlag = false;
+		//スクリーンショット
 		if (ImGui::Button("stage screne shot"))
 		{
 			mSaveSceneFlag = true;
 		}
+		//ミニマップ用のカメラの座標を算出する
 		SetSidoCamera(objs);
 
 	}
 	else
-	{
+	{//エディタがOFFの時
 		mEditorFlag = false;
 		mEditorState = 0;
 		if (pCameraManager->GetCameraOperation()->GetCameraType() == CameraOperation::CAMERA_TYPE::STAGE_EDITOR)
@@ -154,8 +170,8 @@ int StageEditor::Update(std::vector<std::shared_ptr<StageObj>>objs)
 
 	return -1;
 }
-//マウス更新
-void StageEditor::UpdateMouseData()
+//マウス座標取得関数
+void StageEditor::MousePosition()
 {
 	POINT cursor;
 	GetCursorPos(&cursor);
@@ -193,7 +209,7 @@ void StageEditor::ScreeenToWorld(VECTOR3F* worldPosition, const VECTOR3F& screen
 	DirectX::XMStoreFloat3(worldPosition, WPos);
 
 }
-
+//マウスがワールド空間のどこを指しているかを計算する関数
 void StageEditor::MouseToWorld(Camera* camera, const VECTOR2F& mousePosition)
 {
 	VECTOR3F positionNear = VECTOR3F(static_cast<float>(mousePosition.x), static_cast<float>(mousePosition.y), 0);
@@ -248,7 +264,7 @@ void StageEditor::SetSidoCamera(std::vector<std::shared_ptr<StageObj>>objs)
 	//行列計算
 	mSidoCamera->CalculateMatrix();
 }
-
+//クリックしたオブジェクトを調べる関数
 void StageEditor::SearchStageObj(std::vector<std::shared_ptr<StageObj>>objs)
 {
 	if (mDragObjNo == -1)
@@ -258,7 +274,7 @@ void StageEditor::SearchStageObj(std::vector<std::shared_ptr<StageObj>>objs)
 
 	}
 }
-
+//マウスがミニマップに当たってるかどうかを調べる関数
 bool StageEditor::MouseJudg()
 {
 	if (mMousePosition.x > mSidoViewRenderPosition.x && mMousePosition.x < mSidoViewRenderPosition.x + mSidoViewRenderSize.x)
@@ -270,7 +286,7 @@ bool StageEditor::MouseJudg()
 	}
 	return false;
 }
-
+//どのオブジェクトをクリックしているかを調べる関数
 int StageEditor::NewDragObj(std::vector<std::shared_ptr<StageObj>>objs)
 {
 	float length = FLT_MAX;
@@ -280,8 +296,10 @@ int StageEditor::NewDragObj(std::vector<std::shared_ptr<StageObj>>objs)
 		auto& obj = objs[i];
 		VECTOR3F position, normal;
 		float outLength = 0;
+		//マウスでドラッグできるか調べる
 		if (obj->RayPick(mWorldNearPosition, mWorldFarPosition, &position, &normal, &outLength) != -1)
 		{
+			//ドラッグできる中で最短のオブジェクトを調べる
 			if (outLength < length)
 			{
 				length = outLength;
@@ -289,9 +307,10 @@ int StageEditor::NewDragObj(std::vector<std::shared_ptr<StageObj>>objs)
 			}
 		}
 	}
+	//オブジェクト番号を返す
 	return objNo;
 }
-
+//クリックしたミニマップから新しい座標を算出する関数
 void StageEditor::NewCameraPosition()
 {
 	if (pCameraManager->GetCameraOperation()->GetStageEditorCamera()->GetMoveFlag())return;
@@ -312,9 +331,6 @@ void StageEditor::NewCameraPosition()
 
 }
 /*****************描画*********************/
-void StageEditor::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection)
-{
-}
 
 //サイドシーンの描画
 void StageEditor::SidoViewRender(ID3D11DeviceContext* context)

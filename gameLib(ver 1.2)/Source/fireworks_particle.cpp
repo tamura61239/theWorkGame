@@ -126,7 +126,7 @@ mState(0), mDefStartState(0), mFireworksCount(0)
 	Load();
 }
 /**********************エディタ関数***************************/
-void FireworksParticle::ImGuiUpdate()
+void FireworksParticle::Editor()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("fireworks particle");

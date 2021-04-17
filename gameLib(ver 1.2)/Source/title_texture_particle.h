@@ -14,7 +14,7 @@ class TitleTextureParticle
 {
 public:
 	TitleTextureParticle(ID3D11Device* device); 
-	void ImGuiUpdate();
+	void Editor();
 	void LoadTexture(ID3D11Device* device,std::wstring name, const VECTOR2F& leftTop, const VECTOR2F& size, const VECTOR2F& uv, const VECTOR2F& uvSize);
 	void SetParticleFlag(const bool flag) { mParticleFlag = flag; }
 	void SetFullDrowFlag(const bool flag) { mFullCreateFlag = flag; }

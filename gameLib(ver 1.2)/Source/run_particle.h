@@ -13,7 +13,7 @@ class RunParticles
 {
 public:
 	RunParticles(ID3D11Device* device, std::shared_ptr<PlayerAI>player);
-	void ImGuiUpdate();
+	void Editor();
 	void Update(ID3D11DeviceContext* context, float elapsd_time);
 	void Render(ID3D11DeviceContext* context);
 	void Render(ID3D11DeviceContext* context,DrowShader*shader);

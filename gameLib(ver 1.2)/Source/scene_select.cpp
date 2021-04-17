@@ -95,19 +95,19 @@ void SceneSelect::Editor()
 	switch (mEditorNo)
 	{
 	case 1:
-		mSelect->ImGuiUpdate();
+		mSelect->Editor();
 		break;
 	case 2:
-		mBloom->ImGuiUpdate();
+		mBloom->Editor();
 		break;
 	case 3:
 		pCameraManager->Editor();
 		break;
 	case 4:
-		mFade->ImGuiUpdate();
+		mFade->Editor();
 		break;
 	case 5:
-		pGpuParticleManager->ImGuiUpdate();
+		pGpuParticleManager->Editor();
 		break;
 	}
 }

@@ -172,7 +172,7 @@ void Ranking::NewRankingMove(float elapsdTime)
 	}
 }
 //editorä÷êî
-void Ranking::ImGuiUpdate()
+void Ranking::Editor()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("rank text");

@@ -7,7 +7,7 @@
 #include"imgui.h"
 #endif
 
-//初期化
+//コンストラクタ
 StageSelect::StageSelect(ID3D11Device* device, const int maxCount) :mSelectSceneFlag(true), mSelectNumber(0)/*,mMaxStage(4), mTextColor(1,1,1,1)*/, mStageBoardCreateFlag(false), mChangeSelect(0),mMoveTimer(1)
 {
 	HRESULT hr;
@@ -26,6 +26,7 @@ StageSelect::StageSelect(ID3D11Device* device, const int maxCount) :mSelectScene
 	mBackTexture = std::make_shared<TextureData>();
 	hr = LoadTextureFromFile(device, L"Data/image/siro.png", mBackTexture->mSRV.GetAddressOf(), &mBackTexture->mDesc);
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	//ステージの画像のロード
 	for (int i = 0; i < maxCount; i++)
 	{
 		std::wstring fileName = L"Data/image/stage" + std::to_wstring(i) + L"scne_map.dds";
@@ -39,6 +40,7 @@ StageSelect::StageSelect(ID3D11Device* device, const int maxCount) :mSelectScene
 	mDrow = std::make_unique<Sprite>(device);
 	//LocalDataの一様の初期化
 	mLocalDatas.resize(5);
+	//ローカルデータの初期化
 	std::string name[5] = { "front","number","back" ,"tutorial","stageImage" };
 	for (int i = 0; i < static_cast<int>(mLocalDatas.size()); i++)
 	{
@@ -70,23 +72,26 @@ StageSelect::StageSelect(ID3D11Device* device, const int maxCount) :mSelectScene
 	}
 }
 
-//エディタ(ImGui)関数
-void StageSelect::ImGuiUpdate()
+/***********************エディタ関数************************/
+void StageSelect::Editor()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("stage select data");
+	//ステージボードのサイズとボード間の間隔の調整
 	ImGui::InputFloat("board size x", &mBoardSize.x, 10);
 	ImGui::InputFloat("board size y", &mBoardSize.y, 10);
 	ImGui::InputFloat("interval", &mInterval, 1);
-
+	//調整した値をセット
 	for (auto& stage : mStageBoards)
 	{
 		stage->SetSize(mBoardSize);
 		stage->SetInterval(mInterval);
 	}
 	mBackTexture->mTextureDrowSize = mBoardSize;
+
 	if (ImGui::CollapsingHeader("localData"))
 	{
+		//ボード内でのテキストの配置やサイズを調整
 		for (int i = 0; i < static_cast<int>(mLocalDatas.size()); i++)
 		{
 			auto& local = mLocalDatas[i].mData;
@@ -106,7 +111,9 @@ void StageSelect::ImGuiUpdate()
 			}
 		}
 	}
+	//今選択してるステージ番号表示
 	ImGui::Text("%d", mSelectNumber);
+	//セーブ
 	if (ImGui::Button("save"))
 	{
 		Save();
@@ -114,13 +121,15 @@ void StageSelect::ImGuiUpdate()
 	ImGui::End();
 #endif
 }
-
+/*********************更新関数**********************/
 bool StageSelect::Update(float elapsdTime)
 {
+	//ステージ選択が可能かどうか
 	if (!mSelectSceneFlag)return false;
 	float time = elapsdTime*5.f;
 	if (mChangeSelect == 0)//選択するステージを変更してない時
 	{
+		//選択
 		Select();
 		if (pKeyBoad.RisingState(KeyLabel::SPACE))//決定
 		{
@@ -162,19 +171,19 @@ bool StageSelect::Update(float elapsdTime)
 void StageSelect::Select()
 {
 
-	if (pKeyBoad.PressedState(KeyLabel::RIGHT)&& mSelectNumber < static_cast<int>(mStageBoards.size()) - 1)//右に移動
-	{
+	if (pKeyBoad.PressedState(KeyLabel::RIGHT)&& mSelectNumber < static_cast<int>(mStageBoards.size()) - 1)
+	{//右ボタンを押したとき
 		mMoveTimer = 0;
 		mChangeSelect = 1;
 	}
-	if (pKeyBoad.PressedState(KeyLabel::LEFT) && mSelectNumber > 0)//左に移動
-	{
+	if (pKeyBoad.PressedState(KeyLabel::LEFT) && mSelectNumber > 0)
+	{//左ボタンを押したとき
 		mMoveTimer = 0;
 		mChangeSelect =- 1;
 	}
 }
 
-//描画
+/**********************描画関数*************************/
 void StageSelect::Render(ID3D11DeviceContext* context)
 {
 	for (auto& stageBoard : mStageBoards)
@@ -182,12 +191,12 @@ void StageSelect::Render(ID3D11DeviceContext* context)
 		stageBoard->Render(context, mDrow.get());
 	}
 }
-
+/********************ファイル操作********************/
 void StageSelect::Load()
 {
 	FILE* fp;
 	int fileSize = 0;
-
+	//ファイル読み込み
 	if (fopen_s(&fp, "Data/file/stage_select_scene.bin", "rb") == 0)
 	{
 		//ファイルサイズの取得
@@ -212,10 +221,11 @@ void StageSelect::Load()
 		fclose(fp);
 	}
 }
-//ファイル書き込み関数
+
 void StageSelect::Save()
 {
 	FILE* fp;
+	//ファイル書き込み
 	fopen_s(&fp, "Data/file/stage_select_scene.bin", "wb");
 	{
 		fwrite(&mBoardSize, sizeof(VECTOR2F), 1, fp);

@@ -32,7 +32,7 @@ public:
 	Ranking(ID3D11Device* device, float time);
 	void Update(float elapsdTime,bool play);
 	void Render(ID3D11DeviceContext* context);
-	void ImGuiUpdate();
+	void Editor();
 	//setter
 	static void SetStageNo(const int stageNo) { mStageNo = stageNo; }
 	static int GetStageNo() { return mStageNo; }

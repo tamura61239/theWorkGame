@@ -51,7 +51,7 @@ float TutorialState::Update(float elapsdTime, PlayerCharacter* player)
 	return timer;
 }
 
-void TutorialState::ImGuiUpdate()
+void TutorialState::Editor()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("tutorial");

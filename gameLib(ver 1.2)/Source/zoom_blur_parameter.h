@@ -1,5 +1,6 @@
 #pragma once
 #include"vector.h"
+//ズームブラーのパラメーター
 struct CbZoom
 {
 	float lenght;

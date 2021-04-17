@@ -92,7 +92,7 @@ RenderEffects::RenderEffects(ID3D11Device* device, std::string fileName)
 	FileFunction::Load(mCbBuffer->data.saveData, filePas.c_str(), "rb");
 }
 
-void RenderEffects::ImGuiUpdate()
+void RenderEffects::Editor()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("shadow map data");

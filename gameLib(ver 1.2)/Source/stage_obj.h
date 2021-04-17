@@ -1,6 +1,7 @@
 #pragma once
 #include"static_obj.h"
 
+//ステージオブジェクトの必要データ
 struct StageData
 {
 	VECTOR3F mPosition;
@@ -9,6 +10,7 @@ struct StageData
 	int mColorType;
 	int mObjType;
 };
+//ステージオブジェクトクラス
 class StageObj :public StaticObj
 {
 public:
@@ -22,14 +24,6 @@ public:
 		mPosition = data.mPosition * s;
 		mScale = data.mScale * s;
 		mAngle = data.mAngle;
-		//if (data.mColorType == 1)
-		//{
-		//	mColor = VECTOR4F(0, 0, 1, 0.3f);
-		//}
-		//else
-		//{
-		//	mColor = VECTOR4F(1, 0, 0, 1);
-		//}
 	}
 	void SetColorType(const int type) { mData.mColorType = type; }
 	//getter
@@ -37,6 +31,8 @@ public:
 	void SetBeforeWorld(const FLOAT4X4& w) { beforeWorld = w; }
 	const FLOAT4X4& GetBeforeWorld() { return beforeWorld; }
 private:
+	//オブジェクトのデータ
 	StageData mData;
+	//前のフレームのワールド空間行列
 	FLOAT4X4 beforeWorld;
 };

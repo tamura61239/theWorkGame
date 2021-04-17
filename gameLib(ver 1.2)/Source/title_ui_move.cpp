@@ -1,14 +1,16 @@
 #include "title_ui_move.h"
-
+#include"file_function.h"
+//コンストラクタ
 TitleUIMove::TitleUIMove(const int UICount):mMoveChangeFlag(false)
 {
 	mDatas.resize(UICount);
-	Load();
+	FileFunction::LoadArray(&mDatas[0], "Data/file/titleUIMove.bin", "rb");
 
 }
-
+/****************************更新関数*****************************/
 void TitleUIMove::Update(float elapsdTime, std::vector<std::shared_ptr<UI>> uis)
 {
+	//シーンを切り替える処理に入ったかどうか
 	if (mMoveChangeFlag)return;
 	mTimer += elapsdTime;
 	for (int i = 0; i < static_cast<int>(uis.size()); i++)
@@ -20,11 +22,12 @@ void TitleUIMove::Update(float elapsdTime, std::vector<std::shared_ptr<UI>> uis)
 			{
 				UI::UIData uiData = ui->GetUIData();
 				uiData.mColor.w += data.alphaAmount * elapsdTime;
+				//UIのアルファ値が一定以上になったかどうか
 				if ((data.startAlpha-uiData.mColor.w)* (data.startAlpha - uiData.mColor.w)>= (data.startAlpha - data.endAlpha)* (data.startAlpha - data.endAlpha))
 				{
 					uiData.mColor.w = data.endAlpha;
 					if (ui->GetName() == name)
-					{
+					{//keyがこの条件を満たしたら
 						mMoveChangeFlag = true;
 						break;
 					}
@@ -33,36 +36,5 @@ void TitleUIMove::Update(float elapsdTime, std::vector<std::shared_ptr<UI>> uis)
 				ui->SetUIData(uiData);
 			}
 
-		//else
-		//{
-		//	if (ui->GetName() != name)continue;
-
-		//}
-	}
-}
-
-void TitleUIMove::Load()
-{
-	FILE* fp;
-	if (fopen_s(&fp, "Data/file/titleUIMove.bin", "rb") == 0)
-	{
-		for(auto & data:mDatas)
-		{
-			fread(&data, sizeof(TitleUIMoveData), 1, fp);
-		}
-		fclose(fp);
-	}
-}
-
-void TitleUIMove::Save()
-{
-	FILE* fp;
-	fopen_s(&fp, "Data/file/titleUIMove.bin", "wb");
-	{
-		for (auto& data : mDatas)
-		{
-			fwrite(&data, sizeof(TitleUIMoveData), 1, fp);
-		}
-		fclose(fp);
 	}
 }

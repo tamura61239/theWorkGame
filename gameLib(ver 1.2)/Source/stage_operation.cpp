@@ -4,38 +4,16 @@
 #include<imgui.h>
 #endif
 #include"key_board.h"
-
-StageOperation::StageOperation():mChangFlag(false),mColorType(0)
+//コンストラクタ
+StageOperation::StageOperation() :mChangFlag(true), mColorType(0)
 {
-	Load();
-	//FileFunction::LoadArray(mColor, "Data/file/stageColor.txt", "r");
-}
-
-void StageOperation::Load()
-{
-	FILE* fp;
-	if (fopen_s(&fp, "Data/file/stageColor.txt", "r") == 0)
-	{
-		fread(&mColor[0], sizeof(VECTOR4F), 1, fp);
-		fread(&mColor[1], sizeof(VECTOR4F), 1, fp);
-		fclose(fp);
-		mChangFlag = true;
-		return;
-	}
 	mColor[0] = VECTOR4F(1, 0, 0, 1);
 	mColor[1] = VECTOR4F(0, 0, 1, 0.3f);
-}
 
-void StageOperation::Save()
-{
-	FILE* fp;
-	fopen_s(&fp, "Data/file/stageColor.txt", "w");
-	fwrite(&mColor[0], sizeof(VECTOR4F), 1, fp);
-	fwrite(&mColor[1], sizeof(VECTOR4F), 1, fp);
-	fclose(fp);
+	FileFunction::LoadArray(&mColor[0], "Data/file/stageColor.txt", "r");
 }
-
-void StageOperation::ImGuiUpdate()
+/*****************エディタ関数********************/
+void StageOperation::Editor()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("stageColor");
@@ -49,19 +27,19 @@ void StageOperation::ImGuiUpdate()
 	{
 		mChangFlag = true;
 	}
-	if (ImGui::Button("save"))Save();
+	if (ImGui::Button("save"))FileFunction::SaveArray(&mColor[0], 2, "Data/file/stageColor.txt", "w");
 	ImGui::End();
 #endif
 }
-
+/********************更新関数***********************/
 void StageOperation::Update(float elapsd_time, StageManager* manager, const bool playFlag)
 {
 	if (!playFlag)
-	{
+	{//プレイしてない時
 	}
 	else
-	{
-		if (pKeyBoad.RisingState(KeyLabel::SPACE) && !mChangFlag)
+	{//プレイ中
+		if (pKeyBoad.RisingState(KeyLabel::SPACE) && !mChangFlag)//spaceキーを押したとき
 		{
 			mChangFlag = true;
 			mColorType++;
@@ -70,12 +48,12 @@ void StageOperation::Update(float elapsd_time, StageManager* manager, const bool
 	}
 	SetStageColor(manager);
 }
-
+//オブジェクトに色を設定する
 void StageOperation::SetStageColor(StageManager* manager)
 {
 	for (auto& stage : manager->GetStages())
 	{
-		switch (mColorType)
+		switch (mColorType)//色を設定する
 		{
 		case 0:
 			stage->SetColor(mColor[stage->GetStageData().mColorType]);

@@ -167,7 +167,6 @@
     <ClCompile Include="Source\character.cpp" />
     <ClCompile Include="Source\collision.cpp" />
     <ClCompile Include="Source\cubebuffer.cpp" />
-    <ClCompile Include="Source\depth_of_field.cpp" />
     <ClCompile Include="Source\direct_input.cpp" />
     <ClCompile Include="Source\drow_shader.cpp" />
     <ClCompile Include="Source\fade.cpp" />
@@ -179,7 +178,6 @@
     <ClCompile Include="Source\game_ui_move.cpp" />
     <ClCompile Include="Source\geometric_primitive.cpp" />
     <ClCompile Include="Source\gpu_particle_manager.cpp" />
-    <ClCompile Include="Source\hit_area_drow.cpp" />
     <ClCompile Include="Source\hit_area_render.cpp" />
     <ClCompile Include="Source\Judgment.cpp" />
     <ClCompile Include="Source\light.cpp" />
@@ -215,7 +213,6 @@
     <ClCompile Include="Source\stage_editor_camera_operation.cpp" />
     <ClCompile Include="Source\stage_manager.cpp" />
     <ClCompile Include="Source\stage_obj.cpp" />
-    <ClCompile Include="Source\stage_obj_drag_operation.cpp" />
     <ClCompile Include="Source\stage_operation.cpp" />
     <ClCompile Include="Source\stage_scene_particle.cpp" />
     <ClCompile Include="Source\stage_select.cpp" />
@@ -251,7 +248,6 @@
     <ClInclude Include="Source\collision.h" />
     <ClInclude Include="Source\constant_buffer.h" />
     <ClInclude Include="Source\cubebuffer.h" />
-    <ClInclude Include="Source\depth_of_field.h" />
     <ClInclude Include="Source\direct_input.h" />
     <ClInclude Include="Source\drow_shader.h" />
     <ClInclude Include="Source\Easing.h" />
@@ -266,7 +262,6 @@
     <ClInclude Include="Source\geometric_primitive.h" />
     <ClInclude Include="Source\gpu_particle_manager.h" />
     <ClInclude Include="Source\high_resolution_timer.h" />
-    <ClInclude Include="Source\hit_area_drow.h" />
     <ClInclude Include="Source\hit_area_render.h" />
     <ClInclude Include="Source\Judgment.h" />
     <ClInclude Include="Source\key_board.h" />
@@ -313,7 +308,6 @@
     <ClInclude Include="Source\stage_editor_camera_operation.h" />
     <ClInclude Include="Source\stage_manager.h" />
     <ClInclude Include="Source\stage_obj.h" />
-    <ClInclude Include="Source\stage_obj_drag_operation.h" />
     <ClInclude Include="Source\stage_operation.h" />
     <ClInclude Include="Source\stage_select.h" />
     <ClInclude Include="Source\static_mesh.h" />

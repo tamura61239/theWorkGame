@@ -11,7 +11,7 @@ class BloomRender
 {
 public:
 	BloomRender(ID3D11Device* device, float screenWidth, float screenHight,const int nowScene);
-	void ImGuiUpdate();
+	void Editor();
 	void BlurTexture(ID3D11DeviceContext* context, ID3D11ShaderResourceView* colorSrv);
 	void Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView* colorSrv);
 	//setter

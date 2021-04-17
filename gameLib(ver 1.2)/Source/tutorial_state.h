@@ -11,7 +11,7 @@ class TutorialState
 public:
 	TutorialState(ID3D11Device*device);
 	float Update(float elapsdTime, PlayerCharacter* player);
-	void ImGuiUpdate();
+	void Editor();
 	void RenderButton(ID3D11DeviceContext* context);
 	void RenderText(ID3D11DeviceContext* context);
 	const VECTOR4F& GetBackGroundColor() { return mBackGroundColor; }

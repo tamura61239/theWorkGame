@@ -5,6 +5,7 @@
 class Fade
 {
 public:
+	//シーン
 	enum class FADE_SCENE
 	{
 		TITLE,
@@ -13,14 +14,16 @@ public:
 		RESULT,
 		MAX,
 	};
+	//動きの状態
 	enum class FADE_MODO
 	{
 		NONE,
 		FADEIN,
 		FADEOUT
 	};
+	//フェードのデータのロード
 	void StartLoad();
-	Fade(ID3D11Device*device, FADE_SCENE scene);
+	Fade(ID3D11Device* device, FADE_SCENE scene);
 	//setter
 	void SetFadeScene(FADE_SCENE scene);
 	//getter
@@ -29,15 +32,14 @@ public:
 	//start関数
 	void StartFadeIn()
 	{
-		//if (mState == FADE_MODO::NONE)
-		{
-			mState = FADE_MODO::FADEIN;
-			mNowFadeData.mData.mColor.w = 1;
-		}
+		//フェートイン開始
+		mState = FADE_MODO::FADEIN;
+		mNowFadeData.mData.mColor.w = 1;
+
 	}
 	void StartFadeOut()
 	{
-		if (mState == FADE_MODO::NONE)
+		//フェートアウト開始
 		{
 			mState = FADE_MODO::FADEOUT;
 			mNowFadeData.mData.mColor.w = 0;
@@ -49,8 +51,11 @@ public:
 		mState = FADE_MODO::NONE;
 		mNowFadeData.mEndFlag = false;
 	}
-	void ImGuiUpdate();
+	//エディタ
+	void Editor();
+	//更新
 	void Update(float elapstTime);
+	//描画
 	void Render(ID3D11DeviceContext* context);
 private:
 	struct FadeData
@@ -65,14 +70,20 @@ private:
 		FadeData mData;
 		bool mEndFlag;
 	};
-
+	//動き
 	void Move(float elapsdTime, FadeScene* scene);
+	//今のシーンのデータ
 	FadeScene mNowFadeData;
+	//エディタで操作するシーンのデータ
 	FadeScene mCheckFadeData;
 	bool mTestFlag;
+	//状態
 	FADE_MODO mState;
+	//エディタで操作するフェードのシーン
 	int mEditorScene;
+	//全シーンのフェードデータ
 	FadeScene mFadeDatas[static_cast<int>(FADE_SCENE::MAX)];
+	//描画用
 	std::unique_ptr<Sprite>mSprite;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>mSRV;
 };

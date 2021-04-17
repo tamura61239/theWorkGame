@@ -21,26 +21,34 @@ public:
 		mGameMove->SetTestFlag(false);
 		mGameMove->SetUI(mUIs);
 	}
+	//エディタ
+	void Editor();
 	//更新
-	void ImGuiUpdate();
 	void Update(float elapsdTime);
+	//描画
 	void Render(ID3D11DeviceContext* context);
 	//getter
 	TitleUIMove* GetTitleUIMove() { return mTitleMove.get(); }
 	GameUiMove* GetGameUIMove() { return mGameMove.get(); }
 	ResultUIMove* GetResultUIMove() { return mResultMove.get(); }
 private:
+	//UIテキスト
 	std::vector<std::shared_ptr<UI>>mUIs;
+	//名前リスト
 	std::vector<std::string>mNames;
+	//動き
 	std::unique_ptr<TitleUIMove>mTitleMove;
 	std::unique_ptr<GameUiMove>mGameMove;
 	std::unique_ptr<ResultUIMove>mResultMove;
+	//UIのフレーム
 	std::unique_ptr<UI>mDebugUIFrame;
+	//エディタ変数
 	int mUINumber;
 	std::string mSceneName;
 	bool mMoveStartFlag;
 	bool mDebugUIFrameFlag;
 	int mUIMaxCount;
+	//ファイル操作
 	void Load(const char* scene);
 	void Save(const char* scene);
 };

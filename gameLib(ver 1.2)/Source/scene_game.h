@@ -13,7 +13,6 @@
 #include"stage_operation.h"
 #include"sky_map.h"
 #include"drow_shader.h"
-#include"depth_of_field.h"
 #include"stage_select.h"
 #include"light_view.h"
 #include"tutorial_state.h"

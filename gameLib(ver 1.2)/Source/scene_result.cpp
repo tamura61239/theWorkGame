@@ -132,22 +132,22 @@ void SceneResult::Editor()
 	switch (mEditorNo)
 	{
 	case 1:
-		mRanking->ImGuiUpdate();
+		mRanking->Editor();
 		break;
 	case 2:
-		UIManager::GetInctance()->ImGuiUpdate();
+		UIManager::GetInctance()->Editor();
 		break;
 	case 3:
-		mFade->ImGuiUpdate();
+		mFade->Editor();
 		break;
 	case 4:
-		mBloom->ImGuiUpdate();
+		mBloom->Editor();
 		break;
 	case 5:
 		pCameraManager->Editor();
 		break;
 	case 7:
-		pGpuParticleManager->ImGuiUpdate();
+		pGpuParticleManager->Editor();
 		break;
 	}
 	if (mEditorNo == 6)

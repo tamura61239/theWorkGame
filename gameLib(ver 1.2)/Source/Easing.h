@@ -1,5 +1,6 @@
 #pragma once
 // イージング関数
+//動きについては（https://easings.net/ja）のサイトで調べる
 struct Easing
 {
 private:

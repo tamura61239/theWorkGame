@@ -6,7 +6,6 @@
 #include"gamepad.h"
 #include"light.h"
 #include"Judgment.h"
-#include"hit_area_drow.h"
 #include"gpu_particle_manager.h"
 #include"framework.h"
 #include"ui_manager.h"
@@ -254,39 +253,39 @@ void SceneGame::Editor()
 	switch (mEditorNo)
 	{
 	case 2:
-		pLight.ImGuiUpdate();
+		pLight.Editor();
 		break;
 	case 3:
-		mStageOperation->ImGuiUpdate();
-		mSManager->ImGuiUpdate();
+		mStageOperation->Editor();
+		mSManager->Editor();
 		break;
 	case 4:
 		player->Editor();
 		break;
 	case 5:
-		pGpuParticleManager->ImGuiUpdate();
+		pGpuParticleManager->Editor();
 		break;
 	case 6:
 		pCameraManager->Editor();
 		break;
 	case 7:
-		mBloom->ImGuiUpdate();
+		mBloom->Editor();
 		break;
 	case 8:
-		mFade->ImGuiUpdate();
+		mFade->Editor();
 		break;
 	case 9:
-		UIManager::GetInctance()->ImGuiUpdate();
+		UIManager::GetInctance()->Editor();
 		break;
 	case 11:
-		mRenderEffects->ImGuiUpdate();
+		mRenderEffects->Editor();
 
 		break;
 	case 12:
-		mLightView->ImGuiUpdate();
+		mLightView->Editor();
 		break;
 	case 13:
-		mTutorialState->ImGuiUpdate();
+		mTutorialState->Editor();
 		break;
 
 	}

@@ -11,7 +11,7 @@ class StageSceneParticle
 {
 public:
 	StageSceneParticle(ID3D11Device* device);
-	void ImGuiUpdate();
+	void Editor();
 	void Update(ID3D11DeviceContext* context, float elapsdTime);
 	void Render(ID3D11DeviceContext* context);
 	void Render(ID3D11DeviceContext* context,DrowShader*shader);

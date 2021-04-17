@@ -55,7 +55,7 @@ public:
 		return light;
 	}
 	//XV
-	void ImGuiUpdate();
+	void Editor();
 private:
 	Light();
 	struct CbLight

@@ -174,7 +174,7 @@ StageSceneParticle::StageSceneParticle(ID3D11Device* device) :mMaxCount(100000),
 }
 /************************エディター****************************/
 
-void StageSceneParticle::ImGuiUpdate()
+void StageSceneParticle::Editor()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("stage scene particle");

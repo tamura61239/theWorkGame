@@ -5,8 +5,11 @@
 class ResultUIMove
 {
 public:
+	//コンストラクタ
 	ResultUIMove();
+	//更新
 	void Update(float elapsdTime, std::vector<std::shared_ptr<UI>>uis,size_t uiCount);
+	//エディタのデータ
 	struct ResultUIData
 	{
 		float frameAlpth;
@@ -21,8 +24,11 @@ public:
 	ResultUIData GetResultUIData(){ return mData; }
 
 private:
+	//
 	int mType;
+	//フラフ
 	bool mMoveFlag;
 	bool mDecisionFlag;
+	//データ
 	ResultUIData mData;
 };

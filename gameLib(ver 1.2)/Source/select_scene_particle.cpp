@@ -180,7 +180,7 @@ SelectSceneParticle::SelectSceneParticle(ID3D11Device* device):mIndexCount(0), m
 	FileFunction::Load(mEditorData, "Data/file/selete_scene_particle_data.bin", "rb");
 }
 
-void SelectSceneParticle::ImGuiUpdate()
+void SelectSceneParticle::Editor()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("select scene particle");

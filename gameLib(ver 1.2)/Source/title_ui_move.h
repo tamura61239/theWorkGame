@@ -5,15 +5,17 @@
 class TitleUIMove
 {
 public:
+	//コンストラクタ
 	TitleUIMove(const int UICount);
+	//更新
 	void Update(float elapsdTime, std::vector<std::shared_ptr<UI>>uis);
+	//リセット
 	void ResetTimer() 
 	{ 
 		mTimer = 0; 
 		mMoveChangeFlag = false;
 	}
-	void Load();
-	void Save();
+	//エディタのデータ
 	struct TitleUIMoveData
 	{
 		float startTime;
@@ -21,9 +23,14 @@ public:
 		float alphaAmount;
 		float endAlpha;
 	};
+	//getter
 	const bool GetMoveChangeFlag() { return mMoveChangeFlag; }
+	std::vector<TitleUIMoveData>GetTitleUIMove() { return mDatas; }
+	//setter
 	void SetMoveChangeFlag(const bool flag) { mMoveChangeFlag = flag; }
-	void TextMove(std::vector<std::shared_ptr<UI>>uis)
+	void SetTitleUIMove(std::vector<TitleUIMoveData>datas) { mDatas = datas; }
+	//テストプレイ開始
+	void TestPlay(std::vector<std::shared_ptr<UI>>uis)
 	{
 		mTimer = 0;
 		mMoveChangeFlag = false;
@@ -35,10 +42,10 @@ public:
 			uis[i]->SetUIData(uiData);
 		}
 	}
-	std::vector<TitleUIMoveData>GetTitleUIMove() { return mDatas; }
-	void SetTitleUIMove(std::vector<TitleUIMoveData>datas) { mDatas = datas; }
 private:
+	//データ
 	std::vector<TitleUIMoveData>mDatas;
+	//時間
 	float mTimer;
 	bool mMoveChangeFlag;
 };

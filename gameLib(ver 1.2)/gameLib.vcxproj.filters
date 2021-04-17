@@ -222,9 +222,6 @@
     <ClCompile Include="Source\collision.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\hit_area_drow.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="Source\stage_manager.cpp">
       <Filter>ソース ファイル\Stage</Filter>
     </ClCompile>
@@ -232,9 +229,6 @@
       <Filter>ソース ファイル\Stage</Filter>
     </ClCompile>
     <ClCompile Include="Source\stage_operation.cpp">
-      <Filter>ソース ファイル\Stage</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\stage_obj_drag_operation.cpp">
       <Filter>ソース ファイル\Stage</Filter>
     </ClCompile>
     <ClCompile Include="Source\gpu_particle_manager.cpp">
@@ -251,9 +245,6 @@
     </ClCompile>
     <ClCompile Include="Source\drow_shader.cpp">
       <Filter>gameLib\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\depth_of_field.cpp">
-      <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\title_particle.cpp">
       <Filter>ソース ファイル\GPU</Filter>
@@ -491,13 +482,7 @@
     <ClInclude Include="Source\collision.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\hit_area_drow.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="Source\stage_operation.h">
-      <Filter>ヘッダー ファイル\Stage</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\stage_obj_drag_operation.h">
       <Filter>ヘッダー ファイル\Stage</Filter>
     </ClInclude>
     <ClInclude Include="Source\stage_obj.h">
@@ -520,9 +505,6 @@
     </ClInclude>
     <ClInclude Include="Source\drow_shader.h">
       <Filter>gameLib\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\depth_of_field.h">
-      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\title_particle.h">
       <Filter>ヘッダー ファイル\GPU</Filter>

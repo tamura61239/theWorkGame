@@ -6,6 +6,7 @@ template <class T>
 class Singleton
 {
 public:
+	//生成
 	static void Create()
 	{
 		if (!ref())
@@ -13,10 +14,12 @@ public:
 			ref() = std::make_unique<T>();
 		}
 	}
+	//消去
 	static void Destroy()
 	{
 		if(ref())ref().reset();
 	}
+	//インスタンス
 	static const std::unique_ptr<T>& GetInctance()
 	{
 		return ref();

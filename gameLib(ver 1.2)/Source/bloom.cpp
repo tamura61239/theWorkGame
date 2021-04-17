@@ -55,7 +55,7 @@ BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHi
 
 }
 /*****************imguiでブルームのパラメーターを調整********************/
-void BloomRender::ImGuiUpdate()
+void BloomRender::Editor()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("bloom");

@@ -134,7 +134,7 @@ std::string to_string(std::wstring wstr)
 {
 	return strconverter.to_bytes(wstr);
 }
-void TitleTextureParticle::ImGuiUpdate()
+void TitleTextureParticle::Editor()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("title texture particle");
