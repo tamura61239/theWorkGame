@@ -4,7 +4,10 @@
 #include"key_board.h"
 #include"camera_manager.h"
 
-//コンストラクタ
+/*****************************************************/
+//　　　　　　　　　　初期化関数
+/*****************************************************/
+/*****************************コンストラクタ*************************/
 StageEditor::StageEditor(ID3D11Device* device, int width, int height)
 	:mMousePosition(0, 0), mWorldFarPosition(0, 0, 0), mWorldNearPosition(0, 0, 0)
 	, mWidth(width), mHeight(height), mSidoViewRenderPosition(1344, 756), mSidoViewRenderSize(576, 324), mEditorFlag(false)
@@ -17,7 +20,7 @@ StageEditor::StageEditor(ID3D11Device* device, int width, int height)
 	mObj = std::make_unique<Obj3D>();
 	ClearCreateData();
 }
-//オブジェクトの生成で使うパラメーターの初期化
+/***************オブジェクトの生成で使うパラメーターの初期化********************/
 void StageEditor::ClearCreateData()
 {
 	mCreateData.mAngle = VECTOR3F(0, 0, 0);
@@ -31,7 +34,9 @@ void StageEditor::ClearCreateData()
 	mCreateFlag = false;
 
 }
-/**********************エディタ関数*************************/
+/*****************************************************/
+//　　　　　　　　　　エディタ関数
+/*****************************************************/
 
 int StageEditor::Editor(std::vector<std::shared_ptr<StageObj>>objs)
 {
@@ -170,7 +175,7 @@ int StageEditor::Editor(std::vector<std::shared_ptr<StageObj>>objs)
 
 	return -1;
 }
-//マウス座標取得関数
+/**********************マウス座標取得********************/
 void StageEditor::MousePosition()
 {
 	POINT cursor;
@@ -181,7 +186,7 @@ void StageEditor::MousePosition()
 	mMousePosition.x += 10;
 	mMousePosition.y += 10;
 }
-//スクリーン座標→ワールド座標への変換関数
+/*******************スクリーン座標→ワールド座標への変換********************/
 void StageEditor::ScreeenToWorld(VECTOR3F* worldPosition, const VECTOR3F& screenPosition, Camera* camera)
 {
 	float viewportX = 0.0f;
@@ -209,7 +214,7 @@ void StageEditor::ScreeenToWorld(VECTOR3F* worldPosition, const VECTOR3F& screen
 	DirectX::XMStoreFloat3(worldPosition, WPos);
 
 }
-//マウスがワールド空間のどこを指しているかを計算する関数
+/**************************マウスがワールド空間のどこを指しているかを計算する****************************/
 void StageEditor::MouseToWorld(Camera* camera, const VECTOR2F& mousePosition)
 {
 	VECTOR3F positionNear = VECTOR3F(static_cast<float>(mousePosition.x), static_cast<float>(mousePosition.y), 0);
@@ -218,7 +223,7 @@ void StageEditor::MouseToWorld(Camera* camera, const VECTOR2F& mousePosition)
 	ScreeenToWorld(&mWorldNearPosition, positionNear, camera);
 	ScreeenToWorld(&mWorldFarPosition, positionFar, camera);
 }
-//サイドカメラ行列計算関数
+/*******************************サイドカメラ行列計算****************************/
 void StageEditor::SetSidoCamera(std::vector<std::shared_ptr<StageObj>>objs)
 {
 	float minZ = 0, maxZ = 0;
@@ -264,7 +269,7 @@ void StageEditor::SetSidoCamera(std::vector<std::shared_ptr<StageObj>>objs)
 	//行列計算
 	mSidoCamera->CalculateMatrix();
 }
-//クリックしたオブジェクトを調べる関数
+/*******************************クリックしたオブジェクトを調べる*************************/
 void StageEditor::SearchStageObj(std::vector<std::shared_ptr<StageObj>>objs)
 {
 	if (mDragObjNo == -1)
@@ -274,7 +279,7 @@ void StageEditor::SearchStageObj(std::vector<std::shared_ptr<StageObj>>objs)
 
 	}
 }
-//マウスがミニマップに当たってるかどうかを調べる関数
+/*****************************マウスがミニマップに当たってるかどうかを調べる*************************/
 bool StageEditor::MouseJudg()
 {
 	if (mMousePosition.x > mSidoViewRenderPosition.x && mMousePosition.x < mSidoViewRenderPosition.x + mSidoViewRenderSize.x)
@@ -286,7 +291,7 @@ bool StageEditor::MouseJudg()
 	}
 	return false;
 }
-//どのオブジェクトをクリックしているかを調べる関数
+/*****************************どのオブジェクトをクリックしているかを調べる*************************/
 int StageEditor::NewDragObj(std::vector<std::shared_ptr<StageObj>>objs)
 {
 	float length = FLT_MAX;
@@ -310,7 +315,7 @@ int StageEditor::NewDragObj(std::vector<std::shared_ptr<StageObj>>objs)
 	//オブジェクト番号を返す
 	return objNo;
 }
-//クリックしたミニマップから新しい座標を算出する関数
+/*****************************クリックしたミニマップから新しい座標を算出する*************************/
 void StageEditor::NewCameraPosition()
 {
 	if (pCameraManager->GetCameraOperation()->GetStageEditorCamera()->GetMoveFlag())return;
@@ -330,15 +335,17 @@ void StageEditor::NewCameraPosition()
 
 
 }
-/*****************描画*********************/
+/*****************************************************/
+//　　　　　　　　　　描画関数
+/*****************************************************/
 
-//サイドシーンの描画
+/******************サイドシーンの描画********************/
 void StageEditor::SidoViewRender(ID3D11DeviceContext* context)
 {
 	if (!mEditorFlag)return;
 	mSprite->Render(context, mStageSidoView->GetRenderTargetShaderResourceView().Get(), mSidoViewRenderPosition, mSidoViewRenderSize, VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 }
-
+/**********************エディタで生成するオブジェクトのお試し描画*************************/
 void StageEditor::EditorCreateObjImageRender(ID3D11DeviceContext* context, StaticMesh* mesh, MeshRender* render, VECTOR4F color)
 {
 	if (mEditorState != 2)return;

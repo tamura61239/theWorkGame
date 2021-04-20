@@ -1,6 +1,8 @@
 #include "stage_borad.h"
 
-//テキストの生成関数
+/*****************************************************/
+//　　　　　　　　　　生成関数
+/*****************************************************/
 void StageBorad::CreateText(std::shared_ptr<TextureData> textureData, std::shared_ptr<LocalData> localData, const VECTOR2F& uv, const VECTOR4F& color)
 {
 	mTexts.push_back(std::make_shared<SelectText>());
@@ -10,7 +12,9 @@ void StageBorad::CreateText(std::shared_ptr<TextureData> textureData, std::share
 	mTexts.back()->SetColor(color);
 }
 
-/**********************更新関数******************************/
+/*****************************************************/
+//　　　　　　　　　　更新関数
+/*****************************************************/
 void StageBorad::Update(int changeSelect, float timer, int nowStageNo, const VECTOR2F& centerPosition)
 {
 	//ボードのステージ番号
@@ -57,7 +61,9 @@ void StageBorad::Update(int changeSelect, float timer, int nowStageNo, const VEC
 
 	}
 }
-/********************描画関数***************************/
+/*****************************************************/
+//　　　　　　　　　　描画関数
+/*****************************************************/
 void StageBorad::Render(ID3D11DeviceContext* context, Sprite* sprite)
 {
 	for (auto& text : mTexts)

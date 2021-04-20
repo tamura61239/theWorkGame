@@ -6,7 +6,9 @@
 #include"hit_area_render.h"
 #include"file_function.h"
 int StageManager::mMaxStage = 0;
-//コンストラクタ
+/*****************************************************/
+//　　　　　　　　　　初期化関数(コンストラクタ)
+/*****************************************************/
 StageManager::StageManager(ID3D11Device* device, int width, int height) :mStageNo(3), mWidth(static_cast<float>(width)), mHeight(static_cast<float>(height)), dragObjNumber(-1)
 {
 	//ステージにあるオブジェクトを種類ごとに生成
@@ -35,7 +37,7 @@ StageManager::StageManager(ID3D11Device* device, int width, int height) :mStageN
 	//ステージエディタの生成
 	mEditor = std::make_unique<StageEditor>(device, 1920, 1080);
 }
-//ステージの最大数を調べる
+/***********************ステージの最大数を調べる*******************/
 void StageManager::StageCount()
 {
 	FILE* fp;
@@ -56,8 +58,10 @@ void StageManager::StageCount()
 	}
 
 }
-/*********************ファイル操作*************************/
-//ロード
+/*****************************************************/
+//　　　　　　　　　　ファイル操作関数
+/*****************************************************/
+/****************************ロード**************************/
 void StageManager::Load()
 {
 	FILE* fp;
@@ -73,7 +77,7 @@ void StageManager::Load()
 	}
 
 }
-//セーブ
+/******************************セーブ**************************/
 void StageManager::Save()
 {
 	FILE* fp;
@@ -86,7 +90,9 @@ void StageManager::Save()
 	}
 	FileFunction::SaveArray(&data[0], data.size(), fileName.c_str(), "wb");
 }
-/*******************エディター関数**********************/
+/*****************************************************/
+//　　　　　　　　　　エディタ関数
+/*****************************************************/
 void StageManager::Editor()
 {
 #ifdef USE_IMGUI
@@ -121,7 +127,9 @@ void StageManager::Editor()
 	}
 #endif
 }
-/******************更新関数**********************/
+/*****************************************************/
+//　　　　　　　　　　更新関数
+/*****************************************************/
 void StageManager::Update(float elapsd_time)
 {
 	//ステージオブジェクトの当たり判定を当たり判定を描画するクラスに渡す
@@ -142,7 +150,10 @@ void StageManager::Update(float elapsd_time)
 		}
 	}
 }
-/***************描画関数******************/
+/*****************************************************/
+//　　　　　　　　　　描画関数
+/*****************************************************/
+/*************************通常描画****************************/
 void StageManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const int stageState, DrowShader* srv)
 {
 	VECTOR4F color[2];
@@ -200,7 +211,7 @@ void StageManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, co
 
 	}
 }
-//速度マップの描画
+/***************************速度マップの描画*********************************/
 void StageManager::RenderVelocity(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const int stageState)
 {
 	mRender->VelocityBegin(context, view, projection);
@@ -213,7 +224,7 @@ void StageManager::RenderVelocity(ID3D11DeviceContext* context, const FLOAT4X4& 
 	mRender->VelocityEnd(context);
 
 }
-//シャドウマップの描画
+/*****************************シャドウマップの描画*******************************/
 void StageManager::RenderShadow(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection)
 {
 
@@ -227,7 +238,7 @@ void StageManager::RenderShadow(ID3D11DeviceContext* context, const FLOAT4X4& vi
 	mRender->ShadowEnd(context);
 
 }
-//横から見た時の描画
+/****************************ミニマップの描画************************************/
 void StageManager::SidoViewRender(ID3D11DeviceContext* context)
 {
 	if (!mEditor->GetEditorFlag())return;

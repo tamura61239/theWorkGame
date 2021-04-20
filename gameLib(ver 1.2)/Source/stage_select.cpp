@@ -7,7 +7,9 @@
 #include"imgui.h"
 #endif
 
-//コンストラクタ
+/*****************************************************/
+//　　　　　　　　　　初期化関数(コンストラクタ)
+/*****************************************************/
 StageSelect::StageSelect(ID3D11Device* device, const int maxCount) :mSelectSceneFlag(true), mSelectNumber(0)/*,mMaxStage(4), mTextColor(1,1,1,1)*/, mStageBoardCreateFlag(false), mChangeSelect(0),mMoveTimer(1)
 {
 	HRESULT hr;
@@ -72,7 +74,9 @@ StageSelect::StageSelect(ID3D11Device* device, const int maxCount) :mSelectScene
 	}
 }
 
-/***********************エディタ関数************************/
+/*****************************************************/
+//　　　　　　　　　　エディタ関数
+/*****************************************************/
 void StageSelect::Editor()
 {
 #ifdef USE_IMGUI
@@ -121,7 +125,9 @@ void StageSelect::Editor()
 	ImGui::End();
 #endif
 }
-/*********************更新関数**********************/
+/*****************************************************/
+//　　　　　　　　　　更新関数
+/*****************************************************/
 bool StageSelect::Update(float elapsdTime)
 {
 	//ステージ選択が可能かどうか
@@ -183,7 +189,9 @@ void StageSelect::Select()
 	}
 }
 
-/**********************描画関数*************************/
+/*****************************************************/
+//　　　　　　　　　　描画関数
+/*****************************************************/
 void StageSelect::Render(ID3D11DeviceContext* context)
 {
 	for (auto& stageBoard : mStageBoards)
@@ -191,7 +199,10 @@ void StageSelect::Render(ID3D11DeviceContext* context)
 		stageBoard->Render(context, mDrow.get());
 	}
 }
-/********************ファイル操作********************/
+/*****************************************************/
+//　　　　　　　　　　ファイル操作
+/*****************************************************/
+/****************************ロード*************************/
 void StageSelect::Load()
 {
 	FILE* fp;
@@ -221,6 +232,7 @@ void StageSelect::Load()
 		fclose(fp);
 	}
 }
+/****************************セーブ*************************/
 
 void StageSelect::Save()
 {

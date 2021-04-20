@@ -1,6 +1,8 @@
 #include "select_text.h"
 
-/********************描画関数*********************/
+/*****************************************************/
+//　　　　　　　　　　描画関数
+/*****************************************************/
 void SelectText::Render(ID3D11DeviceContext* context, Sprite* sprite, const VECTOR2F& position, const VECTOR2F& scale, const VECTOR2F& size, const VECTOR4F& color)
 {
 	//データがあるかどうか

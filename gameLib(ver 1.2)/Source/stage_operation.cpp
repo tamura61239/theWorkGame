@@ -4,7 +4,9 @@
 #include<imgui.h>
 #endif
 #include"key_board.h"
-//コンストラクタ
+/*****************************************************/
+//　　　　　　　　　　初期化関数(コンストラクタ)
+/*****************************************************/
 StageOperation::StageOperation() :mChangFlag(true), mColorType(0)
 {
 	mColor[0] = VECTOR4F(1, 0, 0, 1);
@@ -12,7 +14,9 @@ StageOperation::StageOperation() :mChangFlag(true), mColorType(0)
 
 	FileFunction::LoadArray(&mColor[0], "Data/file/stageColor.txt", "r");
 }
-/*****************エディタ関数********************/
+/*****************************************************/
+//　　　　　　　　　　エディタ関数
+/*****************************************************/
 void StageOperation::Editor()
 {
 #ifdef USE_IMGUI
@@ -31,7 +35,10 @@ void StageOperation::Editor()
 	ImGui::End();
 #endif
 }
-/********************更新関数***********************/
+/*****************************************************/
+//　　　　　　　　　　更新関数
+/*****************************************************/
+/**************************キーを押したかどうかの更新***************************/
 void StageOperation::Update(float elapsd_time, StageManager* manager, const bool playFlag)
 {
 	if (!playFlag)
@@ -48,7 +55,7 @@ void StageOperation::Update(float elapsd_time, StageManager* manager, const bool
 	}
 	SetStageColor(manager);
 }
-//オブジェクトに色を設定する
+/*************************オブジェクトに色を設定する*************************/
 void StageOperation::SetStageColor(StageManager* manager)
 {
 	for (auto& stage : manager->GetStages())
