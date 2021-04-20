@@ -7,7 +7,9 @@
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
-//コンストラクタ
+/*****************************************************/
+//　　　　　　　　　　初期化関数(コンストラクタ)
+/*****************************************************/
 PlayerAI::PlayerAI(ID3D11Device* device, const char* fileName) :mPlayFlag(false), mGravity(0)
 {
 	//playerオブジェクトの生成
@@ -25,7 +27,9 @@ PlayerAI::PlayerAI(ID3D11Device* device, const char* fileName) :mPlayFlag(false)
 	mCharacter->SetMaxSpeed(mParameter.maxSpeed);
 }
 
-/***********************エディター関数(ImGuiを使ってパラメーターを調整する)*******************/
+/*****************************************************/
+//　　　　　　　　　　エディタ関数
+/*****************************************************/
 void PlayerAI::Editor()
 {
 #ifdef USE_IMGUI
@@ -83,7 +87,11 @@ void PlayerAI::Editor()
 #endif
 }
 
-/*************************更新関数*************************/
+/*****************************************************/
+//　　　　　　　　　　更新関数
+/*****************************************************/
+/********************playerの更新******************/
+
 void PlayerAI::Update(float elapsd_time, StageManager* manager, StageOperation* operation)
 {
 	if (mPlayFlag)
@@ -121,7 +129,7 @@ void PlayerAI::Update(float elapsd_time, StageManager* manager, StageOperation* 
 	//アニメーションの更新
 	mCharacter->AnimUpdate(elapsd_time);
 }
-//playerを動かす関数
+/********************playerを動かす******************/
 void PlayerAI::Move(float elapsd_time)
 {
 	//速度、加速度の取得

@@ -1,13 +1,18 @@
 #include "player_character.h"
 
-//コンストラクタ
+/*****************************************************/
+//　　　　　　　　　　初期化関数(コンストラクタ)
+/*****************************************************/
 PlayerCharacter::PlayerCharacter(std::shared_ptr<ModelResource> resouce):Character(resouce),mVelocity(0,0,0),mAccel(0,0,0),mExist(true)
 ,mMoveState(MOVESTATE::LANDING),mChangState(false), mMaxSpeed(0),mMinSpeed(0),mGroundFlag(false), mGorlFlag(false), mAnimSpeed(0.f), mAnimNo(-1)
 {
 	mModel->PlayAnimation(0, true);
 }
+/*****************************************************/
+//　　　　　　　　　　更新関数
+/*****************************************************/
 
-/********************移動関数**************************/
+/********************移動**************************/
 void PlayerCharacter::Move(float elapsd_time)
 {
 	//前のフレームの座標を取得
@@ -28,7 +33,7 @@ void PlayerCharacter::Move(float elapsd_time)
 	//座標を更新
 	mPosition += mVelocity * elapsd_time * s;
 }
-/********************アニメーション更新関数***********************/
+/********************アニメーション更新***********************/
 void PlayerCharacter::AnimUpdate(float elapsdTime)
 {
 	//playerの状態が変化したかどうか
