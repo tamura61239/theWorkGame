@@ -2,8 +2,10 @@
 #include"collision.h"
 #include"camera_manager.h"
 #include"hit_area_render.h"
-//プレイヤーとステージとの当たり判定関数
-
+/*****************************************************/
+//　　　　　　　　　　当たり判定関数
+/*****************************************************/
+/**************************playerとステージの当たり判定**************************/
 void Judgment::Judge(PlayerCharacter* player, StageManager* manager)
 {
 	//プレイヤーのパラメーターを取得

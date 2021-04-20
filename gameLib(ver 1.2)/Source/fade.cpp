@@ -5,7 +5,10 @@
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
-//ファイルロード関数
+/*****************************************************/
+//　　　　　　　　　　ファイル操作
+/*****************************************************/
+/*************************ロード***************************/
 void Fade::StartLoad()
 {
 	for (int i = 0; i < static_cast<int>(FADE_SCENE::MAX); i++)
@@ -21,7 +24,9 @@ void Fade::StartLoad()
 		mFadeDatas[i].mEndFlag = false;
 	}
 }
-//コンストラクタ
+/*****************************************************/
+//　　　　　　　　　　初期化関数(コンストラクタ)
+/*****************************************************/
 Fade::Fade(ID3D11Device* device, FADE_SCENE scene)
 	:mTestFlag(false), mState(FADE_MODO::NONE), mEditorScene(static_cast<int>(scene))
 {
@@ -30,14 +35,16 @@ Fade::Fade(ID3D11Device* device, FADE_SCENE scene)
 	mSprite = std::make_unique<Sprite>(device, L"Data/image/siro.png");
 	LoadTextureFromFile(device, L"Data/image/siro.png", mSRV.GetAddressOf());
 }
-//どのシーンかを設定
+/*************************どのシーンかを設定***************************/
 void Fade::SetFadeScene(FADE_SCENE scene)
 {
 	mEditorScene = static_cast<int>(scene);
 	mNowFadeData = mFadeDatas[mEditorScene];
 }
 
-/****************エディタ関数*******************/
+/*****************************************************/
+//　　　　　　　　　　エディタ関数
+/*****************************************************/
 void Fade::Editor()
 {
 #ifdef USE_IMGUI
@@ -98,53 +105,41 @@ void Fade::Editor()
 	}
 #endif
 }
-
+/*****************************************************/
+//　　　　　　　　　　更新関数
+/*****************************************************/
+/**************************シーンの更新**************************/
 void Fade::Update(float elapsdTime)
 {
 	if (mTestFlag)
-	{
+	{//テストプレイ中
 		Move(elapsdTime, &mCheckFadeData);
 	}
 	else
-	{
+	{//そうでない時
 		Move(elapsdTime, &mNowFadeData);
 	}
 }
-
-void Fade::Render(ID3D11DeviceContext* context)
-{
-	
-	D3D11_VIEWPORT viewport;
-	UINT num_viewports = 1;
-	context->RSGetViewports(&num_viewports, &viewport);
-	if (mTestFlag)
-	{
-		mSprite->Render(context, mSRV.Get(), VECTOR2F(0, 0), VECTOR2F(1920,1080), VECTOR2F(0, 0), VECTOR2F(1024, 1024), 0, mCheckFadeData.mData.mColor);
-	}
-	else if(mState!=FADE_MODO::NONE)
-	{
-		mSprite->Render(context, mSRV.Get(),VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1024, 1024), 0, mNowFadeData.mData.mColor);
-	}
-}
-
-
+/***********************フェード中のアルファー値の更新************************/
 void Fade::Move(float elapsdTime, FadeScene* scene)
 {
 	switch (mState)
 	{
 	case FADE_MODO::NONE:
 		break;
-	case FADE_MODO::FADEIN:
+	case FADE_MODO::FADEIN://フェートイン中
+		//アルファー値を減らしていく
 		scene->mData.mColor.w -= elapsdTime * (1 / scene->mData.mInEndTime);
 		if (scene->mData.mColor.w <= 0)
-		{
+		{//0以下になったら終了
 			scene->mEndFlag = true;
 		}
 		break;
-	case FADE_MODO::FADEOUT:
+	case FADE_MODO::FADEOUT://フェードアウト中
+		//アルファー値を増やしていく
 		scene->mData.mColor.w += elapsdTime * (1 / scene->mData.mOutEndTime);
 		if (scene->mData.mColor.w >= 1)
-		{
+		{//1以上になったら終了
 			scene->mEndFlag = true;
 		}
 		break;
@@ -152,3 +147,25 @@ void Fade::Move(float elapsdTime, FadeScene* scene)
 	}
 
 }
+
+/*****************************************************/
+//　　　　　　　　　　描画関数
+/*****************************************************/
+
+void Fade::Render(ID3D11DeviceContext* context)
+{
+	//viewport取得
+	D3D11_VIEWPORT viewport;
+	UINT num_viewports = 1;
+	context->RSGetViewports(&num_viewports, &viewport);
+	if (mTestFlag)
+	{//テストプレイ中
+		mSprite->Render(context, mSRV.Get(), VECTOR2F(0, 0), VECTOR2F(1920,1080), VECTOR2F(0, 0), VECTOR2F(1024, 1024), 0, mCheckFadeData.mData.mColor);
+	}
+	else if(mState!=FADE_MODO::NONE)
+	{//フェード中
+		mSprite->Render(context, mSRV.Get(),VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1024, 1024), 0, mNowFadeData.mData.mColor);
+	}
+}
+
+
