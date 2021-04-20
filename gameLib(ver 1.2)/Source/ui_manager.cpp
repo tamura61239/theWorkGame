@@ -7,7 +7,10 @@
 #ifdef USE_IMGUI
 #include"imgui.h"
 #endif
-/*****************************初期化関数***********************************/
+/*****************************************************/
+//　　　　　　　　　　初期化関数
+/*****************************************************/
+/**************************タイトルシーンのUIの初期化***************************/
 void UIManager::TitleInitialize(ID3D11Device* device)
 {
 	//枠の生成
@@ -45,6 +48,7 @@ void UIManager::TitleInitialize(ID3D11Device* device)
 	mUIMaxCount = mUIs.size();
 
 }
+/**************************ゲームシーンのUIの初期化***************************/
 
 void UIManager::GameInitialize(ID3D11Device* device)
 {
@@ -73,6 +77,7 @@ void UIManager::GameInitialize(ID3D11Device* device)
 	mUIMaxCount = mUIs.size();
 
 }
+/**************************リザルトシーンのUIの初期化***************************/
 
 void UIManager::ResultInitialize(ID3D11Device* device)
 {
@@ -100,7 +105,10 @@ void UIManager::ResultInitialize(ID3D11Device* device)
 	}
 
 }
-//クリア関数
+/*****************************************************/
+//　　　　　　　　　　解放関数
+/*****************************************************/
+/***************************全部の解放**************************/
 void UIManager::Clear()
 {
 	mUIs.clear();
@@ -109,13 +117,17 @@ void UIManager::Clear()
 	mGameMove.reset(nullptr);
 	mResultMove.reset(nullptr);
 }
+/***************************UIのみの解放**************************/
+
 void UIManager::ClearUI()
 {
 	mUIs.clear();
 	mNames.clear();
 	mUIMaxCount = 0;
 }
-/*******************エディタ関数******************/
+/*****************************************************/
+//　　　　　　　　　　エディタ関数
+/*****************************************************/
 void UIManager::Editor()
 {
 #ifdef USE_IMGUI
@@ -241,7 +253,9 @@ void UIManager::Editor()
 	ImGui::End();
 #endif
 }
-/*******************更新関数*********************/
+/*****************************************************/
+//　　　　　　　　　　更新関数
+/*****************************************************/
 void UIManager::Update(float elapsdTime)
 {
 
@@ -258,7 +272,9 @@ void UIManager::Update(float elapsdTime)
 		mResultMove->Update(elapsdTime, mUIs, mUIMaxCount);
 	}
 }
-/********************描画関数***********************/
+/*****************************************************/
+//　　　　　　　　　　描画関数
+/*****************************************************/
 void UIManager::Render(ID3D11DeviceContext* context)
 {
 	for (int i=0;i< mUIMaxCount;i++)
@@ -276,7 +292,10 @@ void UIManager::Render(ID3D11DeviceContext* context)
 #endif
 	}
 }
-//ロード
+/*****************************************************/
+//　　　　　　　　　　ファイル操作関数
+/*****************************************************/
+/***************************ロード**************************/
 void UIManager::Load(const char* scene)
 {
 	FILE* fp;
@@ -292,7 +311,7 @@ void UIManager::Load(const char* scene)
 		mUIs[i]->SetUIData(datas[i]);
 	}
 }
-//セーブ
+/*********************セーブ**********************/
 void UIManager::Save(const char* scene)
 {
 	FILE* fp;

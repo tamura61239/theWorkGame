@@ -1,13 +1,17 @@
 #include "title_ui_move.h"
 #include"file_function.h"
-//コンストラクタ
+/*****************************************************/
+//　　　　　　　　　　初期化関数(コンストラクタ)
+/*****************************************************/
 TitleUIMove::TitleUIMove(const int UICount):mMoveChangeFlag(false)
 {
 	mDatas.resize(UICount);
 	FileFunction::LoadArray(&mDatas[0], "Data/file/titleUIMove.bin", "rb");
 
 }
-/****************************更新関数*****************************/
+/*****************************************************/
+//　　　　　　　　　　更新関数
+/*****************************************************/
 void TitleUIMove::Update(float elapsdTime, std::vector<std::shared_ptr<UI>> uis)
 {
 	//シーンを切り替える処理に入ったかどうか

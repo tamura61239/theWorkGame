@@ -1,11 +1,16 @@
 #include "game_ui_move.h"
 #include"file_function.h"
-//コンストラクタ
+/*****************************************************/
+//　　　　　　　　　　初期化関数(コンストラクタ)
+/*****************************************************/
 GameUiMove::GameUiMove() :mStartFlag(false), mState(0), mTime(0), mCount(0), mGameUIData(), mTestFlag(false)
 {
 	FileFunction::Load(mGameUIData, "Data/file/gameUIData.bin", "rb");
 }
-/********************更新関数*********************/
+/*****************************************************/
+//　　　　　　　　　　更新関数
+/*****************************************************/
+/************************シーンの更新*****************************/
 void GameUiMove::Update(float elapsdTime, std::vector<std::shared_ptr<UI>>uis)
 {
 	//ゲーム開始かテスト開始がONになっているか調べる
@@ -35,7 +40,7 @@ void GameUiMove::Update(float elapsdTime, std::vector<std::shared_ptr<UI>>uis)
 		}
 	}
 }
-//UIのUV値を設定する
+/********************UIのUV値を設定する**********************/
 void GameUiMove::SetUI(std::vector<std::shared_ptr<UI>> uis)
 {
 	for (auto& ui : uis)
@@ -79,7 +84,7 @@ void GameUiMove::SetUI(std::vector<std::shared_ptr<UI>> uis)
 	}
 }
 
-//カウント時の動き
+/********************カウント時の動き************************/
 void GameUiMove::CountMove(float elapsdTime, std::shared_ptr<UI> ui)
 {
 	if (!ui->GetName()._Equal("count"))return;
@@ -89,7 +94,7 @@ void GameUiMove::CountMove(float elapsdTime, std::shared_ptr<UI> ui)
 	if (mCount <= 0)data.mColor.w = 0;
 	ui->SetUIData(data);
 }
-//時間の動き
+/***********************時間の動き**************************/
 void GameUiMove::TimeMove(float elapsdTime, std::shared_ptr<UI> ui)
 {
 	if (ui->GetName()._Equal("count"))return;

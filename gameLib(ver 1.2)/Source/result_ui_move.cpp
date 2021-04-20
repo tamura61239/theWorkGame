@@ -2,14 +2,18 @@
 #include"key_board.h"
 #include"file_function.h"
 
-//コンストラクタ
+/*****************************************************/
+//　　　　　　　　　　初期化関数(コンストラクタ)
+/*****************************************************/
 ResultUIMove::ResultUIMove() :mMoveFlag(false), mType(0), mDecisionFlag(false)
 {
 	mData.frameAlpth = 0.2f;
 	mData.alpthDifference = 0.65f;
 	FileFunction::Load(mData, "Data/file/resultUIData.bin", "rb");
 }
-/**********************更新関数***************************/
+/*****************************************************/
+//　　　　　　　　　　更新関数
+/*****************************************************/
 void ResultUIMove::Update(float elapsdTime, std::vector<std::shared_ptr<UI>> uis, size_t uiCount)
 {
 	//動かせない時
