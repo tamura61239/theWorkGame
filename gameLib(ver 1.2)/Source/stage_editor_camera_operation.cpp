@@ -5,7 +5,9 @@
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
-//コンストラクタ
+/*****************************************************/
+//　　　　　　　　　　初期化関数(コンストラクタ)
+/*****************************************************/
 StageEditorCameraOperation::StageEditorCameraOperation(Camera* camera)
 	:mNewPosition(camera->GetFocus()), mMoveFlag(false)
 {
@@ -13,7 +15,9 @@ StageEditorCameraOperation::StageEditorCameraOperation(Camera* camera)
 	mData.mAngleY = DirectX::XMConvertToRadians(90);
 	mData.r = 100;
 }
-/********************エディタ関数************************/
+/*****************************************************/
+//　　　　　　　　　　エディタ関数
+/*****************************************************/
 void StageEditorCameraOperation::Editor(Camera* camera)
 {
 #ifdef USE_IMGUI
@@ -29,7 +33,9 @@ void StageEditorCameraOperation::Editor(Camera* camera)
 	camera->SetFocus(focus);
 #endif
 }
-/************************更新関数**************************/
+/*****************************************************/
+//　　　　　　　　　　更新関数
+/*****************************************************/
 void StageEditorCameraOperation::Update(Camera* camera,float elapsedTime)
 {
 	//カメラからパラメーターを取得

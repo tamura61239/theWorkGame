@@ -5,7 +5,9 @@
 #include <imgui.h>
 #endif
 
-//コンストラクタ
+/*****************************************************/
+//　　　　　　　　　　初期化関数(コンストラクタ)
+/*****************************************************/
 CameraOperation::CameraOperation(Camera* camera, int scene) :mType(CAMERA_TYPE::NORMAL), mScene(scene)
 {
 	VECTOR3F focusF = camera->GetFocus();
@@ -24,7 +26,9 @@ CameraOperation::CameraOperation(Camera* camera, int scene) :mType(CAMERA_TYPE::
 		break;
 	}
 }
-/************************エディタ関数*****************************/
+/*****************************************************/
+//　　　　　　　　　　エディタ関数
+/*****************************************************/
 void CameraOperation::Editor(Camera* camera)
 {
 #ifdef USE_IMGUI
@@ -82,7 +86,9 @@ void CameraOperation::Editor(Camera* camera)
 #endif
 
 }
-/****************************更新関数******************************/
+/*****************************************************/
+//　　　　　　　　　　更新関数
+/*****************************************************/
 void CameraOperation::Update(Camera* camera,float elapsedTime)
 {
 

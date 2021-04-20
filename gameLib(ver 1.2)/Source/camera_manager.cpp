@@ -8,7 +8,9 @@
 #include <imgui_internal.h>
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wparam, LPARAM lparam);
 #endif
-/*************************初期化関数****************************/
+/*****************************************************/
+//　　　　　　　　　　初期化関数
+/*****************************************************/
 void CameraManager::Initialize(ID3D11Device* device,const int scene)
 {
 	//カメラクラスの生成
@@ -18,7 +20,9 @@ void CameraManager::Initialize(ID3D11Device* device,const int scene)
 	//カメラにprojection行列に必要なパラメーターを設定する
 	mCamera->SetPerspective(defaultFov, defaultAspect, defaultNearZ, defaultFarZ);
 }
-/****************************更新関数******************************/
+/*****************************************************/
+//　　　　　　　　　　更新関数
+/*****************************************************/
 void CameraManager::Update(float elapsed_time)
 {
 	//カメラ操作クラスの更新
@@ -26,13 +30,17 @@ void CameraManager::Update(float elapsed_time)
 	//カメラクラスの更新
 	mCamera->CalculateMatrix();
 }
-/************************エディタ関数*****************************/
+/*****************************************************/
+//　　　　　　　　　　エディタ関数
+/*****************************************************/
 void CameraManager::Editor()
 {
 	//カメラ操作クラスのエディタ関数を呼ぶ
 	mCameraOperation->Editor(mCamera.get());
 }
-/*************************解放関数***********************/
+/*****************************************************/
+//　　　　　　　　　　解放関数
+/*****************************************************/
 void CameraManager::DestroyCamera()
 {
 	mCameraOperation.reset();

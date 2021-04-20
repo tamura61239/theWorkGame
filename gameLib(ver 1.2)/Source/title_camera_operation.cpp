@@ -3,7 +3,9 @@
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
-//コンストラクタ
+/*****************************************************/
+//　　　　　　　　　　初期化関数(コンストラクタ)
+/*****************************************************/
 TitleCameraOperation::TitleCameraOperation(Camera* camera)
 	: mTitleSceneChangeFlag(false), mTime(0), mEndTitleFlag(false), mLerpMovement(0)
 {
@@ -13,7 +15,9 @@ TitleCameraOperation::TitleCameraOperation(Camera* camera)
 	mTitleData.endPosition = VECTOR3F(0, 0, 100);
 	FileFunction::Load(mTitleData, "Data/file/Title_camera.bin", "rb");
 }
-/*****************************エディタ関数******************************/
+/*****************************************************/
+//　　　　　　　　　　エディタ関数
+/*****************************************************/
 void TitleCameraOperation::Editor(Camera* camera)
 {
 #ifdef USE_IMGUI
@@ -36,7 +40,9 @@ void TitleCameraOperation::Editor(Camera* camera)
 	ImGui::End();
 #endif
 }
-/*****************************更新関数******************************/
+/*****************************************************/
+//　　　　　　　　　　更新関数
+/*****************************************************/
 void TitleCameraOperation::Update(Camera* camera, float elapsedTime)
 {
 	//spaceキーが押されたかどうか
