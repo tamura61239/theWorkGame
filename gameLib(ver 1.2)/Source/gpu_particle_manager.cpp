@@ -2,7 +2,10 @@
 #include"framework.h"
 #include"misc.h"
 
-
+/*****************************************************/
+//　　　　　　　　　　生成関数
+/*****************************************************/
+/*************************バッファの生成****************************/
 void GpuParticleManager::CreateBuffer(ID3D11Device* device)
 {
 	HRESULT hr = S_OK;
@@ -31,6 +34,7 @@ void GpuParticleManager::CreateBuffer(ID3D11Device* device)
 	mSSceneShader = std::make_unique<DrowShader>(device, "Data/shader/particle_motion_data_render_vs.cso", "Data/shader/particle_motion_data_render_gs.cso", "Data/shader/particle_motion_data_render_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
 
 }
+/*************************タイトルシーンのパーティクル生成****************************/
 
 void GpuParticleManager::CreateTitleBuffer(ID3D11Device* device)
 {
@@ -39,6 +43,7 @@ void GpuParticleManager::CreateTitleBuffer(ID3D11Device* device)
 	mTitleParticle = std::make_unique<TitleParticle>(device);
 	mTitleTextureParticle = std::make_unique<TitleTextureParticle>(device);
 }
+/*************************セレクトシーンのパーティクル生成****************************/
 
 void GpuParticleManager::CreateSelectBuffer(ID3D11Device* device)
 {
@@ -46,6 +51,7 @@ void GpuParticleManager::CreateSelectBuffer(ID3D11Device* device)
 	CreateBuffer(device);
 	mSelectSceneParticle = std::make_unique<SelectSceneParticle>(device);
 }
+/*************************ゲームシーンのパーティクル生成****************************/
 
 void GpuParticleManager::CreateGameBuffer(ID3D11Device* device, std::shared_ptr<PlayerAI>player)
 {
@@ -54,6 +60,7 @@ void GpuParticleManager::CreateGameBuffer(ID3D11Device* device, std::shared_ptr<
 	mRunParticle = std::make_unique<RunParticles>(device, player);
 	mStageSceneParticle = std::make_unique<StageSceneParticle>(device);
 }
+/*************************リザルトシーンのパーティクル生成****************************/
 
 void GpuParticleManager::CreateResultBuffer(ID3D11Device* device)
 {
@@ -63,6 +70,9 @@ void GpuParticleManager::CreateResultBuffer(ID3D11Device* device)
 
 	mFireworksParticle = std::make_unique<FireworksParticle>(device);
 }
+/*****************************************************/
+//　　　　　　　　　　解放関数
+/*****************************************************/
 
 void GpuParticleManager::ClearBuffer()
 {
@@ -74,6 +84,9 @@ void GpuParticleManager::ClearBuffer()
 	mFireworksParticle.reset();
 }
 
+/*****************************************************/
+//　　　　　　　　　　更新関数
+/*****************************************************/
 
 void GpuParticleManager::Update(float elapsd_time)
 {
@@ -101,26 +114,31 @@ void GpuParticleManager::Update(float elapsd_time)
 	}
 }
 
+/*****************************************************/
+//　　　　　　　　　　エディタ関数
+/*****************************************************/
 
 void GpuParticleManager::Editor()
 {
 	switch (mState)
 	{
 	case TITLE:
-		TitleImGui();
+		TitleEditor();
 		break;
 	case SELECT:
-		SelectImGui();
+		SelectEditor();
 		break;
 	case GAME:
-		GameImGui();
+		GameEditor();
 		break;
 	case RESULT:
-		ResultImGui();
+		ResultEditor();
 		break;
 	}
 }
-void GpuParticleManager::TitleImGui()
+/*************************タイトルシーンのパーティクルエディタ****************************/
+
+void GpuParticleManager::TitleEditor()
 {
 #ifdef USE_IMGUI
 	static bool selects[2] = { false,false };
@@ -140,8 +158,9 @@ void GpuParticleManager::TitleImGui()
 #endif
 
 }
+/*************************セレクトシーンのパーティクルエディタ****************************/
 
-void GpuParticleManager::SelectImGui()
+void GpuParticleManager::SelectEditor()
 {
 #ifdef USE_IMGUI
 	static bool selects[2] = { false,false };
@@ -156,8 +175,9 @@ void GpuParticleManager::SelectImGui()
 #endif
 
 }
+/*************************ゲームシーンのパーティクルエディタ****************************/
 
-void GpuParticleManager::GameImGui()
+void GpuParticleManager::GameEditor()
 {
 #ifdef USE_IMGUI
 	static bool selects[3] = { false,false,false };
@@ -177,14 +197,20 @@ void GpuParticleManager::GameImGui()
 #endif
 
 }
+/*************************リザルトシーンのパーティクルエディタ****************************/
 
-void GpuParticleManager::ResultImGui()
+void GpuParticleManager::ResultEditor()
 {
 #if (RESULT_TYPE==0)
 	mFireworksParticle->Editor();
 #else
 #endif
 }
+/*****************************************************/
+//　　　　　　　　　　描画関数
+/*****************************************************/
+
+/*************************通常描画****************************/
 
 void GpuParticleManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, bool drowMullti)
 {
@@ -220,6 +246,7 @@ void GpuParticleManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& vi
 	context->PSSetConstantBuffers(0, 1, &buffer);
 
 }
+/*************************速度マップの描画****************************/
 
 void GpuParticleManager::VelocityRender(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection)
 {
@@ -238,7 +265,7 @@ void GpuParticleManager::VelocityRender(ID3D11DeviceContext* context, const FLOA
 		mSelectSceneParticle->Render(context);
 		break;
 	case GAME:
-		if (mRunParticle.get() != nullptr)mRunParticle->Render(context,mSSceneShader.get());
+		//if (mRunParticle.get() != nullptr)mRunParticle->Render(context,mSSceneShader.get());
 		mStageSceneParticle->Render(context, mSSceneShader.get());
 		break;
 	case RESULT:

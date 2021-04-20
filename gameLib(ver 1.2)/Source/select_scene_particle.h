@@ -6,6 +6,7 @@
 #include"constant_buffer.h"
 #include<memory>
 #include<vector>
+#include"cs_buffer.h"
 
 
 class SelectSceneParticle
@@ -17,22 +18,19 @@ public:
 	void Render(ID3D11DeviceContext* context);
 private:
 	//バッファ
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mRenderBuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mParticleCountBuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mParticleIndexBuffer[2];
-	//srv
-	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>>mParticleSRV;
-	//uav
-	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mParticleUAV;
-	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mParticleCountUAV;
-	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mParticleIndexUAV[2];
-	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mDeleteIndexUAV;
-	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mRenderUAV;
+	std::unique_ptr<CSBuffer>mParticle;
+	std::unique_ptr<CSBuffer>mParticleCount;
+	std::unique_ptr<CSBuffer>mParticleIndices[2];
+	std::unique_ptr<CSBuffer>mParticleDeleteIndex;
+	std::unique_ptr<CSBuffer>mParticleRender;
 	//シェーダー
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCreateShader;
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSShader;
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSEndShader;
 	std::unique_ptr<DrowShader>mShader;
+	//srv
+	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>>mParticleSRV;
+	//パーティクル用データ
 	struct Particle
 	{
 		VECTOR4F position;
@@ -62,7 +60,7 @@ private:
 		UINT deActiveParticleCount;
 		UINT dummy;
 	};
-
+	//定数バッファ
 	struct CbCreate
 	{
 		VECTOR3F angleMovement;

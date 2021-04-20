@@ -11,81 +11,32 @@
 #include<imgui.h>
 #endif
 
+/*****************************************************/
+//　　　　　　　　　　初期化関数(コンストラクタ)
+/*****************************************************/
 
 TitleTextureParticle::TitleTextureParticle(ID3D11Device* device) :mFullCreateFlag(false), mParticleFlag(false), mMaxParticle(1920 * 1080), mTestFlag(false)
-, mSceneParticleIndex(0), mChangeMaxParticle(0), mTimer(0), mMaxTexture(0), mBeforeParsent(0), mTextureFlag(true)
+, mChangeMaxParticle(0), mMaxTexture(0), mTextureFlag(true)
 {
 	HRESULT hr;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>buffer;
-	//Buffer
 	{
+		//パーティクルのバッファ
 		std::vector<Particle>particles;
 		particles.resize(mMaxParticle);
-		D3D11_BUFFER_DESC desc;
-		ZeroMemory(&desc, sizeof(desc));
-		//パーティクルデータバッファ
-		desc.ByteWidth = sizeof(Particle) * mMaxParticle;
-		desc.Usage = D3D11_USAGE_DEFAULT;//ステージの入出力はOK。GPUの入出力OK。
-		desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
-		desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED; // 構造化バッファ
-		desc.StructureByteStride = sizeof(Particle);
-		D3D11_SUBRESOURCE_DATA data;
-		ZeroMemory(&data, sizeof(data));
-		data.pSysMem = &particles[0];
-		hr = device->CreateBuffer(&desc, &data, buffer.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		mParticle = std::make_unique<CSBuffer>(device, D3D11_USAGE_DEFAULT, D3D11_BIND_UNORDERED_ACCESS, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED, particles, true);
 		//描画用バッファ
-		desc.BindFlags = D3D11_BIND_VERTEX_BUFFER | D3D11_BIND_UNORDERED_ACCESS;
-		desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS;
-		desc.ByteWidth = sizeof(RenderParticle) * mMaxParticle;
-		desc.Usage = D3D11_USAGE_DEFAULT;
-		desc.CPUAccessFlags = 0;
-		desc.StructureByteStride = 0;
 		std::vector<RenderParticle>renderParticles;
 		renderParticles.resize(mMaxParticle);
-		data.pSysMem = &renderParticles[0];
-		hr = device->CreateBuffer(&desc, &data, mRenderBuffer.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-		//定数バッファ
-		desc.ByteWidth = sizeof(CbUpdate);
-		desc.Usage = D3D11_USAGE_DEFAULT;
-		desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		desc.CPUAccessFlags = 0;
-		desc.MiscFlags = 0;
-		desc.StructureByteStride = 0;
-		hr = device->CreateBuffer(&desc, nullptr, mCbBuffer.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-		desc.ByteWidth = sizeof(CbCreate);
-
-		hr = device->CreateBuffer(&desc, nullptr, mCbCreateBuffer.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-
+		mParticleRender = std::make_unique<CSBuffer>(device, D3D11_USAGE_DEFAULT, D3D11_BIND_VERTEX_BUFFER | D3D11_BIND_UNORDERED_ACCESS, D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS, renderParticles, true);
 	}
-	//UAV
-	{
-		D3D11_UNORDERED_ACCESS_VIEW_DESC desc;
-		ZeroMemory(&desc, sizeof(desc));
-		desc.Buffer.NumElements = mMaxParticle;
-		desc.Format = DXGI_FORMAT_UNKNOWN;
-		desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-
-		hr = device->CreateUnorderedAccessView(buffer.Get(), &desc, mParticleUAV.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-		desc.Format = DXGI_FORMAT_R32_TYPELESS;
-		desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-		desc.Buffer.FirstElement = 0;
-		desc.Buffer.Flags = D3D11_BUFFEREX_SRV_FLAG_RAW;
-
-		desc.Buffer.NumElements = sizeof(RenderParticle) * mMaxParticle / 4;
-		hr = device->CreateUnorderedAccessView(mRenderBuffer.Get(), &desc, mRenderUAV.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-	}
+	//定数バッファ生成
+	mCbCreate = std::make_unique<ConstantBuffer<CbCreate>>(device);
+	mCbUpdate = std::make_unique<ConstantBuffer<CbUpdate>>(device);
+	//コンピュートシェーダーの生成
 	mCreateCSShader.resize(2);
 	CreateCSFromCso(device, "Data/shader/titile_texture_change_creat_cs.cso", mCreateCSShader[0].GetAddressOf());
 	CreateCSFromCso(device, "Data/shader/title_texture_scene_change_cs.cso", mCSShader.GetAddressOf());
-
+	//描画用テクスチャの生成
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
 	{
 		{"POSITION",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
@@ -95,6 +46,7 @@ TitleTextureParticle::TitleTextureParticle(ID3D11Device* device) :mFullCreateFla
 		{"SCALE",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 	};
 	mShader = std::make_unique<DrowShader>(device, "Data/shader/particle_render_vs.cso", "Data/shader/particle_render_billboard_gs.cso", "Data/shader/particle_render_text_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
+	//描画用テクスチャの生成
 	wchar_t* names[] =
 	{
 		L"Data/image/○.png",
@@ -122,11 +74,13 @@ TitleTextureParticle::TitleTextureParticle(ID3D11Device* device) :mFullCreateFla
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		mParticleSRV.push_back(srv);
 	}
-	blend = std::make_unique<BlendState>(device, BLEND_MODE::ALPHA);
+	//エディタデータの初期化
 	mEditorData.scale = 0.00015f;
 	mEditorData.screenSplit = 10;
+	//ファイルからデータをロード
 	Load();
 }
+/************************wstring型をstring型に変換する関数****************/
 using convert_t = std::codecvt_utf8<wchar_t>;
 std::wstring_convert<convert_t, wchar_t> strconverter;
 
@@ -134,6 +88,10 @@ std::string to_string(std::wstring wstr)
 {
 	return strconverter.to_bytes(wstr);
 }
+/*****************************************************/
+//　　　　　　　　　　エディタ関数
+/*****************************************************/
+
 void TitleTextureParticle::Editor()
 {
 #ifdef USE_IMGUI
@@ -179,7 +137,7 @@ void TitleTextureParticle::Editor()
 	ImGui::End();
 #endif
 }
-
+/***************************パーティクルを生成するのに使うテクスチャの読み込み関数********************************/
 void TitleTextureParticle::LoadTexture(ID3D11Device* device, std::wstring name, const VECTOR2F& leftTop, const VECTOR2F& size, const VECTOR2F& uv, const VECTOR2F& uvSize)
 {
 	mTextures.emplace_back();
@@ -198,64 +156,71 @@ void TitleTextureParticle::LoadTexture(ID3D11Device* device, std::wstring name, 
 	}
 	mMaxTexture += static_cast<UINT>(uvSize.x);
 }
-/**************************************************/
-//       更新
-/**************************************************/
+/*****************************************************/
+//　　　　　　　　　　更新関数
+/*****************************************************/
+/**************************パーティクルの更新***************************/
 void TitleTextureParticle::Update(float elapsdTime, ID3D11DeviceContext* context)
 {
-	context->CSSetUnorderedAccessViews(0, 1, mParticleUAV.GetAddressOf(), nullptr);
-
+	//パーティクルのデータをGPU側に送る
+	mParticle->Activate(context, 0, true);
 	SceneChangeUpdate(elapsdTime, context);
-	if (mMoveParticle <= 0)return;
+	if (mMoveParticle <= 0)
+	{
+		mParticle->DeActivate(context);
+		return;
+	}
 	if (mTestFlag && !mParticleFlag)elapsdTime = 0;
+	//パーティクルのデータをGPU側に送る
+	mParticleRender->Activate(context, 2, true);
+
+	//シェーダーを設定
 	context->CSSetShader(mCSShader.Get(), nullptr, 0);
-	context->CSSetConstantBuffers(1, 1, mCbBuffer.GetAddressOf());
-	CbUpdate cbUpdate;
-	cbUpdate.elapsdTime = elapsdTime;
-	cbUpdate.scale = mEditorData.scale;
-	cbUpdate.speed = mEditorData.speed;
-	context->UpdateSubresource(mCbBuffer.Get(), 0, 0, &cbUpdate, 0, 0);
-	context->CSSetUnorderedAccessViews(2, 1, mRenderUAV.GetAddressOf(), nullptr);
+	//定数バッファのデータを更新
+	mCbUpdate->data.elapsdTime = elapsdTime;
+	mCbUpdate->data.scale = mEditorData.scale;
+	mCbUpdate->data.speed = mEditorData.speed;
+	//定数バッファをGPU側に送る
+	mCbUpdate->Activate(context, 1, false, false, false, true);
+	//更新
 	context->Dispatch(static_cast<UINT>(mMoveParticle / 100), 1, 1);
-	ID3D11ShaderResourceView* srv = nullptr;
-	ID3D11UnorderedAccessView* uav = nullptr;
-	context->CSSetShaderResources(0, 1, &srv);
-	context->CSSetUnorderedAccessViews(0, 1, &uav, nullptr);
-	context->CSSetUnorderedAccessViews(2, 1, &uav, nullptr);
+
+	//GPU側に送ったデータを元に戻す
+	mParticle->DeActivate(context);
+	mParticleRender->DeActivate(context);
+	mCbUpdate->DeActivate(context);
 	context->CSSetShader(nullptr, nullptr, 0);
-	ID3D11Buffer* buffers[] = { nullptr };
-	context->CSSetConstantBuffers(0, 1, buffers);
 
 }
 
-//シーンが変わる時のパーティクルの生成
+/************************シーンが変更されるときのパーティクル生成*****************************/
 void TitleTextureParticle::SceneChangeUpdate(float elapsdTime, ID3D11DeviceContext* context)
 {
-
+	//テストプレイフラグがONになってるか生成フラグがONになっているとき
 	if (mFullCreateFlag || mTestFlag)
 	{
+		//どのフラグがONになっているのか調べてその結果で処理を変えている
 		if (mFullCreateFlag)mParticleFlag = true;
 		if (mTestFlag)mChangeMaxParticle = 0;
 		mFullCreateFlag = false;
-
-		context->CSSetConstantBuffers(0, 1, mCbCreateBuffer.GetAddressOf());
-		//context->CSSetShader(mCreateCSShader.Get(), nullptr, 0);
-
+		//シェーダーを設定
 		context->CSSetShader(mCreateCSShader[0].Get(), nullptr, 0);
+		//view行列を取得
 		FLOAT4X4 view = pCameraManager->GetCamera()->GetView();
 		view._41 = view._42 = view._43 = 0.0f;
 		view._44 = 1.0f;
 		int particleCount = 0;
+		//テクスチャ(板ポリ)の分だけパーティクルの生成処理をする
 		for (int i = 0; i < static_cast<int>(mTextures.size()); i++)
 		{
 			auto& texture = mTextures.at(i);
 			auto& board = boards.at(i);
+			//テクスチャをGPU側に渡す
 			context->CSSetShaderResources(0, 1, texture.mSRV.GetAddressOf());
-
-			CbCreate cbCreate;
-			cbCreate.uvSize = texture.data.mUVSize;
-			cbCreate.screenSplit = mEditorData.screenSplit;
-			cbCreate.startIndex = particleCount;
+			//定数バッファのデータを更新
+			mCbCreate->data.uvSize = texture.data.mUVSize;
+			mCbCreate->data.screenSplit = mEditorData.screenSplit;
+			mCbCreate->data.startIndex = particleCount;
 			float aspect = texture.data.mUVSize.x / texture.data.mUVSize.y;
 			DirectX::XMMATRIX W;
 			{
@@ -266,13 +231,19 @@ void TitleTextureParticle::SceneChangeUpdate(float elapsdTime, ID3D11DeviceConte
 
 			}
 
-			DirectX::XMStoreFloat4x4(&cbCreate.world, DirectX::XMLoadFloat4x4(&view) * W);
-			context->UpdateSubresource(mCbCreateBuffer.Get(), 0, 0, &cbCreate, 0, 0);
-			int newParticle = static_cast<int>(texture.data.mUVSize.x / cbCreate.screenSplit * texture.data.mUVSize.y / cbCreate.screenSplit);
+			DirectX::XMStoreFloat4x4(&mCbCreate->data.world, DirectX::XMLoadFloat4x4(&view) * W);
+			//定数バッファをGPU側に送る
+			mCbCreate->Activate(context, 0, false, false, false, true);
+			int newParticle = static_cast<int>(texture.data.mUVSize.x / mCbCreate->data.screenSplit * texture.data.mUVSize.y / mCbCreate->data.screenSplit);
+			//パーティクルの数を増やす
 			particleCount += newParticle;
-
+			//生成
 			context->Dispatch(newParticle, 1, 1);
+			//定数バッファを元に戻す
+			mCbCreate->DeActivate(context);
+
 		}
+		//生成した分をパーティクル数に追加
 		mChangeMaxParticle += particleCount;
 	}
 	else if (!mParticleFlag)
@@ -284,23 +255,31 @@ void TitleTextureParticle::SceneChangeUpdate(float elapsdTime, ID3D11DeviceConte
 }
 
 
-/****************************************************/
-//    描画
-/****************************************************/
+/*****************************************************/
+//　　　　　　　　　　描画関数
+/*****************************************************/
 void TitleTextureParticle::Render(ID3D11DeviceContext* context)
 {
 	if (mMoveParticle <= 0)return;
+	//シェーダーを設定
 	mShader->Activate(context);
-
+	//データをGPU側に送る
+	ID3D11Buffer* buffer = mParticleRender->GetBuffer();
 	u_int stride = sizeof(RenderParticle);
 	u_int offset = 0;
 	context->PSSetShaderResources(0, 1, mParticleSRV[mEditorData.textureType].GetAddressOf());
-	context->IASetVertexBuffers(0, 1, mRenderBuffer.GetAddressOf(), &stride, &offset);
+	context->IASetVertexBuffers(0, 1, &buffer, &stride, &offset);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+	//描画
 	context->Draw(mMoveParticle, 0);
+	//シェーダーを元に戻す
 	mShader->Deactivate(context);
+	//GPU側に送ったデータを元に戻す
 	ID3D11ShaderResourceView* srv = nullptr;
 	context->PSSetShaderResources(0, 1, &srv);
+	buffer = nullptr;
+	stride = 0;
+	context->IASetVertexBuffers(0, 1, &buffer, &stride, &offset);
 
 }
 

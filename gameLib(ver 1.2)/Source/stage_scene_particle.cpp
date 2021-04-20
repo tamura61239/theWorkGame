@@ -6,128 +6,56 @@
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
-/************************初期化****************************/
+/*****************************************************/
+//　　　　　　　　　　初期化関数(コンストラクタ)
+/*****************************************************/
 
 StageSceneParticle::StageSceneParticle(ID3D11Device* device) :mMaxCount(100000), mIndexCount(0)
 , mCreateCount(0), mRenderCount(0)
 {
 	::memset(&mEditorData, 0, sizeof(mEditorData));
-	std::vector<Particle>particles;
-	particles.resize(mMaxCount);
-	std::vector<RenderParticle>renderParticles;
-	renderParticles.resize(mMaxCount);
 	HRESULT hr;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>particleBuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>particleDeleteIndexBuffer;
-	//バッファの生成
 	{
-		D3D11_BUFFER_DESC desc;
-		ZeroMemory(&desc, sizeof(desc));
-		//パーティクルのバッファ生成
-		desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
-		desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED; // 構造化バッファ
-		desc.StructureByteStride = sizeof(Particle);
-		desc.Usage = D3D11_USAGE_DEFAULT;//ステージの入出力はOK。GPUの入出力OK。
-		desc.ByteWidth = sizeof(Particle) * mMaxCount;
-		D3D11_SUBRESOURCE_DATA data;
-		ZeroMemory(&data, sizeof(data));
-		data.pSysMem = &particles[0];
-		hr = device->CreateBuffer(&desc, &data, particleBuffer.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-		ZeroMemory(&desc, sizeof(desc));
+		//パーティクルのバッファ
+		std::vector<Particle>particles;
+		particles.resize(static_cast<size_t>(mMaxCount));
+		mParticle = std::make_unique<CSBuffer>(device, D3D11_USAGE_DEFAULT, D3D11_BIND_UNORDERED_ACCESS, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED, particles, true);
 		//描画用バッファ
-		desc.BindFlags = D3D11_BIND_VERTEX_BUFFER | D3D11_BIND_UNORDERED_ACCESS;
-		desc.ByteWidth = sizeof(RenderParticle) * mMaxCount;
-		desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS;
-		desc.CPUAccessFlags = 0;
-		desc.StructureByteStride = 0;
-		desc.Usage = D3D11_USAGE_DEFAULT;
-		data.pSysMem = &renderParticles[0];
-		hr = device->CreateBuffer(&desc, &data, mRenderBuffer.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-		//パーティクルのindexバッファ
-		desc.BindFlags = D3D11_BIND_INDEX_BUFFER | D3D11_BIND_UNORDERED_ACCESS;
-		desc.ByteWidth = sizeof(UINT) * mMaxCount;
+		std::vector<RenderParticle>renderParticles;
+		renderParticles.resize(static_cast<size_t>(mMaxCount));
+		mParticleRender = std::make_unique<CSBuffer>(device, D3D11_USAGE_DEFAULT, D3D11_BIND_VERTEX_BUFFER | D3D11_BIND_UNORDERED_ACCESS, D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS, renderParticles, true);
+		//indexバッファ
 		std::vector<UINT>indices;
-		indices.resize(mMaxCount);
-		memset(indices.data(), 0, sizeof(UINT) * mMaxCount);
-		data.pSysMem = &indices[0];
-
-		for (auto& index : mParticleIndexBuffer)
+		indices.resize(static_cast<size_t>(mMaxCount));
+		for (auto& index : mParticleIndices)
 		{
-			hr = device->CreateBuffer(&desc, &data, index.GetAddressOf());
-			_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+			index = std::make_unique<CSBuffer>(device, D3D11_USAGE_DEFAULT, D3D11_BIND_INDEX_BUFFER | D3D11_BIND_UNORDERED_ACCESS, D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS, indices, true);
 		}
-		//パーティクルのカウントバッファ
-		desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
-		desc.ByteWidth = sizeof(ParticleCount);
-		desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
-		ParticleCount particleCount;
-		memset(&particleCount, 0, sizeof(particleCount));
-		particleCount.deActiveParticleCount = mMaxCount;
-		data.pSysMem = &particleCount;
-		hr = device->CreateBuffer(&desc, &data, mParticleCountBuffer.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-		//パーティクルの死んでる分のindexバッファ
+		//deleteIndexバッファ
 		for (int i = 0; i < mMaxCount; i++)
 		{
 			indices[i] = i;
 		}
-		ZeroMemory(&desc, sizeof(desc));
-		data.pSysMem = &indices[0];
-		desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
-		desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED; // 構造化バッファ
-		desc.StructureByteStride = sizeof(UINT);
-		desc.Usage = D3D11_USAGE_DEFAULT;//ステージの入出力はOK。GPUの入出力OK。
-		desc.ByteWidth = sizeof(UINT) * mMaxCount;
-		hr = device->CreateBuffer(&desc, &data, particleDeleteIndexBuffer.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		mParticleDeleteIndex = std::make_unique<CSBuffer>(device, D3D11_USAGE_DEFAULT, D3D11_BIND_UNORDERED_ACCESS, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED, indices, true);
+		//パーティクルのカウントバッファ
+		ParticleCount particleCount;
+		memset(&particleCount, 0, sizeof(particleCount));
+		particleCount.deActiveParticleCount = static_cast<UINT>(mMaxCount);
+		mParticleCount = std::make_unique<CSBuffer>(device, D3D11_USAGE_DEFAULT, D3D11_BIND_UNORDERED_ACCESS, D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS, particleCount, true, false, D3D11_CPU_ACCESS_READ);
 
-	}
-	//UAVの生成
-	{
-		D3D11_UNORDERED_ACCESS_VIEW_DESC desc;
-		ZeroMemory(&desc, sizeof(desc));
-		desc.Buffer.NumElements = mMaxCount;
-		desc.Format = DXGI_FORMAT_UNKNOWN;
-		desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-		hr = device->CreateUnorderedAccessView(particleBuffer.Get(), &desc, mParticleUAV.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-		hr = device->CreateUnorderedAccessView(particleDeleteIndexBuffer.Get(), &desc, mParticleDeleteIndexUAV.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-		ZeroMemory(&desc, sizeof(desc));
-		//描画データのUAV
-		desc.Format = DXGI_FORMAT_R32_TYPELESS;
-		desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-		desc.Buffer.FirstElement = 0;
-		desc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_RAW;
-		desc.Buffer.NumElements = sizeof(RenderParticle) * mMaxCount / 4;
-		hr = device->CreateUnorderedAccessView(mRenderBuffer.Get(), &desc, mRenderUAV.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-		//indexバッファのUAV
-		desc.Buffer.NumElements = sizeof(UINT) * mMaxCount / 4;
-		for (int i = 0; i < 2; i++)
-		{
-			hr = device->CreateUnorderedAccessView(mParticleIndexBuffer[i].Get(), &desc, mParticleIndexUAV[i].GetAddressOf());
-			_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-		}
-		//パーティクルのカウントUAV
-		desc.Buffer.NumElements = sizeof(ParticleCount) / 4;
-		hr = device->CreateUnorderedAccessView(mParticleCountBuffer.Get(), &desc, mParticleCountUAV.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
 	//定数バッファ
 	mCbCreate = std::make_unique<ConstantBuffer<CbCreate>>(device);
 	mCbUpdate = std::make_unique<ConstantBuffer<CbUpdate>>(device);
-	//シェーダーの読み込み
+	//コンピュートシェーダーの生成
 	hr = CreateCSFromCso(device, "Data/shader/stage_scene_particle_create_cs.cso", mCSCreateShader.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	hr = CreateCSFromCso(device, "Data/shader/stage_scene_particle_cs.cso", mCSShader.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	hr = CreateCSFromCso(device, "Data/shader/particle_count_cs.cso", mCSEndShader.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-
+	
+	//描画用シェーダーの生成
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
 	{
 		{"POSITION",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
@@ -138,10 +66,8 @@ StageSceneParticle::StageSceneParticle(ID3D11Device* device) :mMaxCount(100000),
 	};
 	mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/particle_render_vs.cso", "Data/shader/particle_render_cube_mesh_gs.cso", "Data/shader/particle_render_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc)));
 	mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/particle_render_vs.cso", "Data/shader/particle_render_billboard_gs.cso", "Data/shader/particle_render_text_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc)));
-	//	mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/particle_motion_data_render_vs.cso", "Data/shader/particle_motiom_blur_gs.cso", "Data/shader/particle_motion_blur_text_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc)));
-
 	mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/particle_render_vs.cso", "", "Data/shader/particle_render_point_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc)));
-	//テクスチャの読み込み
+	//描画用テクスチャの生成
 	wchar_t* names[] =
 	{
 		L"Data/image/○.png",
@@ -169,10 +95,12 @@ StageSceneParticle::StageSceneParticle(ID3D11Device* device) :mMaxCount(100000),
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		mParticleSRV.push_back(srv);
 	}
-
+	//ファイルからデータのロード
 	FileFunction::Load(mEditorData, "Data/file/stage_scene_paricte_data.bin", "rb");
 }
-/************************エディター****************************/
+/*****************************************************/
+//　　　　　　　　　　エディタ関数
+/*****************************************************/
 
 void StageSceneParticle::Editor()
 {
@@ -226,29 +154,30 @@ void StageSceneParticle::Editor()
 	ImGui::End();
 #endif
 }
-/************************更新****************************/
+/*****************************************************/
+//　　　　　　　　　　更新関数
+/*****************************************************/
 void StageSceneParticle::Update(ID3D11DeviceContext* context, float elapsdTime)
 {
-	ID3D11UnorderedAccessView* uavs[6] =
-	{
-		mParticleUAV.Get(),
-		mParticleCountUAV.Get(),
-		mRenderUAV.Get(),
-		mParticleIndexUAV[mIndexCount].Get(),
-		mParticleIndexUAV[1 - mIndexCount].Get(),
-		mParticleDeleteIndexUAV.Get()
-	};
-	context->CSSetUnorderedAccessViews(0, 6, uavs, nullptr);
+	//GPU側にパーティクルにデータを送る
+	mParticle->Activate(context, 0, true);
+	mParticleCount->Activate(context, 1, true);
+	mParticleRender->Activate(context, 2, true);
+	mParticleIndices[mIndexCount]->Activate(context, 3, true);
+	mParticleIndices[1 - mIndexCount]->Activate(context, 4, true);
+	mParticleDeleteIndex->Activate(context, 5, true);
 	mIndexCount++;
 	if (mIndexCount >= 2)
 	{
 		mIndexCount = 0;
 	}
+	//生成する数の更新
 	mCreateCount += elapsdTime * mEditorData.oneSecondCreateNumber;
 	if (mCreateCount >= 1)
 	{
-		//パーティクルの生成
+		//シェーダーの設定
 		context->CSSetShader(mCSCreateShader.Get(), nullptr, 0);
+		//定数バッファのデータ更新
 		mCbCreate->data.color = mEditorData.color;
 		mCbCreate->data.randX = mEditorData.randX;
 		mCbCreate->data.createArea = mEditorData.createArea;
@@ -257,10 +186,15 @@ void StageSceneParticle::Update(ID3D11DeviceContext* context, float elapsdTime)
 		mCbCreate->data.scale = mEditorData.scale;
 		mCbCreate->data.colorRatio = mEditorData.colorRatio;
 		mCbCreate->data.color2 = mEditorData.color2;
-		mCbCreate->Activate(context, 0,false, false, false, true);
+		//定数バッファをGPU側に送る
+		mCbCreate->Activate(context, 0, false, false, false, true);
+		//小数点以下切り捨て
 		UINT count = static_cast<UINT>(mCreateCount);
+		//更新
 		context->Dispatch(count, 1, 1);
+		//生成した分だけ引いとく
 		mCreateCount -= static_cast<float>(count);
+		//送ったデータを元に戻す
 		mCbCreate->DeActivate(context);
 
 	}
@@ -269,7 +203,7 @@ void StageSceneParticle::Update(ID3D11DeviceContext* context, float elapsdTime)
 	mCbUpdate->data.elapsdTime = elapsdTime;
 	mCbUpdate->data.windDirection = mEditorData.windDirection;
 	mCbUpdate->data.maxSpeed = mEditorData.maxSpeed;
-	mCbUpdate->Activate(context, 1,false, false, false, true);
+	mCbUpdate->Activate(context, 1, false, false, false, true);
 	context->Dispatch(mMaxCount / 100, 1, 1);
 	mCbUpdate->DeActivate(context);
 	//パーティクルのカウントの更新
@@ -277,62 +211,79 @@ void StageSceneParticle::Update(ID3D11DeviceContext* context, float elapsdTime)
 	context->Dispatch(1, 1, 1);
 	//カウントのバッファから生きてる分のカウントを取得
 	D3D11_MAPPED_SUBRESOURCE ms;
-	context->Map(mParticleCountBuffer.Get(), NULL, D3D11_MAP_READ, NULL, &ms);
+	context->Map(mParticleCount->GetBuffer(), NULL, D3D11_MAP_READ, NULL, &ms);
 	ParticleCount* particleCount = (ParticleCount*)ms.pData;
 	mRenderCount = particleCount->aliveParticleCount;
-	context->Unmap(mParticleCountBuffer.Get(), NULL);
-	//後処理
-	for (auto& uav : uavs)
-	{
-		uav = nullptr;
-	}
-	context->CSSetUnorderedAccessViews(0, 6, uavs, nullptr);
+	context->Unmap(mParticleCount->GetBuffer(), NULL);
+	//シェーダーの解除
 	context->CSSetShader(nullptr, nullptr, 0);
+	//GPU側に送ったデータを元に戻す
+	mParticle->DeActivate(context);
+	mParticleCount->DeActivate(context);
+	mParticleRender->DeActivate(context);
+	mParticleIndices[mIndexCount]->DeActivate(context);
+	mParticleIndices[1 - mIndexCount]->DeActivate(context);
+	mParticleDeleteIndex->DeActivate(context);
 }
-/***********************描画***********************/
+/*****************************************************/
+//　　　　　　　　　　描画関数
+/*****************************************************/
+
+/****************************描画(シェーダーを取得してない)******************************/
 void StageSceneParticle::Render(ID3D11DeviceContext* context)
 {
+	//シェーダーの設定
 	mShader[mEditorData.shaderType]->Activate(context);
-
+	//GPU側にデータを送る
 	context->PSSetShaderResources(0, 1, mParticleSRV[mEditorData.textureType].GetAddressOf());
 	u_int stride = sizeof(RenderParticle);
 	u_int offset = 0;
-	ID3D11Buffer* vertex = mRenderBuffer.Get();
-	ID3D11Buffer* index = mParticleIndexBuffer[mIndexCount].Get();
+	ID3D11Buffer* vertex = mParticleRender->GetBuffer();
+	ID3D11Buffer* index = mParticleIndices[mIndexCount]->GetBuffer();
 	context->IASetVertexBuffers(0, 1, &vertex, &stride, &offset);
 	context->IASetIndexBuffer(index, DXGI_FORMAT_R32_UINT, 0);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 
-	context->DrawIndexed(mRenderCount, 0,0);
+	//描画
+	context->DrawIndexed(mRenderCount, 0, 0);
+	//送ったデータを元に戻す
 	mShader[mEditorData.shaderType]->Deactivate(context);
-
-	ID3D11ShaderResourceView* srv = nullptr;
-	context->PSSetShaderResources(0, 1, &srv);
-}
-
-void StageSceneParticle::Render(ID3D11DeviceContext* context, DrowShader* shader)
-{
-	shader->Activate(context);
-
-	context->PSSetShaderResources(0, 1, mParticleSRV[mEditorData.textureType].GetAddressOf());
-	u_int stride = sizeof(RenderParticle);
-	u_int offset = 0;
-	ID3D11Buffer* vertex = mRenderBuffer.Get();
-	ID3D11Buffer* index = mParticleIndexBuffer[mIndexCount].Get();
-	context->IASetVertexBuffers(0, 1, &vertex, &stride, &offset);
-	context->IASetIndexBuffer(index, DXGI_FORMAT_R32_UINT, 0);
-	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
-
-	context->Draw(mRenderCount, 0);
-	shader->Deactivate(context);
-
-	ID3D11ShaderResourceView* srv = nullptr;
-	context->PSSetShaderResources(0, 1, &srv);
 	offset = 0;
 	vertex = nullptr;
 	index = nullptr;
 	context->IASetVertexBuffers(0, 1, &vertex, &stride, &offset);
 	context->IASetIndexBuffer(index, DXGI_FORMAT_R32_UINT, 0);
+	ID3D11ShaderResourceView* srv = nullptr;
+	context->PSSetShaderResources(0, 1, &srv);
+
+}
+/****************************描画(シェーダーを取得する)******************************/
+
+void StageSceneParticle::Render(ID3D11DeviceContext* context, DrowShader* shader)
+{
+	//シェーダーの設定
+	shader->Activate(context);
+	//GPU側にデータを送る
+	context->PSSetShaderResources(0, 1, mParticleSRV[mEditorData.textureType].GetAddressOf());
+	u_int stride = sizeof(RenderParticle);
+	u_int offset = 0;
+	ID3D11Buffer* vertex = mParticleRender->GetBuffer();
+	ID3D11Buffer* index = mParticleIndices[mIndexCount]->GetBuffer();
+	context->IASetVertexBuffers(0, 1, &vertex, &stride, &offset);
+	context->IASetIndexBuffer(index, DXGI_FORMAT_R32_UINT, 0);
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+
+	//描画
+	context->DrawIndexed(mRenderCount, 0, 0);
+	//送ったデータを元に戻す
+	shader->Deactivate(context);
+	offset = 0;
+	vertex = nullptr;
+	index = nullptr;
+	context->IASetVertexBuffers(0, 1, &vertex, &stride, &offset);
+	context->IASetIndexBuffer(index, DXGI_FORMAT_R32_UINT, 0);
+	ID3D11ShaderResourceView* srv = nullptr;
+	context->PSSetShaderResources(0, 1, &srv);
 
 }
 

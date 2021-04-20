@@ -19,6 +19,7 @@
 #include"scene_result.h"
 #include"file_function.h"
 
+//コンストラクタ
 SceneGame::SceneGame(int stageNo) : testGame(false), hitArea(false), mNowLoading(true), mLoadEnd(false), mStageNo(stageNo)
 {
 
@@ -50,7 +51,7 @@ void SceneGame::Initialize(ID3D11Device* device)
 			player = std::make_shared<PlayerAI>(device, "Data/FBX/new_player_anim.fbx");
 			//PUパーティクルマネージャーにプレイヤーのデータをセットする
 			pGpuParticleManager->CreateGameBuffer(device, player);
-			
+
 			//ステージの生成
 			mSManager = std::make_unique<StageManager>(device, SCREEN_WIDTH, SCREEN_HEIGHT);
 			mSManager->SetStageNo(mStageNo);
@@ -141,7 +142,7 @@ void SceneGame::Editor()
 		mSManager->Load();
 		break;
 	case SceneManager::SCENETYPE::RESULT:
-		pSceneManager.ChangeScene(new SceneResult(0.f,mStageNo));
+		pSceneManager.ChangeScene(new SceneResult(0.f, mStageNo));
 		break;
 	}
 	//エディターがOFFの時
@@ -391,7 +392,10 @@ void SceneGame::Update(float elapsed_time)
 		//プレイ中にタイムが0になるかゴールした時
 		if (UIManager::GetInctance()->GetGameUIMove()->GetTime() <= 0 || player->GetCharacter()->GetGorlFlag())
 		{
-			if (!testGame) mFade->StartFadeOut();
+			if (!testGame && mFade->GetFadeScene() == Fade::FADE_MODO::NONE)
+			{
+				mFade->StartFadeOut();
+			}
 			elapsed_time *= 0.3f;
 		}
 	}
@@ -550,10 +554,10 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	mRenderEffects->ShadowRender(context, frameBuffer3->GetRenderTargetShaderResourceView().Get(), frameBuffer3->GetDepthStencilShaderResourceView().Get(), shadowMap->GetDepthStencilShaderResourceView().Get()
 		, view, projection, lightV, lightP);
 	shadowRenderBuffer->Deactivate(context);
-    /******************************モーションブラー************************/
+	/******************************モーションブラー************************/
 	frameBuffer->Clear(context);
 	frameBuffer->Activate(context);
-	
+
 	velocityMap->SetPsTexture(context, 1);
 	siro->Render(context, motionBlurShader.get(), shadowRenderBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 	ID3D11ShaderResourceView* srv = nullptr;

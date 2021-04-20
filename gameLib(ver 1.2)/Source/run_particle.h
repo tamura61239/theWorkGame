@@ -7,16 +7,20 @@
 #include"drow_shader.h"
 #include"static_mesh.h"
 #include"constant_buffer.h"
+#include"cs_buffer.h"
 
 
 class RunParticles
 {
 public:
+	//コンストラクタ
 	RunParticles(ID3D11Device* device, std::shared_ptr<PlayerAI>player);
+	//エディタ
 	void Editor();
+	//更新
 	void Update(ID3D11DeviceContext* context, float elapsd_time);
+	//描画
 	void Render(ID3D11DeviceContext* context);
-	void Render(ID3D11DeviceContext* context,DrowShader*shader);
 private: 
 	//定数バッファ
 	struct CbBone
@@ -65,20 +69,16 @@ private:
 		UINT deActiveParticleCount;
 		UINT dummy;
 	};
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mParticleIndexBuffer[2];
-	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mParticleIndexUAV[2];
-	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mDeleteIndexUAV;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mParticleCountBuffer;
-	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mParticleCountUAV;
-	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mParticleUAV;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mRenderBuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mRenderIndexBuffer;
-	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mRenderUAV;
+	std::unique_ptr<CSBuffer>mParticle;
+	std::unique_ptr<CSBuffer>mParticleRender;
+	std::unique_ptr<CSBuffer>mParticleIndexs[2];
+	std::unique_ptr<CSBuffer>mParticleDeleteIndex;
+	std::unique_ptr<CSBuffer>mParticleCount;
 	//メッシュデータ
 	struct Mesh
 	{
-		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>mIndexBuffer;
-		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>mVertexBuffer;
+		std::unique_ptr<CSBuffer>mIndex;
+		std::unique_ptr<CSBuffer>mVertex;
 		int mMwshSize;
 	};
 	std::vector<Mesh>mMeshs;
@@ -89,7 +89,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSShader;
 	//SRV
 	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>>mParticleSRV;
-
+	//エディタデータ
 	struct EditorData
 	{
 		float mColor[4];
@@ -100,11 +100,15 @@ private:
 		UINT textureType;
 	};
 	EditorData mEditorData;
+	//プレイヤー情報
 	std::weak_ptr<PlayerAI>mPlayer;
+	//パーティクルの最大数
 	int mMaxParticle;
+	//時間
 	float mTimer;
 	//パラメーター
 	int mIndexNum;
+	//描画する数
 	UINT mRenderCount;
 	bool mTestFlag;
 };

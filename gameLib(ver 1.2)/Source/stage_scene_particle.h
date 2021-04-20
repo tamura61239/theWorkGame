@@ -6,13 +6,18 @@
 #include"drow_shader.h"
 #include"constant_buffer.h"
 #include<memory>
+#include"cs_buffer.h"
 
 class StageSceneParticle
 {
 public:
+	//コンストラクタ
 	StageSceneParticle(ID3D11Device* device);
+	//エディタ
 	void Editor();
+	//更新
 	void Update(ID3D11DeviceContext* context, float elapsdTime);
+	//描画
 	void Render(ID3D11DeviceContext* context);
 	void Render(ID3D11DeviceContext* context,DrowShader*shader);
 private:
@@ -21,19 +26,15 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSShader;
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSEndShader;
 	std::vector<std::unique_ptr<DrowShader>>mShader;
-	//UAV
-	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mParticleUAV;
-	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mRenderUAV;
-	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mParticleCountUAV;
-	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mParticleIndexUAV[2];
-	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mParticleDeleteIndexUAV;
 	//バッファ
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mRenderBuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mParticleCountBuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mParticleIndexBuffer[2];
+	std::unique_ptr<CSBuffer>mParticle;
+	std::unique_ptr<CSBuffer>mParticleCount;
+	std::unique_ptr<CSBuffer>mParticleIndices[2];
+	std::unique_ptr<CSBuffer>mParticleDeleteIndex;
+	std::unique_ptr<CSBuffer>mParticleRender;
 	//SRV
 	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>>mParticleSRV;
-
+	//パーティクルのデータ
 	struct Particle
 	{
 		VECTOR3F position;
@@ -58,7 +59,7 @@ private:
 		UINT deActiveParticleCount;
 		UINT dummy;
 	};
-
+	//定数バッファ
 	struct CbCreate
 	{
 		int startIndex;
@@ -81,6 +82,7 @@ private:
 	};
 	std::unique_ptr<ConstantBuffer<CbCreate>>mCbCreate;
 	std::unique_ptr<ConstantBuffer<CbUpdate>>mCbUpdate;
+	//エディタデータ
 	struct EditorData
 	{
 		float randX;
@@ -97,9 +99,14 @@ private:
 		int shaderType;
 		UINT textureType;
 	};
-	int mIndexCount;
-	float mCreateCount;
-	int mMaxCount;
-	UINT mRenderCount;
 	EditorData mEditorData;
+	//描画に使うindex配列番号
+	int mIndexCount;
+	//生成数
+	float mCreateCount;
+	//最大数
+	int mMaxCount;
+	//描画する数
+	UINT mRenderCount;
+
 };

@@ -3,16 +3,24 @@
 #include<memory>
 #include"vector.h"
 #include<vector>
+#include"cs_buffer.h"
+#include"constant_buffer.h"
 class FireworksParticle
 {
 public:
+	//コンストラクタ
 	FireworksParticle(ID3D11Device* device);
+	//エディタ
 	void Editor();
+	//更新
 	void Update(float elapsdTime, ID3D11DeviceContext* context);
+	//描画
 	void Render(ID3D11DeviceContext* context);
 	void Render(ID3D11DeviceContext* context,DrowShader*shader);
+	//エミッターの生成
 	void CreateEmitor(const int ranking)
 	{
+		//ランキングに合わせて生成するエミッターの数を増やす
 		mCreateFlag = true;
 		mEmitorTimer = 0;
 		mEmitors.resize(mStartEmitorData.size());
@@ -23,6 +31,7 @@ public:
 		mNowPlayRanking = ranking;
 		SetStartList((5 - mNowPlayRanking) * mEditorData.mOneRankEmitorCount+ mEditorData.mOneRankEmitorCount/2);
 	}
+	//エミッターを解放
 	void ClearEmitor()
 	{
 		mCreateFlag = false;
@@ -39,38 +48,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSCreate1Shader;
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSCreate2Shader;
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSShader;
-	//描画用バッファ
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mRenderBuffer;
-	//定数バッファ
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbCreateBuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbCreate2Buffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbUpdateBuffer;
-
-	//UAV
-	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mRenderUAV;
-	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mParticleUAV;
-	//SRV
-	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>>mParticleSRV;
-
-	struct EmitorData
-	{
-		EmitorData() :position(0, 0, 0), velocity(0, 0, 0), type(0), maxLife(0), speed(0), emitorStartTime(0) {}
-
-		VECTOR3F position;
-		VECTOR3F velocity;
-		float maxLife;
-		float speed;
-		float emitorStartTime;
-		int type;
-	};
-	struct Emitor
-	{
-		Emitor() :position(0, 0, 0), velocity(0, 0, 0), type(-1), life(0) {}
-		VECTOR3F position;
-		VECTOR3F velocity;
-		int type;
-		float life;
-	};
+	//パーティクルデータ
 	struct Particle
 	{
 		VECTOR3F position;
@@ -92,6 +70,12 @@ private:
 		VECTOR3F velocity;
 		VECTOR3F scale;
 	};
+
+	//パーティクルバッファ
+	std::unique_ptr<CSBuffer>mParticle;
+	//描画用バッファ
+	std::unique_ptr<CSBuffer>mParticleRender;
+	//生成用データ
 	struct FireworksData
 	{
 		float maxCount;
@@ -115,7 +99,7 @@ private:
 		float dummy3;
 		FireworksData firework;
 	};
-
+	//定数バッファ
 	struct CbCreate
 	{
 		CreateData createData[30];
@@ -128,6 +112,31 @@ private:
 		float elapsdime;
 		VECTOR3F dummy;
 	};
+	std::unique_ptr<ConstantBuffer<CbCreate>>mCbCreate;
+	std::unique_ptr<ConstantBuffer<CbUpdate>>mCbUpdate;
+	//SRV
+	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>>mParticleSRV;
+	//エミッターデータ
+	struct EmitorData
+	{
+		EmitorData() :position(0, 0, 0), velocity(0, 0, 0), type(0), maxLife(0), speed(0), emitorStartTime(0) {}
+
+		VECTOR3F position;
+		VECTOR3F velocity;
+		float maxLife;
+		float speed;
+		float emitorStartTime;
+		int type;
+	};
+	struct Emitor
+	{
+		Emitor() :position(0, 0, 0), velocity(0, 0, 0), type(-1), life(0) {}
+		VECTOR3F position;
+		VECTOR3F velocity;
+		int type;
+		float life;
+	};
+	//エディタのデータ
 	struct EditorData
 	{
 		float mMaxEmitorTime;
@@ -135,7 +144,7 @@ private:
 		int mOneRankEmitorCount;
 		UINT textureType;
 	};
-	/************editorParameter*************/
+	//エディタパラメーター
 	std::vector<EmitorData>mEmitorData;
 	std::vector<EmitorData>mStartEmitorData;
 	std::vector<FireworksData>mFireworkDatas;

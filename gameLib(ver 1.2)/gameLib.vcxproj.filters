@@ -336,6 +336,9 @@
     <ClCompile Include="Source\scene_select.cpp">
       <Filter>ソース ファイル\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="Source\cs_buffer.cpp">
+      <Filter>ソース ファイル\GPU</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="External_Libraries\imgui\imconfig.h">
@@ -622,6 +625,9 @@
     </ClInclude>
     <ClInclude Include="Source\file_function.h">
       <Filter>gameLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\cs_buffer.h">
+      <Filter>ヘッダー ファイル\GPU</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

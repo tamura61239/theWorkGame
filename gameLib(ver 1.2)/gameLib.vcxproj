@@ -166,6 +166,7 @@
     <ClCompile Include="Source\camera_operation.cpp" />
     <ClCompile Include="Source\character.cpp" />
     <ClCompile Include="Source\collision.cpp" />
+    <ClCompile Include="Source\cs_buffer.cpp" />
     <ClCompile Include="Source\cubebuffer.cpp" />
     <ClCompile Include="Source\direct_input.cpp" />
     <ClCompile Include="Source\drow_shader.cpp" />
@@ -275,6 +276,7 @@
     <ClInclude Include="Source\model_resource.h" />
     <ClInclude Include="Source\motion_blur_parameter.h" />
     <ClInclude Include="Source\obj3d.h" />
+    <ClInclude Include="Source\cs_buffer.h" />
     <ClInclude Include="Source\player_ai.h" />
     <ClInclude Include="Source\player_character.h" />
     <ClInclude Include="Source\play_camera_operation.h" />

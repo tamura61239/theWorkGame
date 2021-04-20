@@ -5,6 +5,8 @@
 #include"drow_shader.h"
 #include<memory>
 #include<vector>
+#include"constant_buffer.h"
+#include"cs_buffer.h"
 
 
 class TitleParticle
@@ -17,19 +19,8 @@ public:
 	void SetChangeFlag(const bool changeFlag) { mSceneChange = changeFlag; }
 private:
 	//バッファ
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbStartBuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbStart2Buffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mRenderBuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbBuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mNumberBuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mParticleBuffer;
-	//srv
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>mSRV;
-	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>>mParticleSRV;
-	//uav
-	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mUAV;
-	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mRenderUAV;
-	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>mNumberUAV;
+	std::unique_ptr<CSBuffer>mParticle;
+	std::unique_ptr<CSBuffer>mParticleRender;
 	//シェーダー
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCreateShader;
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSShader;
@@ -37,6 +28,9 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mRenderSetCSShader;
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mClearCSShader;
 	std::unique_ptr<DrowShader>mShader;
+	//srv
+	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>>mParticleSRV;
+	//パーティクルのデータ
 	struct Particle
 	{
 		VECTOR3F position;
@@ -63,6 +57,7 @@ private:
 		VECTOR3F velocity;
 		VECTOR3F scale;
 	};
+	//定数バッファ
 	struct CbStart
 	{
 		float startIndex;
@@ -91,6 +86,10 @@ private:
 		float elapsdTime;
 		VECTOR3F angleMovement;
 	};
+	std::unique_ptr<ConstantBuffer<CbStart>>mCbStart;
+	std::unique_ptr<ConstantBuffer<CbStart2>>mCbStart2;
+	std::unique_ptr<ConstantBuffer<Cb>>mCb;
+	//エディタデータ
 	struct EditorData
 	{
 		VECTOR3F startPosition;
@@ -110,11 +109,13 @@ private:
 		UINT textureType;
 	};
 	EditorData mEditorData;
+	//数
 	float mStartIdex;
+	//生成数
 	float particleSize;
+	//最大数
 	int mMaxParticle;
 	float mNewIndex;
+	//シーンを切り替えるかどうか
 	bool mSceneChange;
-	void Load();
-	void Save();
 };
