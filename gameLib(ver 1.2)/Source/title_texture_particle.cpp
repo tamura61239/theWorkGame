@@ -96,14 +96,18 @@ void TitleTextureParticle::Editor()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("title texture particle");
+	//生成するか選択
 	ImGui::Checkbox("create", &mFullCreateFlag);
 	if (mParticleFlag || mTestFlag)ImGui::Checkbox("move", &mParticleFlag);
-
+	//テストプレイするか選択
 	ImGui::Checkbox("test", &mTestFlag);
+	//UIを出しておくか選択
 	ImGui::Checkbox("drow texture", &mTextureFlag);
+	//パラメーターを調整する
 	ImGui::InputFloat("speed", &mEditorData.speed, 0.1f);
 	ImGui::InputFloat("scale", &mEditorData.scale, 0.1f);
 	ImGui::InputFloat("screen split", &mEditorData.screenSplit, 0.1f);
+	//どのテクスチャ(板ポリ)のパラメーターを調整するか選択
 	static int num = 0;
 	for (int i = 0; i < static_cast<int>(mTextures.size()); i++)
 	{
@@ -111,12 +115,13 @@ void TitleTextureParticle::Editor()
 		std::string name = to_string(texture.data.mTextureName);
 		ImGui::RadioButton(name.c_str(), &num, i);
 	}
+	//選択したテクスチャ(板ポリ)のパラメーターを調整する
 	auto& board = boards[num];
 	float* position[3] = { &board.position.x,&board.position.y,&board.position.z };
 	ImGui::DragFloat3("position", *position, 1);
 	ImGui::InputFloat("board scale x", &board.scale.x, 1);
 	ImGui::InputFloat("board scale y", &board.scale.y, 1);
-
+	//描画に使うテクスチャの選択
 	ImVec2 size = ImVec2(75, 75);
 	for (UINT i = 0; i < static_cast<UINT>(mParticleSRV.size()); i++)
 	{
@@ -126,9 +131,11 @@ void TitleTextureParticle::Editor()
 		}
 		if (i % 4 < 3&&i< static_cast<UINT>(mParticleSRV.size()-1))ImGui::SameLine();
 	}
+	//今選択してるテクスチャの表示
 	ImGui::Text(u8"今のテクスチャ");
 	size = ImVec2(150, 150);
 	ImGui::Image(mParticleSRV[mEditorData.textureType].Get(), size);
+	//セーブ
 	if (ImGui::Button("save"))
 	{
 		Save();

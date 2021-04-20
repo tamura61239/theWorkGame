@@ -85,6 +85,7 @@ void TitleParticle::Editor()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("title particle");
+	//パラメーターを調整する
 	float* angleMovement[3] = { &mEditorData.angleMovement.x,&mEditorData.angleMovement.y,&mEditorData.angleMovement.z };
 	ImGui::SliderFloat3("angleMovement", *angleMovement, -3.14f, 3.14f);
 	ImGui::InputFloat("length", &mEditorData.leng, 1);
@@ -108,6 +109,7 @@ void TitleParticle::Editor()
 	float* defVelocity[3] = { &mEditorData.defVelocity.x,&mEditorData.defVelocity.y ,&mEditorData.defVelocity.z };
 	ImGui::SliderFloat3("def velocity", *defVelocity, -1, 1);
 	ImGui::Checkbox("scene change", &mSceneChange);
+	//描画に使うテクスチャの選択
 	ImVec2 size = ImVec2(75, 75);
 	for (UINT i = 0; i < static_cast<UINT>(mParticleSRV.size()); i++)
 	{
@@ -117,10 +119,11 @@ void TitleParticle::Editor()
 		}
 		if (i % 4 < 3 && i < static_cast<UINT>(mParticleSRV.size() - 1))ImGui::SameLine();
 	}
+	//今選択してるテクスチャの表示
 	ImGui::Text(u8"今のテクスチャ");
 	size = ImVec2(150, 150);
 	ImGui::Image(mParticleSRV[mEditorData.textureType].Get(), size);
-
+	//セーブ
 	if (ImGui::Button("save"))FileFunction::Save(mEditorData, "Data/file/title_particle_data.bin", "wb");
 	ImGui::Text("%f", mNewIndex);
 	ImGui::End();

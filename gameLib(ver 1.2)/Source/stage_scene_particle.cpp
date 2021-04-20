@@ -106,6 +106,7 @@ void StageSceneParticle::Editor()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("stage scene particle");
+	//パラメーターを調整する
 	ImGui::InputFloat("randX", &mEditorData.randX, 0.1f);
 	ImGui::InputFloat("create No", &mEditorData.oneSecondCreateNumber, 1);
 	float* windDirection[3] = { &mEditorData.windDirection.x,&mEditorData.windDirection.y ,&mEditorData.windDirection.z };
@@ -127,11 +128,11 @@ void StageSceneParticle::Editor()
 	ImGui::InputFloat("max life", &mEditorData.maxLife, 1);
 	ImGui::InputFloat("max speed", &mEditorData.maxSpeed, 1);
 	ImGui::InputFloat("scale", &mEditorData.scale, 0.1f);
-
+	//描画するパーティクルの形を決める
 	ImGui::RadioButton("cube", &mEditorData.shaderType, 0); ImGui::SameLine();
 	ImGui::RadioButton("texe", &mEditorData.shaderType, 1); ImGui::SameLine();
 	ImGui::RadioButton("point", &mEditorData.shaderType, 2);
-
+	//描画に使うテクスチャの選択
 	ImVec2 size = ImVec2(75, 75);
 	for (UINT i = 0; i < static_cast<UINT>(mParticleSRV.size()); i++)
 	{
@@ -141,10 +142,11 @@ void StageSceneParticle::Editor()
 		}
 		if (i % 4 < 3 && i < static_cast<UINT>(mParticleSRV.size() - 1))ImGui::SameLine();
 	}
+	//今選択してるテクスチャの表示
 	ImGui::Text(u8"今のテクスチャ");
 	size = ImVec2(150, 150);
 	ImGui::Image(mParticleSRV[mEditorData.textureType].Get(), size);
-
+	//セーブ
 	if (ImGui::Button("save"))
 	{
 		FileFunction::Save(mEditorData, "Data/file/stage_scene_paricte_data.bin", "wb");

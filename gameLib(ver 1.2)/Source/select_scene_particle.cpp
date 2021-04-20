@@ -114,6 +114,7 @@ void SelectSceneParticle::Editor()
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("select scene particle");
+	//パラメーターを調整する
 	ImGui::InputFloat("speed", &mEditorData.speed, 0.5f);
 	ImGui::InputFloat("range", &mEditorData.range, 1);
 	float* color[4] = { &mEditorData.color.x,&mEditorData.color.y,&mEditorData.color.z,&mEditorData.color.w };
@@ -123,6 +124,7 @@ void SelectSceneParticle::Editor()
 	float* angleMovement[3] = { &mEditorData.angleMovement.x,&mEditorData.angleMovement.y ,&mEditorData.angleMovement.z };
 	ImGui::SliderFloat3("def angleMovement", *angleMovement, -3.14f, 3.14f);
 	ImGui::InputFloat("sinLeng", &mEditorData.sinLeng, 0.1f);
+	//描画に使うテクスチャを選択する
 	ImVec2 size = ImVec2(75, 75);
 	for (UINT i = 0; i < static_cast<UINT>(mParticleSRV.size()); i++)
 	{
@@ -132,10 +134,11 @@ void SelectSceneParticle::Editor()
 		}
 		if (i % 4 < 3 && i < static_cast<UINT>(mParticleSRV.size() - 1))ImGui::SameLine();
 	}
+	//今選択してるテクスチャの表示
 	ImGui::Text(u8"今のテクスチャ");
 	size = ImVec2(150, 150);
 	ImGui::Image(mParticleSRV[mEditorData.textureType].Get(), size);
-
+	//セーブ
 	if (ImGui::Button("save"))
 	{
 		FileFunction::Save(mEditorData, "Data/file/selete_scene_particle_data.bin", "wb");
