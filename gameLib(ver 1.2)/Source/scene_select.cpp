@@ -10,7 +10,9 @@
 #include<imgui.h>
 #endif
 
-/***********************初期化関数****************************/
+/*****************************************************/
+//　　　　　　　　　　初期化関数
+/*****************************************************/
 void SceneSelect::Initialize(ID3D11Device* device)
 {
 	//マルチスレッド
@@ -46,7 +48,9 @@ void SceneSelect::Initialize(ID3D11Device* device)
 	mRasterizer = std::make_unique<RasterizerState>(device, D3D11_FILL_SOLID, D3D11_CULL_NONE, false, true, false, true, false);
 
 }
-/*************************エディター関数(ImGuiを使ってパラメーターを調整する)**************************/
+/*****************************************************/
+//　　　　　　　　　　エディタ関数
+/*****************************************************/
 void SceneSelect::Editor()
 {
 	//マルチスレッドの処理が終わったかどうかを調べる(終わってなかったらreturn)
@@ -111,7 +115,9 @@ void SceneSelect::Editor()
 		break;
 	}
 }
-/*******************更新関数**********************/
+/*****************************************************/
+//　　　　　　　　　　更新関数
+/*****************************************************/
 void SceneSelect::Update(float elapsed_time)
 {
 	//マルチスレッドの処理が終わったかどうかを調べる(終わってなかったらreturn)
@@ -143,7 +149,9 @@ void SceneSelect::Update(float elapsed_time)
 	//カメラの更新
 	pCameraManager->Update(elapsed_time);
 }
-/*********************描画関数******************/
+/*****************************************************/
+//　　　　　　　　　　描画関数
+/*****************************************************/
 void SceneSelect::Render(ID3D11DeviceContext* context, float elapsed_time)
 {
 	//描画用のステートの設定
@@ -202,7 +210,9 @@ void SceneSelect::Render(ID3D11DeviceContext* context, float elapsed_time)
 	mBlend[0]->deactivate(context);
 
 }
-/***************解放関数****************/
+/*****************************************************/
+//　　　　　　　　　　解放関数
+/*****************************************************/
 void SceneSelect::Relese()
 {
 	//シーンに使ったデータの解放

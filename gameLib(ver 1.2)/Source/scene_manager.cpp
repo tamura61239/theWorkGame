@@ -9,13 +9,17 @@
 #endif
 
 
-/************************初期化関数****************************/
+/*****************************************************/
+//　　　　　　　　　　初期化関数
+/*****************************************************/
 void SceneManager::Initialize(ID3D11Device* device)
 {
 	mScene = std::make_unique<SceneTitle>();
 	mScene->Initialize(device);
 }
-/********************更新関数***********************/
+/*****************************************************/
+//　　　　　　　　　　更新関数
+/*****************************************************/
 void SceneManager::Update(float elapsed_time)
 {
 	//遷移先のシーンがある時
@@ -35,15 +39,18 @@ void SceneManager::Update(float elapsed_time)
 	//シーンの更新
 	mScene->Update(elapsed_time);
 }
-/*******************描画関数*********************/
+/****************遷移先のシーンの生成*********************/
+void SceneManager::ChangeScene(Scene* scene)
+{
+	mNextScene.reset(scene);
+}
+
+/*****************************************************/
+//　　　　　　　　　　描画関数
+/*****************************************************/
 void SceneManager::Render(ID3D11DeviceContext* context, float elapsed_time)
 {
 	//シーンの描画
 	mScene->Render(context, elapsed_time);
-}
-//遷移先のシーンの生成
-void SceneManager::ChangeScene(Scene*scene)
-{
-	mNextScene.reset(scene);
 }
 

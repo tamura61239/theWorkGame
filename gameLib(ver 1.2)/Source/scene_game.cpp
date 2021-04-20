@@ -19,12 +19,15 @@
 #include"scene_result.h"
 #include"file_function.h"
 
-//コンストラクタ
+/*****************************************************/
+//　　　　　　　　　　初期化関数
+/*****************************************************/
+/**************************コンストラクタ***************************/
 SceneGame::SceneGame(int stageNo) : testGame(false), hitArea(false), mNowLoading(true), mLoadEnd(false), mStageNo(stageNo)
 {
 
 }
-/***********************初期化関数************************/
+/***********************初期化************************/
 void SceneGame::Initialize(ID3D11Device* device)
 {
 	//マルチスレッドでクラス変数の生成
@@ -114,7 +117,9 @@ void SceneGame::Initialize(ID3D11Device* device)
 	textureNo = 0;
 
 }
-/***********************エディター関数(ImGuiを使ってパラメーターを調整する)*******************/
+/*****************************************************/
+//　　　　　　　　　　エディタ関数
+/*****************************************************/
 
 void SceneGame::Editor()
 {
@@ -343,7 +348,11 @@ void SceneGame::Editor()
 }
 
 
-/**********************更新関数*******************************/
+/*****************************************************/
+//　　　　　　　　　　更新関数
+/*****************************************************/
+/*****************シーンの処理*********************/
+
 void SceneGame::Update(float elapsed_time)
 {
 	//NowLoadingのシーンかどうか
@@ -408,7 +417,7 @@ void SceneGame::Update(float elapsed_time)
 	pCameraManager->Update(elapsed_time);
 }
 
-//フェード時やその前後の処理関数
+/*****************フェード時やその前後の処理*********************/
 void SceneGame::FadeMove(float elapsdTime)
 {
 	mFade->Update(elapsdTime);
@@ -450,7 +459,9 @@ void SceneGame::FadeMove(float elapsdTime)
 
 }
 
-/***************************描画関数************************/
+/*****************************************************/
+//　　　　　　　　　　描画関数
+/*****************************************************/
 void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 {
 	//viewportの取得
@@ -635,7 +646,10 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	HitAreaRender::GetInctance()->ClearCount();
 }
 
-/************************解放関数***********************/
+/*****************************************************/
+//　　　　　　　　　　解放関数
+/*****************************************************/
+
 
 void SceneGame::Relese()
 {

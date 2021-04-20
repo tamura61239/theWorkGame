@@ -13,10 +13,15 @@
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif
+/*****************************************************/
+//　　　　　　　　　　初期化関数
+/*****************************************************/
+/**************************コンストラクタ***************************/
+
 SceneTitle::SceneTitle() : mTestMove(false)
 {
 }
-/***********************初期化関数************************/
+/***********************初期化************************/
 void SceneTitle::Initialize(ID3D11Device* device)
 {
 	//マルチスレッドでクラス変数の生成
@@ -75,7 +80,9 @@ void SceneTitle::Initialize(ID3D11Device* device)
 	mDepth = std::make_unique<DepthStencilState>(device, true, D3D11_DEPTH_WRITE_MASK_ALL, D3D11_COMPARISON_LESS_EQUAL);
 
 }
-/***********************エディター関数(ImGuiを使ってパラメーターを調整する)*******************/
+/*****************************************************/
+//　　　　　　　　　　エディタ関数
+/*****************************************************/
 void SceneTitle::Editor()
 {
 #ifdef USE_IMGUI
@@ -169,7 +176,9 @@ void SceneTitle::Editor()
 #endif
 
 }
-/**********************更新関数*******************************/
+/*****************************************************/
+//　　　　　　　　　　更新関数
+/*****************************************************/
 void SceneTitle::Update(float elapsed_time)
 {
 	//マルチスレッドの処理が終わったかどうかを調べる
@@ -212,7 +221,9 @@ void SceneTitle::Update(float elapsed_time)
 	}
 }
 
-/***************************描画関数************************/
+/*****************************************************/
+//　　　　　　　　　　描画関数
+/*****************************************************/
 void SceneTitle::Render(ID3D11DeviceContext* context, float elapsed_time)
 {
 	//NowLoading中かどうか
@@ -282,7 +293,9 @@ void SceneTitle::Render(ID3D11DeviceContext* context, float elapsed_time)
 	mSampler[samplerType::clamp]->DeActivate(context);
 }
 
-/************************解放関数***********************/
+/*****************************************************/
+//　　　　　　　　　　解放関数
+/*****************************************************/
 void SceneTitle::Relese()
 {
 	//シーンに使ったデータの解放

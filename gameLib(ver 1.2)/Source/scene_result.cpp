@@ -13,11 +13,16 @@
 #include<imgui.h>
 #endif
 
+/*****************************************************/
+//　　　　　　　　　　初期化関数
+/*****************************************************/
+/**************************コンストラクタ***************************/
+
 SceneResult::SceneResult(float timer, int nowStageNo) :mNowGameTime(timer), mPlayFlag(true), nowLoading(true)
 {
 	Ranking::SetStageNo(nowStageNo);
 }
-/*******************************初期化関数*****************************/
+/*******************************初期化*****************************/
 void SceneResult::Initialize(ID3D11Device* device)
 {
 	//マルチスレッドでクラス変数の生成
@@ -73,7 +78,9 @@ void SceneResult::Initialize(ID3D11Device* device)
 	mDepth = std::make_unique<DepthStencilState>(device, true, D3D11_DEPTH_WRITE_MASK_ALL, D3D11_COMPARISON_LESS_EQUAL);
 
 }
-/***********************エディター関数(ImGuiを使ってパラメーターを調整する)*******************/
+/*****************************************************/
+//　　　　　　　　　　エディタ関数
+/*****************************************************/
 void SceneResult::Editor()
 {
 #ifdef USE_IMGUI
@@ -181,7 +188,9 @@ void SceneResult::Editor()
 #endif
 
 }
-/**********************更新関数*******************************/
+/*****************************************************/
+//　　　　　　　　　　更新関数
+/*****************************************************/
 void SceneResult::Update(float elapsed_time)
 {
 	//マルチスレッドの処理が終わったかどうかを調べる(終わってなかったらreturn)
@@ -233,7 +242,9 @@ void SceneResult::Update(float elapsed_time)
 	pCameraManager->Update(elapsed_time);
 
 }
-/******************************描画関数**************************************/
+/*****************************************************/
+//　　　　　　　　　　描画関数
+/*****************************************************/
 void SceneResult::Render(ID3D11DeviceContext* context, float elapsed_time)
 {
 	//描画用のステートの設定
@@ -309,7 +320,9 @@ void SceneResult::Render(ID3D11DeviceContext* context, float elapsed_time)
 
 }
 
-/************************解放関数***********************/
+/*****************************************************/
+//　　　　　　　　　　解放関数
+/*****************************************************/
 void SceneResult::Relese()
 {
 	//シーンに使ったデータの解放
