@@ -33,13 +33,16 @@ public:
 	void StartFadeIn()
 	{
 		//フェートイン開始
-		mState = FADE_MODO::FADEIN;
-		mNowFadeData.mData.mColor.w = 1;
-
+		if (mState != FADE_MODO::FADEIN)
+		{
+			mState = FADE_MODO::FADEIN;
+			mNowFadeData.mData.mColor.w = 1;
+		}
 	}
 	void StartFadeOut()
 	{
 		//フェートアウト開始
+		if(mState!= FADE_MODO::FADEOUT)
 		{
 			mState = FADE_MODO::FADEOUT;
 			mNowFadeData.mData.mColor.w = 0;
