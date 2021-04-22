@@ -18,10 +18,11 @@
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wparam, LPARAM lparam);
 #endif
 
-
+//フレームワーククラス
 class Framework
 {
 public:
+	//インスタンス
 	static Framework& Instance() { return *mInst; }
 
 	//コンストラクタ
@@ -36,12 +37,13 @@ public:
 	int Run()
 	{
 		MSG msg = {};
-
+		//初期化
 		if (!Initialize(mHwnd)) return 0;
 		mTimer.reset();
-
+		//シーンのループ
 		while (WM_QUIT != msg.message)
 		{
+			//スレッドのメッセージキューにメッセージがあるかどうかを確認
 			if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 			{
 				TranslateMessage(&msg);
@@ -49,16 +51,18 @@ public:
 			}
 			else
 			{
-
+				//fps計算
 				mTimer.tick();
+				//fps表示
 				CalculateFrameStats();
+				//更新
 				Update(mTimer.time_interval());
+				//描画
 				Render(mTimer.time_interval());
 
 			}
 		}
 
-		//delete[] *sprites;
 		//ImGuiの終了処理
 #ifdef USE_IMGUI
 		ImGui_ImplDX11_Shutdown();
@@ -69,10 +73,11 @@ public:
 
 		return static_cast<int>(msg.wParam);
 	}
-	//
+	//取得したメッセージに合わせた処理をする
 	LRESULT CALLBACK HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	{
 #ifdef USE_IMGUI
+		//imguiにもメッセージなどを送る
 		if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) return 1;
 #endif
 
@@ -109,6 +114,7 @@ public:
 
 		return 0;
 	}
+	//getter
 	HWND GetHwnd() { return mHwnd; }
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView>GetDepthStencilView() { return mDepthStencilView; }
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView>GetRenderTargetView() { return mRenderTargetView; }
@@ -135,8 +141,11 @@ private:
 	//********************************//
 	//           関数                 //
 	//********************************//
+	//初期化
 	bool Initialize(HWND hwnd);
+	//更新
 	void Update(float elapsed_time/*Elapsed seconds from last frame*/);
+	//描画
 	void Render(float elapsed_time/*Elapsed seconds from last frame*/);
 
 	//FPS

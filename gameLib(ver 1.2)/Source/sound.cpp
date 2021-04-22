@@ -1,5 +1,4 @@
 #include "sound.h"
-#if SOUNDMODO
 //**************************************
 //   include Headers
 //**************************************
@@ -8,6 +7,9 @@
 
 #include <assert.h>
 
+/*****************************************************/
+//　　　　　　　　　　初期化関数(コンストラクタ)
+/*****************************************************/
 
 Sound::Sound(const char* filename)
 {
@@ -65,6 +67,9 @@ Sound::Sound(const char* filename)
 		assert(!"Could not Create MasteringVoice");
 	}
 }
+/*****************************************************/
+//　　　　　　　　　　解放関数(デストラクタ)
+/*****************************************************/
 
 Sound::~Sound()
 {
@@ -83,12 +88,15 @@ Sound::~Sound()
 	}
 	CoUninitialize();
 }
+/*****************************************************/
+//　　　　　　　　　　更新関数
+/*****************************************************/
 
 void Sound::Update()
 {
 	mSoundBuffer->Update();
 }
-
+/*********************音を鳴らし始める***********************/
 void Sound::Play(bool loop)
 {
 	HRESULT hr = mSoundBuffer->PlayWave(mPXaudio2, loop);
@@ -100,52 +108,24 @@ void Sound::Play(bool loop)
 		assert(!"Could not Play sound");
 	}
 }
+/*******************音が鳴っているかどうか*******************/
 bool Sound::Playing()
 {
 
 	return mSoundBuffer->Playing();
 }
-
+/******************一時停止******************/
 void Sound::Pause()
 {
 	mSoundBuffer->Pause();
 }
-
+/****************停止***************/
 void Sound::Stop()
 {
 	mSoundBuffer->Stop();
 }
-
+/*********************音の大きさを設定する********************/
 void Sound::SetVolume(const float volume)
 {
 	mSoundBuffer->Volume(volume);
 }
-#else
-Sound::Sound(const wchar_t* fileName, DirectX::AudioEngine* audioEngine)
-{
-	music.reset(new DirectX::SoundEffect(audioEngine, fileName));
-	musicInstance = music->CreateInstance();
-}
-
-void Sound::Play(bool loop)
-{
-	musicInstance->Play(loop);
-}
-bool Sound::SoundMove()
-{
-	
-	if (musicInstance->GetState() == DirectX::SoundState::STOPPED)return false;
-	return true;
-}
-
-void Sound::Stop()
-{
-	musicInstance->Pause();
-	musicInstance->IsLooped();
-}
-
-void Sound::SetVolume(float volume)
-{
-	musicInstance->SetVolume(volume);
-}
-#endif

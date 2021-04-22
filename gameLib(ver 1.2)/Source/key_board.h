@@ -1,11 +1,15 @@
 #pragma once
 #include<Windows.h>
+//キーボード入力状態取得関数
 class KeyBoad
 {
 public:
+	//更新
 	void Update()
 	{
+		//キー情報の取得
 		if (!GetKeyboardState(mKey))return;
+		//全てのキーの状態を更新
 		for (int i = 0; i < 256; i++)
 		{
 			mBeforeKey[i] = mPushKey[i];
@@ -33,9 +37,11 @@ public:
 		return keyboad;
 	}
 private:
+	//キーの情報
 	BYTE mKey[256] = { 0 };
 	int mPushKey[256] = { 0 };
 	int mBeforeKey[256] = { 0 };
+	//コンストラクタ
 	KeyBoad()
 	{
 		for (int i = 0; i < 256; i++)
@@ -47,7 +53,7 @@ private:
 };
 #define pKeyBoad (KeyBoad::getinctanse())
 enum KeyLabel
-{
+{//キーボードの種類
 	A = static_cast<int>('A'),
 	B = static_cast<int>('B'),
 	C = static_cast<int>('C'),

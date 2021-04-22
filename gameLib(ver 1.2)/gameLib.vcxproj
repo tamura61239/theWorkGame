@@ -324,8 +324,8 @@
     <ClInclude Include="Source\ui_manager.h" />
     <ClInclude Include="Source\vector.h" />
     <ClInclude Include="Source\vector_combo.h" />
-    <ClInclude Include="Source\x_input.h" />
     <ClInclude Include="Source\stage_scene_particle.h" />
+    <ClInclude Include="Source\x_input.h" />
     <ClInclude Include="Source\zoom_blur_parameter.h" />
   </ItemGroup>
   <ItemGroup>

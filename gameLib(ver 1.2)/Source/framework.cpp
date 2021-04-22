@@ -9,6 +9,9 @@
 #include"scene_select.h"
 #include"scene_game.h"
 Framework* Framework::mInst = nullptr;
+/*****************************************************/
+//　　　　　　　　　　初期化関数
+/*****************************************************/
 
 bool Framework::Initialize(HWND hwnd)
 {
@@ -129,13 +132,16 @@ bool Framework::Initialize(HWND hwnd)
 	D3D11_VIEWPORT viewport;
 	UINT num_viewports = 1;
 	mDeviceContext.Get()->RSGetViewports(&num_viewports, &viewport);
+	//シーンの初期化
 	CameraManager::Create();
 	pCameraManager->SetDefaultPerspective(30 * (3.14f / 180.f), viewport.Width / viewport.Height, 0.1f, 20000);
 	pSceneManager.Initialize(mDevice.Get());
 	StageManager::StageCount();
 	return true;
 }
-//更新
+/*****************************************************/
+//　　　　　　　　　　更新関数
+/*****************************************************/
 void Framework::Update(float elapsed_time)
 {
 	input::GamepadUpdate();
@@ -146,32 +152,31 @@ void Framework::Update(float elapsed_time)
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 #endif
+	//rand関数の更新
 	srand((unsigned int)time(NULL));
-	//cameraOperation->Update(elapsed_time);
-	//camera->CalculateMatrix();
-	//model->UpdateAnimation(elapsed_time);
-	//model->CalculateLocalTransform();
-	//model->CalculateWorldTransform(DirectX::XMLoadFloat4x4(&CalculateTransform(VECTOR3F(0, 3, 0), VECTOR3F(1, 1, 1), VECTOR3F(0, 3.14f, 0))));
+	//シーンの更新
 	pSceneManager.Update(elapsed_time);
 }
-//描画
+/*****************************************************/
+//　　　　　　　　　　描画関数
+/*****************************************************/
 void Framework::Render(float elapsed_time)
 {
 	float ClearColor[4] = { .0f, .0f, .0f, 1.0f }; //red,green,blue,alpha
-
+	//レンダーターゲットなどの初期化
 	mDeviceContext->ClearRenderTargetView(mRenderTargetView.Get(), ClearColor);
 	
 	mDeviceContext->ClearDepthStencilView(mDepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	
 	mDeviceContext->OMSetRenderTargets(1, mRenderTargetView.GetAddressOf(), mDepthStencilView.Get());
-	
+	//シーンの描画
 	pSceneManager.Render(mDeviceContext.Get(), elapsed_time);
 	//ImGuiの描画
 #ifdef USE_IMGUI
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 #endif
-
+	//fps固定かどうかを決める
 	mSwapChain->Present(0, 0);
 }
 

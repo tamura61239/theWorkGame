@@ -3,11 +3,14 @@
 #include <wrl.h>
 #include"misc.h"
 
+//定数バッファクラス
 template <class T>
 class ConstantBuffer
 {
 public:
+	//データ
 	T data{};
+	//コンストラクタ
 	ConstantBuffer(ID3D11Device* device)
 	{
 		_ASSERT_EXPR(sizeof(T) % 16 == 0, L"constant buffer's need to be 16 byte aligned");
@@ -24,6 +27,7 @@ public:
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 	}
+	//定数バッファをGPU側に送る
 	void Activate(ID3D11DeviceContext* context,UINT slot,bool vs=false,bool ps=false,bool gs=false,bool cs=false)
 	{
 		HRESULT hr = S_OK;
@@ -46,6 +50,7 @@ public:
 		mSetFlag[2] = gs;
 		mSetFlag[3] = cs;
 	}
+	//解除
 	void DeActivate(ID3D11DeviceContext* context)
 	{
 		ID3D11Buffer* buffer = nullptr;
@@ -56,7 +61,10 @@ public:
 
 	}
 private:
+	//定数バッファ
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mConstantBuffer;
+	//GPU側の登録番号
 	UINT mSlotNum;
+	//どのシェーダーにデータを送ったか
 	bool mSetFlag[4] = { false };
 };

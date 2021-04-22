@@ -1,10 +1,10 @@
 #include "geometric_primitive.h"
 #include "misc.h"
 #include<memory>
-
-/****************************/
-//    オブジェクトクラス
-/***************************/
+/*************************************オブジェクトクラス**********************************/
+/*****************************************************/
+//　　　　　　　　　　生成関数
+/*****************************************************/
 void GeometricPrimitive::CreateBuffer(ID3D11Device* device, std::vector<Vertex> vertics, std::vector<UINT> index)
 {
 	HRESULT hr = S_OK;
@@ -47,6 +47,10 @@ void GeometricPrimitive::CreateBuffer(ID3D11Device* device, std::vector<Vertex> 
 
 	}
 }
+/*****************************************************/
+//　　　　　　　　　　初期化関数(コンストラクタ)
+/*****************************************************/
+
 //キューブ
 GeometricCube::GeometricCube(ID3D11Device* device) : GeometricPrimitive(device)
 {
@@ -326,194 +330,45 @@ GeometricSphere::GeometricSphere(ID3D11Device* device, u_int slices, u_int stack
 	}
 	CreateBuffer(device, vertices, indices);
 }
-/************************************/
-//       描画クラス
-/***********************************/
+/*************************************描画クラス**********************************/
+
+/*****************************************************/
+//　　　　　　　　　　初期化関数(コンストラクタ)
+/*****************************************************/
 PrimitiveRender::PrimitiveRender(ID3D11Device* device)
 {
 	HRESULT hr = S_OK;
 	// 定数バッファの生成
 	{
-		// 定数バッファを作成するための設定オプション
-		D3D11_BUFFER_DESC desc = {};
-		desc.ByteWidth = sizeof(CbScene);
-		desc.Usage = D3D11_USAGE_DEFAULT;
-		desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		desc.CPUAccessFlags = 0;
-		desc.MiscFlags = 0;
-		desc.StructureByteStride = 0;
-
-		hr = device->CreateBuffer(&desc, nullptr,mCbSceneBuffer.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-		desc.ByteWidth = sizeof(CbObj);
-		hr = device->CreateBuffer(&desc, nullptr, mCbObjBuffer.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		mCbScene = std::make_unique<ConstantBuffer<CbScene>>(device);
+		mCbObj = std::make_unique<ConstantBuffer<CbObj>>(device);
 	}
-	//頂点シェーダー＆頂点入力レイアウトの生成
-	{
-		// 頂点シェーダーファイルを開く(sprite_vs.hlsl をコンパイルしてできたファイル)
-		FILE* fp = nullptr;
-		fopen_s(&fp, "Data/shader/geometric_primitive_vs.cso", "rb");
-		_ASSERT_EXPR_A(fp, "CSO File not found");
-
-		// 頂点シェーダーファイルのサイズを求める
-		fseek(fp, 0, SEEK_END);
-		long cso_sz = ftell(fp);
-		fseek(fp, 0, SEEK_SET);
-
-		// メモリ上に頂点シェーダーデータを格納する領域を用意する
-		std::unique_ptr<u_char[]> cso_data = std::make_unique<u_char[]>(cso_sz);
-		fread(cso_data.get(), cso_sz, 1, fp);
-		fclose(fp);
-
-		// 頂点シェーダーデータを基に頂点シェーダーオブジェクトを生成する
-		hr = device->CreateVertexShader(cso_data.get(), cso_sz, nullptr, mVSShader.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-		// GPUに頂点データの内容を教えてあげるための設定
-		D3D11_INPUT_ELEMENT_DESC input_element_desc[] =
-		{
-			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		};
-
-		// 入力レイアウトの生成
-		hr = device->CreateInputLayout(
-			input_element_desc,				// 頂点データの内容
-			ARRAYSIZE(input_element_desc),	// 頂点データの要素数
-			cso_data.get(),						// 頂点シェーダーデータ（input_element_descの内容と sprite_vs.hlslの内容に不一致がないかチェックするため）
-			cso_sz,							// 頂点シェーダーデータサイズ
-			mInput.GetAddressOf()					// 入力レイアウトオブジェクトのポインタの格納先。
-		);
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	}
-
-	// ピクセルシェーダーの生成
-	{
-		// ピクセルシェーダーファイルを開く(sprite_ps.hlsl をコンパイルしてできたファイル)
-		FILE* fp = nullptr;
-		fopen_s(&fp, "Data/shader/geometric_primitive_ps.cso", "rb");
-		_ASSERT_EXPR_A(fp, "CSO File not found");
-
-		// ピクセルシェーダーファイルのサイズを求める
-		fseek(fp, 0, SEEK_END);
-		long cso_sz = ftell(fp);
-		fseek(fp, 0, SEEK_SET);
-
-		// メモリ上に頂点シェーダーデータを格納する領域を用意する
-		std::unique_ptr<u_char[]> cso_data = std::make_unique<u_char[]>(cso_sz);
-		fread(cso_data.get(), cso_sz, 1, fp);
-		fclose(fp);
-
-		// ピクセルシェーダーの生成
-		hr = device->CreatePixelShader(cso_data.get(), cso_sz, nullptr, mPSShader.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	}
-	// ラスタライザステートの生成
-	{
-		// ラスタライザステートを作成するための設定オプション
-		D3D11_RASTERIZER_DESC desc;
-		ZeroMemory(&desc, sizeof(D3D11_RASTERIZER_DESC));
-		desc.FillMode = D3D11_FILL_WIREFRAME;
-		desc.CullMode = D3D11_CULL_BACK;
-		desc.FrontCounterClockwise = false;
-		desc.DepthBias = 0;
-		desc.DepthBiasClamp = 0.0f;
-		desc.SlopeScaledDepthBias = 0.0f;
-		desc.DepthClipEnable = false;
-		desc.ScissorEnable = false;
-		desc.MultisampleEnable = false;
-		desc.AntialiasedLineEnable = false;
-
-		hr = device->CreateRasterizerState(&desc, mRasterizerState.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	}
-	// 深度ステンシルステートの設定
-	{
-		D3D11_DEPTH_STENCIL_DESC desc;
-		::memset(&desc, 0, sizeof(desc));
-		desc.DepthEnable = true;
-		desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-		desc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-		hr = device->CreateDepthStencilState(&desc, mDepthStencilState.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	}
+	//シェーダーの生成
+	mShader = std::make_unique<DrowShader>(device, "Data/shader/geometric_primitive_vs.cso", "", "Data/shader/geometric_primitive_ps.cso");
 
 }
-#if TYPE
-void PrimitiveRender::Begin(ID3D11DeviceContext* context, const VECTOR4F& light)
-{
-	context->VSSetShader(mVSShader.Get(), nullptr, 0);
-	context->PSSetShader(mPSShader.Get(), nullptr, 0);
-	context->IASetInputLayout(mInput.Get());
+/*****************************************************/
+//　　　　　　　　　　描画関数
+/*****************************************************/
+/***************************下準備**************************/
 
-	ID3D11Buffer* constantBuffer[] =
-	{
-		mCbSceneBuffer.Get(),
-		mCbObjBuffer.Get(),
-	};
-	context->VSSetConstantBuffers(0, ARRAYSIZE(constantBuffer), constantBuffer);
-	//context->PSSetConstantBuffers(0, ARRAYSIZE(constantBuffer), constantBuffer);
-	context->RSSetState(mRasterizerState.Get());
-
-	CbScene cbScene;
-	cbScene.lightDirection = light;
-	context->UpdateSubresource(mCbSceneBuffer.Get(), 0, 0, &cbScene,0,0);
-}
-
-void PrimitiveRender::Render(ID3D11DeviceContext* context, GeometricPrimitive* obj, const FLOAT4X4& view, const FLOAT4X4& projection, const VECTOR4F& color)
-{
-	CbObj cbObj;
-	cbObj.world = obj->GetWorld();
-
-	DirectX::XMMATRIX W = DirectX::XMLoadFloat4x4(&cbObj.world);
-	DirectX::XMMATRIX V = DirectX::XMLoadFloat4x4(&view);
-	DirectX::XMMATRIX P = DirectX::XMLoadFloat4x4(&projection);
-	DirectX::XMMATRIX WVP = W*V*P;
-	DirectX::XMStoreFloat4x4(&cbObj.worldViewProjection, WVP);
-	cbObj.color = color;
-	context->UpdateSubresource(mCbObjBuffer.Get(), 0, 0, &cbObj,0,0);
-
-	UINT stride = sizeof(GeometricPrimitive::Vertex);
-	UINT offset = 0;
-
-	context->IASetVertexBuffers(0, 1, obj->GetVertexBuffer().GetAddressOf(), &stride, &offset);
-	context->IASetIndexBuffer(obj->GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
-	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	int num = obj->GetIndexNum();
-	context->DrawIndexed(num, 0, 0);
-}
-#else
 void PrimitiveRender::Begin(ID3D11DeviceContext* context, const VECTOR4F& light, const FLOAT4X4& view, const FLOAT4X4& projection)
 {
-	context->VSSetShader(mVSShader.Get(), nullptr, 0);
-	context->PSSetShader(mPSShader.Get(), nullptr, 0);
-	context->IASetInputLayout(mInput.Get());
 
-	ID3D11Buffer* constantBuffer[] =
-	{
-		mCbSceneBuffer.Get(),
-		mCbObjBuffer.Get(),
-	};
-	context->VSSetConstantBuffers(0, ARRAYSIZE(constantBuffer), constantBuffer);
-	//context->PSSetConstantBuffers(0, ARRAYSIZE(constantBuffer), constantBuffer);
-	context->RSSetState(mRasterizerState.Get());
-	context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
-
-	CbScene cbScene;
-	cbScene.lightDirection = light;
-	cbScene.view = view;
-	cbScene.projection = projection;
-	context->UpdateSubresource(mCbSceneBuffer.Get(), 0, 0, &cbScene, 0, 0);
+	mCbScene->data.lightDirection = light;
+	mCbScene->data.view = view;
+	mCbScene->data.projection = projection;
+	mCbScene->Activate(context,0,true,true);
 }
+/*************************描画****************************/
 
 void PrimitiveRender::Render(ID3D11DeviceContext* context, GeometricPrimitive* obj, const FLOAT4X4& world, const VECTOR4F& color)
 {
-	CbObj cbObj;
-	cbObj.world = world;
-	cbObj.color = color;
-	context->UpdateSubresource(mCbObjBuffer.Get(), 0, 0, &cbObj, 0, 0);
+	mShader->Activate(context);
+
+	mCbObj->data.world = world;
+	mCbObj->data.color = color;
+	mCbObj->Activate(context, 1, true, true);
 
 	UINT stride = sizeof(GeometricPrimitive::Vertex);
 	UINT offset = 0;
@@ -523,9 +378,44 @@ void PrimitiveRender::Render(ID3D11DeviceContext* context, GeometricPrimitive* o
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	int num = obj->GetIndexNum();
 	context->DrawIndexed(num, 0, 0);
-}
 
-#endif
+	mCbObj->DeActivate(context);
+	mShader->Deactivate(context);
+
+}
+/**************************描画(シェーダーの取得)***************************/
+
+void PrimitiveRender::Render(ID3D11DeviceContext* context, DrowShader* shader, GeometricPrimitive* obj, const FLOAT4X4& world, const VECTOR4F& color)
+{
+	shader->Activate(context);
+
+	mCbObj->data.world = world;
+	mCbObj->data.color = color;
+	mCbObj->Activate(context, 1, true, true);
+
+	UINT stride = sizeof(GeometricPrimitive::Vertex);
+	UINT offset = 0;
+
+	context->IASetVertexBuffers(0, 1, obj->GetVertexBuffer().GetAddressOf(), &stride, &offset);
+	context->IASetIndexBuffer(obj->GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	int num = obj->GetIndexNum();
+	context->DrawIndexed(num, 0, 0);
+
+	mCbObj->DeActivate(context);
+	shader->Deactivate(context);
+
+}
+/*************************GPU側を元に戻す****************************/
+
 void PrimitiveRender::End(ID3D11DeviceContext* context)
 {
+	mCbScene->DeActivate(context);
+	UINT stride = 0;
+	UINT offset = 0;
+	ID3D11Buffer* vertex = nullptr;
+	ID3D11Buffer* index = nullptr;
+	context->IASetVertexBuffers(0, 1, &vertex, &stride, &offset);
+	context->IASetIndexBuffer(index, DXGI_FORMAT_R32_UINT, 0);
+
 }

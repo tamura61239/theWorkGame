@@ -3,37 +3,23 @@
 #include"vector.h"
 #include <wrl.h>
 #include<vector>
+#include"constant_buffer.h"
+#include"drow_shader.h"
 
-#define TYPE 0
 
-//オブジェクトクラス
+//デフォルトオブジェクトクラス
 class GeometricPrimitive
 {
 public:
+	//コンストラクタ
 	GeometricPrimitive(ID3D11Device* device) :mIndexNum(0) {};
+	//デストラクタ
 	virtual ~GeometricPrimitive() {};
+	//getter
 	Microsoft::WRL::ComPtr<ID3D11Buffer>GetVertexBuffer() { return mVertexBuffer; }
 	Microsoft::WRL::ComPtr<ID3D11Buffer>GetIndexBuffer() { return mIndexBuffer; }
 
 	const int& GetIndexNum() { return mIndexNum; }
-#if TYPE
-	const FLOAT4X4& GetWorld() { return world; }
-	void CalculateTransform(const VECTOR3F& position, const VECTOR3F& scale, const VECTOR3F& angle)
-	{
-		DirectX::XMMATRIX W, s, r, t;
-		//スケール行列
-		s = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
-		//回転行列
-		r = DirectX::XMMatrixRotationRollPitchYaw(angle.x, angle.y, angle.z);
-		//移動行列
-		t = DirectX::XMMatrixTranslation(position.x, position.y, position.z);
-		//ワールド行列
-		W = s * r * t;
-
-		DirectX::XMStoreFloat4x4(&world, W);
-	}
-#else
-#endif
 	//頂点構造体
 	struct Vertex
 	{
@@ -41,11 +27,14 @@ public:
 		VECTOR3F normal;
 	};
 protected:
+	//バッファ生成
 	void CreateBuffer(ID3D11Device* device, std::vector<Vertex>vertics, std::vector<UINT>index);
 private:
-	FLOAT4X4 mWorld;
+	//index数
 	int mIndexNum;
+	//頂点バッファ
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mVertexBuffer;
+	//indexバッファ
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mIndexBuffer;
 };
 //キューブ
@@ -71,35 +60,15 @@ public:
 class PrimitiveRender
 {
 public:
+	//コンストラクタ
 	PrimitiveRender(ID3D11Device* device);
-#if TYPE
-	void Begin(ID3D11DeviceContext* context, const VECTOR4F& light);
-	void Render(ID3D11DeviceContext* context, GeometricPrimitive* obj, const FLOAT4X4& view, const FLOAT4X4& projection, const VECTOR4F& color = VECTOR4F(1, 1, 1, 1));
-#else
+	//描画
 	void Begin(ID3D11DeviceContext* context, const VECTOR4F& light, const FLOAT4X4& view, const FLOAT4X4& projection);
 	void Render(ID3D11DeviceContext* context, GeometricPrimitive* obj, const FLOAT4X4& world, const VECTOR4F& color = VECTOR4F(1, 1, 1, 1));
-#endif
+	void Render(ID3D11DeviceContext* context, DrowShader* shader, GeometricPrimitive* obj, const FLOAT4X4& world, const VECTOR4F& color = VECTOR4F(1, 1, 1, 1));
 	void End(ID3D11DeviceContext* context);
 private:
-	Microsoft::WRL::ComPtr<ID3D11VertexShader>mVSShader;
-	Microsoft::WRL::ComPtr<ID3D11PixelShader>mPSShader;
-	Microsoft::WRL::ComPtr<ID3D11InputLayout>mInput;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbSceneBuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbObjBuffer;
-	Microsoft::WRL::ComPtr<ID3D11RasterizerState>mRasterizerState;
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilState>mDepthStencilState;
-#if TYPE
-	struct CbScene
-	{
-		VECTOR4F lightDirection;
-	};
-	struct CbObj
-	{
-		FLOAT4X4 worldViewProjection;
-		FLOAT4X4 world;
-		VECTOR4F color;
-	};
-#else
+	//定数バッファ
 	struct CbScene
 	{
 		VECTOR4F lightDirection;
@@ -111,5 +80,8 @@ private:
 		FLOAT4X4 world;
 		VECTOR4F color;
 	};
-#endif
+	std::unique_ptr<ConstantBuffer<CbScene>>mCbScene;
+	std::unique_ptr<ConstantBuffer<CbObj>>mCbObj;
+	//シェーダー
+	std::unique_ptr<DrowShader>mShader;
 };

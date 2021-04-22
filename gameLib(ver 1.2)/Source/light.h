@@ -2,7 +2,8 @@
 #include"vector.h"
 #include<wrl.h>
 #include <d3d11.h>
-
+#include"constant_buffer.h"
+//スポットライトのデータ
 struct SpotLight
 {
 	float index;
@@ -17,7 +18,7 @@ struct SpotLight
 	VECTOR4F color;
 	VECTOR4F dir;
 };
-
+//ポイントライトのデータ
 struct PointLight {
 	float index;
 	float range;//光の届く範囲
@@ -26,27 +27,28 @@ struct PointLight {
 	VECTOR4F position;
 	VECTOR4F color;
 };
+//ポイントライトやスポットライトの最大数
 static const int POINTMAX = 32;
 static const int SPOTMAX = 32;
-
+//ライト管理クラス
 class Light
 {
 public:
 	//バッファ生成関数
 	void CreateLightBuffer(ID3D11Device* device);
 	//setter
-	void SetLightDirection(const VECTOR4F& lightDirection) { mDefLight.mLightDirection = lightDirection; }
-	void SetLightColor(const VECTOR4F& lightColor) { mDefLight.mLightColor = lightColor; }
-	void SetAmbientColor(const VECTOR4F& ambientColor) { mDefLight.mAmbientColor = ambientColor; }
+	void SetLightDirection(const VECTOR4F& lightDirection) { mCbDefLight->data.mLightDirection = lightDirection; }
+	void SetLightColor(const VECTOR4F& lightColor) { mCbDefLight->data.mLightColor = lightColor; }
+	void SetAmbientColor(const VECTOR4F& ambientColor) { mCbDefLight->data.mAmbientColor = ambientColor; }
 	void SetPointLight(int index, VECTOR3F position, VECTOR3F color, float range);
 	void SetSpotLight(int index, VECTOR3F position, VECTOR3F color, VECTOR3F dir, float range, float nearArea, float farArea);
 	void ConstanceLightBufferSetShader(ID3D11DeviceContext* context);
 	//getter
-	const VECTOR4F& GetLightDirection() { return mDefLight.mLightDirection; }
-	const VECTOR4F& GetLightColor() { return mDefLight.mLightColor; }
-	const VECTOR4F& GetAmbientColor() { return mDefLight.mAmbientColor; }
-	PointLight* GetPointLight() { return mPointLight; }
-	SpotLight* GetSpotLight() { return mSpotLight; }
+	const VECTOR4F& GetLightDirection() { return mCbDefLight->data.mLightDirection; }
+	const VECTOR4F& GetLightColor() { return mCbDefLight->data.mLightColor; }
+	const VECTOR4F& GetAmbientColor() { return mCbDefLight->data.mAmbientColor; }
+	PointLight* GetPointLight() { return mCbLight->data.pointLight; }
+	SpotLight* GetSpotLight() { return mCbLight->data.spotLight; }
 
 	//インスタンス関数
 	static Light& GetInctance()
@@ -54,10 +56,12 @@ public:
 		static Light light;
 		return light;
 	}
-	//更新
+	//エディタ
 	void Editor();
 private:
+	//コンストラクタ
 	Light();
+	//定数バッファ
 	struct CbLight
 	{
 		PointLight pointLight[POINTMAX];
@@ -74,11 +78,7 @@ private:
 		VECTOR3F mGroundColor;
 		float dummy2;
 	};
-
-	PointLight mPointLight[POINTMAX];
-	SpotLight mSpotLight[SPOTMAX];
-	CbDefLight mDefLight;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbLight;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbDefLight;
+	std::unique_ptr<ConstantBuffer<CbLight>>mCbLight;
+	std::unique_ptr<ConstantBuffer<CbDefLight>>mCbDefLight;
 };
 #define pLight (Light::GetInctance())

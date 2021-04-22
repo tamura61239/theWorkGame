@@ -1,24 +1,27 @@
 #pragma once
-//**************************************
-//   include Headers
-//**************************************
 #include "sound_buffer.h"
 
-#if SOUNDMODO
 //**************************************
-//   Object class
+//   音
 //**************************************
 class Sound
 {
 public:
+	//コンストラクタ
 	Sound(const char* name);
+	//デストラクタ
 	~Sound();
-
+	//更新
 	void Update();
+	//音を鳴らし始める
 	void Play(bool loop = false);
+	//音が鳴っているかどうか
 	bool Playing();
+	//一時停止
 	void Pause();
+	//停止
 	void Stop();
+	//音量の設定
 	void SetVolume(const float volume);
 private:
 	IXAudio2* mPXaudio2 = nullptr;
@@ -29,21 +32,3 @@ private:
 	const char* mWavName;
 
 };
-#else
-#include<memory>
-#include<Audio.h>
-
-class Sound
-{
-public:
-	Sound(const wchar_t* fileName, DirectX::AudioEngine*audioEngine);
-	void Play(bool loop = false);
-	bool SoundMove();
-	void Stop();
-	void SetVolume(float volume);
-	~Sound(){}
-private:
-	std::unique_ptr<DirectX::SoundEffect>music;
-	std::unique_ptr<DirectX::SoundEffectInstance>musicInstance;
-};
-#endif

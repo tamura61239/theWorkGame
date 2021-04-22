@@ -1,6 +1,9 @@
 #include "x_input.h"
 #include <Windows.h>
 #include <algorithm>
+/*****************************************************/
+//　　　　　　　　　　初期化関数(コンストラクタ)
+/*****************************************************/
 
 XInput::XInput(const int id, const float deadzone_x, const float deadzone_y)
 {
@@ -15,6 +18,9 @@ XInput::XInput(const int id, const float deadzone_x, const float deadzone_y)
 	mDeadzoneY = deadzone_y;
 	mDeadzoneX = deadzone_x;
 }
+/*****************************************************/
+//　　　　　　　　　　更新関数
+/*****************************************************/
 
 void XInput::Update()
 {
@@ -29,7 +35,7 @@ void XInput::Update()
 	StickState();
 	TriggerState();
 }
-
+/***********************スティックの入力状態****************************/
 void XInput::StickState()
 {
 	mCurrentState.lStick.x = ApplyDeadZone(static_cast<float>(mCurrentState.state.Gamepad.sThumbLX), MAX_STICKTILT, mDeadzoneX);
@@ -40,12 +46,13 @@ void XInput::StickState()
 
 	mCurrentState.rStick.y = ApplyDeadZone(static_cast<float>(mCurrentState.state.Gamepad.sThumbRY), MAX_STICKTILT, mDeadzoneY);
 }
-
+/*******************トリガーの入力状態**********************/
 void XInput::TriggerState()
 {
 	mCurrentState.lTrigger = ApplyDeadZone(static_cast<float>(mCurrentState.state.Gamepad.bLeftTrigger), MAX_TRRIGERTILT, 0.0f);
 	mCurrentState.rTrigger = ApplyDeadZone(static_cast<float>(mCurrentState.state.Gamepad.bRightTrigger), MAX_TRRIGERTILT, 0.0f);
 }
+/*********************************押し込みを調べる*******************************/
 
 float XInput::ApplyDeadZone(const float value, const float max_value, const float deadzone)
 {

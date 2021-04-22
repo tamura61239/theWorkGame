@@ -1,10 +1,11 @@
 #pragma once
 
 #include<Windows.h>
-
+//フレーム間の時間計算クラス
 class HighResolutionTimer
 {
 public:
+	//コンストラクタ
 	HighResolutionTimer() : mDeltaTime(-1.0), mPausedTime(0), mStopped(false)
 	{
 		LONGLONG counts_per_sec;
@@ -91,7 +92,7 @@ public:
 			mStopped = true;
 		}
 	}
-
+	//時間を計算する
 	void tick() // Call every frame.
 	{
 		if (mStopped)

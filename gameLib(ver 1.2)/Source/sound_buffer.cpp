@@ -29,6 +29,10 @@ static HRESULT WaveFindLoopInfo(_In_reads_bytes_(wavDataSize) const uint8_t* wav
 static HRESULT WaveFindTable(_In_reads_bytes_(wavDataSize) const uint8_t* wavData, _In_ size_t wavDataSize, _In_ uint32_t tag,
 	_Outptr_result_maybenull_ const uint32_t** pData, _Out_ uint32_t* dataCount);
 
+/*****************************************************/
+//　　　　　　　　　　初期化関数
+/*****************************************************/
+/**************************コンストラクタ***************************/
 
 SoundBuffer::SoundBuffer(LPCWSTR szFilename)
 {
@@ -40,6 +44,7 @@ SoundBuffer::SoundBuffer(LPCWSTR szFilename)
 		//LOGGER("*******************************\n");
 	}
 }
+/**************************初期化***************************/
 
 HRESULT SoundBuffer::Initialize(LPCWSTR szFilename)
 {
@@ -68,6 +73,9 @@ HRESULT SoundBuffer::Initialize(LPCWSTR szFilename)
 
 	return S_OK;
 }
+/*****************************************************/
+//　　　　　　　　　　解放関数
+/*****************************************************/
 
 void SoundBuffer::Uninitlize()
 {
@@ -79,6 +87,9 @@ void SoundBuffer::Uninitlize()
 		mPSourceVoices.erase(mPSourceVoices.begin());
 	}
 }
+/*****************************************************/
+//　　　　　　　　　　更新関数
+/*****************************************************/
 
 void SoundBuffer::Update()
 {
@@ -107,16 +118,19 @@ void SoundBuffer::Update()
 		mPSourceVoices.front()->GetState(&state);
 	}
 }
+/*******************音が鳴っているかどうか*******************/
 
 bool SoundBuffer::Playing()
 {
 	return mPlaying;
 }
+/****************停止***************/
 
 void SoundBuffer::Stop()
 {
 	mPSourceVoices.front()->Stop();
 }
+/******************一時停止******************/
 
 void SoundBuffer::Pause()
 {
@@ -125,12 +139,14 @@ void SoundBuffer::Pause()
 		mPSourceVoices.at(i)->Stop(XAUDIO2_PLAY_TAILS);
 	}
 }
+/*********************音の大きさを設定する********************/
 
 void SoundBuffer::Volume(float volume)
 {
 	mPSourceVoices.back()->SetVolume(volume);
 
 }
+/*********************音を鳴らし始める***********************/
 
 HRESULT SoundBuffer::PlayWave(IXAudio2* pXaudio2, bool loop)
 {
@@ -195,6 +211,9 @@ HRESULT SoundBuffer::PlayWave(IXAudio2* pXaudio2, bool loop)
 
 	return hr;
 }
+/*****************************************************/
+//　　　　　　　　　　ファイルロード関数
+/*****************************************************/
 
 HRESULT SoundBuffer::FindMediaFile(wchar_t* strDestPath, int cchDest, LPCWSTR strFilename)
 {

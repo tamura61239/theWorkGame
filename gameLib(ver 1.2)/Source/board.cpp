@@ -3,6 +3,10 @@
 #include"texture.h"
 #include"shader.h"
 
+/*****************************************************/
+//　　　　　　　　　　初期化関数(コンストラクタ)
+/*****************************************************/
+
 Board::Board(ID3D11Device* device, const wchar_t* fileName)
 {
 	HRESULT hr;
@@ -31,15 +35,6 @@ Board::Board(ID3D11Device* device, const wchar_t* fileName)
 	}
 	//定数バッファの生成
 	{
-		//D3D11_BUFFER_DESC desc = {};
-		//desc.Usage = D3D11_USAGE_DEFAULT;
-		//desc.ByteWidth = sizeof(CbScene);
-		//desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		//desc.CPUAccessFlags = 0;
-		//desc.MiscFlags = 0;
-		//desc.StructureByteStride = 0;
-		//hr = device->CreateBuffer(&desc, nullptr, mCbBuffer.GetAddressOf());
-		//_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		mCbBuffer = std::make_unique<ConstantBuffer<CbScene>>(device);
 	}
 	//シェーダーの生成
@@ -50,77 +45,16 @@ Board::Board(ID3D11Device* device, const wchar_t* fileName)
 			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 		};
-		//hr = CreateVSFromCso(device, "Data/shader/board_vs.cso", mVSShader.GetAddressOf(), mInput.GetAddressOf(), inputElementDesc, ARRAYSIZE(inputElementDesc));
-		//_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-		//hr = CreatePSFromCso(device, "Data/shader/board_ps.cso", mPSShader.GetAddressOf());
-		//_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		mShader = std::make_unique<DrowShader>(device, "Data/shader/board_vs.cso", "", "Data/shader/board_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc));
 	}
-	//ラスタライザーステートの設定
-	{
-		D3D11_RASTERIZER_DESC rasterizerDesc;
-		ZeroMemory(&rasterizerDesc, sizeof(D3D11_RASTERIZER_DESC));
-		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-		rasterizerDesc.CullMode = D3D11_CULL_BACK;
-		rasterizerDesc.FrontCounterClockwise = true;
-		rasterizerDesc.DepthBiasClamp = 0;
-		rasterizerDesc.DepthBias = 0;
-		rasterizerDesc.SlopeScaledDepthBias = 0.0f;
-		rasterizerDesc.DepthClipEnable = true;
-		rasterizerDesc.ScissorEnable = false;
-		rasterizerDesc.MultisampleEnable = false;
-		rasterizerDesc.AntialiasedLineEnable = false;
-		hr = device->CreateRasterizerState(&rasterizerDesc, mRasterizerState.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	}
-	//サンプラーステートの設定
-	{
-		D3D11_SAMPLER_DESC samplerDesc;
-		ZeroMemory(&samplerDesc, sizeof(D3D11_SAMPLER_DESC));
-		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-		samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-		samplerDesc.MinLOD = -FLT_MAX;
-		samplerDesc.MaxLOD = FLT_MAX;
-		samplerDesc.MaxAnisotropy = 16;
-		memcpy(samplerDesc.BorderColor, &VECTOR4F(1.0f, 1.0f, 1.0f, 1.0f), sizeof(VECTOR4F));
-		hr = device->CreateSamplerState(&samplerDesc, mSamplerState.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	}
-	// 深度ステンシルステートの設定
-	{
-		//D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
-		//ZeroMemory(&depthStencilDesc, sizeof(depthStencilDesc));
-		//depthStencilDesc.DepthEnable = TRUE;
-		//depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-		//depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
-		//depthStencilDesc.StencilEnable = FALSE;
-		//depthStencilDesc.StencilReadMask = 0xFF;
-		//depthStencilDesc.StencilWriteMask = 0xFF;
-		//depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-		//depthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
-		//depthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-		//depthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-		//depthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-		//depthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
-		//depthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-		//depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-		D3D11_DEPTH_STENCIL_DESC desc;
-		::memset(&desc, 0, sizeof(desc));
-		desc.DepthEnable = true;
-		desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-		desc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-
-		hr = device->CreateDepthStencilState(&desc, mDepthStencilState.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	}
-	//shaderResouceViewの生成
+	//描画に使うテクスチャの生成
 	{
 		LoadTextureFromFile(device, fileName, mShaderResourceView.GetAddressOf(), &texture2d);
 	}
 }
+/*****************************************************/
+//　　　　　　　　　　UVアニメーション関数
+/*****************************************************/
 
 void Board::Anim(ID3D11DeviceContext* context, const VECTOR2F& texturePosition, const VECTOR2F& textureSize)
 {
@@ -146,23 +80,24 @@ void Board::Anim(ID3D11DeviceContext* context, const VECTOR2F& texturePosition, 
 	}
 	context->Unmap(mVertexBuffer.Get(), 0);
 }
+/*****************************************************/
+//　　　　　　　　　　描画関数
+/*****************************************************/
 
 void Board::Render(ID3D11DeviceContext* context, const VECTOR3F& position, const VECTOR3F& scale, const VECTOR3F& angle, const FLOAT4X4& view, const FLOAT4X4& projection, const VECTOR4F& color)
 {
+	//GPU側にバッファを送る
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 	context->IASetVertexBuffers(0, 1, mVertexBuffer.GetAddressOf(), &stride, &offset);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	context->IASetInputLayout(mInput.Get());
-
-	context->RSSetState(mRasterizerState.Get());
-
+	//シェーダーを設定する
 	mShader->Activate(context);
-	context->PSSetSamplers(0, 1, mSamplerState.GetAddressOf());
+	//GPU側にテクスチャを送る
 	context->PSSetShaderResources(0, 1, mShaderResourceView.GetAddressOf());
 
-	context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
 	{
+		//ワールド空間行列を計算する
 		DirectX::XMMATRIX W;
 		{
 			DirectX::XMMATRIX S, R, T;
@@ -171,14 +106,17 @@ void Board::Render(ID3D11DeviceContext* context, const VECTOR3F& position, const
 			T = DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 			W = S * R * T;
 		}
+		//view projection行列
 		DirectX::XMMATRIX V, P;
 		V = DirectX::XMLoadFloat4x4(&view);
 		P = DirectX::XMLoadFloat4x4(&projection);
+		//view行列の逆行列を生成する
 		FLOAT4X4 inverseView = view;
 		inverseView._41 = inverseView._42 = inverseView._43 = 0.0f;
 		inverseView._44 = 1.0f;
 		DirectX::XMMATRIX inverseMatrixView;
 		inverseMatrixView = DirectX::XMLoadFloat4x4(&inverseView);
+		//ビルボード用の行列作成
 		DirectX::XMStoreFloat4x4(&mCbBuffer->data.worldViewProjection, inverseMatrixView * W * V * P);
 		mCbBuffer->data.color = color;
 	}

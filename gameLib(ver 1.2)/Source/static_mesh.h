@@ -15,12 +15,15 @@ struct TextureMapData
 	wchar_t* normalName;
 	wchar_t* bumpName;
 };
+//普通のモデルクラス
 class StaticMesh
 {
 public:
 	//コンストラクタ
 	StaticMesh(ID3D11Device* device, const char* fileName, SHADER_TYPE shaderType = SHADER_TYPE::USEALLY, bool pathOrganize = false, int organizeType = 0);
+	//デストラクタ
 	virtual~StaticMesh() {}
+	//レイピック
 	int RayPick(
 		const VECTOR3F& startPosition,//レイを飛ばす開始座標
 		const VECTOR3F& endPosition,//レイを飛ばす終了座標
@@ -28,12 +31,14 @@ public:
 		VECTOR3F* outNormal,//レイが当たった面の法線
 		float* outLength//レイが当たった面までの距離
 	);
+	//getter
 	const VECTOR3F& GetMaxPosition() { return mMaxPosition; }
 	const VECTOR3F& GetMinPosition() { return mMinPosition; }
-	void ChangeShaderResourceView(ID3D11Device* device, SHADER_TYPE shaderType, std::vector<TextureMapData>data);
 	SHADER_TYPE GetShaderType() { return mShaderType; }
+	//テクスチャを設定する
+	void ChangeShaderResourceView(ID3D11Device* device, SHADER_TYPE shaderType, std::vector<TextureMapData>data);
 public:
-	//シリアライズ
+	//頂点データ
 	struct Vertex
 	{
 		VECTOR3F position;
@@ -49,6 +54,7 @@ public:
 			);
 		}
 	};
+	//マテリアル
 	struct Material
 	{
 		VECTOR4F color = { 1.0f,1.0f,1.0f,1.0f };
@@ -63,6 +69,7 @@ public:
 			);
 		}
 	};
+	//マテリアル単位でメッシュを区切る
 	struct Subset
 	{
 		u_int indexStart = 0;	// start number of index buffer
@@ -82,6 +89,7 @@ public:
 			);
 		}
 	};
+	//
 	struct Face
 	{
 		VECTOR3F position[3];
@@ -97,6 +105,7 @@ public:
 			);
 		}
 	};
+	//メッシュ
 	struct Mesh
 	{
 		std::vector<Vertex> vertices;
@@ -119,6 +128,7 @@ public:
 			);
 		}
 	};
+	//メッシュデータ
 	std::vector<Mesh>mMeshes;
 	template<class Archive>
 	void serialize(Archive& archive)
@@ -128,35 +138,48 @@ public:
 		);
 	}
 public:
+	//テクスチャを生成
 	void SetShaderResouceView(ID3D11DeviceContext* context, Subset& subset);
 private:
+	//頂点の最小地と最大値を設定する
 	void SetMinAndMaxPosition();
+	//メッシュを生成
 	void CreateMesh(ID3D11Device* device, const char* fileName, bool pathOrganize, int organizeType);
+	//テクスチャデータを読み込む
 	void FbxTettureNameLoad(const char* property_name, const char* factor_name, Material& material, const FbxSurfaceMaterial* surfaceMaterial, const char* fileName, bool pathOrganize, int organizeType);
+	//バッファを生成
 	void CreateBuffers(ID3D11Device* device);
+	//SRVを生成
 	void CreateShaderResourceView(ID3D11Device* device, SHADER_TYPE shaderType);
 private:
+	//シェーダーの種類
 	SHADER_TYPE mShaderType;
+	//頂点の最小値と最大値
 	VECTOR3F mMinPosition;
 	VECTOR3F mMaxPosition;
 };
-
+//モデルを描画するクラス
 class MeshRender
 {
 public:
+	//コンストラクタ
 	MeshRender(ID3D11Device* device);
+	//シャドウマップの描画
 	void ShadowBegin(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection);
 	void ShadowRender(ID3D11DeviceContext* context, StaticMesh* obj, const FLOAT4X4& world, const VECTOR4F&color=VECTOR4F(1,1,1,1));
 	void ShadowEnd(ID3D11DeviceContext* context);
+	//描画
 	void Begin(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const bool w = false);
 	void Render(ID3D11DeviceContext* context, StaticMesh* obj, const FLOAT4X4& world, const VECTOR4F color = VECTOR4F(1, 1, 1, 1));
 	void Render(ID3D11DeviceContext* context, DrowShader* shader, StaticMesh* obj, const FLOAT4X4& world, const VECTOR4F color = VECTOR4F(1, 1, 1, 1));
 	void End(ID3D11DeviceContext* context);
+	//速度マップの描画
 	void VelocityBegin(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const bool w = false);
 	void VelocityRender(ID3D11DeviceContext* context, StaticMesh* obj, const FLOAT4X4& world, const FLOAT4X4& beforeWorld, const VECTOR4F color = VECTOR4F(1, 1, 1, 1));
 	void VelocityEnd(ID3D11DeviceContext* context);
 
 private:
+	//定数バッファ
 	struct CbScene
 	{
 		FLOAT4X4 view;
@@ -167,20 +190,11 @@ private:
 		VECTOR4F color;
 		FLOAT4X4 world;
 	};
-
-	std::vector<std::unique_ptr<DrowShader>>mShader;
-	std::unique_ptr<DrowShader>mShadowShader;
 	std::unique_ptr<ConstantBuffer<CbScene>>mCbScene;
 	std::unique_ptr<ConstantBuffer<CbObj>>mCbObj;
 	std::unique_ptr<ConstantBuffer<FLOAT4X4>>mCbBeforeObj;
-
-
-	Microsoft::WRL::ComPtr<ID3D11RasterizerState>mRasterizerState;
-	Microsoft::WRL::ComPtr<ID3D11RasterizerState>mShadowRasterizerState;
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilState>mDepthStencilState;
-
-	Microsoft::WRL::ComPtr<ID3D11SamplerState>mDiffuseSamplerState;
-	Microsoft::WRL::ComPtr<ID3D11SamplerState>mNormalSamplerState;
-
+	//シェーダー
+	std::vector<std::unique_ptr<DrowShader>>mShader;
+	std::unique_ptr<DrowShader>mShadowShader;
 
 };

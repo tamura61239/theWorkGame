@@ -4,7 +4,7 @@
 #include <wrl.h>
 #include"drow_shader.h"
 #include<memory>
-
+//2Dのテクスチャ描画クラス
 class Sprite
 {
 public:
@@ -23,22 +23,17 @@ public:
 	void Render(ID3D11DeviceContext* context, DrowShader* shader, ID3D11ShaderResourceView* srv, const VECTOR2F& position, const VECTOR2F& size,
 		const VECTOR2F& texPosition, const VECTOR2F& texSize, float angle, const VECTOR4F& color = VECTOR4F(1.0f, 1.0f, 1.0f, 1.0f));
 
-	//~Sprite()
-	//{
-	//	delete mVSBuffer;
-	//}
 private:
-	//********************************//
-    //             変数               //
-    //********************************//
+	void BufferUpdate(ID3D11DeviceContext* context, const VECTOR2F& position, const VECTOR2F& size,
+		const VECTOR2F& texPosition, const VECTOR2F& texSize, float angle, const VECTOR4F& color, D3D11_TEXTURE2D_DESC texture2dDesc);
+	//シェーダー
 	std::unique_ptr<DrowShader>mShader;
+	//バッファ
 	Microsoft::WRL::ComPtr<ID3D11Buffer>mVSBuffer;
-	Microsoft::WRL::ComPtr<ID3D11RasterizerState>mRasterizerState;
+	//テクスチャデータ
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>mTexview;
-	Microsoft::WRL::ComPtr<ID3D11SamplerState>mSamplerState;
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilState>mDepthStencilState;
 	D3D11_TEXTURE2D_DESC mTexture2d;
-	//
+	//頂点データ
 	struct Vertex
 	{
 		VECTOR3F position;

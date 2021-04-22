@@ -21,24 +21,27 @@ inline LPWSTR hr_trace(HRESULT hr)
 
 class benchmark
 {
-	LARGE_INTEGER ticks_per_second;
-	LARGE_INTEGER start_ticks;
-	LARGE_INTEGER current_ticks;
-
 public:
+	//コンストラクタ
 	benchmark()
 	{
 		QueryPerformanceFrequency(&ticks_per_second);
 		QueryPerformanceCounter(&start_ticks);
 		QueryPerformanceCounter(&current_ticks);
 	}
+	//開始
 	void begin()
 	{
 		QueryPerformanceCounter(&start_ticks);
 	}
+	//終了
 	float end()
 	{
 		QueryPerformanceCounter(&current_ticks);
 		return static_cast<float>(current_ticks.QuadPart - start_ticks.QuadPart) / static_cast<float>(ticks_per_second.QuadPart);
 	}
+private:
+	LARGE_INTEGER ticks_per_second;
+	LARGE_INTEGER start_ticks;
+	LARGE_INTEGER current_ticks;
 };

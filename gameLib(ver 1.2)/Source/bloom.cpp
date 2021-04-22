@@ -8,7 +8,9 @@
 #include<imgui.h>
 #endif
 
-/****************************初期化****************************/
+/*****************************************************/
+//　　　　　　　　　　初期化関数(コンストラクタ)
+/*****************************************************/
 BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHight, const int nowScene) :mNowEditorNo(nowScene), mNowScene(nowScene)
 {
 	memset(&mEditorData, 0, sizeof(mEditorData));
@@ -54,7 +56,9 @@ BloomRender::BloomRender(ID3D11Device* device, float screenWidth, float screenHi
 	mSampler[1] = std::make_unique<SamplerState>(device, D3D11_FILTER_ANISOTROPIC, D3D11_TEXTURE_ADDRESS_CLAMP, D3D11_COMPARISON_ALWAYS, VECTOR4F(0, 0, 0, 0));
 
 }
-/*****************imguiでブルームのパラメーターを調整********************/
+/*****************************************************/
+//　　　　　　　　　　エディタ関数
+/*****************************************************/
 void BloomRender::Editor()
 {
 #ifdef USE_IMGUI
@@ -67,14 +71,14 @@ void BloomRender::Editor()
 		ImGui::Image(mFrameBuffer[i]->GetRenderTargetShaderResourceView().Get(), size);
 		if (i < 4)ImGui::SameLine();
 	}
-
+	//どのシーンの時に使うブルームを操作するかを決める
 	ImGui::RadioButton("title bloom", &mNowEditorNo, 0); ImGui::SameLine();
 	ImGui::RadioButton("select bloom", &mNowEditorNo, 1); ImGui::SameLine();
 	ImGui::RadioButton("game bloom", &mNowEditorNo, 2); ImGui::SameLine();
 	ImGui::RadioButton("result bloom", &mNowEditorNo, 3);
 
 	auto& editorData = mEditorData[mNowEditorNo];
-
+	//パラメーターを調整する
 	ImGui::RadioButton("blur 01", &editorData.mBlurType, 0); ImGui::SameLine();
 	ImGui::RadioButton("blur 02", &editorData.mBlurType, 1);
 	ImGui::SliderInt("filter count", &editorData.count, 0, 4);
@@ -89,7 +93,7 @@ void BloomRender::Editor()
 		editorData.blurCount = static_cast<float>(blurCount);
 	}
 	std::string fileName = "Data/file/bloom" + std::to_string(mNowEditorNo) + ".bin";
-
+	//セーブ
 	if (ImGui::Button("save"))FileFunction::Save(editorData, fileName.c_str(),"rb");
 	if (ImGui::Button("all save"))
 	{
@@ -102,7 +106,11 @@ void BloomRender::Editor()
 	ImGui::End();
 #endif
 }
-/*************************bloomの縮小しつつぼかしたテクスチャの作成******************************/
+/*****************************************************/
+//　　　　　　　　　　描画関数
+/*****************************************************/
+
+/*************************ブルームの縮小しつつぼかしたテクスチャの作成******************************/
 void BloomRender::BlurTexture(ID3D11DeviceContext* context, ID3D11ShaderResourceView* colorSrv)
 {
 	auto& editorData = mEditorData[mNowScene];
@@ -144,7 +152,7 @@ void BloomRender::BlurTexture(ID3D11DeviceContext* context, ID3D11ShaderResource
 	}
 
 }
-/********************描画********************/
+/********************ブルームをかける********************/
 void BloomRender::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView* colorSrv)
 {
 	auto& editorData = mEditorData[mNowScene];
@@ -178,6 +186,7 @@ void BloomRender::Render(ID3D11DeviceContext* context, ID3D11ShaderResourceView*
 	mSampler[1]->DeActivate(context);
 
 }
+/**************************ぼかしたテクスチャを作成する方法①********************************/
 void BloomRender::Blur01(ID3D11DeviceContext* context)
 {
 	auto& editorData = mEditorData[mNowScene];
@@ -191,15 +200,19 @@ void BloomRender::Blur01(ID3D11DeviceContext* context)
 			mFrameBuffer[i]->Clear(context);
 			continue;
 		}
-		//縮小したテクスチャ
+		//縮小したテクスチャの作成
 		mFrameBuffer[i]->Clear(context);
 		mFrameBuffer[i]->Activate(context);
 		D3D11_VIEWPORT viewport = mFrameBuffer[i]->GetViewPort();
+		//ブラーの計算をする
 		CalucurateBluer(viewport.Width, viewport.Height, VECTOR2F(editorData.widthBlur, editorData.hightBlur), editorData.deviation, editorData.multiply);
+		//GPU側にデータを送る
 		mCbBluerbuffer->Activate(context, 1, true, true);
-
+		//前に作ったテクスチャを送る
 		context->PSSetShaderResources(0, 1, mFrameBuffer[i - 1]->GetRenderTargetShaderResourceView().GetAddressOf());
+		//描画
 		context->Draw(4, 0);
+		//GPU側に送ったデータを元に戻す
 		mCbBluerbuffer->DeActivate(context);
 		ID3D11ShaderResourceView* srv = nullptr;
 		context->PSSetShaderResources(0, 1, &srv);
@@ -209,6 +222,7 @@ void BloomRender::Blur01(ID3D11DeviceContext* context)
 	mShader[2]->Deactivate(context);
 
 }
+/**************************ぼかしたテクスチャを作成する方法②********************************/
 
 void BloomRender::Blur02(ID3D11DeviceContext* context)
 {
@@ -223,29 +237,39 @@ void BloomRender::Blur02(ID3D11DeviceContext* context)
 			mFrameBuffer[i]->Clear(context);
 			continue;
 		}
-
+		//横にぼかしたテクスチャを作成
 		mSidoFrameBuffer[i - 1]->Clear(context);
 		mSidoFrameBuffer[i - 1]->Activate(context);
-
+		
 		D3D11_VIEWPORT viewport = mSidoFrameBuffer[i - 1]->GetViewPort();
+		//ブラーの計算をする
 		CalucurateBluer(viewport.Width, viewport.Height, VECTOR2F(editorData.widthBlur, 0), editorData.deviation, editorData.multiply);
+		//GPU側にデータを送る
 		mCbBluerbuffer->Activate(context, 1, true, true);
-
+		//前に作ったテクスチャを送る
 		context->PSSetShaderResources(0, 1, mFrameBuffer[i - 1]->GetRenderTargetShaderResourceView().GetAddressOf());
+		//描画
 		context->Draw(4, 0);
+		//GPU側に送ったデータを元に戻す
 		mCbBluerbuffer->DeActivate(context);
 		ID3D11ShaderResourceView* srv = nullptr;
 		context->PSSetShaderResources(0, 1, &srv);
 
 		mSidoFrameBuffer[i - 1]->Deactivate(context);
+
+		//縮小したテクスチャの作成
 		mFrameBuffer[i]->Clear(context);
 		mFrameBuffer[i]->Activate(context);
 		viewport = mFrameBuffer[i]->GetViewPort();
+		//ブラーの計算をする
 		CalucurateBluer(viewport.Width, viewport.Height, VECTOR2F(0, editorData.hightBlur), editorData.deviation, editorData.multiply);
+		//GPU側にデータを送る
 		mCbBluerbuffer->Activate(context, 1, true, true);
-
+		//横にぼかしたテクスチャを送る
 		context->PSSetShaderResources(0, 1, mSidoFrameBuffer[i - 1]->GetRenderTargetShaderResourceView().GetAddressOf());
+		//描画
 		context->Draw(4, 0);
+		//GPU側に送ったデータを元に戻す
 		mCbBluerbuffer->DeActivate(context);
 
 		context->PSSetShaderResources(0, 1, &srv);
@@ -255,15 +279,21 @@ void BloomRender::Blur02(ID3D11DeviceContext* context)
 	mShader[3]->Deactivate(context);
 
 }
-/***********************ブラーの計算*************************/
+/*****************************************************/
+//　　　　　　　　　　ブラーの計算関数
+/*****************************************************/
+
+/***********************計算に使う*************************/
 
 float BloomRender::GaussianDistribution(const VECTOR2F& position, const float rho)
 {
 	return static_cast<float>(exp(-(position.x * position.x + position.y * position.y) / (2.0f * rho * rho)));
 }
+/***********************ブラーの計算*************************/
 
 void BloomRender::CalucurateBluer(const float width, const float hight, const VECTOR2F& dir, const float deviation, const float multiply)
 {
+	//最大値を1としたときの
 	float uvX = 1.0f / width;
 	float uvY = 1.0f / hight;
 
@@ -272,6 +302,7 @@ void BloomRender::CalucurateBluer(const float width, const float hight, const VE
 
 	mCbBluerbuffer->data.mOffset[0].x = 0;
 	mCbBluerbuffer->data.mOffset[0].y = 0;
+	//半分の計算する
 	for (int i = 1; i < 8; i++)
 	{
 		mCbBluerbuffer->data.mOffset[i].x = dir.x * i * uvX;
@@ -283,6 +314,7 @@ void BloomRender::CalucurateBluer(const float width, const float hight, const VE
 	{
 		mCbBluerbuffer->data.mOffset[i].z /= totalWeigh;
 	}
+	//計算した分を反転した数値を残り半分に当てはめる
 	for (auto i = 8; i < 15; ++i)
 	{
 		mCbBluerbuffer->data.mOffset[i].x = -mCbBluerbuffer->data.mOffset[i - 7].x;

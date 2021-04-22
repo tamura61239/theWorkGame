@@ -14,11 +14,15 @@ LRESULT CALLBACK fnWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	return f ? f->HandleMessage(hwnd, msg, wparam, lparam) : DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
+/*****************************************************/
+//　　　　　　　　　　main関数
+/*****************************************************/
 
 INT WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance, LPWSTR cmd_line, INT cmd_show)
 {
 #if defined(DEBUG) | defined(_DEBUG)
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	//メモリーリークがどこで起きてるのかを確認する(今はコメントアウトしている)
 	//_CrtSetBreakAlloc(369);
 	//_CrtSetBreakAlloc(358);
 	//_CrtSetBreakAlloc(356);
@@ -31,7 +35,7 @@ INT WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance, LPWSTR cmd_line
 #else 
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 #endif
-
+	//ウィンドウの生成
 	WNDCLASSEX wcex;
 	wcex.cbSize = sizeof(WNDCLASSEX);
 	wcex.style = CS_HREDRAW | CS_VREDRAW;
@@ -52,11 +56,12 @@ INT WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance, LPWSTR cmd_line
 	HWND hwnd = CreateWindow(_T("3dgp"), _T(""), WS_OVERLAPPEDWINDOW ^ WS_MAXIMIZEBOX ^ WS_THICKFRAME | WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, NULL, NULL, instance, NULL);
 	ShowWindow(hwnd, cmd_show);
 
-	// ゲームパッド
+	// ゲームパッドをセットする
 	input::GamepadInitialize(0, false, instance);
 
 	Framework f(hwnd);
 	SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(&f));
+	//ゲームループ
 	return f.Run();
 }
 

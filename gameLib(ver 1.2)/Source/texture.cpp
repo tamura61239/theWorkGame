@@ -6,22 +6,27 @@
 
 #include <map>
 #include<string>
+/*****************************************************/
+//　　　　　　　　　　テクスチャを生成する関数
+/*****************************************************/
+/****************************テクスチャを読み込む*************************/
 
 HRESULT LoadTextureFromFile(ID3D11Device* device, const wchar_t* file_name, ID3D11ShaderResourceView** shader_resource_view, D3D11_TEXTURE2D_DESC* texture2d_desc, bool mise)
 {
 	HRESULT hr = S_OK;
 	Microsoft::WRL::ComPtr<ID3D11Resource> resource;
-
+	//std::mapにデータを保持する
 	static std::map<std::wstring, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> cache;
 	auto it = cache.find(file_name);
 	if (it != cache.end())
 	{
-		//it->second.Attach(*SRV);
+		//データを保持していたら取得する
 		*shader_resource_view = it->second.Get();
 		(*shader_resource_view)->AddRef();
 	}
 	else
 	{
+		//テクスチャを読み込む
 		DirectX::TexMetadata metadata;
 		DirectX::ScratchImage image;
 		std::wstring extension = PathFindExtensionW(file_name);
@@ -58,11 +63,10 @@ HRESULT LoadTextureFromFile(ID3D11Device* device, const wchar_t* file_name, ID3D
 			mise,
 			shader_resource_view);
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-		//hr = DirectX::CreateWICTextureFromFile(device, file_name, resource.GetAddressOf(), SRV);
-		//_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		//セーブする
 		cache.insert(std::make_pair(file_name, *shader_resource_view));
 	}
+	//テクスチャのデータを取得する
 	if (texture2d_desc == nullptr)return hr;
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> texture2d;
 	(*shader_resource_view)->GetResource(resource.GetAddressOf());
@@ -72,11 +76,12 @@ HRESULT LoadTextureFromFile(ID3D11Device* device, const wchar_t* file_name, ID3D
 
 	return hr;
 }
+/*************************ダミーテクスチャを生成する****************************/
 
 HRESULT MakeDummyTexture(ID3D11Device* device, ID3D11ShaderResourceView** shader_resource_view)
 {
 	HRESULT hr = S_OK;
-
+	//テクスチャを生成するためのバッファの生成
 	D3D11_TEXTURE2D_DESC texture2d_desc = {};
 	texture2d_desc.Width = 1;
 	texture2d_desc.Height = 1;
@@ -89,7 +94,6 @@ HRESULT MakeDummyTexture(ID3D11Device* device, ID3D11ShaderResourceView** shader
 	texture2d_desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 	texture2d_desc.CPUAccessFlags = 0;
 	texture2d_desc.MiscFlags = 0;
-
 	D3D11_SUBRESOURCE_DATA subresource_data = {};
 	u_int color = 0xFFFFFFFF;
 	subresource_data.pSysMem = &color;
@@ -99,7 +103,7 @@ HRESULT MakeDummyTexture(ID3D11Device* device, ID3D11ShaderResourceView** shader
 	ID3D11Texture2D* texture2d;
 	hr = device->CreateTexture2D(&texture2d_desc, &subresource_data, &texture2d);
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
+	//テクスチャのSRVを生成
 	D3D11_SHADER_RESOURCE_VIEW_DESC shader_resource_view_desc = {};
 	shader_resource_view_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	shader_resource_view_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;

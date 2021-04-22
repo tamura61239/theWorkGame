@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include<vector>
 
+//ファイル操作クラス
 class FileFunction
 {
 public:

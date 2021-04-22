@@ -6,6 +6,7 @@
 #include<cereal/types/memory.hpp>
 #include<cereal/types/vector.hpp>
 #include<cereal/archives/json.hpp>
+//シリアライズ関数
 template<class Archive>
 void serialize(Archive& archive, VECTOR2F& vector)
 {

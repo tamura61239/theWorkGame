@@ -3,6 +3,10 @@
 #include "misc.h"
 #include"shader.h"
 #include"camera_manager.h"
+#include"texture.h"
+/*****************************************************/
+//　　　　　　　　　　初期化関数(コンストラクタ)
+/*****************************************************/
 
 ModelRenderer::ModelRenderer(ID3D11Device* device)
 {
@@ -28,106 +32,20 @@ ModelRenderer::ModelRenderer(ID3D11Device* device)
 	}
 
 
-	//// 深度ステンシルステート
-	//{
-	//	D3D11_DEPTH_STENCIL_DESC desc;
-	//	::memset(&desc, 0, sizeof(desc));
-	//	desc.DepthEnable = true;
-	//	desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-	//	desc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-
-	//	HRESULT hr = device->CreateDepthStencilState(&desc, mDepthStencilState.GetAddressOf());
-	//	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	//}
-
-	//// ラスタライザーステート
-	//{
-	//	D3D11_RASTERIZER_DESC desc;
-	//	::memset(&desc, 0, sizeof(desc));
-	//	desc.FrontCounterClockwise = true;
-	//	desc.DepthBias = 0;
-	//	desc.DepthBiasClamp = 0;
-	//	desc.SlopeScaledDepthBias = 0;
-	//	desc.DepthClipEnable = true;
-	//	desc.ScissorEnable = false;
-	//	desc.MultisampleEnable = true;
-	//	desc.FillMode = D3D11_FILL_SOLID;
-	//	desc.CullMode = D3D11_CULL_NONE;
-	//	desc.AntialiasedLineEnable = false;
-
-	//	HRESULT hr = device->CreateRasterizerState(&desc, mRasterizerState.GetAddressOf());
-	//	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	//}
-
-	//// サンプラステート
-	//{
-	//	D3D11_SAMPLER_DESC desc;
-	//	::memset(&desc, 0, sizeof(desc));
-	//	desc.MipLODBias = 0.0f;
-	//	desc.MaxAnisotropy = 1;
-	//	desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-	//	desc.MinLOD = -FLT_MAX;
-	//	desc.MaxLOD = FLT_MAX;
-	//	desc.BorderColor[0] = .0f;
-	//	desc.BorderColor[1] = .0f;
-	//	desc.BorderColor[2] = .0f;
-	//	desc.BorderColor[3] = .0f;
-	//	desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	//	desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	//	desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	//	desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-
-	//	HRESULT hr = device->CreateSamplerState(&desc, mSamplerState[0].GetAddressOf());
-	//	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-	//	desc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
-	//	desc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
-	//	desc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
-
-	//	hr = device->CreateSamplerState(&desc, mSamplerState[1].GetAddressOf());
-	//	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-	//}
 
 	// ダミーテクスチャ
 	{
-		const int width = 8;
-		const int height = 8;
-		UINT pixels[width * height];
-		::memset(pixels, 0xFF, sizeof(pixels));
-
-		D3D11_TEXTURE2D_DESC desc = { 0 };
-		desc.Width = width;
-		desc.Height = height;
-		desc.MipLevels = 1;
-		desc.ArraySize = 1;
-		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		desc.SampleDesc.Count = 1;
-		desc.SampleDesc.Quality = 0;
-		desc.Usage = D3D11_USAGE_DEFAULT;
-		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-		desc.CPUAccessFlags = 0;
-		desc.MiscFlags = 0;
-		D3D11_SUBRESOURCE_DATA data;
-		::memset(&data, 0, sizeof(data));
-		data.pSysMem = pixels;
-		data.SysMemPitch = width;
-
-		Microsoft::WRL::ComPtr<ID3D11Texture2D>	texture;
-		HRESULT hr = device->CreateTexture2D(&desc, &data, texture.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-		hr = device->CreateShaderResourceView(texture.Get(), nullptr, mDummySRV.GetAddressOf());
+		HRESULT hr = MakeDummyTexture(device, mDummySRV.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
 }
 
-// 描画開始
+/*****************************************************/
+//　　　　　　　　　　通常描画関数
+/*****************************************************/
+/*************************描画開始***************************/
 void ModelRenderer::Begin(ID3D11DeviceContext* context, const FLOAT4X4& view_projection)
 {
-
-
-
 	// シーン用定数バッファ更新
 	CbScene cb_scene;
 	mCbScene->data.viewProjection = view_projection;
@@ -135,36 +53,22 @@ void ModelRenderer::Begin(ID3D11DeviceContext* context, const FLOAT4X4& view_pro
 	mCbScene->Activate(context, 0, true, true, true);
 }
 
-// 描画
+/**************************** 描画*************************/
 void ModelRenderer::Draw(ID3D11DeviceContext* context, Model& model, const VECTOR4F& color)
 {
+	//描画に使うモデルデータの取得
+
 	const ModelResource* model_resource = model.GetModelResource();
 	const std::vector<Model::Node>& nodes = model.GetNodes();
 
 	SHADER_TYPE shaderType = model_resource->GetShaderType();
+	//シェーダーを設定する
 	mShader[static_cast<int>(shaderType)]->Activate(context);
 	for (const ModelResource::Mesh& mesh : model_resource->GetMeshes())
 	{
 		// メッシュ用定数バッファ更新
-		if (mesh.nodeIndices.size() > 0)
-		{
-			for (size_t i = 0; i < mesh.nodeIndices.size(); ++i)
-			{
-				DirectX::XMMATRIX inverse_transform = DirectX::XMLoadFloat4x4(mesh.inverseTransforms.at(i));
-				DirectX::XMMATRIX world_transform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.nodeIndices.at(i)).worldTransform);
-				DirectX::XMMATRIX bone_transform = inverse_transform * world_transform;
-				DirectX::XMStoreFloat4x4(&mCbMesh->data.boneTransforms[i], bone_transform);
-				DirectX::XMMATRIX beforeWorldTransform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.nodeIndices.at(i)).beforeWorldTransform);
-				bone_transform = inverse_transform * beforeWorldTransform;
-				DirectX::XMStoreFloat4x4(&mCbMesh->data.beforeBoneTransforms[i], bone_transform);
-
-			}
-		}
-		else
-		{
-			mCbMesh->data.boneTransforms[0] = nodes.at(mesh.nodeIndex).worldTransform;
-			mCbMesh->data.beforeBoneTransforms[0] = nodes.at(mesh.nodeIndex).beforeWorldTransform;
-		}
+		SetRenderBoneTransform(mesh, nodes);
+		//PU側にデータを送る
 		mCbMesh->Activate(context, 1, true, true, true);
 
 		UINT stride = sizeof(ModelData::Vertex);
@@ -186,40 +90,29 @@ void ModelRenderer::Draw(ID3D11DeviceContext* context, Model& model, const VECTO
 			context->DrawIndexed(subset.indexCount, subset.startIndex, 0);
 			mCbSubset->DeActivate(context);
 		}
+		//GPU側に送ったデータを元に戻す
+
 		mCbMesh->DeActivate(context);
 	}
 	mShader[static_cast<int>(shaderType)]->Deactivate(context);
 }
-
+/***********************************描画(シェーダーを取得する)****************************************/
 void ModelRenderer::Draw(ID3D11DeviceContext* context, DrowShader* shader, Model& model, const VECTOR4F& color)
 {
+	//描画に使うモデルデータの取得
+
 	const ModelResource* model_resource = model.GetModelResource();
 	const std::vector<Model::Node>& nodes = model.GetNodes();
 
 	SHADER_TYPE shaderType = model_resource->GetShaderType();
+	//シェーダーを設定する
+
 	shader->Activate(context);
 	for (const ModelResource::Mesh& mesh : model_resource->GetMeshes())
 	{
 		// メッシュ用定数バッファ更新
-		if (mesh.nodeIndices.size() > 0)
-		{
-			for (size_t i = 0; i < mesh.nodeIndices.size(); ++i)
-			{
-				DirectX::XMMATRIX inverse_transform = DirectX::XMLoadFloat4x4(mesh.inverseTransforms.at(i));
-				DirectX::XMMATRIX world_transform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.nodeIndices.at(i)).worldTransform);
-				DirectX::XMMATRIX bone_transform = inverse_transform * world_transform;
-				DirectX::XMStoreFloat4x4(&mCbMesh->data.boneTransforms[i], bone_transform);
-				DirectX::XMMATRIX beforeWorldTransform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.nodeIndices.at(i)).beforeWorldTransform);
-				bone_transform = inverse_transform * beforeWorldTransform;
-				DirectX::XMStoreFloat4x4(&mCbMesh->data.beforeBoneTransforms[i], bone_transform);
-
-			}
-		}
-		else
-		{
-			mCbMesh->data.boneTransforms[0] = nodes.at(mesh.nodeIndex).worldTransform;
-			mCbMesh->data.beforeBoneTransforms[0] = nodes.at(mesh.nodeIndex).beforeWorldTransform;
-		}
+		SetRenderBoneTransform(mesh, nodes);
+		//PU側にデータを送る
 		mCbMesh->Activate(context, 1, true, true, true);
 
 		UINT stride = sizeof(ModelData::Vertex);
@@ -241,6 +134,8 @@ void ModelRenderer::Draw(ID3D11DeviceContext* context, DrowShader* shader, Model
 			context->DrawIndexed(subset.indexCount, subset.startIndex, 0);
 			mCbSubset->DeActivate(context);
 		}
+		//GPU側に送ったデータを元に戻す
+
 		mCbMesh->DeActivate(context);
 
 	}
@@ -248,21 +143,22 @@ void ModelRenderer::Draw(ID3D11DeviceContext* context, DrowShader* shader, Model
 
 }
 
-// 描画終了
+/**************************** 描画終了***************************/
 void ModelRenderer::End(ID3D11DeviceContext* context)
 {
-	//context->GSSetShader(d_m_g_shader.Get(), 0, 0);
+	//GPU側に送ったデータを元に戻す
+
 	mCbScene->DeActivate(context);
-	//context->OMSetDepthStencilState(nullptr, 0);
-	//context->RSSetState(nullptr);
-
-
 }
-/*********************************************************************/
-//    影の描画
-/*********************************************************************/
+/*****************************************************/
+//　　　　　　　　　　	影の描画関数
+/*****************************************************/
+/*************************描画開始***************************/
+
 void ModelRenderer::ShadowBegin(ID3D11DeviceContext* context, const FLOAT4X4& view_projection)
 {
+	//シェーダーを設定する
+
 	mShadowShader->Activate(context);
 
 
@@ -272,35 +168,21 @@ void ModelRenderer::ShadowBegin(ID3D11DeviceContext* context, const FLOAT4X4& vi
 	mCbScene->Activate(context, 0, true, true);
 
 }
+/**************************** 描画*************************/
 
 void ModelRenderer::ShadowDraw(ID3D11DeviceContext* context, Model& model, const VECTOR4F& color)
 {
+	//描画に使うモデルデータの取得
+
 	const ModelResource* model_resource = model.GetModelResource();
 	const std::vector<Model::Node>& nodes = model.GetNodes();
 
 	for (const ModelResource::Mesh& mesh : model_resource->GetMeshes())
 	{
 		// メッシュ用定数バッファ更新
-		if (mesh.nodeIndices.size() > 0)
-		{
-			for (size_t i = 0; i < mesh.nodeIndices.size(); ++i)
-			{
-				DirectX::XMMATRIX inverse_transform = DirectX::XMLoadFloat4x4(mesh.inverseTransforms.at(i));
-				DirectX::XMMATRIX world_transform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.nodeIndices.at(i)).worldTransform);
-				DirectX::XMMATRIX bone_transform = inverse_transform * world_transform;
-				DirectX::XMStoreFloat4x4(&mCbMesh->data.boneTransforms[i], bone_transform);
-				DirectX::XMMATRIX beforeWorldTransform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.nodeIndices.at(i)).beforeWorldTransform);
-				bone_transform = inverse_transform * beforeWorldTransform;
-				DirectX::XMStoreFloat4x4(&mCbMesh->data.beforeBoneTransforms[i], bone_transform);
-
-			}
-		}
-		else
-		{
-			mCbMesh->data.boneTransforms[0] = nodes.at(mesh.nodeIndex).worldTransform;
-			mCbMesh->data.beforeBoneTransforms[0] = nodes.at(mesh.nodeIndex).beforeWorldTransform;
-		}
-		mCbMesh->Activate(context, 1, true, true);
+		SetRenderBoneTransform(mesh, nodes);
+		//PU側にデータを送る
+		mCbMesh->Activate(context, 1, true, true, true);
 
 		UINT stride = sizeof(ModelData::Vertex);
 		UINT offset = 0;
@@ -315,25 +197,29 @@ void ModelRenderer::ShadowDraw(ID3D11DeviceContext* context, Model& model, const
 			context->DrawIndexed(subset.indexCount, subset.startIndex, 0);
 			mCbSubset->DeActivate(context);
 		}
+		//GPU側に送ったデータを元に戻す
+
 		mCbMesh->DeActivate(context);
 	}
 
 }
-
+/**************************** 描画終了***************************/
 void ModelRenderer::ShadowEnd(ID3D11DeviceContext* context)
 {
+	//GPU側に送ったデータを元に戻す
+
 	mShadowShader->Deactivate(context);
 	mCbScene->DeActivate(context);
-	//context->OMSetDepthStencilState(nullptr, 0);
-	//context->RSSetState(nullptr);
-
 }
-/*********************************************************************/
-//    速度マップの描画
-/*********************************************************************/
+/*****************************************************/
+//　　　　　　　　　　	速度マップの描画関数
+/*****************************************************/
+/*************************描画開始***************************/
 
 void ModelRenderer::VelocityBegin(ID3D11DeviceContext* context, const FLOAT4X4& viewProjection)
 {
+	//シェーダーを設定する
+
 	mShader[2]->Activate(context);
 
 	// シーン用定数バッファ更新
@@ -342,55 +228,67 @@ void ModelRenderer::VelocityBegin(ID3D11DeviceContext* context, const FLOAT4X4& 
 	mCbScene->Activate(context, 0, true, true, true);
 
 }
+/**************************** 描画*************************/
 
 void ModelRenderer::VelocityDraw(ID3D11DeviceContext* context, Model& model)
 {
+	//描画に使うモデルデータの取得
 	const ModelResource* model_resource = model.GetModelResource();
 	const std::vector<Model::Node>& nodes = model.GetNodes();
 	for (const ModelResource::Mesh& mesh : model_resource->GetMeshes())
 	{
 		// メッシュ用定数バッファ更新
-		if (mesh.nodeIndices.size() > 0)
-		{
-			for (size_t i = 0; i < mesh.nodeIndices.size(); ++i)
-			{
-				DirectX::XMMATRIX inverse_transform = DirectX::XMLoadFloat4x4(mesh.inverseTransforms.at(i));
-				DirectX::XMMATRIX world_transform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.nodeIndices.at(i)).worldTransform);
-				DirectX::XMMATRIX bone_transform = inverse_transform * world_transform;
-				DirectX::XMStoreFloat4x4(&mCbMesh->data.boneTransforms[i], bone_transform);
-				DirectX::XMMATRIX beforeWorldTransform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.nodeIndices.at(i)).beforeWorldTransform);
-				bone_transform = inverse_transform * beforeWorldTransform;
-				DirectX::XMStoreFloat4x4(&mCbMesh->data.beforeBoneTransforms[i], bone_transform);
-
-			}
-		}
-		else
-		{
-			mCbMesh->data.boneTransforms[0] = nodes.at(mesh.nodeIndex).worldTransform;
-			mCbMesh->data.beforeBoneTransforms[0] = nodes.at(mesh.nodeIndex).beforeWorldTransform;
-		}
+		SetRenderBoneTransform(mesh, nodes);
+		//PU側にデータを送る
 		mCbMesh->Activate(context, 1, true, true, true);
-
+		
 		UINT stride = sizeof(ModelData::Vertex);
 		UINT offset = 0;
 		context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &stride, &offset);
 		context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
+		//描画
 		for (const ModelResource::Subset& subset : mesh.subsets)
 		{
 			context->DrawIndexed(subset.indexCount, subset.startIndex, 0);
 		}
+		//GPU側に送ったデータを元に戻す
 		mCbMesh->DeActivate(context);
 	}
 
 }
+/**************************** 描画終了***************************/
 
 void ModelRenderer::VelocityEnd(ID3D11DeviceContext* context)
 {
+	//GPU側に送ったデータを元に戻す
 	mShader[2]->Deactivate(context);
 	mCbScene->DeActivate(context);
-	//context->OMSetDepthStencilState(nullptr, 0);
-	//context->RSSetState(nullptr);
+}
+/*****************************************************/
+//　　　　　　　　　　	定数バッファのデータ更新関数
+/*****************************************************/
+
+void ModelRenderer::SetRenderBoneTransform(const ModelResource::Mesh& mesh, const std::vector<Model::Node>& nodes)
+{
+	if (mesh.nodeIndices.size() > 0)
+	{//ボーンがある場合
+		for (size_t i = 0; i < mesh.nodeIndices.size(); ++i)
+		{
+			DirectX::XMMATRIX inverse_transform = DirectX::XMLoadFloat4x4(mesh.inverseTransforms.at(i));
+			DirectX::XMMATRIX world_transform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.nodeIndices.at(i)).worldTransform);
+			DirectX::XMMATRIX bone_transform = inverse_transform * world_transform;
+			DirectX::XMStoreFloat4x4(&mCbMesh->data.boneTransforms[i], bone_transform);
+			DirectX::XMMATRIX beforeWorldTransform = DirectX::XMLoadFloat4x4(&nodes.at(mesh.nodeIndices.at(i)).beforeWorldTransform);
+			bone_transform = inverse_transform * beforeWorldTransform;
+			DirectX::XMStoreFloat4x4(&mCbMesh->data.beforeBoneTransforms[i], bone_transform);
+
+		}
+	}
+	else
+	{
+		mCbMesh->data.boneTransforms[0] = nodes.at(mesh.nodeIndex).worldTransform;
+		mCbMesh->data.beforeBoneTransforms[0] = nodes.at(mesh.nodeIndex).beforeWorldTransform;
+	}
 
 }

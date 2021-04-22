@@ -2,6 +2,7 @@
 #include <fbxsdk.h> 
 #include "model_data.h"
 
+//fbxファイルからデータを読み込むクラス
 class FbxLoader
 {
 public:

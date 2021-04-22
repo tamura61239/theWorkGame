@@ -4,6 +4,10 @@
 LPDIRECTINPUT8			g_lpDI = nullptr;
 std::vector<LPDIRECTINPUTDEVICE8> g_lpJoysticks;
 
+/*****************************************************/
+//　　　　　　　　　　初期化関数
+/*****************************************************/
+
 BOOL PASCAL EnumJoyDeviceProc(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 {
 	LPDIRECTINPUTDEVICE8 g_lpJoystick;
@@ -60,8 +64,7 @@ BOOL PASCAL EnumJoyDeviceProc(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 	// 最初の1つのみで終わる
 	return DIENUM_CONTINUE;			// 次のデバイスを列挙するにはDIENUM_CONTINUEを返す
 }
-
-
+/*************************************コンストラクタ************************************/
 DirectInput::DirectInput(const int id, const float deadzone_x, const float deadzone_y, HINSTANCE instance)
 {
 	mId = id;
@@ -100,6 +103,9 @@ DirectInput::DirectInput(const int id, const float deadzone_x, const float deadz
 	mDeadzoneY = deadzone_y;
 	mDeadzoneX = deadzone_x;
 }
+/*****************************************************/
+//　　　　　　　　　　解放関数(デストラクタ)
+/*****************************************************/
 
 DirectInput::~DirectInput()
 {
@@ -114,25 +120,25 @@ DirectInput::~DirectInput()
 
 	
 }
+/*****************************************************/
+//　　　　　　　　　　更新関数
+/*****************************************************/
 
 void DirectInput::Update()
 {
 	if (!mCurrentState.connected)
 		return;
-
+	//前のフレームの状態を保持
 	mPreviousState = mCurrentState;
-
+	//入力状態を取得
 	HRESULT hr = g_lpJoysticks.at(mId)->GetDeviceState(sizeof(mCurrentState.state), &mCurrentState.state);
-	//if (FAILED(hr)) {
-	//	// Start again
-	//	g_lpJoystick->Acquire();
-	//}
-
+	//入力状態の更新
 	DirectionButtonState();
 	StickState();
 	TriggerState();
 }
-
+/***************************ボタンの入力状態を取得****************************/
+//入力中
 bool DirectInput::ButtonPressedState(int button)
 {
 	if (!mCurrentState.connected)
@@ -144,6 +150,7 @@ bool DirectInput::ButtonPressedState(int button)
 	}
 	return false;
 }
+//入力開始
 bool DirectInput::ButtonRisingState(int button)
 {
 	if ((mCurrentState.state.rgbButtons[button] & 0x80) &&
@@ -153,6 +160,7 @@ bool DirectInput::ButtonRisingState(int button)
 	}
 	return false;
 }
+//入力終了
 bool DirectInput::ButtonFallingState(int button)
 {
 	if (!(mCurrentState.state.rgbButtons[button] & 0x80) &&
@@ -162,75 +170,83 @@ bool DirectInput::ButtonFallingState(int button)
 	}
 	return false;
 }
-
+/**************************十字ボタンの入力状態を取得**************************/
+//入力中
 bool DirectInput::DirectionButtonPressedState(int button)
 {
 	return mCurrentState.directionButton[button] > 0;
 }
+//入力開始
 bool DirectInput::DirectionButtonRisingState(int button)
 {
 	return mCurrentState.directionButton[button] > 0 && mPreviousState.directionButton[button] == 0;
 }
+//入力終了
 bool DirectInput::DirectionButtonFallingState(int button)
 {
 	return mCurrentState.directionButton[button] == 0 && mPreviousState.directionButton[button] > 0;
 }
-
+/***********************十字ボタンの入力状態の更新**************************/
 void DirectInput::DirectionButtonState()
 {
+	//上ボタン
 	if (mCurrentState.state.rgdwPOV[0] == 0 ||
 		mCurrentState.state.rgdwPOV[0] == 4500 ||
 		mCurrentState.state.rgdwPOV[0] == 31500)
 		++mCurrentState.directionButton[State::UP];
 	else
-	{
+	{//入力してない
 		mCurrentState.directionButton[State::UP] = 0;
 	}
-
+	//下ボタン
 	if (mCurrentState.state.rgdwPOV[0] == 13500 ||
 		mCurrentState.state.rgdwPOV[0] == 18000 ||
 		mCurrentState.state.rgdwPOV[0] == 22500)
 		++mCurrentState.directionButton[State::DOWN];
 	else
-	{
+	{//入力してない
 		mCurrentState.directionButton[State::DOWN] = 0;
 	}
-
+	//左ボタン
 	if (mCurrentState.state.rgdwPOV[0] == 22500 ||
 		mCurrentState.state.rgdwPOV[0] == 27000 ||
 		mCurrentState.state.rgdwPOV[0] == 31500)
 		++mCurrentState.directionButton[State::LEFT];
 	else
-	{
+	{//入力してない
 		mCurrentState.directionButton[State::LEFT] = 0;
 	}
-
+	//右ボタン
 	if (mCurrentState.state.rgdwPOV[0] == 4500 ||
 		mCurrentState.state.rgdwPOV[0] == 9000 ||
 		mCurrentState.state.rgdwPOV[0] == 13500)
 		++mCurrentState.directionButton[State::RIGHT];
 	else
-	{
+	{//入力してない
 		mCurrentState.directionButton[State::RIGHT] = 0;
 	}
 }
+/****************************スティックの傾き具合の更新**************************/
 void DirectInput::StickState()
 {
+	//左のx軸の傾き具合
 	mCurrentState.lStick.x = ApplyDeadZone(static_cast<float>(mCurrentState.state.lX), MAX_STICKTILT, mDeadzoneX);
-
+	//左のy軸の傾き具合
 	mCurrentState.lStick.y = ApplyDeadZone(static_cast<float>(mCurrentState.state.lY), MAX_STICKTILT, mDeadzoneY);
-
+	//右のx軸の傾き具合
 	mCurrentState.rStick.x = ApplyDeadZone(static_cast<float>(mCurrentState.state.lZ), MAX_STICKTILT, mDeadzoneX);
-
+	//右のy軸の傾き具合
 	mCurrentState.rStick.y = ApplyDeadZone(static_cast<float>(mCurrentState.state.lRz), MAX_STICKTILT, mDeadzoneY);
 }
-
+/*********************************トリガーの入力状態*******************************/
 void DirectInput::TriggerState()
 {
+	//左のトリガー
 	mCurrentState.lTrigger = ApplyDeadZone(static_cast<float>(mCurrentState.state.lRx), MAX_TRRIGERTILT, 0.0f);
+	//右のトリガー
 	mCurrentState.rTrigger = ApplyDeadZone(static_cast<float>(mCurrentState.state.lRy), MAX_TRRIGERTILT, 0.0f);
 }
-
+/*********************************押し込みを調べる*******************************/
 float DirectInput::ApplyDeadZone(const float value, const float max_value, const float deadzone)
 {
 	float normalize_value = value / max_value;

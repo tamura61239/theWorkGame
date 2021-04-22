@@ -4,14 +4,12 @@
 #include <vector>
 #include <functional>
 
-//#include <fbxsdk.h>
-//using namespace fbxsdk;
 
 #include "misc.h"
 #include"texture.h"
 #include"shader.h"
 #include"camera_manager.h"
-
+/*************************型変換関数************************/
 void fbxamatrix_to_xmfloat4x4(const FbxAMatrix& fbxamatrix, DirectX::XMFLOAT4X4& xmfloat4x4)
 {
 	for (int row = 0; row < 4; row++)
@@ -22,6 +20,11 @@ void fbxamatrix_to_xmfloat4x4(const FbxAMatrix& fbxamatrix, DirectX::XMFLOAT4X4&
 		}
 	}
 }
+
+/*****************************************************/
+//　　　　　　　　　　初期化関数
+/*****************************************************/
+/****************************コンストラクタ*************************/
 
 StaticMesh::StaticMesh(ID3D11Device* device, const char* fileName, SHADER_TYPE shaderType, bool pathOrganize, int organizeType)
 {
@@ -52,23 +55,7 @@ StaticMesh::StaticMesh(ID3D11Device* device, const char* fileName, SHADER_TYPE s
 	mShaderType = shaderType;
 }
 
-
-
-
-void StaticMesh::SetShaderResouceView(ID3D11DeviceContext* context, Subset& subset)
-{
-	switch (mShaderType)
-	{
-	case SHADER_TYPE::USEALLY:
-		context->PSSetShaderResources(0, 1, subset.diffuse.SRV.GetAddressOf());
-		break;
-	case SHADER_TYPE::NORMAL:
-		context->PSSetShaderResources(0, 1, subset.diffuse.SRV.GetAddressOf());
-		context->PSSetShaderResources(1, 1, subset.normal.SRV.GetAddressOf());
-		context->PSSetShaderResources(2, 1, subset.bump.SRV.GetAddressOf());
-		break;
-	}
-}
+/**************************メッシュの最大値と最小値を取得***************************/
 
 void StaticMesh::SetMinAndMaxPosition()
 {
@@ -88,6 +75,7 @@ void StaticMesh::SetMinAndMaxPosition()
 		}
 	}
 }
+/**************************FBXからデータを取得***************************/
 
 void StaticMesh::CreateMesh(ID3D11Device* device, const char* fileName, bool pathOrganize, int organizeType)
 {
@@ -266,7 +254,7 @@ void StaticMesh::CreateMesh(ID3D11Device* device, const char* fileName, bool pat
 }
 
 
-
+/*******************************FBXのテクスチャデータを取得**********************************/
 void StaticMesh::FbxTettureNameLoad(const char* property_name, const char* factor_name, Material& material,
 	const FbxSurfaceMaterial* surfaceMaterial, const char* fileName, bool pathOrganize, int organizeType)
 {
@@ -341,7 +329,7 @@ void StaticMesh::FbxTettureNameLoad(const char* property_name, const char* facto
 	}
 
 }
-
+/*****************************バッファの生成******************************/
 void StaticMesh::CreateBuffers(ID3D11Device* device)
 {
 	HRESULT hr;
@@ -386,7 +374,7 @@ void StaticMesh::CreateBuffers(ID3D11Device* device)
 		}
 	}
 }
-
+/*******************************テクスチャを生成**********************************/
 void StaticMesh::CreateShaderResourceView(ID3D11Device* device, SHADER_TYPE shaderType)
 {
 	for (auto& mesh : mMeshes)
@@ -425,6 +413,9 @@ void StaticMesh::CreateShaderResourceView(ID3D11Device* device, SHADER_TYPE shad
 	}
 }
 
+/*****************************************************/
+//　　　　　　　　　　レイピック関数
+/*****************************************************/
 
 int StaticMesh::RayPick(const VECTOR3F& startPosition, const VECTOR3F& endPosition, VECTOR3F* outPosition, VECTOR3F* outNormal, float* outLength)
 {
@@ -500,6 +491,25 @@ int StaticMesh::RayPick(const VECTOR3F& startPosition, const VECTOR3F& endPositi
 
 	return ret;
 }
+/*****************************************************/
+//　　　　　　　　　　セット関数
+/*****************************************************/
+void StaticMesh::SetShaderResouceView(ID3D11DeviceContext* context, Subset& subset)
+{
+	switch (mShaderType)
+	{
+	case SHADER_TYPE::USEALLY:
+		context->PSSetShaderResources(0, 1, subset.diffuse.SRV.GetAddressOf());
+		break;
+	case SHADER_TYPE::NORMAL:
+		context->PSSetShaderResources(0, 1, subset.diffuse.SRV.GetAddressOf());
+		context->PSSetShaderResources(1, 1, subset.normal.SRV.GetAddressOf());
+		context->PSSetShaderResources(2, 1, subset.bump.SRV.GetAddressOf());
+		break;
+	}
+}
+
+/**********************************テクスチャデータを変更する***************************************/
 void StaticMesh::ChangeShaderResourceView(ID3D11Device* device, SHADER_TYPE shaderType, std::vector<TextureMapData> data)
 {
 	for (auto& mesh : mMeshes)
@@ -519,14 +529,15 @@ void StaticMesh::ChangeShaderResourceView(ID3D11Device* device, SHADER_TYPE shad
 	}
 	CreateShaderResourceView(device, shaderType);
 }
-/************************************************/
-//             描画クラス
-/************************************************/
+/***********************************描画クラス**********************************/
+/*****************************************************/
+//　　　　　　　　　　初期化関数(コンストラクタ)
+/*****************************************************/
 MeshRender::MeshRender(ID3D11Device* device)
 {
 	HRESULT hr = S_OK;
 
-	//shadow shader
+	//シェーダーを生成する
 	{
 		D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
 		{
@@ -534,161 +545,81 @@ MeshRender::MeshRender(ID3D11Device* device)
 			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
-		//Microsoft::WRL::ComPtr<ID3D11InputLayout>input;
-		//CreateVSFromCso(device, "Data/shader/static_mesh_shadow_vs.cso", mShadowVSShader.GetAddressOf(), input.GetAddressOf(), inputElementDesc, ARRAYSIZE(inputElementDesc));
 		mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/static_mesh_vs.cso", "", "Data/shader/static_mesh_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc)));
 		mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/static_mesh_normal_vs.cso", "", "Data/shader/static_mesh_normal_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc)));
 		mShader.push_back(std::make_unique<DrowShader>(device, "Data/shader/static_mesh_motion_data_vs.cso", "Data/shader/static_mesh_motion_data_gs.cso", "Data/shader/static_mesh_motion_data_ps.cso", inputElementDesc, ARRAYSIZE(inputElementDesc)));
 		mShadowShader = std::make_unique<DrowShader>(device, "Data/shader/static_mesh_shadow_vs.cso", "", "Data/shader/static_mesh_shadow_ps.cso");
 	}
 
-	// create rasterizer state : solid mode
-	{
-		D3D11_RASTERIZER_DESC rasterizerDesc = {};
-		rasterizerDesc.FillMode = D3D11_FILL_SOLID; //D3D11_FILL_WIREFRAME, D3D11_FILL_SOLID
-		rasterizerDesc.CullMode = D3D11_CULL_BACK; //D3D11_CULL_NONE, D3D11_CULL_FRONT, D3D11_CULL_BACK   
-		rasterizerDesc.FrontCounterClockwise = FALSE;
-		rasterizerDesc.DepthBias = 0;
-		rasterizerDesc.DepthBiasClamp = 0;
-		rasterizerDesc.SlopeScaledDepthBias = 0;
-		rasterizerDesc.DepthClipEnable = true;
-		rasterizerDesc.ScissorEnable = FALSE;
-		rasterizerDesc.MultisampleEnable = false;
-		rasterizerDesc.AntialiasedLineEnable = FALSE;
-		hr = device->CreateRasterizerState(&rasterizerDesc, mRasterizerState.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-		rasterizerDesc.CullMode = D3D11_CULL_NONE;
-		rasterizerDesc.FillMode = D3D11_FILL_WIREFRAME; //D3D11_FILL_WIREFRAME, D3D11_FILL_SOLID
-		hr = device->CreateRasterizerState(&rasterizerDesc, mShadowRasterizerState.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-	}
-	// 深度ステンシルステートの設定
-	{
-		//D3D11_DEPTH_STENCIL_DESC desc;
-		//::memset(&desc, 0, sizeof(desc));
-		//desc.DepthEnable = true;
-		//desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-		//desc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-		//hr = device->CreateDepthStencilState(&desc, mDepthStencilState.GetAddressOf());
-
-		//_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-		D3D11_DEPTH_STENCIL_DESC depth_stencil_desc = {};
-		depth_stencil_desc.DepthEnable = TRUE;
-		depth_stencil_desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-		depth_stencil_desc.DepthFunc = D3D11_COMPARISON_LESS;
-		depth_stencil_desc.StencilEnable = FALSE;
-		depth_stencil_desc.StencilReadMask = 0xFF;
-		depth_stencil_desc.StencilWriteMask = 0xFF;
-		depth_stencil_desc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-		depth_stencil_desc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
-		depth_stencil_desc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-		depth_stencil_desc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-		depth_stencil_desc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-		depth_stencil_desc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
-		depth_stencil_desc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-		depth_stencil_desc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-		hr = device->CreateDepthStencilState(&depth_stencil_desc, mDepthStencilState.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-	}
-	// 定数バッファ作成
+	// 定数バッファを生成する
 	{
 		mCbScene = std::make_unique<ConstantBuffer<CbScene>>(device);
 		mCbObj = std::make_unique<ConstantBuffer<CbObj>>(device);
 		mCbBeforeObj = std::make_unique<ConstantBuffer<FLOAT4X4>>(device);
 	}
-
-	// create sampler state
-	D3D11_SAMPLER_DESC samplerDesc = {};
-	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.MipLODBias = 0;
-	samplerDesc.MaxAnisotropy = 1;
-	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-	memcpy(samplerDesc.BorderColor, &VECTOR4F(0.0f, 0.0f, 0.0f, 0.0f), sizeof(VECTOR4F));
-	samplerDesc.MinLOD = -FLT_MAX;
-	samplerDesc.MaxLOD = FLT_MAX;
-	//D3D11_SAMPLER_DESC samplerDesc = {};
-	//samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
-	//samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
-	//samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
-	//samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
-	//samplerDesc.MipLODBias = 0;
-	//samplerDesc.MaxAnisotropy = 16;
-	//samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-	//memcpy(samplerDesc.BorderColor, &VECTOR4F(0.0f, 0.0f, 0.0f, 0.0f), sizeof(VECTOR4F));
-	//samplerDesc.MinLOD = 0;
-	//samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-
-	hr = device->CreateSamplerState(&samplerDesc, mDiffuseSamplerState.GetAddressOf());
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
-	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
-	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
-
-	hr = device->CreateSamplerState(&samplerDesc, mNormalSamplerState.GetAddressOf());
-	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
 }
+/*****************************************************/
+//　　　　　　　　　　シャドウマップの描画関数
+/*****************************************************/
+/***************************描画開始**************************/
 
 void MeshRender::ShadowBegin(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection)
 {
-	mShadowShader->Activate(context);
-	//context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
-	//context->RSSetState(mRasterizerState.Get());
-
+	//定数バッファのデータを更新
 	mCbScene->data.view = view;
 	mCbScene->data.projection = projection;
+	//GPU側にデータを送る
 	mCbScene->Activate(context, 0, true);
+	mShadowShader->Activate(context);
 }
+/***************************描画**************************/
 
 void MeshRender::ShadowRender(ID3D11DeviceContext* context, StaticMesh* obj, const FLOAT4X4& world, const VECTOR4F& color)
 {
 
 	for (StaticMesh::Mesh& mesh : obj->mMeshes)
 	{
+		//定数バッファのデータを更新
+		mCbObj->data.color = color;
+		DirectX::XMStoreFloat4x4(&mCbObj->data.world, DirectX::XMLoadFloat4x4(&mesh.globalTransform) * DirectX::XMLoadFloat4x4(&world));
+		//GPU側にデータを送る
+		mCbObj->Activate(context, 1, true);
 		u_int stride = sizeof(StaticMesh::Vertex);
 		u_int offset = 0;
 		context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &stride, &offset);
 		context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-		mCbObj->data.color = color;
-		DirectX::XMStoreFloat4x4(&mCbObj->data.world, DirectX::XMLoadFloat4x4(&mesh.globalTransform) * DirectX::XMLoadFloat4x4(&world));
-		mCbObj->Activate(context, 1, true);
+		//描画
 		for (StaticMesh::Subset& subset : mesh.subsets)
 		{
 			context->DrawIndexed(subset.indexCount, subset.indexStart, 0);
 		}
+		//GPU側に送ったデータを元に戻す
 		mCbObj->DeActivate(context);
 	}
 }
+/***************************描画終了**************************/
 
 void MeshRender::ShadowEnd(ID3D11DeviceContext* context)
 {
+	//GPU側に送ったデータを元に戻す
 	mShadowShader->Deactivate(context);
 	mCbScene->DeActivate(context);
 }
+/*****************************************************/
+//　　　　　　　　　　通常描画関数
+/*****************************************************/
+/***************************描画開始**************************/
 
 void MeshRender::Begin(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const bool w)
 {
-
-
-	//context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
-	//if (!w)context->RSSetState(mRasterizerState.Get());
-	//else context->RSSetState(mShadowRasterizerState.Get());
-	//context->PSSetSamplers(0, 1, mDiffuseSamplerState.GetAddressOf());
-	//context->PSSetSamplers(1, 1, mNormalSamplerState.GetAddressOf());
-
-
+	//定数バッファのデータを更新
 	mCbScene->data.view = view;
 	mCbScene->data.projection = projection;
+	//GPU側にデータを送る
 	mCbScene->Activate(context, 0, true, true, true);
-
 }
+/***************************描画**************************/
 
 void MeshRender::Render(ID3D11DeviceContext* context, StaticMesh* obj, const FLOAT4X4& world, const VECTOR4F color)
 {
@@ -697,13 +628,14 @@ void MeshRender::Render(ID3D11DeviceContext* context, StaticMesh* obj, const FLO
 
 	for (StaticMesh::Mesh& mesh : obj->mMeshes)
 	{
+		//GPU側にデータを送る
 		u_int stride = sizeof(StaticMesh::Vertex);
 		u_int offset = 0;
 		context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &stride, &offset);
 		context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-
+		//定数バッファのデータを更新
 		DirectX::XMStoreFloat4x4(&mCbObj->data.world, DirectX::XMLoadFloat4x4(&mesh.globalTransform) * DirectX::XMLoadFloat4x4(&world));
 
 		for (StaticMesh::Subset& subset : mesh.subsets)
@@ -712,12 +644,16 @@ void MeshRender::Render(ID3D11DeviceContext* context, StaticMesh* obj, const FLO
 			mCbObj->data.color.y = subset.diffuse.color.y * color.y;
 			mCbObj->data.color.z = subset.diffuse.color.z * color.z;
 			mCbObj->data.color.w = color.w;
+			//GPU側にデータを送る
 			mCbObj->Activate(context, 1, true, true, true);
 			obj->SetShaderResouceView(context, subset);
+			//描画
 			context->DrawIndexed(subset.indexCount, subset.indexStart, 0);
+			//GPU側に送ったデータを元に戻す
 			mCbObj->DeActivate(context);
 		}
 	}
+	//GPU側に送ったデータを元に戻す
 	ID3D11ShaderResourceView* srv = nullptr;
 	for (int i = 0; i < 3; i++)
 	{
@@ -726,19 +662,21 @@ void MeshRender::Render(ID3D11DeviceContext* context, StaticMesh* obj, const FLO
 	mShader[static_cast<int>(shaderType)]->Deactivate(context);
 
 }
+/***************************描画(シェーダーを取得)**************************/
 
 void MeshRender::Render(ID3D11DeviceContext* context, DrowShader* shader, StaticMesh* obj, const FLOAT4X4& world, const VECTOR4F color)
 {
 	shader->Activate(context);
 	for (StaticMesh::Mesh& mesh : obj->mMeshes)
 	{
+		//GPU側にデータを送る
 		u_int stride = sizeof(StaticMesh::Vertex);
 		u_int offset = 0;
 		context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &stride, &offset);
 		context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-
+		//定数バッファのデータを更新
 		DirectX::XMStoreFloat4x4(&mCbObj->data.world, DirectX::XMLoadFloat4x4(&mesh.globalTransform) * DirectX::XMLoadFloat4x4(&world));
 
 		for (StaticMesh::Subset& subset : mesh.subsets)
@@ -747,12 +685,16 @@ void MeshRender::Render(ID3D11DeviceContext* context, DrowShader* shader, Static
 			mCbObj->data.color.y = subset.diffuse.color.y * color.y;
 			mCbObj->data.color.z = subset.diffuse.color.z * color.z;
 			mCbObj->data.color.w = color.w;
+			//GPU側にデータを送る
 			mCbObj->Activate(context, 1, true, true, true);
 			obj->SetShaderResouceView(context, subset);
+			//描画
 			context->DrawIndexed(subset.indexCount, subset.indexStart, 0);
+			//GPU側に送ったデータを元に戻す
 			mCbObj->DeActivate(context);
 		}
 	}
+	//GPU側に送ったデータを元に戻す
 	ID3D11ShaderResourceView* srv = nullptr;
 	for (int i = 0; i < 3; i++)
 	{
@@ -761,60 +703,68 @@ void MeshRender::Render(ID3D11DeviceContext* context, DrowShader* shader, Static
 	shader->Deactivate(context);
 
 }
+/***************************描画終了**************************/
 
 void MeshRender::End(ID3D11DeviceContext* context)
 {
+	//GPU側に送ったデータを元に戻す
 	mCbScene->DeActivate(context);
 }
 /*****************************************************/
-//  速度マップの描画
+//　　　　　　　　　　速度マップの描画関数
 /*****************************************************/
+/***************************描画開始**************************/
 void MeshRender::VelocityBegin(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const bool w)
 {
-	mShader[2]->Activate(context);
-
-	//context->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
-	//if (!w)context->RSSetState(mRasterizerState.Get());
-	//else context->RSSetState(mShadowRasterizerState.Get());
-
+	//定数バッファのデータを更新
 	mCbScene->data.view = view;
 	mCbScene->data.projection = projection;
+	//GPU側にデータを送る
 	mCbScene->Activate(context, 0, true, true, true);
-
+	mShader[2]->Activate(context);
 }
+/***************************描画**************************/
 
 void MeshRender::VelocityRender(ID3D11DeviceContext* context, StaticMesh* obj, const FLOAT4X4& world, const FLOAT4X4& beforeWorld, const VECTOR4F color)
 {
 	for (StaticMesh::Mesh& mesh : obj->mMeshes)
 	{
+		//GPU側にデータを送る
 		u_int stride = sizeof(StaticMesh::Vertex);
 		u_int offset = 0;
 		context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &stride, &offset);
 		context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-
+		//定数バッファのデータを更新
 		DirectX::XMStoreFloat4x4(&mCbObj->data.world, DirectX::XMLoadFloat4x4(&mesh.globalTransform) * DirectX::XMLoadFloat4x4(&world));
 
 		DirectX::XMStoreFloat4x4(&mCbBeforeObj->data, DirectX::XMLoadFloat4x4(&mesh.globalTransform) * DirectX::XMLoadFloat4x4(&beforeWorld));
+		//GPU側にデータを送る
 		mCbBeforeObj->Activate(context, 2, true, true, true);
 		for (StaticMesh::Subset& subset : mesh.subsets)
 		{
+			//定数バッファのデータを更新
 			mCbObj->data.color.x = subset.diffuse.color.x * color.x;
 			mCbObj->data.color.y = subset.diffuse.color.y * color.y;
 			mCbObj->data.color.z = subset.diffuse.color.z * color.z;
 			mCbObj->data.color.w = color.w;
+			//GPU側にデータを送る
 			mCbObj->Activate(context, 1, true, true, true);
+			//描画
 			context->DrawIndexed(subset.indexCount, subset.indexStart, 0);
+			//GPU側に送ったデータを元に戻す
 			mCbObj->DeActivate(context);
 		}
 		mCbBeforeObj->DeActivate(context);
 	}
 
 }
+/***************************描画終了**************************/
 
 void MeshRender::VelocityEnd(ID3D11DeviceContext* context)
 {
+	//GPU側に送ったデータを元に戻す
 	mShader[2]->Deactivate(context);
 	mCbScene->DeActivate(context);
 

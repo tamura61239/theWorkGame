@@ -69,6 +69,9 @@ inline FLOAT4X4 FbxAMatrixToFloat4x4(const FbxAMatrix& fbx_value)
 		static_cast<float>(fbx_value[3][3])
 	);
 }
+/*****************************************************/
+//　　　　　　　　　　読み込み関数
+/*****************************************************/
 
 bool FbxLoader::Load(const char* filename, ModelData& data, const bool textureFlag, int filetype)
 {
@@ -109,7 +112,7 @@ bool FbxLoader::Load(const char* filename, ModelData& data, const bool textureFl
 	fbx_manager->Destroy();		// 関連するすべてのオブジェクトが解放される
 	return result;
 }
-// FBXシーンからモデルデータを構築する
+/***************************FBXシーンからモデルデータを構築する**************************/
 bool FbxLoader::BuildModel(const char* dirname, FbxScene* fbx_scene, ModelData& data)
 {
 	FbxNode* fbx_root_node = fbx_scene->GetRootNode();
@@ -122,7 +125,7 @@ bool FbxLoader::BuildModel(const char* dirname, FbxScene* fbx_scene, ModelData& 
 	return true;
 }
 
-// FBXノードを再帰的に辿ってデータを構築する
+/*************************FBXノードを再帰的に辿ってデータを構築する****************************/
 void FbxLoader::BuildNodes(FbxNode* fbx_node, ModelData& data, int parent_node_index)
 {
 	FbxNodeAttribute* fbx_node_attribute = fbx_node->GetNodeAttribute();
@@ -152,7 +155,7 @@ void FbxLoader::BuildNodes(FbxNode* fbx_node, ModelData& data, int parent_node_i
 	}
 }
 
-// FBXノードからノードデータを構築する
+/*************************FBXノードからノードデータを構築する****************************/
 void FbxLoader::BuildNode(FbxNode* fbx_node, ModelData& data, int parent_node_index)
 {
 	FbxAMatrix& fbx_local_transform = fbx_node->EvaluateLocalTransform();
@@ -167,7 +170,7 @@ void FbxLoader::BuildNode(FbxNode* fbx_node, ModelData& data, int parent_node_in
 	data.nodes.emplace_back(node);
 }
 
-// FBXノードを再帰的に辿ってメッシュデータを構築する
+/**************************FBXノードを再帰的に辿ってメッシュデータを構築する***************************/
 void FbxLoader::BuildMeshes(FbxNode* fbx_node, ModelData& data)
 {
 	FbxNodeAttribute* fbx_node_attribute = fbx_node->GetNodeAttribute();
@@ -192,7 +195,7 @@ void FbxLoader::BuildMeshes(FbxNode* fbx_node, ModelData& data)
 	}
 }
 
-// FBXメッシュからメッシュデータを構築する
+/*****************************FBXメッシュからメッシュデータを構築する************************/
 void FbxLoader::BuildMesh(FbxNode* fbx_node, FbxMesh* fbx_mesh, ModelData& data)
 {
 	int fbx_control_points_count = fbx_mesh->GetControlPointsCount();
@@ -385,7 +388,7 @@ void FbxLoader::BuildMesh(FbxNode* fbx_node, FbxMesh* fbx_mesh, ModelData& data)
 	}
 }
 
-// FBXシーン内のFBXマテリアルからマテリアルデータを構築する
+/*************************FBXシーン内のFBXマテリアルからマテリアルデータを構築する****************************/
 void FbxLoader::BuildMaterials(const char* dirname, FbxScene* fbx_scene, ModelData& data)
 {
 	int fbx_material_count = fbx_scene->GetMaterialCount();
@@ -409,7 +412,7 @@ void FbxLoader::BuildMaterials(const char* dirname, FbxScene* fbx_scene, ModelDa
 	}
 }
 
-// FBXマテリアルからマテリアルデータを構築する
+/******************************FBXマテリアルからマテリアルデータを構築する***********************/
 ModelData::Material FbxLoader::BuildMaterial(const char* dirname, FbxSurfaceMaterial* fbx_surface_material, const char* property_name, const char* factor_name)
 {
 	bool ret = false;
@@ -470,7 +473,7 @@ ModelData::Material FbxLoader::BuildMaterial(const char* dirname, FbxSurfaceMate
 	return material;
 }
 
-// アニメーションデータを構築
+/**************************アニメーションデータを構築***************************/
 void FbxLoader::BuildAnimations(FbxScene* fbx_scene, ModelData& data)
 {
 	// すべてのアニメーション名を取得
@@ -576,7 +579,7 @@ void FbxLoader::BuildAnimations(FbxScene* fbx_scene, ModelData& data)
 	}
 }
 
-// ノードインデックスを取得する
+/*****************************ノードインデックスを取得する************************/
 int FbxLoader::FindNodeIndex(ModelData& data, const char* name)
 {
 	for (size_t i = 0; i < data.nodes.size(); ++i)
@@ -589,7 +592,7 @@ int FbxLoader::FindNodeIndex(ModelData& data, const char* name)
 	return -1;
 }
 
-// マテリアルインデックスを取得する
+/*****************************マテリアルインデックスを取得する************************/
 int FbxLoader::FindMaterialIndex(FbxScene* fbx_scene, const FbxSurfaceMaterial* fbx_surface_material)
 {
 	int fbx_material_count = fbx_scene->GetMaterialCount();

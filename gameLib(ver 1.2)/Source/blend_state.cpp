@@ -2,11 +2,16 @@
 
 namespace Descartes
 {
+/*****************************************************/
+//　　　　　　　　　　生成関数
+/*****************************************************/
+
 	ID3D11BlendState* CreateBlendState(ID3D11Device* device, BLEND_MODE mode)
 	{
 		ID3D11BlendState* blend_state;
 
 		D3D11_BLEND_DESC blend_desc = {};
+		//ブレンドの種類ごとにデータをを設定する
 		switch (mode)
 		{
 		case BLEND_MODE::NONE:
@@ -130,6 +135,7 @@ namespace Descartes
 			blend_desc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 			break;
 		}
+		//生成
 		HRESULT hr = device->CreateBlendState(&blend_desc, &blend_state);
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 

@@ -1,6 +1,9 @@
 #include "logger.h"
 #include "model.h"
 #include "misc.h"
+/*****************************************************/
+//　　　　　　　　　　初期化関数(コンストラクタ)
+/*****************************************************/
 
 Model::Model(std::shared_ptr<ModelResource>& resource)
 {
@@ -23,8 +26,11 @@ Model::Model(std::shared_ptr<ModelResource>& resource)
 		dst.translate = src.translate;
 	}
 }
+/*****************************************************/
+//　　　　　　　　　　アニメーション関数
+/*****************************************************/
 
-// アニメーション再生
+/************************アニメーション再生開始****************************/
 void Model::PlayAnimation(int animation_index, bool loop, float changeTime)
 {
 	mCurrentAnimation = animation_index;
@@ -37,8 +43,7 @@ void Model::PlayAnimation(int animation_index, bool loop, float changeTime)
 	memcpy(&mChangeSceneNodes[0], &mNodes[0], sizeof(Node) * mNodes.size());
 
 }
-
-// アニメーション計算
+/**************************アニメーション更新*****************************/
 void Model::UpdateAnimation(float elapsed_time)
 {
 	if (mCurrentAnimation < 0)
@@ -52,11 +57,12 @@ void Model::UpdateAnimation(float elapsed_time)
 	}
 	if (mChangeAnimation)
 	{
+		//アニメーションブレンド(一様)
 		BlendAnimation(elapsed_time);
 	}
 	else
 	{
-
+		//キーフレームに合わせたボーンの座標を計算
 		const ModelData::Animation& animation = mModelResource->GetAnimations().at(mCurrentAnimation);
 
 		const std::vector<ModelData::Keyframe>& keyframes = animation.keyframes;
@@ -124,19 +130,22 @@ void Model::UpdateAnimation(float elapsed_time)
 		}
 	}
 }
+/*************************アニメーションブレンド(アニメーションを変更する時)***************************/
 void Model::BlendAnimation(float elapsed_time)
 {
+	//ボーンとアニメーションの情報を取得
 	const ModelData::Animation& animation = mModelResource->GetAnimations().at(mCurrentAnimation);
 
 	const ModelData::Keyframe& keyframe = animation.keyframes.at(0);
 
 	float rate = (mCurrentSeconds / mChangeTime);
 
+	//1キーフレームの配列の数とボーン配列の数が同じかどうかを調べる
 	assert(mNodes.size() == keyframe.nodeKeys.size());
 	assert(mNodes.size() == mChangeSceneNodes.size());
 
 	int node_count = static_cast<int>(mNodes.size());
-
+	//アニメーションを変えた時のボーンの位置と新しいアニメーションの最初のキーフレームを補完する
 	for (int node_index = 0; node_index < node_count; ++node_index)
 	{
 		const Node& changeNode = mChangeSceneNodes.at(node_index);
@@ -159,7 +168,7 @@ void Model::BlendAnimation(float elapsed_time)
 		DirectX::XMStoreFloat3(&node.translate, t);
 
 	}
-
+	//アニメーションのを切り替える時間がたったら終わりにする
 	mCurrentSeconds += elapsed_time;
 	if (mCurrentSeconds > mChangeTime)
 	{
@@ -167,8 +176,10 @@ void Model::BlendAnimation(float elapsed_time)
 		mChangeAnimation = false;
 	}
 }
-
-// ローカル変換行列計算
+/*****************************************************/
+//　　　　　　　　　　行列計算関数
+/*****************************************************/
+/***************************ボーンのローカル空間変換行列**************************/
 void Model::CalculateLocalTransform()
 {
 	bool lFlag = false;
@@ -179,7 +190,7 @@ void Model::CalculateLocalTransform()
 		rotate = DirectX::XMMatrixRotationQuaternion(DirectX::XMVectorSet(node.rotate.x, node.rotate.y, node.rotate.z, node.rotate.w));
 		translate = DirectX::XMMatrixTranslation(node.translate.x, node.translate.y, node.translate.z);
 		if (!lFlag)
-		{
+		{//モデルを左手系座標にするために最初だけ行列をかける
 			DirectX::XMMATRIX C = DirectX::XMMatrixSet(
 				-1, 0, 0, 0,
 				0, 1, 0, 0,
@@ -190,20 +201,23 @@ void Model::CalculateLocalTransform()
 			lFlag = true;
 		}
 		else
-		{
+		{//モデルのローカル座標系行列の計算をする
 			local = scale * rotate * translate;
 
 		}
+		//計算した行列を設定する
 		DirectX::XMStoreFloat4x4(&node.localTransform, local);
 	}
 }
 
-// ワールド変換行列計算
+/**************************************計算したローカル空間行列にワールド空間行列をかける***********************************/
 void Model::CalculateWorldTransform(const DirectX::XMMATRIX& world_transform)
 {
 	for (Node& node : mNodes)
 	{
+		//前のフレームのワールド空間行列を保持
 		node.beforeWorldTransform = node.worldTransform;
+		//ローカル空間行列×ワールド空間行列
 		if (node.parent != nullptr)
 		{
 			DirectX::XMMATRIX local_transform = DirectX::XMLoadFloat4x4(&node.localTransform);

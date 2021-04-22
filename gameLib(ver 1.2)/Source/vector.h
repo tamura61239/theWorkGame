@@ -20,16 +20,17 @@ inline int _IRand(const int& lo, const int& hi)
 	return rand() / RAND_MAX * (hi - lo) + lo;
 }
 
-
+//int2
 class VECTOR2 : public DirectX::XMINT2
 {
 public:
+	//コンストラクタ
 	VECTOR2() : DirectX::XMINT2(0, 0) {};
 	~VECTOR2() {};
 
 	VECTOR2(const int x, const int y) : DirectX::XMINT2(x, y) {};
 	VECTOR2(const VECTOR2& v) { x = v.x; y = v.y; }
-
+	//int2とint2のオペレーター
 	VECTOR2& operator=(const VECTOR2& v) { x = v.x; y = v.y; return *this; }
 	VECTOR2& operator+=(const VECTOR2& v) { x += v.x; y += v.y; return *this; }
 	VECTOR2& operator-=(const VECTOR2& v) { x -= v.x; y -= v.y; return *this; }
@@ -51,16 +52,17 @@ public:
 	bool operator == (const VECTOR2& v) const { return (x == v.x) && (y == v.y); }
 	bool operator != (const VECTOR2& v) const { return (x != v.x) || (y != v.y); }
 };
-
+//uint2
 class UVECTOR2 : public DirectX::XMUINT2
 {
 public:
+	//コンストラクタ
 	UVECTOR2() : DirectX::XMUINT2(0, 0) {};
 	~UVECTOR2() {};
 
 	UVECTOR2(const int x, const int y) : DirectX::XMUINT2(x, y) {};
 	UVECTOR2(const UVECTOR2& v) { x = v.x; y = v.y; }
-
+	//uint2とuint2のオペレーター
 	UVECTOR2& operator=(const UVECTOR2& v) { x = v.x; y = v.y; return *this; }
 	UVECTOR2& operator+=(const UVECTOR2& v) { x += v.x; y += v.y; return *this; }
 	UVECTOR2& operator-=(const UVECTOR2& v) { x -= v.x; y -= v.y; return *this; }
@@ -82,15 +84,16 @@ public:
 	bool operator == (const UVECTOR2& v) const { return (x == v.x) && (y == v.y); }
 	bool operator != (const UVECTOR2& v) const { return (x != v.x) || (y != v.y); }
 };
-
+//float2
 class VECTOR2F : public DirectX::XMFLOAT2
 {
 public:
+	//コンストラクタ
 	VECTOR2F() : DirectX::XMFLOAT2(0.f, 0.f) {}
 	VECTOR2F(const float x, const float y) : DirectX::XMFLOAT2(x, y) {}
 	VECTOR2F(const VECTOR2F& v) { x = v.x; y = v.y; }
 	~VECTOR2F() {}
-
+	//float2とfloat2のオペレーター
 	VECTOR2F& operator=(const VECTOR2F& v) { x = v.x; y = v.y; return *this; }
 	VECTOR2F& operator+=(const VECTOR2F& v) { x += v.x; y += v.y; return *this; }
 	VECTOR2F& operator-=(const VECTOR2F& v) { x -= v.x; y -= v.y; return *this; }
@@ -119,16 +122,17 @@ VECTOR2F ConvertVec2(const float conv, const VECTOR2F v);
 float CrossVec2(const VECTOR2F v1, const VECTOR2F v2);
 float DotVec2(const VECTOR2F v1, const VECTOR2F v2);
 
-
+//int3
 class VECTOR3 : public DirectX::XMINT3
 {
 public:
+	//コンストラクタ
 	VECTOR3() : DirectX::XMINT3(0, 0, 0) {};
 	~VECTOR3() {};
 
 	VECTOR3(const int x, const int y, const int z) : DirectX::XMINT3(x, y, z) {};
 	VECTOR3(const VECTOR3& v) { x = v.x; y = v.y; z = v.z; }
-
+	//int3とint3のオペレーター
 	VECTOR3& operator=(const VECTOR3& v) { x = v.x; y = v.y; z = v.z; return *this; }
 	VECTOR3& operator+=(const VECTOR3& v) { x += v.x; y += v.y; z += v.z; return *this; }
 	VECTOR3& operator-=(const VECTOR3& v) { x -= v.x; y -= v.y; z -= v.z; return *this; }
@@ -150,16 +154,17 @@ public:
 	bool operator == (const VECTOR3& v) const { return (x == v.x) && (y == v.y) && (z == v.z); }
 	bool operator != (const VECTOR3& v) const { return (x != v.x) || (y != v.y) || (z != v.z); }
 };
-
+//uint3
 class UVECTOR3 : public DirectX::XMUINT3
 {
 public:
+	//コンストラクタ
 	UVECTOR3() : DirectX::XMUINT3(0, 0, 0) {};
 	~UVECTOR3() {};
 
 	UVECTOR3(const int x, const int y, const int z) : DirectX::XMUINT3(x, y, z) {};
 	UVECTOR3(const VECTOR3& v) { x = v.x; y = v.y; z = v.z; }
-
+	//uint3uint3のオペレーター
 	UVECTOR3& operator=(const UVECTOR3& v) { x = v.x; y = v.y; z = v.z; return *this; }
 	UVECTOR3& operator+=(const UVECTOR3& v) { x += v.x; y += v.y; z += v.z; return *this; }
 	UVECTOR3& operator-=(const UVECTOR3& v) { x -= v.x; y -= v.y; z -= v.z; return *this; }
@@ -181,16 +186,17 @@ public:
 	bool operator == (const UVECTOR3& v) const { return (x == v.x) && (y == v.y) && (z == v.z); }
 	bool operator != (const UVECTOR3& v) const { return (x != v.x) || (y != v.y) || (z != v.z); }
 };
-
+//float3
 class VECTOR3F : public DirectX::XMFLOAT3
 {
 public:
+	//コンストラクタ
 	VECTOR3F() : DirectX::XMFLOAT3(0.f, 0.f, 0.f) {};
 	~VECTOR3F() {};
 
 	VECTOR3F(const float x, const float y, const float z) : DirectX::XMFLOAT3(x, y, z) {};
 	VECTOR3F(const VECTOR3F& v) { x = v.x; y = v.y; z = v.z; }
-
+	//float3とfloat3のオペレーター
 	VECTOR3F& operator=(const VECTOR3F& v) { x = v.x; y = v.y; z = v.z; return *this; }
 	VECTOR3F& operator+=(const VECTOR3F& v) { x += v.x; y += v.y; z += v.z; return *this; }
 	VECTOR3F& operator-=(const VECTOR3F& v) { x -= v.x; y -= v.y; z -= v.z; return *this; }
@@ -218,15 +224,17 @@ VECTOR3F NormalizeVec3(const VECTOR3F v);
 VECTOR3F ConvertVec3(const float conv, const VECTOR3F v);
 VECTOR3F CrossVec3(const VECTOR3F v1, const VECTOR3F v2);
 float DotVec3(const VECTOR3F v1, const VECTOR3F v2);
-
+//int4
 class VECTOR4 : public DirectX::XMINT4
 {
 public:
+	//コンストラクタ
 	VECTOR4() : DirectX::XMINT4(0, 0, 0, 0) {};
 	~VECTOR4() {};
 
 	VECTOR4(const int x, const int y, const int z, const int w) : DirectX::XMINT4(x, y, z, w) {};
 	VECTOR4(const VECTOR4& v) { x = v.x; y = v.y; z = v.z; w = v.z; }
+	//int4とint4のオペレーター
 
 	VECTOR4& operator=(const VECTOR4& v) { x = v.x; y = v.y; z = v.z; w = v.w; return *this; }
 	VECTOR4& operator+=(const VECTOR4& v) { x += v.x; y += v.y; z += v.z; w += v.w; return *this; }
@@ -249,15 +257,17 @@ public:
 	bool operator == (const VECTOR4& v) const { return (x == v.x) && (y == v.y) && (z == v.z) && (w == v.w); }
 	bool operator != (const VECTOR4& v) const { return (x != v.x) || (y != v.y) || (z != v.z) || (w != v.w); }
 };
-
+//uint4
 class UVECTOR4 : public DirectX::XMUINT4
 {
 public:
+	//コンストラクタ
 	UVECTOR4() : DirectX::XMUINT4(0, 0, 0, 0) {};
 	~UVECTOR4() {};
 
 	UVECTOR4(const int x, const int y, const int z, const int w) : DirectX::XMUINT4(x, y, z, w) {};
 	UVECTOR4(const UVECTOR4& v) { x = v.x; y = v.y; z = v.z; w = v.z; }
+	//uint4とuint4のオペレーター
 
 	UVECTOR4& operator=(const UVECTOR4& v) { x = v.x; y = v.y; z = v.z; w = v.w; return *this; }
 	UVECTOR4& operator+=(const UVECTOR4& v) { x += v.x; y += v.y; z += v.z; w += v.w; return *this; }
@@ -268,7 +278,6 @@ public:
 	UVECTOR4& operator/=(const int f) { x /= f; y /= f; z /= f; w /= f; return *this; }
 
 	UVECTOR4 operator+() const { return UVECTOR4(x, y, z, w); }
-	//UVECTOR4 operator-() const { return UVECTOR4(-x, -y, -z, -w); }
 
 	UVECTOR4 operator+(const UVECTOR4& v) const { return UVECTOR4(x + v.x, y + v.y, z + v.z, w + v.w); }
 	UVECTOR4 operator-(const UVECTOR4& v) const { return UVECTOR4(x - v.x, y - v.y, z - v.z, w - v.w); }
@@ -280,16 +289,17 @@ public:
 	bool operator == (const UVECTOR4& v) const { return (x == v.x) && (y == v.y) && (z == v.z) && (w == v.w); }
 	bool operator != (const UVECTOR4& v) const { return (x != v.x) || (y != v.y) || (z != v.z) || (w != v.w); }
 };
-
+//float4
 class VECTOR4F : public DirectX::XMFLOAT4
 {
 public:
+	//コンストラクタ
 	VECTOR4F() : DirectX::XMFLOAT4(0.f, 0.f, 0.f, 0.f) {};
 	~VECTOR4F() {};
 
 	VECTOR4F(const float x, const float y, const float z, const float w) : DirectX::XMFLOAT4(x, y, z, w) {};
 	VECTOR4F(const VECTOR4F& v) { x = v.x; y = v.y; z = v.z; w = v.w; }
-
+	//float4とfloat4のオペレーター
 	VECTOR4F& operator=(const VECTOR4F& v) { x = v.x; y = v.y; z = v.z; w = v.w; return *this; }
 	VECTOR4F& operator+=(const VECTOR4F& v) { x += v.x; y += v.y; z += v.z; w += v.w; return *this; }
 	VECTOR4F& operator-=(const VECTOR4F& v) { x -= v.x; y -= v.y; z -= v.z; w -= v.w; return *this; }
@@ -311,10 +321,11 @@ public:
 	bool operator == (const VECTOR4F& v) const { return (x == v.x) && (y == v.y) && (z == v.z) && (w == v.w); }
 	bool operator != (const VECTOR4F& v) const { return (x != v.x) || (y != v.y) || (z != v.z) || (w != v.w); }
 };
-
+//float4x4
 class FLOAT4X4 : public DirectX::XMFLOAT4X4
 {
 public:
+	//コンストラクタ
 	FLOAT4X4() : DirectX::XMFLOAT4X4() {};
 	~FLOAT4X4() {};
 
@@ -336,7 +347,7 @@ public:
 		_31 = f4x4._31; _32 = f4x4._32; _33 = f4x4._33; _34 = f4x4._34;
 		_41 = f4x4._41; _42 = f4x4._42; _43 = f4x4._43; _44 = f4x4._44;
 	}
-
+	//オペレーター(float型とのかけ算)
 	FLOAT4X4 operator*(const FLOAT4X4& m) const {
 		float x = _11;
 		float y = _12;

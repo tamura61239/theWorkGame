@@ -3,8 +3,10 @@
 #include <vector>
 #include"vector.h"
 #include"serialize_function.h"
+//モデルのデータクラス	
 struct ModelData
 {
+	//ボーン(骨)のデータ
 	struct Node
 	{
 		std::string			name;
@@ -24,7 +26,7 @@ struct ModelData
 			);
 		}
 	};
-
+	//頂点データ
 	struct Vertex
 	{
 		VECTOR3F	position;
@@ -45,7 +47,7 @@ struct ModelData
 		}
 
 	};
-
+	//マテリアルごとにメッシュを区切る
 	struct Subset
 	{
 		int					materialIndex;
@@ -62,7 +64,7 @@ struct ModelData
 		}
 
 	};
-
+	//メッシュデータ
 	struct Mesh
 	{
 		std::vector<Vertex>	vertices;
@@ -87,7 +89,7 @@ struct ModelData
 		}
 
 	};
-
+	//マテリアルデータ
 	struct Material
 	{
 		VECTOR4F	color;
@@ -102,7 +104,7 @@ struct ModelData
 		}
 
 	};
-
+	//キーフレームのノードデータ
 	struct NodeKeyData
 	{
 		VECTOR3F	scale;
@@ -119,7 +121,7 @@ struct ModelData
 		}
 
 	};
-
+	//キーフレーム
 	struct Keyframe
 	{
 		float						seconds;
@@ -134,6 +136,7 @@ struct ModelData
 		}
 
 	};
+	//アニメーション
 	struct Animation
 	{
 		float						secondsLength;
@@ -169,5 +172,6 @@ struct ModelData
 			animations
 		);
 	}
+	//コンストラクタ
 	ModelData(const char* filename,const bool textureFlag=false, int filetype = 0);
 };

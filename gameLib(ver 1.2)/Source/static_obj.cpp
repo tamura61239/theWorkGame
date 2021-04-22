@@ -1,14 +1,23 @@
 #include "static_obj.h"
 
+/*****************************************************/
+//　　　　　　　　　　初期化関数(コンストラクタ)
+/*****************************************************/
+/****************************メッシュを生成*************************/
+
 StaticObj::StaticObj(ID3D11Device* device, const char* fileName, SHADER_TYPE shaderType, bool pathOrganize, int organizeType):Obj3D()
 {
 	mMesh = std::make_shared<StaticMesh>(device, fileName, shaderType, pathOrganize, organizeType);
 }
+/*************************メッシュを取得****************************/
 
 StaticObj::StaticObj(std::shared_ptr<StaticMesh> mesh)
 {
 	mMesh = mesh;
 }
+/*****************************************************/
+//　　　　　　　　　　レイピック関数
+/*****************************************************/
 
 int StaticObj::RayPick(const VECTOR3F& startPosition, const VECTOR3F& endPosition, VECTOR3F* outPosition, VECTOR3F* outNormal, float* outLength)
 {
