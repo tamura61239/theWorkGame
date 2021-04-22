@@ -102,7 +102,7 @@ void Light::SetSpotLight(int index, VECTOR3F position, VECTOR3F color, VECTOR3F 
 void Light::ConstanceLightBufferSetShader(ID3D11DeviceContext* context)
 {
 	mCbDefLight->data.mEyePosition = VECTOR4F(pCameraManager->GetCamera()->GetEye().x, pCameraManager->GetCamera()->GetEye().y, pCameraManager->GetCamera()->GetEye().z, .0f);
-	mCbDefLight->Activate(context, 3, false, true);
-	mCbLight->Activate(context, 4, false, true);
+	mCbDefLight->Activate(context, 4, false, true);
+	mCbLight->Activate(context, 3, false, true);
 }
 

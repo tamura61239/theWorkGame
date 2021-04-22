@@ -1,4 +1,4 @@
-#include "sprite.hlsli"   
+#include "Lib/Shaders/sprite.hlsli"
 #include"rand_function.hlsli"
 #include"zoom_blur.hlsli"
 Texture2D diffuse_map : register(t0);

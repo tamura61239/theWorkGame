@@ -5,7 +5,7 @@
 #include<vector>
 #include"constant_buffer.h"
 #include"drow_shader.h"
-
+#include<memory>
 
 //デフォルトオブジェクトクラス
 class GeometricPrimitive

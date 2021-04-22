@@ -178,7 +178,8 @@ void SceneGame::Editor()
 	ImGui::Checkbox("stop", &mStopTime);
 	ImGui::Checkbox("hitArea", &hitArea);
 	ImGui::SliderFloat("time", &mElapsdTimeSpeed, 0, 1);
-
+	ImVec2 size = ImVec2(250, 250);
+	ImGui::Image(frameBuffer3->GetRenderTargetShaderResourceView().Get(), size);
 #ifdef _DEBUG
 	//ƒV[ƒ“‚ğ‰æ‘œ‚Æ‚µ‚Ä•Û‘¶‚·‚é‚©‚Ç‚¤‚©‚ğ‘I‘ğ‚·‚é
 	if (ImGui::CollapsingHeader("screen shot"))

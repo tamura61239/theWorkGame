@@ -126,218 +126,218 @@
     <ClCompile Include="External_Libraries\imgui\imgui_widgets.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="Source\blend_state.cpp">
+    <ClCompile Include="Source\Lib\Sources\blend_state.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Source\board.cpp">
+    <ClCompile Include="Source\Lib\Sources\bloom.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Source\direct_input.cpp">
+    <ClCompile Include="Source\Lib\Sources\board.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Source\fbx_load.cpp">
+    <ClCompile Include="Source\Lib\Sources\character.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Source\framework.cpp">
+    <ClCompile Include="Source\Lib\Sources\cubebuffer.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Source\gamepad.cpp">
+    <ClCompile Include="Source\Lib\Sources\direct_input.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Source\geometric_primitive.cpp">
+    <ClCompile Include="Source\Lib\Sources\drow_shader.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Source\main.cpp">
+    <ClCompile Include="Source\Lib\Sources\fbx_load.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Source\model.cpp">
+    <ClCompile Include="Source\Lib\Sources\framebuffer.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Source\model_data.cpp">
+    <ClCompile Include="Source\Lib\Sources\framework.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Source\model_renderer.cpp">
+    <ClCompile Include="Source\Lib\Sources\gamepad.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Source\model_resource.cpp">
+    <ClCompile Include="Source\Lib\Sources\geometric_primitive.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Source\shader.cpp">
+    <ClCompile Include="Source\Lib\Sources\light.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Source\sound.cpp">
+    <ClCompile Include="Source\Lib\Sources\main.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Source\sound_buffer.cpp">
+    <ClCompile Include="Source\Lib\Sources\model.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Source\sound_manager.cpp">
+    <ClCompile Include="Source\Lib\Sources\model_data.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Source\sprite.cpp">
+    <ClCompile Include="Source\Lib\Sources\model_renderer.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Source\static_mesh.cpp">
+    <ClCompile Include="Source\Lib\Sources\model_resource.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Source\texture.cpp">
+    <ClCompile Include="Source\Lib\Sources\render_effects.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Source\vector.cpp">
+    <ClCompile Include="Source\Lib\Sources\shader.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Source\x_input.cpp">
+    <ClCompile Include="Source\Lib\Sources\sky_map.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Source\scene_game.cpp">
-      <Filter>ソース ファイル\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\scene_manager.cpp">
-      <Filter>ソース ファイル\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\scene_title.cpp">
-      <Filter>ソース ファイル\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\light.cpp">
+    <ClCompile Include="Source\Lib\Sources\sound.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Source\framebuffer.cpp">
+    <ClCompile Include="Source\Lib\Sources\sound_buffer.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Source\static_obj.cpp">
+    <ClCompile Include="Source\Lib\Sources\sound_manager.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Source\render_effects.cpp">
+    <ClCompile Include="Source\Lib\Sources\sprite.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Source\bloom.cpp">
+    <ClCompile Include="Source\Lib\Sources\static_mesh.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Source\character.cpp">
+    <ClCompile Include="Source\Lib\Sources\static_obj.cpp">
       <Filter>gameLib\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Judgment.cpp">
+    <ClCompile Include="Source\Lib\Sources\texture.cpp">
+      <Filter>gameLib\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Lib\Sources\vector.cpp">
+      <Filter>gameLib\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Lib\Sources\x_input.cpp">
+      <Filter>gameLib\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\tutorial_state.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\collision.cpp">
+    <ClCompile Include="Source\game\Sources\collision.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\stage_manager.cpp">
-      <Filter>ソース ファイル\Stage</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\stage_obj.cpp">
-      <Filter>ソース ファイル\Stage</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\stage_operation.cpp">
-      <Filter>ソース ファイル\Stage</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\gpu_particle_manager.cpp">
-      <Filter>ソース ファイル\GPU</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\run_particle.cpp">
-      <Filter>ソース ファイル\GPU</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\stage_scene_particle.cpp">
-      <Filter>ソース ファイル\GPU</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\sky_map.cpp">
-      <Filter>gameLib\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\drow_shader.cpp">
-      <Filter>gameLib\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\title_particle.cpp">
-      <Filter>ソース ファイル\GPU</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\select_scene_particle.cpp">
-      <Filter>ソース ファイル\GPU</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\stage_select.cpp">
-      <Filter>ソース ファイル\Stage</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\ui_manager.cpp">
-      <Filter>ソース ファイル\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\ui.cpp">
-      <Filter>ソース ファイル\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\title_ui_move.cpp">
-      <Filter>ソース ファイル\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\title_texture_particle.cpp">
-      <Filter>ソース ファイル\GPU</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\select_text.cpp">
-      <Filter>ソース ファイル\Stage</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\stage_borad.cpp">
-      <Filter>ソース ファイル\Stage</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\fade.cpp">
+    <ClCompile Include="Source\game\Sources\fade.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\stage_editor.cpp">
+    <ClCompile Include="Source\game\Sources\Judgment.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\light_view.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\ranking.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\game_ui_move.cpp">
+      <Filter>ソース ファイル\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\result_ui_move.cpp">
+      <Filter>ソース ファイル\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\title_ui_move.cpp">
+      <Filter>ソース ファイル\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\ui.cpp">
+      <Filter>ソース ファイル\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\ui_manager.cpp">
+      <Filter>ソース ファイル\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\select_text.cpp">
       <Filter>ソース ファイル\Stage</Filter>
     </ClCompile>
-    <ClCompile Include="Source\player_ai.cpp">
+    <ClCompile Include="Source\game\Sources\stage_borad.cpp">
+      <Filter>ソース ファイル\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\stage_editor.cpp">
+      <Filter>ソース ファイル\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\stage_manager.cpp">
+      <Filter>ソース ファイル\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\stage_obj.cpp">
+      <Filter>ソース ファイル\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\stage_operation.cpp">
+      <Filter>ソース ファイル\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\stage_select.cpp">
+      <Filter>ソース ファイル\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\scene_editor.cpp">
+      <Filter>ソース ファイル\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\scene_manager.cpp">
+      <Filter>ソース ファイル\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\scene_result.cpp">
+      <Filter>ソース ファイル\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\scene_select.cpp">
+      <Filter>ソース ファイル\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\scene_title.cpp">
+      <Filter>ソース ファイル\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\player_ai.cpp">
       <Filter>ソース ファイル\Player</Filter>
     </ClCompile>
-    <ClCompile Include="Source\player_character.cpp">
+    <ClCompile Include="Source\game\Sources\player_character.cpp">
       <Filter>ソース ファイル\Player</Filter>
     </ClCompile>
-    <ClCompile Include="Source\camera.cpp">
-      <Filter>ソース ファイル\Camera</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\camera_manager.cpp">
-      <Filter>ソース ファイル\Camera</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\camera_operation.cpp">
-      <Filter>ソース ファイル\Camera</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\title_camera_operation.cpp">
-      <Filter>ソース ファイル\Camera</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\play_camera_operation.cpp">
-      <Filter>ソース ファイル\Camera</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\stage_editor_camera_operation.cpp">
-      <Filter>ソース ファイル\Camera</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\scene_editor.cpp">
-      <Filter>ソース ファイル\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\game_ui_move.cpp">
-      <Filter>ソース ファイル\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\scene_result.cpp">
-      <Filter>ソース ファイル\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\ranking.cpp">
+    <ClCompile Include="Source\game\Sources\hit_area_render.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\result_ui_move.cpp">
-      <Filter>ソース ファイル\UI</Filter>
+    <ClCompile Include="Source\game\Sources\camera.cpp">
+      <Filter>ソース ファイル\Camera</Filter>
     </ClCompile>
-    <ClCompile Include="Source\hit_area_render.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Source\game\Sources\camera_manager.cpp">
+      <Filter>ソース ファイル\Camera</Filter>
     </ClCompile>
-    <ClCompile Include="Source\fireworks_particle.cpp">
+    <ClCompile Include="Source\game\Sources\camera_operation.cpp">
+      <Filter>ソース ファイル\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\play_camera_operation.cpp">
+      <Filter>ソース ファイル\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\stage_editor_camera_operation.cpp">
+      <Filter>ソース ファイル\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\title_camera_operation.cpp">
+      <Filter>ソース ファイル\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\cs_buffer.cpp">
       <Filter>ソース ファイル\GPU</Filter>
     </ClCompile>
-    <ClCompile Include="Source\light_view.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\tutorial_state.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\cubebuffer.cpp">
-      <Filter>gameLib\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\scene_select.cpp">
-      <Filter>ソース ファイル\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\cs_buffer.cpp">
+    <ClCompile Include="Source\game\Sources\gpu_particle_manager.cpp">
       <Filter>ソース ファイル\GPU</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\run_particle.cpp">
+      <Filter>ソース ファイル\GPU</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\select_scene_particle.cpp">
+      <Filter>ソース ファイル\GPU</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\stage_scene_particle.cpp">
+      <Filter>ソース ファイル\GPU</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\title_particle.cpp">
+      <Filter>ソース ファイル\GPU</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\title_texture_particle.cpp">
+      <Filter>ソース ファイル\GPU</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\fireworks_particle.cpp">
+      <Filter>ソース ファイル\GPU</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\scene_game.cpp">
+      <Filter>ソース ファイル\Scene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -365,313 +365,274 @@
     <ClInclude Include="External_Libraries\imgui\imstb_truetype.h">
       <Filter>ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="Source\blend_state.h">
+    <ClInclude Include="Source\Lib\Headers\blend_state.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\board.h">
+    <ClInclude Include="Source\Lib\Headers\bloom.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\fbx_load.h">
+    <ClInclude Include="Source\Lib\Headers\board.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\framework.h">
+    <ClInclude Include="Source\Lib\Headers\character.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\gamepad.h">
+    <ClInclude Include="Source\Lib\Headers\constant_buffer.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\geometric_primitive.h">
+    <ClInclude Include="Source\Lib\Headers\cubebuffer.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\high_resolution_timer.h">
+    <ClInclude Include="Source\Lib\Headers\direct_input.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\key_board.h">
+    <ClInclude Include="Source\Lib\Headers\drow_shader.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\logger.h">
+    <ClInclude Include="Source\Lib\Headers\fbx_load.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\misc.h">
+    <ClInclude Include="Source\Lib\Headers\file_function.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\model.h">
+    <ClInclude Include="Source\Lib\Headers\framebuffer.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\model_data.h">
+    <ClInclude Include="Source\Lib\Headers\framework.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\model_renderer.h">
+    <ClInclude Include="Source\Lib\Headers\gamepad.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\model_resource.h">
+    <ClInclude Include="Source\Lib\Headers\geometric_primitive.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\screen_size.h">
+    <ClInclude Include="Source\Lib\Headers\high_resolution_timer.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\serialize_function.h">
+    <ClInclude Include="Source\Lib\Headers\key_board.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\shader.h">
+    <ClInclude Include="Source\Lib\Headers\light.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\sound.h">
+    <ClInclude Include="Source\Lib\Headers\logger.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\sound_buffer.h">
+    <ClInclude Include="Source\Lib\Headers\misc.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\sound_manager.h">
+    <ClInclude Include="Source\Lib\Headers\model.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\sprite.h">
+    <ClInclude Include="Source\Lib\Headers\model_data.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\static_mesh.h">
+    <ClInclude Include="Source\Lib\Headers\model_renderer.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\texture.h">
+    <ClInclude Include="Source\Lib\Headers\model_resource.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\vector.h">
+    <ClInclude Include="Source\Lib\Headers\obj3d.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\scene.h">
-      <Filter>ヘッダー ファイル\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\scene_game.h">
-      <Filter>ヘッダー ファイル\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\scene_manager.h">
-      <Filter>ヘッダー ファイル\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\scene_title.h">
-      <Filter>ヘッダー ファイル\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\light.h">
+    <ClInclude Include="Source\Lib\Headers\render_effects.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\framebuffer.h">
+    <ClInclude Include="Source\Lib\Headers\render_state.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\static_obj.h">
+    <ClInclude Include="Source\Lib\Headers\serialize_function.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\render_effects.h">
+    <ClInclude Include="Source\Lib\Headers\shader.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\shader_type.h">
+    <ClInclude Include="Source\Lib\Headers\shader_type.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\bloom.h">
+    <ClInclude Include="Source\Lib\Headers\sky_map.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\obj3d.h">
+    <ClInclude Include="Source\Lib\Headers\sound.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\character.h">
+    <ClInclude Include="Source\Lib\Headers\sound_buffer.h">
       <Filter>gameLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Judgment.h">
+    <ClInclude Include="Source\Lib\Headers\sound_manager.h">
+      <Filter>gameLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Lib\Headers\sprite.h">
+      <Filter>gameLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Lib\Headers\static_mesh.h">
+      <Filter>gameLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Lib\Headers\static_obj.h">
+      <Filter>gameLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Lib\Headers\texture.h">
+      <Filter>gameLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Lib\Headers\vector.h">
+      <Filter>gameLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Lib\Headers\vector_combo.h">
+      <Filter>gameLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Lib\Headers\x_input.h">
+      <Filter>gameLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\collision.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\collision.h">
+    <ClInclude Include="Source\game\Headers\Easing.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\stage_operation.h">
-      <Filter>ヘッダー ファイル\Stage</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\stage_obj.h">
-      <Filter>ヘッダー ファイル\Stage</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\stage_manager.h">
-      <Filter>ヘッダー ファイル\Stage</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\gpu_particle_manager.h">
-      <Filter>ヘッダー ファイル\GPU</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\run_particle.h">
-      <Filter>ヘッダー ファイル\GPU</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\stage_scene_particle.h">
-      <Filter>ヘッダー ファイル\GPU</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\sky_map.h">
-      <Filter>gameLib\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\drow_shader.h">
-      <Filter>gameLib\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\title_particle.h">
-      <Filter>ヘッダー ファイル\GPU</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\select_scene_particle.h">
-      <Filter>ヘッダー ファイル\GPU</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\stage_select.h">
-      <Filter>ヘッダー ファイル\Stage</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\ui.h">
-      <Filter>ヘッダー ファイル\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\ui_manager.h">
-      <Filter>ヘッダー ファイル\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\title_ui_move.h">
-      <Filter>ヘッダー ファイル\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\title_texture_particle.h">
-      <Filter>ヘッダー ファイル\GPU</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\select_text.h">
-      <Filter>ヘッダー ファイル\Stage</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\stage_borad.h">
-      <Filter>ヘッダー ファイル\Stage</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\fade.h">
+    <ClInclude Include="Source\game\Headers\fade.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\stage_editor.h">
+    <ClInclude Include="Source\game\Headers\hit_area_render.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\Judgment.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\light_view.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\motion_blur_parameter.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\singleton_class.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\zoom_blur_parameter.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\game_ui_move.h">
+      <Filter>ヘッダー ファイル\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\result_ui_move.h">
+      <Filter>ヘッダー ファイル\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\title_ui_move.h">
+      <Filter>ヘッダー ファイル\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\ui.h">
+      <Filter>ヘッダー ファイル\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\ui_manager.h">
+      <Filter>ヘッダー ファイル\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Lib\Headers\sampler_state.h">
+      <Filter>gameLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\select_text.h">
       <Filter>ヘッダー ファイル\Stage</Filter>
     </ClInclude>
-    <ClInclude Include="Source\player_ai.h">
+    <ClInclude Include="Source\game\Headers\stage_borad.h">
+      <Filter>ヘッダー ファイル\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\stage_editor.h">
+      <Filter>ヘッダー ファイル\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\stage_manager.h">
+      <Filter>ヘッダー ファイル\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\stage_obj.h">
+      <Filter>ヘッダー ファイル\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\stage_operation.h">
+      <Filter>ヘッダー ファイル\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\stage_select.h">
+      <Filter>ヘッダー ファイル\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Lib\Headers\screen_size.h">
+      <Filter>gameLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\scene.h">
+      <Filter>ヘッダー ファイル\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\scene_editor.h">
+      <Filter>ヘッダー ファイル\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\scene_game.h">
+      <Filter>ヘッダー ファイル\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\scene_manager.h">
+      <Filter>ヘッダー ファイル\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\scene_result.h">
+      <Filter>ヘッダー ファイル\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\scene_select.h">
+      <Filter>ヘッダー ファイル\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\scene_title.h">
+      <Filter>ヘッダー ファイル\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\player_ai.h">
       <Filter>ヘッダー ファイル\Player</Filter>
     </ClInclude>
-    <ClInclude Include="Source\player_character.h">
+    <ClInclude Include="Source\game\Headers\player_character.h">
       <Filter>ヘッダー ファイル\Player</Filter>
     </ClInclude>
-    <ClInclude Include="Source\camera.h">
-      <Filter>ヘッダー ファイル\Camera</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\camera_manager.h">
-      <Filter>ヘッダー ファイル\Camera</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\camera_operation.h">
-      <Filter>ヘッダー ファイル\Camera</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\title_camera_operation.h">
-      <Filter>ヘッダー ファイル\Camera</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\play_camera_operation.h">
-      <Filter>ヘッダー ファイル\Camera</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\stage_editor_camera_operation.h">
-      <Filter>ヘッダー ファイル\Camera</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\scene_editor.h">
-      <Filter>ヘッダー ファイル\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\game_ui_move.h">
-      <Filter>ヘッダー ファイル\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\scene_result.h">
-      <Filter>ヘッダー ファイル\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\ranking.h">
+    <ClInclude Include="Source\game\Headers\ranking.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\result_ui_move.h">
-      <Filter>ヘッダー ファイル\UI</Filter>
+    <ClInclude Include="Source\game\Headers\camera.h">
+      <Filter>ヘッダー ファイル\Camera</Filter>
     </ClInclude>
-    <ClInclude Include="Source\hit_area_render.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Source\game\Headers\camera_manager.h">
+      <Filter>ヘッダー ファイル\Camera</Filter>
     </ClInclude>
-    <ClInclude Include="Source\singleton_class.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Source\game\Headers\camera_operation.h">
+      <Filter>ヘッダー ファイル\Camera</Filter>
     </ClInclude>
-    <ClInclude Include="Source\fireworks_particle.h">
+    <ClInclude Include="Source\game\Headers\play_camera_operation.h">
+      <Filter>ヘッダー ファイル\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\stage_editor_camera_operation.h">
+      <Filter>ヘッダー ファイル\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\title_camera_operation.h">
+      <Filter>ヘッダー ファイル\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\fireworks_particle.h">
       <Filter>ヘッダー ファイル\GPU</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Easing.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\vector_combo.h">
-      <Filter>gameLib\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\light_view.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\tutorial_state.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\constant_buffer.h">
-      <Filter>gameLib\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\zoom_blur_parameter.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\cubebuffer.h">
-      <Filter>gameLib\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\sampler_state.h">
-      <Filter>gameLib\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\render_state.h">
-      <Filter>gameLib\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\scene_select.h">
-      <Filter>ヘッダー ファイル\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\motion_blur_parameter.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\file_function.h">
-      <Filter>gameLib\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\cs_buffer.h">
+    <ClInclude Include="Source\game\Headers\gpu_particle_manager.h">
       <Filter>ヘッダー ファイル\GPU</Filter>
     </ClInclude>
-    <ClInclude Include="Source\x_input.h">
-      <Filter>gameLib\Headers</Filter>
+    <ClInclude Include="Source\game\Headers\run_particle.h">
+      <Filter>ヘッダー ファイル\GPU</Filter>
     </ClInclude>
-    <ClInclude Include="Source\direct_input.h">
-      <Filter>gameLib\Headers</Filter>
+    <ClInclude Include="Source\game\Headers\stage_scene_particle.h">
+      <Filter>ヘッダー ファイル\GPU</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\title_particle.h">
+      <Filter>ヘッダー ファイル\GPU</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\title_texture_particle.h">
+      <Filter>ヘッダー ファイル\GPU</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\cs_buffer.h">
+      <Filter>ヘッダー ファイル\GPU</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\select_scene_particle.h">
+      <Filter>ヘッダー ファイル\GPU</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Source\board.hlsli">
-      <Filter>gameLib\Shaders</Filter>
-    </None>
-    <None Include="Source\geometric_primitive.hlsli">
-      <Filter>gameLib\Shaders</Filter>
-    </None>
-    <None Include="Source\model.hlsli">
-      <Filter>gameLib\Shaders</Filter>
-    </None>
-    <None Include="Source\sprite.hlsli">
-      <Filter>gameLib\Shaders</Filter>
-    </None>
-    <None Include="Source\static_mesh.hlsli">
-      <Filter>gameLib\Shaders</Filter>
-    </None>
-    <None Include="Source\ps_function.hlsli">
-      <Filter>gameLib\Shaders</Filter>
-    </None>
-    <None Include="Source\static_mesh_normal.hlsli">
-      <Filter>gameLib\Shaders</Filter>
-    </None>
-    <None Include="Source\lightType.hlsli">
-      <Filter>gameLib\Shaders</Filter>
-    </None>
-    <None Include="Source\render_effects.hlsli">
-      <Filter>gameLib\Shaders</Filter>
-    </None>
-    <None Include="Source\model_normal.hlsli">
-      <Filter>gameLib\Shaders</Filter>
-    </None>
-    <None Include="Source\bloom.hlsli">
-      <Filter>gameLib\Shaders</Filter>
-    </None>
     <None Include="Source\curl_noise.hlsli">
       <Filter>シェーダー</Filter>
     </None>
     <None Include="Source\stage_scene_particle.hlsli">
       <Filter>シェーダー\stage_scene_particle</Filter>
-    </None>
-    <None Include="Source\sky_map.hlsli">
-      <Filter>gameLib\Shaders</Filter>
     </None>
     <None Include="Source\title_psrticle_compute.hlsli">
       <Filter>シェーダー\title_particle</Filter>
@@ -700,92 +661,80 @@
     <None Include="Source\fireworks_particle.hlsli">
       <Filter>シェーダー\fireworks_particle</Filter>
     </None>
-    <None Include="Source\before_camera_view_data.hlsli">
-      <Filter>シェーダー\postEffect\モーションブラー</Filter>
+    <None Include="Source\Lib\Shaders\bloom.hlsli">
+      <Filter>gameLib\Shaders</Filter>
     </None>
-    <None Include="Source\particle_motiom_data_render.hlsli">
-      <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28particle%29</Filter>
+    <None Include="Source\Lib\Shaders\board.hlsli">
+      <Filter>gameLib\Shaders</Filter>
     </None>
-    <None Include="Source\static_mesh_motion_data.hlsli">
-      <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28static_mesh%29</Filter>
+    <None Include="Source\Lib\Shaders\deferred_depth_static_mesh.hlsli">
+      <Filter>gameLib\Shaders</Filter>
     </None>
-    <None Include="Source\model_motion_data.hlsli">
-      <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28model%29</Filter>
+    <None Include="Source\Lib\Shaders\depth_of_field_data.hlsli">
+      <Filter>gameLib\Shaders</Filter>
+    </None>
+    <None Include="Source\Lib\Shaders\geometric_primitive.hlsli">
+      <Filter>gameLib\Shaders</Filter>
+    </None>
+    <None Include="Source\Lib\Shaders\lightType.hlsli">
+      <Filter>gameLib\Shaders</Filter>
+    </None>
+    <None Include="Source\Lib\Shaders\model.hlsli">
+      <Filter>gameLib\Shaders</Filter>
+    </None>
+    <None Include="Source\Lib\Shaders\model_blur.hlsli">
+      <Filter>gameLib\Shaders</Filter>
+    </None>
+    <None Include="Source\Lib\Shaders\model_create_multi_map.hlsli">
+      <Filter>gameLib\Shaders</Filter>
+    </None>
+    <None Include="Source\Lib\Shaders\model_normal.hlsli">
+      <Filter>gameLib\Shaders</Filter>
+    </None>
+    <None Include="Source\Lib\Shaders\ps_function.hlsli">
+      <Filter>gameLib\Shaders</Filter>
+    </None>
+    <None Include="Source\Lib\Shaders\render_effects.hlsli">
+      <Filter>gameLib\Shaders</Filter>
+    </None>
+    <None Include="Source\Lib\Shaders\sky_map.hlsli">
+      <Filter>gameLib\Shaders</Filter>
+    </None>
+    <None Include="Source\Lib\Shaders\sky_map_blur.hlsli">
+      <Filter>gameLib\Shaders</Filter>
+    </None>
+    <None Include="Source\Lib\Shaders\sprite.hlsli">
+      <Filter>gameLib\Shaders</Filter>
+    </None>
+    <None Include="Source\Lib\Shaders\static_mesh.hlsli">
+      <Filter>gameLib\Shaders</Filter>
+    </None>
+    <None Include="Source\Lib\Shaders\static_mesh_blur.hlsli">
+      <Filter>gameLib\Shaders</Filter>
+    </None>
+    <None Include="Source\Lib\Shaders\static_mesh_multi.hlsli">
+      <Filter>gameLib\Shaders</Filter>
+    </None>
+    <None Include="Source\Lib\Shaders\static_mesh_normal.hlsli">
+      <Filter>gameLib\Shaders</Filter>
     </None>
     <None Include="Source\zoom_blur.hlsli">
       <Filter>シェーダー\postEffect\ズームブラー</Filter>
     </None>
-    <None Include="Source\velocity_map_parameter.hlsli">
+    <None Include="Source\before_camera_view_data.hlsli">
       <Filter>シェーダー\postEffect\モーションブラー</Filter>
+    </None>
+    <None Include="Source\static_mesh_motion_data.hlsli">
+      <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28static_mesh%29</Filter>
+    </None>
+    <None Include="Source\particle_motiom_data_render.hlsli">
+      <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28particle%29</Filter>
+    </None>
+    <None Include="Source\model_motion_data.hlsli">
+      <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28model%29</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Source\board_ps.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\board_vs.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\geometric_primitive_ps.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\geometric_primitive_vs.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\model_ps.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\model_vs.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\sprite_ps.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\sprite_vs.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\static_mesh_ps.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\static_mesh_vs.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\static_mesh_normal_vs.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\static_mesh_normal_ps.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\static_mesh_shadow_vs.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\static_mesh_shadow_ps.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\render_effects_vs.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\render_effects_ps.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\model_normal_vs.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\model_normal_ps.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\model_shadow_vs.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\bloom_vs.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\combined_bloom.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\bloomStart_ps.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="Source\run_particle_cs.hlsl">
       <Filter>シェーダー\run_particle</Filter>
     </FxCompile>
@@ -797,12 +746,6 @@
     </FxCompile>
     <FxCompile Include="Source\stage_scene_particle_cs.hlsl">
       <Filter>シェーダー\stage_scene_particle</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\sky_map_vs.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\sky_map_ps.hlsl">
-      <Filter>gameLib\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Source\title_particle_cs.hlsl">
       <Filter>シェーダー\title_particle</Filter>
@@ -837,12 +780,6 @@
     <FxCompile Include="Source\particle_render_vs.hlsl">
       <Filter>シェーダー\particle_render</Filter>
     </FxCompile>
-    <FxCompile Include="Source\bloom_blur02_ps.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\bloom_blur01_ps.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="Source\particle_render_billboard_gs.hlsl">
       <Filter>シェーダー\particle_render</Filter>
     </FxCompile>
@@ -851,9 +788,6 @@
     </FxCompile>
     <FxCompile Include="Source\particle_render_point_ps.hlsl">
       <Filter>シェーダー\particle_render</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\zoom_blur_ps.hlsl">
-      <Filter>シェーダー\postEffect\ズームブラー</Filter>
     </FxCompile>
     <FxCompile Include="Source\titile_texture_change_creat_cs.hlsl">
       <Filter>シェーダー\title_texture_particle</Filter>
@@ -870,10 +804,160 @@
     <FxCompile Include="Source\fireworks_smoke_particle_create.hlsl">
       <Filter>シェーダー\fireworks_particle</Filter>
     </FxCompile>
+    <FxCompile Include="Source\particle_count_cs.hlsl">
+      <Filter>シェーダー</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\bloom_blur01_ps.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\bloom_blur02_ps.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\bloom_vs.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\bloomStart_ps.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\board_ps.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\board_vs.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\combined_bloom.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\deferred_depth_model_ps.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\deferred_depth_sky_map_ps.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\deferred_depth_static_mesh_ps.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\deferred_depth_static_mesh_vs.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\depth_of_field_synthetic_ps.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\gaussian_blur_ps.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\geometric_primitive_ps.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\geometric_primitive_vs.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\model_blur_ps.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\model_blur_vs.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\model_create_multi_map_gs.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\model_create_multi_map_ps.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\model_create_multi_map_vs.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\model_normal_ps.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\model_normal_vs.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\model_ps.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\model_shadow_vs.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\model_vs.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\render_effects_ps.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\render_effects_vs.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\sky_map_blur_ps.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\sky_map_blur_vs.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\sky_map_ps.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\sky_map_vs.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\sprite_ps.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\sprite_vs.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\static_mesh_blur_ps.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\static_mesh_blur_vs.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\static_mesh_multi_ps.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\static_mesh_multi_vs.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\static_mesh_normal_ps.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\static_mesh_normal_vs.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\static_mesh_ps.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\static_mesh_shadow_ps.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\static_mesh_shadow_vs.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\static_mesh_vs.hlsl">
+      <Filter>gameLib\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\zoom_blur_ps.hlsl">
+      <Filter>シェーダー\postEffect\ズームブラー</Filter>
+    </FxCompile>
     <FxCompile Include="Source\motion_blur_ps.hlsl">
       <Filter>シェーダー\postEffect\モーションブラー</Filter>
     </FxCompile>
-    <FxCompile Include="Source\particle_motion_data_render_vs.hlsl">
+    <FxCompile Include="Source\static_mesh_motion_data_gs.hlsl">
+      <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28static_mesh%29</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\static_mesh_motion_data_ps.hlsl">
+      <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28static_mesh%29</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\static_mesh_motion_data_vs.hlsl">
+      <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28static_mesh%29</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\particle_motiom_blur_gs.hlsl">
+      <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28particle%29</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\particle_motion_blur_ps.hlsl">
+      <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28particle%29</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\particle_motion_blur_text_ps.hlsl">
       <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28particle%29</Filter>
     </FxCompile>
     <FxCompile Include="Source\particle_motion_data_render_gs.hlsl">
@@ -885,23 +969,8 @@
     <FxCompile Include="Source\particle_motion_data_render_text_ps.hlsl">
       <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28particle%29</Filter>
     </FxCompile>
-    <FxCompile Include="Source\particle_motiom_blur_gs.hlsl">
+    <FxCompile Include="Source\particle_motion_data_render_vs.hlsl">
       <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28particle%29</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\particle_motion_blur_ps.hlsl">
-      <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28particle%29</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\static_mesh_motion_data_vs.hlsl">
-      <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28static_mesh%29</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\static_mesh_motion_data_gs.hlsl">
-      <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28static_mesh%29</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\static_mesh_motion_data_ps.hlsl">
-      <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28static_mesh%29</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\model_motion_data_vs.hlsl">
-      <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28model%29</Filter>
     </FxCompile>
     <FxCompile Include="Source\model_motion_data_gs.hlsl">
       <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28model%29</Filter>
@@ -909,11 +978,8 @@
     <FxCompile Include="Source\model_motion_data_ps.hlsl">
       <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28model%29</Filter>
     </FxCompile>
-    <FxCompile Include="Source\particle_motion_blur_text_ps.hlsl">
-      <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28particle%29</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\particle_count_cs.hlsl">
-      <Filter>シェーダー</Filter>
+    <FxCompile Include="Source\model_motion_data_vs.hlsl">
+      <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28model%29</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

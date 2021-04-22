@@ -3,6 +3,7 @@
 #include<wrl.h>
 #include <d3d11.h>
 #include"constant_buffer.h"
+#include<memory>
 //スポットライトのデータ
 struct SpotLight
 {
