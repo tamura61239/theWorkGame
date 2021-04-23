@@ -3,6 +3,7 @@ struct VS_OUT
 	float4 position:SV_POSITION;
 	float2 texcoord:TEXCOORD;
 };
+//定数バッファのデータ
 cbuffer Cbuffer:register(b0)
 {
 	float threshold;

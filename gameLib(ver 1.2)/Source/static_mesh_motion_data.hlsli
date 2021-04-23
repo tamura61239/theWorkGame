@@ -8,7 +8,7 @@ struct GS_OUT
     float4 position : SV_POSITION;
     float3 velocity : TEXCOORD;
 };
-
+//定数バッファのデータ
 cbuffer CbScene : register(b0)
 {
     row_major float4x4 view;

@@ -1,5 +1,8 @@
 #include"particle_render.hlsli"
 #include"matrix_calculation.hlsli"
+/*****************************************************************/
+//　　　ワールド座標系の点からスクリーン座標系に変換したりする
+/*****************************************************************/
 
 VS_OUT main(float4 position : POSITION, float3 angle : ANGLE, float4 color : COLOR, float3 velocity : VELOCITY, float3 scale : SCALE)
 {

@@ -6,9 +6,11 @@
 
 Texture2D diffuseMap : register(t0);
 SamplerState diffuseMapSamplerState : register(s0);
+/*****************************************************/
+//　　　　マルチレンダーターゲット用
+/*****************************************************/
 
 //半球ライトパラメータ 
-#if DEFERRED
 PS_DEPTH_OUT main(VS_OUT pin)
 {
 	PS_DEPTH_OUT pout;
@@ -76,15 +78,3 @@ PS_DEPTH_OUT main(VS_OUT pin)
 	pout.z = float4(pout.z.x, pout.z.x, pout.z.x, 1);
 	return pout;
 }
-#else
-float4 main(VS_OUT pin) :SV_TARGET
-{
-	float4 a = (float4)0;
-	float z = pin.position.z / pin.position.w;
-	if (z <= 0.25f)a = 4 * z;
-	else if (z >= 0.75f)a = 4 * (1 - z);
-	else a = 1;
-
-	return a;
-}
-#endif

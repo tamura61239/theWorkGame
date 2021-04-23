@@ -5,7 +5,7 @@ struct Particle
 	float4 color;
 	float speed;
 };
-
+//定数バッファのデータ
 cbuffer CbCreate:register(b0)
 {
 	float2 uv;
@@ -22,5 +22,7 @@ cbuffer CbUpdate : register(b1)
 	float2 spiralRatio;
 
 }
+//テクスチャデータ
 Texture2D<float4>scene : register(t0);
+//パーティクルデータ
 RWStructuredBuffer< Particle>particleBuffer:register(u0);

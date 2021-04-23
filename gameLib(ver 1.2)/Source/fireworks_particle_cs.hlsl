@@ -1,5 +1,8 @@
 #include"fireworks_particle.hlsli"
 #include"render_particle_cube.hlsli"
+/****************************************************************************/
+//　　　花火のパーティクルの更新
+/****************************************************************************/
 
 [numthreads(100, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)

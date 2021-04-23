@@ -1,7 +1,9 @@
 #include"title_psrticle_compute.hlsli"
 #include"rand_function.hlsli"
 
-//パーティクル生成用のコンピュートシェーダー
+/****************************************************************************/
+//　　　パーティクルを生成する
+/****************************************************************************/
 [numthreads(1, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {
@@ -11,7 +13,6 @@ void main(uint3 DTid : SV_DispatchThreadID)
 	//データの初期化
 	Particle p = (Particle)0;
 
-	/************************初期データの設定***************************/
 	//x,y,zの値を疑似乱数を使って出す
 	float x = rand_1_normal(float2(index % 591, index % 256), 1) * sphereRatio.x;
 	float y = rand_1_normal(float2(index % 777, index % 444), 1) * sphereRatio.y;

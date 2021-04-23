@@ -2,6 +2,9 @@
 #include"before_camera_view_data.hlsli"
 #include"velocity_map_parameter.hlsli"
 
+/*****************************************************************/
+//　　　前のフレームと今のフレームのワールド座標を計算する
+/*****************************************************************/
 
 VS_OUT main(
 	float4 position : POSITION,
@@ -13,7 +16,7 @@ VS_OUT main(
 {
     float3 p0 = { 0, 0, 0 };
     float3 p1 = { 0, 0, 0 };
-	
+	//ボーンの位置から頂点の位置を計算する
 	[unroll]
     for (int i = 0; i < 4; i++)
     {

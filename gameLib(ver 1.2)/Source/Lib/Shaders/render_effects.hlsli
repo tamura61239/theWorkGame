@@ -11,7 +11,7 @@ struct SaveData
     float depthBiasClamp;
     float2 dummy;
 };
-
+//定数バッファのデータ
 cbuffer CONSTANT_BUFFER:register(b0)
 {
 	row_major float4x4 inverseViewProjection;

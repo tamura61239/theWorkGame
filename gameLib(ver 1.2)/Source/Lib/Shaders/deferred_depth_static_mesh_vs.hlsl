@@ -1,4 +1,7 @@
 #include "deferred_depth_static_mesh.hlsli"
+/*****************************************************/
+//　　　　頂点の座標をスクリーン座標系にする
+/*****************************************************/
 
 VS_OUT main(float4 position : POSITION, float3 normal : NORMAL, float2 texcoord : TEXCOORD/*UNIT.13*/)
 {

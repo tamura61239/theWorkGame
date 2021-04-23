@@ -9,6 +9,9 @@ SamplerState diffuse_map_sampler_state : register(s0);
 SamplerState normal_map_sampler_state : register(s1);
 
 //半球ライトパラメータ 
+/*****************************************************/
+//　　　　	ノーマルマップを使って凸凹に見せる
+/*****************************************************/
 
 static const float viewOffset = 0.01f;
 

@@ -1,8 +1,8 @@
-//float4 main() : SV_TARGET
-//{
-//	return float4(1.0f, 1.0f, 1.0f, 1.0f);
-//}
 #include "geometric_primitive.hlsli" 
+/*****************************************************/
+//　　　　ピクセル単位で色を付ける
+/*****************************************************/
+
 float4 main(VS_OUT pin) : SV_TARGET
 {
 	return pin.color;

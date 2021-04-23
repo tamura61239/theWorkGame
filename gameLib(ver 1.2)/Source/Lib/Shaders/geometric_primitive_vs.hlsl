@@ -1,8 +1,8 @@
-//float4 main( float4 pos : POSITION ) : SV_POSITION
-//{
-//	return pos;
-//}
 #include "geometric_primitive.hlsli"
+/*****************************************************/
+//　　　　	頂点座標をスクリーン空間系に計算する
+/*****************************************************/
+
 VS_OUT main(float4 pos : POSITION, float3 normal : NORMAL)
 {
 	VS_OUT vout;

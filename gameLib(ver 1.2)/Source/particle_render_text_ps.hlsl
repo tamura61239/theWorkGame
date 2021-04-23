@@ -1,4 +1,7 @@
 #include"particle_render.hlsli"
+/*****************************************************************/
+//　　　ピクセル単位の色をテクスチャから取得する
+/*****************************************************************/
 
 Texture2D diffuse_map : register(t0);
 SamplerState diffuse_map_sampler_state : register(s0);

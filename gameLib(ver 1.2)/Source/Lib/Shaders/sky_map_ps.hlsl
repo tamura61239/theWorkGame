@@ -2,6 +2,9 @@
 TextureCube cubemap : register(t0);
 SamplerState anisotropic_sampler_state : register(s0);
 
+/*****************************************************/
+//　　　　	座標に合わせた画像に色を取得
+/*****************************************************/
 
 float4 main(VS_OUT pin) : SV_TARGET
 {

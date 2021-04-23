@@ -2,6 +2,9 @@
 #include"render_particle_cube.hlsli"
 #include"curl_noise.hlsli"
 #include"matrix_calculation.hlsli"
+/****************************************************************************/
+//　　　パーティクルを更新
+/****************************************************************************/
 
 [numthreads(100, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
@@ -13,7 +16,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
 	//更新データの読み込み
 	ReadParticle(p, bufferIndex);
 
-	/*************更新***************/
+	//更新
 	p.moveAngle += p.moveAngleMovement * elapsdTime;
 
 	p.defPosition += p.defVelocity * p.speed * elapsdTime;
@@ -26,9 +29,8 @@ void main(uint3 DTid : SV_DispatchThreadID)
 	p.position = p.defPosition + right * sin(p.moveAngle) * p.moveAngleLength;
 
 	p.life -= elapsdTime;
-	//lifeが0以下の時
 	if (p.life <= 0)
-	{
+	{//寿命が尽きたら消す
 		p.color = float4(0, 0, 0, 0);
 		p.position = float3(0, 0, 0);
 		p.scale = float3(0, 0, 0);
@@ -36,15 +38,13 @@ void main(uint3 DTid : SV_DispatchThreadID)
 	//更新データの書き出し
 	WriteParticle(p, bufferIndex);
 
-	//描画用データの初期化
 	ParticleRender render = (ParticleRender)0;
-	//描画用データのセット
+    //描画用データの更新
 	render.position = float4(p.position, 1.0f);
 	render.scale = p.scale;
 	render.color = p.color;
 	render.angle = p.angle;
 	render.velocity = p.velocity;
 	bufferIndex = index * 17 * 4;
-	//描画用データの書き出し
 	WriteRender(render, bufferIndex);
 }

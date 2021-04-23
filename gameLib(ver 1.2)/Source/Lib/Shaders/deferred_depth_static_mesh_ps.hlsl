@@ -6,7 +6,9 @@
 Texture2D diffuse_map : register(t0);
 SamplerState diffuse_map_sampler_state : register(s0);
 
-#if DEFERRED
+/*****************************************************/
+//　　　　マルチレンダーターゲット用
+/*****************************************************/
 
 PS_DEPTH_OUT main(VS_OUT pin)
 {
@@ -65,27 +67,7 @@ PS_DEPTH_OUT main(VS_OUT pin)
 		LS += BlinnPhongSpcular(pin.worldNormal, -LV, LC, E, Ks, 20) * influence * influence * influence2;
 	}
 	pout.color *= pin.color * float4(A + D + S + LD + LS, 1.0);
-	//float4 vPosition = mul(pin.worldPosition, view);
-	//float4 pPosition = mul(vPosition, projection);
-	//float z = pPosition.z / pPosition.w;
-	//z = 1 - z;
-	//z *= 10;
-	//if (z <= 0.25f)pout.z.x = 4 * z;
-	//else if (z >= 0.75f)pout.z.x = 4 * (1 - z);
-	//else pout.z.x = 1;
 	pout.z = pin.depth.z / pin.depth.w;
 	pout.z.a = 1;
 	return pout;
 }
-#else
-float4 main(VS_OUT pin) :SV_TARGET
-{
-	float4 a = (float4)0;
-	float z = pin.position.z / pin.position.w;
-	if (z <= 0.25f)a = 4 * z;
-	else if (z >= 0.75f)a = 4 * (1 - z);
-	else a = 1;
-
-	return a;
-}
-#endif

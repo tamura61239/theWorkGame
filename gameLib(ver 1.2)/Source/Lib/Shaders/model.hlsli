@@ -8,6 +8,7 @@ struct VS_OUT
 	float3 vT:TEXCOORD4;
 	float3 vB:TEXCOORD5;
 };
+//定数バッファのデータ
 cbuffer CbScene : register(b0)
 {
 	row_major float4x4	viewProjection;

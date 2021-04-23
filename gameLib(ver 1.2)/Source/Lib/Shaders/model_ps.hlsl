@@ -6,6 +6,9 @@ Texture2D diffuseMap : register(t0);
 SamplerState diffuseMapSamplerState : register(s0);
 
 //半球ライトパラメータ 
+/*****************************************************/
+//　　　　	ライトなどが反映された色を計算する
+/*****************************************************/
 
 float4 main(VS_OUT pin) : SV_TARGET
 {

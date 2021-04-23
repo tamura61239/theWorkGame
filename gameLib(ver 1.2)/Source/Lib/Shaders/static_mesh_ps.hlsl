@@ -5,6 +5,9 @@
 Texture2D diffuse_map : register(t0);
 SamplerState diffuse_map_sampler_state : register(s0);
 
+/*****************************************************/
+//　　　　	ライトなどが反映された色を計算する
+/*****************************************************/
 
 float4 main(VS_OUT pin) : SV_TARGET
 {

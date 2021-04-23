@@ -1,6 +1,10 @@
 #include"particle_motiom_data_render.hlsli"
 #include"before_camera_view_data.hlsli"
 #include"velocity_map_parameter.hlsli"
+/****************************************************************************/
+//　　今のフレームと移動ベクトルの逆ベクトルを基準に速度マップの色を付ける位置を決める
+/****************************************************************************/
+
 [maxvertexcount(4 * 9)]
 void main(
 	point VS_OUT input[1],

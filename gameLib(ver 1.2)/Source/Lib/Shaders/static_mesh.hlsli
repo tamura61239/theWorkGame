@@ -6,7 +6,7 @@ struct VS_OUT
 	float3 worldNormal:TEXCOORD1;
 	float4 worldPosition:TEXCOORD2;
 };
-
+//定数バッファのデータ
 cbuffer CbScene:register(b0)
 {
 	row_major float4x4 view;

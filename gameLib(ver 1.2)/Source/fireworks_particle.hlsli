@@ -32,6 +32,7 @@ struct CreateData
 	float dummy3;
 	FireworksData firework;
 };
+//定数バッファのデータ
 cbuffer CbCreate:register(b0)
 {
 	CreateData createData[30];
@@ -43,4 +44,5 @@ cbuffer CbUpdate:register(b1)
 	float elapsdTime;
 	float3 dummy3;
 };
+//パーティクルのバッファデータ
 RWStructuredBuffer< Particle>particleBuffer:register(u0);

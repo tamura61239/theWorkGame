@@ -3,6 +3,9 @@
 TextureCube cubemap : register(t0);
 SamplerState anisotropic_sampler_state : register(s0);
 
+/*****************************************************/
+//　　　　マルチレンダーターゲット用
+/*****************************************************/
 
 PS_DEPTH_OUT main(VS_OUT pin)
 {

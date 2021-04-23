@@ -1,4 +1,7 @@
 #include"board.hlsli"
+/*****************************************************/
+//　　　　スクリーン座標系での頂点などを計算する
+/*****************************************************/
 
 VS_OUT main(float4 pos : POSITION, float2 texcoord : TEXCOORD, float4 color : COLOR)
 {

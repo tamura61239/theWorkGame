@@ -643,9 +643,6 @@
     <None Include="Source\matrix_calculation.hlsli">
       <Filter>シェーダー</Filter>
     </None>
-    <None Include="Source\render_particle_cube.hlsli">
-      <Filter>シェーダー\title_particle</Filter>
-    </None>
     <None Include="Source\select_scene_particle.hlsli">
       <Filter>シェーダー\select_scsne_particle</Filter>
     </None>
@@ -670,9 +667,6 @@
     <None Include="Source\Lib\Shaders\deferred_depth_static_mesh.hlsli">
       <Filter>gameLib\Shaders</Filter>
     </None>
-    <None Include="Source\Lib\Shaders\depth_of_field_data.hlsli">
-      <Filter>gameLib\Shaders</Filter>
-    </None>
     <None Include="Source\Lib\Shaders\geometric_primitive.hlsli">
       <Filter>gameLib\Shaders</Filter>
     </None>
@@ -680,12 +674,6 @@
       <Filter>gameLib\Shaders</Filter>
     </None>
     <None Include="Source\Lib\Shaders\model.hlsli">
-      <Filter>gameLib\Shaders</Filter>
-    </None>
-    <None Include="Source\Lib\Shaders\model_blur.hlsli">
-      <Filter>gameLib\Shaders</Filter>
-    </None>
-    <None Include="Source\Lib\Shaders\model_create_multi_map.hlsli">
       <Filter>gameLib\Shaders</Filter>
     </None>
     <None Include="Source\Lib\Shaders\model_normal.hlsli">
@@ -700,19 +688,10 @@
     <None Include="Source\Lib\Shaders\sky_map.hlsli">
       <Filter>gameLib\Shaders</Filter>
     </None>
-    <None Include="Source\Lib\Shaders\sky_map_blur.hlsli">
-      <Filter>gameLib\Shaders</Filter>
-    </None>
     <None Include="Source\Lib\Shaders\sprite.hlsli">
       <Filter>gameLib\Shaders</Filter>
     </None>
     <None Include="Source\Lib\Shaders\static_mesh.hlsli">
-      <Filter>gameLib\Shaders</Filter>
-    </None>
-    <None Include="Source\Lib\Shaders\static_mesh_blur.hlsli">
-      <Filter>gameLib\Shaders</Filter>
-    </None>
-    <None Include="Source\Lib\Shaders\static_mesh_multi.hlsli">
       <Filter>gameLib\Shaders</Filter>
     </None>
     <None Include="Source\Lib\Shaders\static_mesh_normal.hlsli">
@@ -733,6 +712,12 @@
     <None Include="Source\model_motion_data.hlsli">
       <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28model%29</Filter>
     </None>
+    <None Include="Source\Lib\Shaders\depth_of_field_data.hlsli">
+      <Filter>gameLib\Shaders</Filter>
+    </None>
+    <None Include="Source\render_particle_cube.hlsli">
+      <Filter>シェーダー</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\run_particle_cs.hlsl">
@@ -747,9 +732,6 @@
     <FxCompile Include="Source\stage_scene_particle_cs.hlsl">
       <Filter>シェーダー\stage_scene_particle</Filter>
     </FxCompile>
-    <FxCompile Include="Source\title_particle_cs.hlsl">
-      <Filter>シェーダー\title_particle</Filter>
-    </FxCompile>
     <FxCompile Include="Source\title_particle_create_cs.hlsl">
       <Filter>シェーダー\title_particle</Filter>
     </FxCompile>
@@ -761,12 +743,6 @@
     </FxCompile>
     <FxCompile Include="Source\title_scene_change_particle_cs.hlsl">
       <Filter>シェーダー\title_particle</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\title_texture_particle_create_cs.hlsl">
-      <Filter>シェーダー\title_texture_particle</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\title_texture_particle_cs.hlsl">
-      <Filter>シェーダー\title_texture_particle</Filter>
     </FxCompile>
     <FxCompile Include="Source\particle_render_cube_mesh_gs.hlsl">
       <Filter>シェーダー\particle_render</Filter>
@@ -840,31 +816,10 @@
     <FxCompile Include="Source\Lib\Shaders\deferred_depth_static_mesh_vs.hlsl">
       <Filter>gameLib\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Source\Lib\Shaders\depth_of_field_synthetic_ps.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Lib\Shaders\gaussian_blur_ps.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="Source\Lib\Shaders\geometric_primitive_ps.hlsl">
       <Filter>gameLib\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Source\Lib\Shaders\geometric_primitive_vs.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Lib\Shaders\model_blur_ps.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Lib\Shaders\model_blur_vs.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Lib\Shaders\model_create_multi_map_gs.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Lib\Shaders\model_create_multi_map_ps.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Lib\Shaders\model_create_multi_map_vs.hlsl">
       <Filter>gameLib\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Source\Lib\Shaders\model_normal_ps.hlsl">
@@ -888,12 +843,6 @@
     <FxCompile Include="Source\Lib\Shaders\render_effects_vs.hlsl">
       <Filter>gameLib\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Source\Lib\Shaders\sky_map_blur_ps.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Lib\Shaders\sky_map_blur_vs.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="Source\Lib\Shaders\sky_map_ps.hlsl">
       <Filter>gameLib\Shaders</Filter>
     </FxCompile>
@@ -904,18 +853,6 @@
       <Filter>gameLib\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Source\Lib\Shaders\sprite_vs.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Lib\Shaders\static_mesh_blur_ps.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Lib\Shaders\static_mesh_blur_vs.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Lib\Shaders\static_mesh_multi_ps.hlsl">
-      <Filter>gameLib\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Lib\Shaders\static_mesh_multi_vs.hlsl">
       <Filter>gameLib\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Source\Lib\Shaders\static_mesh_normal_ps.hlsl">
@@ -980,6 +917,9 @@
     </FxCompile>
     <FxCompile Include="Source\model_motion_data_vs.hlsl">
       <Filter>シェーダー\postEffect\モーションブラー\速度マップ%28model%29</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\title_particle_cs.hlsl">
+      <Filter>シェーダー\title_particle</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

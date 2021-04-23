@@ -16,7 +16,7 @@ struct Particle
 	float3 startPosition;
 	float3 defPosition;
 };
-//生成情報
+//定数バッファのデータ
 cbuffer CbStart:register(b0)
 {
 	float startIndex;
@@ -38,7 +38,6 @@ cbuffer CbStart2 :register(b1)
 	float3 defVelocity;
 	float dummy;
 }
-//更新情報
 cbuffer CbUpdate:register(b2)
 {
 	float elapsdTime;

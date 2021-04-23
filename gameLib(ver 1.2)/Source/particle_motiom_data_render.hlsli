@@ -18,6 +18,7 @@ struct PS_OUT
     float4 color : SV_TARGET0;
     float4 velocity : SV_TARGET1;
 };
+//定数バッファのデータ
 cbuffer CbScene : register(b0)
 {
     row_major float4x4 view;

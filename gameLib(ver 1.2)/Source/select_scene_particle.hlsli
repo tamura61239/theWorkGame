@@ -12,7 +12,7 @@ struct Particle
 	float sinLength;
 	float3 centerPosition;
 };
-
+//定数バッファのデータ
 cbuffer CbStart:register(b0)
 {
 	float3 angleMovement;
@@ -31,8 +31,11 @@ cbuffer CbUpdate:register(b1)
 	float3 endPosition;
 	float dummy2;
 }
+//パーティクルのデータ
 RWStructuredBuffer<Particle> particleBuffer : register(u0);
+//パーティクルの数
 RWByteAddressBuffer particleCountBuffer : register(u1);
+//パーティクルのindexデータ
 RWByteAddressBuffer indexBuffer : register(u3);
 RWByteAddressBuffer newIndexBuffer : register(u4);
 RWStructuredBuffer<uint> deleteIndexBuffer : register(u5);

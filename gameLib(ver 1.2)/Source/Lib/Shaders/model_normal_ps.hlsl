@@ -10,6 +10,9 @@ SamplerState normal_map_sampler_state : register(s1);
 
 
 static const float viewOffset = 0.01f;
+/*****************************************************/
+//　　　　	ノーマルマップを使って凸凹に見せる
+/*****************************************************/
 
 float4 main(VS_OUT pin) : SV_TARGET
 {

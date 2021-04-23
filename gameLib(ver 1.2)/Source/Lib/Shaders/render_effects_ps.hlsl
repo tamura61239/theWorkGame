@@ -4,6 +4,9 @@ Texture2D depth_map : register(t1);
 Texture2D shadow_map : register(t2);
 SamplerState color_map_sampler_state : register(s0);
 SamplerComparisonState shadow_map_sampler_state : register(s1);
+/*****************************************************/
+//　　　　	シーンに影を付ける
+/*****************************************************/
 
 float4 main(VS_OUT pin, uint sample_index: SV_SAMPLEINDEX) : SV_TARGET
 {

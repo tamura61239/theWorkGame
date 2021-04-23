@@ -1,5 +1,8 @@
 #include"title_psrticle_compute.hlsli"
 #include"render_particle_cube.hlsli"
+/****************************************************************************/
+//　　　パーティクルが中央へ吸い込まれていく処理
+/****************************************************************************/
 
 [numthreads(100, 1, 1)]
 void main( uint3 DTid : SV_DispatchThreadID )
@@ -10,8 +13,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	Particle p;
 	//更新データの読み込み
 	ReadParticle(p, bufferIndex);
-	/*************更新***************/
-
+    //更新
 	float3 vec = float3(0, 0, 0) - p.position;
 	float l = length(vec);
 	vec = normalize(vec);
@@ -21,7 +23,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	p.position += p.velocity;
 	l = length(float3(0, 0, 0) - p.position);
 	if (abs(l) <= 2.f)
-	{
+	{//一定以下の距離になったら消す
 		p.color = float4(0, 0, 0, 0);
 		p.position = float3(0, 0, 0);
 		p.scale = float3(0, 0, 0);

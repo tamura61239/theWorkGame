@@ -1,6 +1,9 @@
 #include"fireworks_particle.hlsli"
 #include"rand_function.hlsli"
 
+/****************************************************************************/
+//　　　花火を打ち上げてる途中の煙のパーティクルを生成する
+/****************************************************************************/
 
 [numthreads(1, 1, 1)]
 void main( uint3 DTid : SV_DispatchThreadID )

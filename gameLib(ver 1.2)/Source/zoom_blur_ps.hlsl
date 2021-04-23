@@ -3,6 +3,10 @@
 #include"zoom_blur.hlsli"
 Texture2D diffuse_map : register(t0);
 SamplerState diffuse_map_sampler_state : register(s0);
+/*****************************************************************/
+//　　　定数バッファのデータを元にUVをずらしてブラーをかける
+/*****************************************************************/
+
 float4 main(VS_OUT pin) : SV_TARGET
 {
 	float2 center = float2(0.5,0.5);
