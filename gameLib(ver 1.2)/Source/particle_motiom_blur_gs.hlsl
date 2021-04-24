@@ -1,6 +1,6 @@
 #include"particle_motiom_data_render.hlsli"
 #include"before_camera_view_data.hlsli"
-#include"rand_function.hlsli"
+#include"Lib/Shaders/rand_function.hlsli"
 static const float value = 0.5f;
 /*****************************************************************/
 //　　　取得した情報を元にテクスチャの4つの頂点を決める

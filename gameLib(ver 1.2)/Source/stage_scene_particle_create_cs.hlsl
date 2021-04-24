@@ -1,5 +1,7 @@
 #include"stage_scene_particle.hlsli"
-#include"rand_function.hlsli"
+#include"Lib/Shaders/rand_function.hlsli"
+#include"particle_count_buffer.hlsli"
+
 /****************************************************************************/
 //　　　パーティクルを生成する
 /****************************************************************************/
@@ -24,6 +26,6 @@ void main(uint3 DTid : SV_DispatchThreadID)
     //カウントを増やす
     uint particleCount = 0;
     particleCountBuffer.InterlockedAdd(0, 1, particleCount);
-    indexBuffer.Store(particleCount * 4, newParticleIndex);
+    particleIndexBuffer.Store(particleCount * 4, newParticleIndex);
 
 }

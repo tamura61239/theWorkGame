@@ -563,13 +563,8 @@ MeshRender::MeshRender(ID3D11Device* device)
 /*****************************************************/
 /***************************描画開始**************************/
 
-void MeshRender::ShadowBegin(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection)
+void MeshRender::ShadowBegin(ID3D11DeviceContext* context)
 {
-	//定数バッファのデータを更新
-	mCbScene->data.view = view;
-	mCbScene->data.projection = projection;
-	//GPU側にデータを送る
-	mCbScene->Activate(context, 0, true);
 	mShadowShader->Activate(context);
 }
 /***************************描画**************************/
@@ -604,7 +599,6 @@ void MeshRender::ShadowEnd(ID3D11DeviceContext* context)
 {
 	//GPU側に送ったデータを元に戻す
 	mShadowShader->Deactivate(context);
-	mCbScene->DeActivate(context);
 }
 /*****************************************************/
 //　　　　　　　　　　通常描画関数
@@ -714,13 +708,9 @@ void MeshRender::End(ID3D11DeviceContext* context)
 //　　　　　　　　　　速度マップの描画関数
 /*****************************************************/
 /***************************描画開始**************************/
-void MeshRender::VelocityBegin(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const bool w)
+void MeshRender::VelocityBegin(ID3D11DeviceContext* context, const bool w)
 {
-	//定数バッファのデータを更新
-	mCbScene->data.view = view;
-	mCbScene->data.projection = projection;
 	//GPU側にデータを送る
-	mCbScene->Activate(context, 0, true, true, true);
 	mShader[2]->Activate(context);
 }
 /***************************描画**************************/
@@ -766,6 +756,5 @@ void MeshRender::VelocityEnd(ID3D11DeviceContext* context)
 {
 	//GPU側に送ったデータを元に戻す
 	mShader[2]->Deactivate(context);
-	mCbScene->DeActivate(context);
 
 }

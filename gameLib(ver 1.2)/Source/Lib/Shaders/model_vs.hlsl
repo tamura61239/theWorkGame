@@ -21,7 +21,7 @@ VS_OUT main(
 
 	VS_OUT vout;
 	vout.worldPosition = p;
-	vout.position = mul(float4(p, 1.0f), viewProjection);
+    vout.position = mul(float4(p, 1.0f), mul(view, projection));
 
 	float3 N = normalize(n);
 	vout.worldNormal = N;

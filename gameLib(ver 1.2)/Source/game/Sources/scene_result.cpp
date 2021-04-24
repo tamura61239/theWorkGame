@@ -271,15 +271,14 @@ void SceneResult::Render(ID3D11DeviceContext* context, float elapsed_time)
 
 	//ƒV[ƒ“‚Ì•`‰æ
 	pLight.ConstanceLightBufferSetShader(context);
+	pCameraManager->GetCamera()->NowActive(context, 0, true, true, true);
 	frameBuffer->Clear(context);
 	frameBuffer->Activate(context);
 	mBlend[0]->activate(context);
-	FLOAT4X4 view = pCameraManager->GetCamera()->GetView();
-	FLOAT4X4 projection = pCameraManager->GetCamera()->GetProjection();
 
-	sky->Render(context, view, projection);
+	sky->Render(context);
 
-	pGpuParticleManager->Render(context, view, projection);
+	pGpuParticleManager->Render(context);
 	UIManager::GetInctance()->Render(context);
 
 	mRanking->Render(context);

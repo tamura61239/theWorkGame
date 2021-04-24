@@ -21,11 +21,11 @@ public:
 	void Draw(ID3D11DeviceContext* context, DrowShader* shader, Model& model, const VECTOR4F& color = VECTOR4F(1, 1, 1, 1));
 	void End(ID3D11DeviceContext* context);
 	//‰e‚Ì•`‰æ
-	void ShadowBegin(ID3D11DeviceContext* context, const FLOAT4X4& view_projection);
+	void ShadowBegin(ID3D11DeviceContext* context);
 	void ShadowDraw(ID3D11DeviceContext* context, Model& model, const VECTOR4F& color = VECTOR4F(1, 1, 1, 1));
 	void ShadowEnd(ID3D11DeviceContext* context);
 	//‘¬“xƒ}ƒbƒv‚Ì•`‰æ
-	void VelocityBegin(ID3D11DeviceContext* context, const FLOAT4X4& viewProjection);
+	void VelocityBegin(ID3D11DeviceContext* context);
 	void VelocityDraw(ID3D11DeviceContext* context,  Model& model);
 	void VelocityEnd(ID3D11DeviceContext* context);
 

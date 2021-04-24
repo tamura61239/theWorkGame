@@ -11,16 +11,6 @@ void GpuParticleManager::CreateBuffer(ID3D11Device* device)
 	HRESULT hr = S_OK;
 	//定数バッファ作成
 	{
-		D3D11_BUFFER_DESC desc;
-		ZeroMemory(&desc, sizeof(desc));
-		desc.ByteWidth = sizeof(CbScene);
-		desc.Usage = D3D11_USAGE_DEFAULT;
-		desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		desc.CPUAccessFlags = 0;
-		desc.MiscFlags = 0;
-		desc.StructureByteStride = 0;
-		hr = device->CreateBuffer(&desc, nullptr, mCbScene.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	}
 
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
@@ -212,17 +202,8 @@ void GpuParticleManager::ResultEditor()
 
 /*************************通常描画****************************/
 
-void GpuParticleManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, bool drowMullti)
+void GpuParticleManager::Render(ID3D11DeviceContext* context, bool drowMullti)
 {
-	ID3D11Buffer* buffer = mCbScene.Get();
-	context->VSSetConstantBuffers(0, 1, &buffer);
-	context->GSSetConstantBuffers(0, 1, &buffer);
-	context->PSSetConstantBuffers(0, 1, &buffer);
-
-	CbScene cbScene;
-	cbScene.view = view;
-	cbScene.projection = projection;
-	context->UpdateSubresource(mCbScene.Get(), 0, 0, &cbScene, 0, 0);
 	switch (mState)
 	{
 	case TITLE:
@@ -240,25 +221,12 @@ void GpuParticleManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& vi
 		mFireworksParticle->Render(context);
 		break;
 	}
-	buffer = nullptr;
-	context->VSSetConstantBuffers(0, 1, &buffer);
-	context->GSSetConstantBuffers(0, 1, &buffer);
-	context->PSSetConstantBuffers(0, 1, &buffer);
 
 }
 /*************************速度マップの描画****************************/
 
-void GpuParticleManager::VelocityRender(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection)
+void GpuParticleManager::VelocityRender(ID3D11DeviceContext* context)
 {
-	ID3D11Buffer* buffer = mCbScene.Get();
-	context->VSSetConstantBuffers(0, 1, &buffer);
-	context->GSSetConstantBuffers(0, 1, &buffer);
-	context->PSSetConstantBuffers(0, 1, &buffer);
-
-	CbScene cbScene;
-	cbScene.view = view;
-	cbScene.projection = projection;
-	context->UpdateSubresource(mCbScene.Get(), 0, 0, &cbScene, 0, 0);
 	switch (mState)
 	{
 	case SELECT:
@@ -276,10 +244,5 @@ void GpuParticleManager::VelocityRender(ID3D11DeviceContext* context, const FLOA
 #endif
 		break;
 	}
-	buffer = nullptr;
-	context->VSSetConstantBuffers(0, 1, &buffer);
-	context->GSSetConstantBuffers(0, 1, &buffer);
-	context->PSSetConstantBuffers(0, 1, &buffer);
-
 }
 

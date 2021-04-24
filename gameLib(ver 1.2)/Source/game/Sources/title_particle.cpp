@@ -26,6 +26,22 @@ TitleParticle::TitleParticle(ID3D11Device* device) :mSceneChange(false), mStartI
 		std::vector<RenderParticle>renderParticles;
 		renderParticles.resize(mMaxParticle);
 		mParticleRender = std::make_unique<CSBuffer>(device, D3D11_USAGE_DEFAULT, D3D11_BIND_VERTEX_BUFFER | D3D11_BIND_UNORDERED_ACCESS, D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS, renderParticles, true);
+		//indexバッファ
+		std::vector<UINT>indices;
+		indices.resize(mMaxParticle);
+		for (int i = 0; i < 2; i++)mParticleIndexs[i] = std::make_unique<CSBuffer>(device, D3D11_USAGE_DEFAULT, D3D11_BIND_INDEX_BUFFER | D3D11_BIND_UNORDERED_ACCESS, D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS, indices, true);
+		//deleteindexバッファ
+		for (int i = 0; i < mMaxParticle; i++)
+		{
+			indices[i] = i;
+		}
+		mParticleDeleteIndex = std::make_unique<CSBuffer>(device, D3D11_USAGE_DEFAULT, D3D11_BIND_UNORDERED_ACCESS, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED, indices, true);
+		//カウントバッファ
+		ParticleCount particleCount;
+		memset(&particleCount, 0, sizeof(particleCount));
+		particleCount.deActiveParticleCount = mMaxParticle;
+		mParticleCount = std::make_unique<CSBuffer>(device, D3D11_USAGE_DEFAULT, D3D11_BIND_UNORDERED_ACCESS, D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS, particleCount, true, false, D3D11_CPU_ACCESS_READ);
+
 	}
 	//定数バッファ生成
 	mCbStart = std::make_unique<ConstantBuffer<CbStart>>(device);
@@ -66,6 +82,9 @@ TitleParticle::TitleParticle(ID3D11Device* device) :mSceneChange(false), mStartI
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 	hr = CreateCSFromCso(device, "Data/shader/title_scene_change_particle_cs.cso", mSceneChangeCSShader.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	hr= CreateCSFromCso(device, "Data/shader/particle_count_cs.cso", mCSCountShader.GetAddressOf());
+	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
 	//描画用シェーダーの生成
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
 	{
@@ -135,9 +154,15 @@ void TitleParticle::Editor()
 
 void TitleParticle::Update(float elapsdTime, ID3D11DeviceContext* context)
 {
-	//パーティクルのデータをGPU側に送る
+	//UAVをGPUに渡す
 	mParticle->Activate(context, 0, true);
+	mParticleCount->Activate(context, 1, true);
 	mParticleRender->Activate(context, 2, true);
+	mParticleIndexs[mIndexNum]->Activate(context, 3, true);
+	mParticleIndexs[1 - mIndexNum]->Activate(context, 4, true);
+	mParticleDeleteIndex->Activate(context, 5, true);
+	mIndexNum++;
+	if (mIndexNum >= 2)mIndexNum = 0;
 	//定数バッファのデータ更新
 	mCb->data.elapsdTime = elapsdTime;
 	mCb->data.angleMovement = mEditorData.angleMovement;
@@ -192,12 +217,27 @@ void TitleParticle::Update(float elapsdTime, ID3D11DeviceContext* context)
 	context->Dispatch(1000, 1, 1);
 
 	//GPU側に送ったデータを元に戻す
-	context->CSSetShader(nullptr, nullptr, 0);
 	mCbStart->DeActivate(context);
 	mCbStart2->DeActivate(context);
 	mCb->DeActivate(context);
+	//パーティクル数の更新
+	context->CSSetShader(mCSCountShader.Get(), nullptr, 0);
+	context->Dispatch(1, 1, 1);
+
+	//カウントを取得
+	D3D11_MAPPED_SUBRESOURCE ms;
+	context->Map(mParticleCount->GetBuffer(), NULL, D3D11_MAP_READ, NULL, &ms);
+	ParticleCount* particleCount = (ParticleCount*)ms.pData;
+	mRenderCount = particleCount->aliveParticleCount;
+	context->Unmap(mParticleCount->GetBuffer(), NULL);
+	//GPUのデータを解放
+	context->CSSetShader(nullptr, nullptr, 0);
 	mParticle->DeActivate(context);
+	mParticleCount->DeActivate(context);
 	mParticleRender->DeActivate(context);
+	mParticleIndexs[mIndexNum]->DeActivate(context);
+	mParticleIndexs[1 - mIndexNum]->DeActivate(context);
+	mParticleDeleteIndex->DeActivate(context);
 
 }
 /*****************************************************/
@@ -206,25 +246,29 @@ void TitleParticle::Update(float elapsdTime, ID3D11DeviceContext* context)
 
 void TitleParticle::Render(ID3D11DeviceContext* context)
 {
-	//シェーダーを設定
+	//シェーダーの設定
 	mShader->Activate(context);
-	//データをGPU側に送る
-	ID3D11Buffer* buffer = mParticleRender->GetBuffer();
+	//描画時に使うテクスチャの設定
+	context->PSSetShaderResources(0, 1, mParticleSRV[mEditorData.textureType].GetAddressOf());
+	//バッファの設定
 	u_int stride = sizeof(RenderParticle);
 	u_int offset = 0;
-	context->PSSetShaderResources(0, 1, mParticleSRV[mEditorData.textureType].GetAddressOf());
+	ID3D11Buffer* buffer = mParticleRender->GetBuffer();
+	ID3D11Buffer* index = mParticleIndexs[mIndexNum]->GetBuffer();
 	context->IASetVertexBuffers(0, 1, &buffer, &stride, &offset);
+	context->IASetIndexBuffer(index, DXGI_FORMAT_R32_UINT, 0);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
-	//描画
-	context->Draw(mMaxParticle, 0);
-	//シェーダーを元に戻す
+
+	context->DrawIndexed(mRenderCount, 0, 0);
+	//GPUからの解放
 	mShader->Deactivate(context);
-	//GPU側に送ったデータを元に戻す
 	ID3D11ShaderResourceView* srv = nullptr;
 	context->PSSetShaderResources(0, 1, &srv);
 	buffer = nullptr;
+	index = nullptr;
 	stride = 0;
 	context->IASetVertexBuffers(0, 1, &buffer, &stride, &offset);
+	context->IASetIndexBuffer(index, DXGI_FORMAT_R32_UINT, 0);
 
 }
 

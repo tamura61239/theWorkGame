@@ -21,8 +21,8 @@ public:
 	//getter
 	Obj3D* GetPosData() { return mPosData.get(); }
 	//•`‰æ
-	void Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const VECTOR4F& color = VECTOR4F(1, 1, 1, 1));
-	void Render(ID3D11DeviceContext* context, DrowShader* shader, const FLOAT4X4& view, const FLOAT4X4& projection, const VECTOR4F& color = VECTOR4F(1, 1, 1, 1));
+	void Render(ID3D11DeviceContext* context, const VECTOR4F& color = VECTOR4F(1, 1, 1, 1));
+	void Render(ID3D11DeviceContext* context, DrowShader* shader, const VECTOR4F& color = VECTOR4F(1, 1, 1, 1));
 	//setter
 	void SaveBeforeWorld()
 	{

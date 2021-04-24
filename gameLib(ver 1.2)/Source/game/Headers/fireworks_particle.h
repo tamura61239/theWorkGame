@@ -45,6 +45,8 @@ private:
 	/****************************変数*******************************/
 	//シェーダー
 	std::unique_ptr<DrowShader>mShader;
+	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSClearShader;
+	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSCountShader;
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSCreate1Shader;
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSCreate2Shader;
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSShader;
@@ -70,11 +72,22 @@ private:
 		VECTOR3F velocity;
 		VECTOR3F scale;
 	};
+	struct ParticleCount
+	{
+		UINT aliveParticleCount;
+		UINT aliveNewParticleCount;
+		UINT deActiveParticleCount;
+		UINT dummy;
+	};
 
 	//パーティクルバッファ
 	std::unique_ptr<CSBuffer>mParticle;
+	std::unique_ptr<CSBuffer>mParticleCount;
 	//描画用バッファ
 	std::unique_ptr<CSBuffer>mParticleRender;
+	std::unique_ptr<CSBuffer>mParticleIndexs[2];
+	std::unique_ptr<CSBuffer>mParticleDeleteIndex;
+
 	//生成用データ
 	struct FireworksData
 	{
@@ -154,7 +167,9 @@ private:
 	bool mCreateFlag;
 	int mDefRanking;
 	int mDefStartState;
-
+	//描画用データ
+	UINT mRenderCount;
+	int mIndexNum;
 	//updataParameter
 	int mMaxParticle;
 	float mEmitorTimer;
@@ -168,6 +183,7 @@ private:
 	/****************************関数********************************/
 	void Load();
 	void Save();
+	void Clearount(ID3D11DeviceContext* context);
 	void StartFireworksEmitorUpdate(float elapsdTime, CbCreate* smokeConstant, CbCreate* fireworksConstant, int& emitorCount, int& fireworksCount);
 	void LoopFireworksEmitorUpdate(float elapsdTime, CbCreate* smokeConstant, CbCreate* fireworksConstant, int& emitorCount, int& fireworksCount);
 	void SetStartList(const int size);

@@ -495,14 +495,8 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 		return;
 	}
 
-	//view projection行列の取得
-	FLOAT4X4 view = pCameraManager->GetCamera()->GetView();
-	FLOAT4X4 projection = pCameraManager->GetCamera()->GetProjection();
-
-	FLOAT4X4 viewProjection;
-
-	DirectX::XMStoreFloat4x4(&viewProjection, DirectX::XMLoadFloat4x4(&view) * DirectX::XMLoadFloat4x4(&projection));
 	pLight.ConstanceLightBufferSetShader(context);
+	pCameraManager->GetCamera()->NowActive(context, 0, true, true, true);
 	/************************カラーマップテクスチャの作成***********************/
 
 	frameBuffer3->Clear(context);
@@ -510,21 +504,17 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	//シーンの描画
 	if (mSManager->GetStageEditor()->GetEditorFlag())
 	{//ステージエディターの時
-		mModelRenderer->Begin(context, viewProjection);
 		mModelRenderer->Draw(context, *player->GetCharacter()->GetModel(), VECTOR4F(0.5, 0.5, 0.5, 1));
-		mModelRenderer->End(context);
 
-		mSManager->Render(context, view, projection, mStageOperation->GetColorType());
+		mSManager->Render(context, mStageOperation->GetColorType());
 	}
 	else
 	{//通常時
-		mSky->Render(context, view, projection);
-		pGpuParticleManager->Render(context, view, projection);
-		mModelRenderer->Begin(context, viewProjection);
+		mSky->Render(context);
+		pGpuParticleManager->Render(context);
 		mModelRenderer->Draw(context, *player->GetCharacter()->GetModel(), VECTOR4F(0.5, 0.5, 0.5, 1));
-		mModelRenderer->End(context);
 
-		mSManager->Render(context, view, projection, mStageOperation->GetColorType());
+		mSManager->Render(context, mStageOperation->GetColorType());
 	}
 	frameBuffer3->Deactivate(context);
 
@@ -535,36 +525,36 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	mCbMotionBlur->Activate(context, 6, true, true);
 	pCameraManager->GetCamera()->BeforeActive(context, 5, true, true, true);
 	//シーンのの描画
-	mModelRenderer->VelocityBegin(context, viewProjection);
+	mModelRenderer->VelocityBegin(context);
 	mModelRenderer->VelocityDraw(context, *player->GetCharacter()->GetModel());
 	mModelRenderer->VelocityEnd(context);
-	pGpuParticleManager->VelocityRender(context, view, projection);
-	mSManager->RenderVelocity(context, view, projection, mStageOperation->GetColorType());
+	pGpuParticleManager->VelocityRender(context);
+	mSManager->RenderVelocity(context, mStageOperation->GetColorType());
 	//定数バッファの解除
 	pCameraManager->GetCamera()->BeforeDactive(context);
 	mCbMotionBlur->DeActivate(context);
 	velocityMap->Deactivate(context);
+	pCameraManager->GetCamera()->NowDactive(context);
 	/************************シャドウマップテクスチャの作成***********************/
 	shadowMap->Clear(context);
 	shadowMap->Activate(context);
 
 	//light視点のカメラの更新と情報の取得
 	mLightView->Update(player->GetCharacter()->GetPosition(), context);
-	FLOAT4X4 lightVP, lightV = mLightView->GetLightCamera()->GetView(), lightP = mLightView->GetLightCamera()->GetProjection();
-	DirectX::XMStoreFloat4x4(&lightVP, DirectX::XMLoadFloat4x4(&lightV) * DirectX::XMLoadFloat4x4(&lightP));
-
+	mLightView->GetLightCamera()->NowActive(context, 0, true, true, true);
 	//light視点から見たシーンの描画
-	mModelRenderer->ShadowBegin(context, lightVP);
+	mModelRenderer->ShadowBegin(context);
 	mModelRenderer->ShadowDraw(context, *player->GetCharacter()->GetModel());
 	mModelRenderer->ShadowEnd(context);
-	mSManager->RenderShadow(context, lightV, lightP);
+	mSManager->RenderShadow(context);
+	mLightView->GetLightCamera()->NowDactive(context);
 
 	shadowMap->Deactivate(context);
 	//シーンに影を付ける
 	shadowRenderBuffer->Clear(context);
 	shadowRenderBuffer->Activate(context);
 	mRenderEffects->ShadowRender(context, frameBuffer3->GetRenderTargetShaderResourceView().Get(), frameBuffer3->GetDepthStencilShaderResourceView().Get(), shadowMap->GetDepthStencilShaderResourceView().Get()
-		, view, projection, lightV, lightP);
+		, pCameraManager->GetCamera()->GetView(), pCameraManager->GetCamera()->GetProjection(), mLightView->GetLightCamera()->GetView(), mLightView->GetLightCamera()->GetProjection());
 	shadowRenderBuffer->Deactivate(context);
 	/******************************モーションブラー************************/
 	frameBuffer->Clear(context);

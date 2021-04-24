@@ -232,6 +232,13 @@ void RunParticles::Update(ID3D11DeviceContext* context, float elapsd_time)
 	context->CSSetShader(mStartCSShader.Get(), nullptr, 0);
 	context->Dispatch(1, 1, 1);
 
+	mParticle->DeActivate(context);
+	mParticleCount->DeActivate(context);
+	mParticleRender->DeActivate(context);
+	mParticleIndexs[mIndexNum]->DeActivate(context);
+	mParticleIndexs[1 - mIndexNum]->DeActivate(context);
+	mParticleDeleteIndex->DeActivate(context);
+
 	//カウントを取得
 	D3D11_MAPPED_SUBRESOURCE ms;
 	context->Map(mParticleCount->GetBuffer(), NULL, D3D11_MAP_READ, NULL, &ms);
@@ -240,12 +247,6 @@ void RunParticles::Update(ID3D11DeviceContext* context, float elapsd_time)
 	context->Unmap(mParticleCount->GetBuffer(), NULL);
 	//GPUのデータを解放
 	context->CSSetShader(nullptr, nullptr, 0);
-	mParticle->DeActivate(context);
-	mParticleCount->DeActivate(context);
-	mParticleRender->DeActivate(context);
-	mParticleIndexs[mIndexNum]->DeActivate(context);
-	mParticleIndexs[1 - mIndexNum]->DeActivate(context);
-	mParticleDeleteIndex->DeActivate(context);
 
 }
 /*****************************************************/

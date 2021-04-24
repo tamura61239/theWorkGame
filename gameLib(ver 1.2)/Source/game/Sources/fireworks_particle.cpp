@@ -18,14 +18,31 @@ mState(0), mDefStartState(0), mFireworksCount(0)
 {
 	HRESULT hr;
 
-	//パーティクルのバッファの生成
-	std::vector<Particle>particles;
-	particles.resize(mMaxParticle);
-	mParticle = std::make_unique<CSBuffer>(device, D3D11_USAGE_DEFAULT, D3D11_BIND_UNORDERED_ACCESS, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED, particles, true);
-	//描画用バッファの生成
-	std::vector<RenderParticle>renderParticles;
-	renderParticles.resize(mMaxParticle);
-	mParticleRender = std::make_unique<CSBuffer>(device, D3D11_USAGE_DEFAULT, D3D11_BIND_VERTEX_BUFFER | D3D11_BIND_UNORDERED_ACCESS, D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS, renderParticles, true);
+	{
+		//パーティクルのバッファの生成
+		std::vector<Particle>particles;
+		particles.resize(mMaxParticle);
+		mParticle = std::make_unique<CSBuffer>(device, D3D11_USAGE_DEFAULT, D3D11_BIND_UNORDERED_ACCESS, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED, particles, true);
+		//描画用バッファの生成
+		std::vector<RenderParticle>renderParticles;
+		renderParticles.resize(mMaxParticle);
+		mParticleRender = std::make_unique<CSBuffer>(device, D3D11_USAGE_DEFAULT, D3D11_BIND_VERTEX_BUFFER | D3D11_BIND_UNORDERED_ACCESS, D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS, renderParticles, true);
+		//indexバッファ
+		std::vector<UINT>indices;
+		indices.resize(mMaxParticle);
+		for (int i = 0; i < 2; i++)mParticleIndexs[i] = std::make_unique<CSBuffer>(device, D3D11_USAGE_DEFAULT, D3D11_BIND_INDEX_BUFFER | D3D11_BIND_UNORDERED_ACCESS, D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS, indices, true);
+		//deleteindexバッファ
+		for (int i = 0; i < mMaxParticle; i++)
+		{
+			indices[i] = i;
+		}
+		mParticleDeleteIndex = std::make_unique<CSBuffer>(device, D3D11_USAGE_DEFAULT, D3D11_BIND_UNORDERED_ACCESS, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED, indices, true);
+		//カウントバッファ
+		ParticleCount particleCount;
+		memset(&particleCount, 0, sizeof(particleCount));
+		particleCount.deActiveParticleCount = mMaxParticle;
+		mParticleCount = std::make_unique<CSBuffer>(device, D3D11_USAGE_DEFAULT, D3D11_BIND_UNORDERED_ACCESS, D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS, particleCount, true, false, D3D11_CPU_ACCESS_READ);
+	}
 	//定数バッファの生成
 	mCbCreate = std::make_unique<ConstantBuffer<CbCreate>>(device);
 	mCbUpdate = std::make_unique<ConstantBuffer<CbUpdate>>(device);
@@ -33,6 +50,8 @@ mState(0), mDefStartState(0), mFireworksCount(0)
 	CreateCSFromCso(device, "Data/shader/fireworks_particle_create_cs.cso", mCSCreate1Shader.GetAddressOf());
 	CreateCSFromCso(device, "Data/shader/fireworks_smoke_particle_create.cso", mCSCreate2Shader.GetAddressOf());
 	CreateCSFromCso(device, "Data/shader/fireworks_particle_cs.cso", mCSShader.GetAddressOf());
+	CreateCSFromCso(device, "Data/shader/particle_count_clear_cs.cso", mCSClearShader.GetAddressOf());
+	CreateCSFromCso(device, "Data/shader/particle_count_cs.cso", mCSCountShader.GetAddressOf());
 	//描画用シェーダーの生成
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
 	{
@@ -268,8 +287,8 @@ void FireworksParticle::Editor()
 		else
 		{//開始
 			CreateEmitor(mDefRanking);
-			mState = mDefStartState;
-			if (mState==1)
+			mState = -1;
+			if (mDefStartState ==1)
 			{//初期化
 				mEmitors.clear();
 				mCreateCount.clear();
@@ -303,8 +322,15 @@ void FireworksParticle::Editor()
 /****************************パーティクルの更新******************************/
 void FireworksParticle::Update(float elapsdTime, ID3D11DeviceContext* context)
 {
+	//UAVをGPUに渡す
 	mParticle->Activate(context, 0, true);
+	mParticleCount->Activate(context, 1, true);
 	mParticleRender->Activate(context, 2, true);
+	mParticleIndexs[mIndexNum]->Activate(context, 3, true);
+	mParticleIndexs[1 - mIndexNum]->Activate(context, 4, true);
+	mParticleDeleteIndex->Activate(context, 5, true);
+	mIndexNum++;
+	if (mIndexNum >= 2)mIndexNum = 0;
 	if (mCreateFlag)
 	{
 		CbCreate fireworksConstant, smokeConstant;
@@ -318,6 +344,8 @@ void FireworksParticle::Update(float elapsdTime, ID3D11DeviceContext* context)
 		mEmitorTimer += elapsdTime;
 		switch (mState)
 		{
+		case -1:
+			Clearount(context);
 		case 0://最初だけ
 			StartFireworksEmitorUpdate(elapsdTime, &smokeConstant, &fireworksConstant, emitorCount, fireworksCount);
 			break;
@@ -389,9 +417,24 @@ void FireworksParticle::Update(float elapsdTime, ID3D11DeviceContext* context)
 	context->Dispatch(mMaxParticle / 100, 1, 1);
 	//GPUから解放
 	mCbUpdate->DeActivate(context);
+	//パーティクル数の更新
+	context->CSSetShader(mCSCountShader.Get(), nullptr, 0);
+	context->Dispatch(1, 1, 1);
+
+	//カウントを取得
+	D3D11_MAPPED_SUBRESOURCE ms;
+	context->Map(mParticleCount->GetBuffer(), NULL, D3D11_MAP_READ, NULL, &ms);
+	ParticleCount* particleCount = (ParticleCount*)ms.pData;
+	mRenderCount = particleCount->aliveParticleCount;
+	context->Unmap(mParticleCount->GetBuffer(), NULL);
+	//GPUのデータを解放
 	context->CSSetShader(nullptr, nullptr, 0);
 	mParticle->DeActivate(context);
+	mParticleCount->DeActivate(context);
 	mParticleRender->DeActivate(context);
+	mParticleIndexs[mIndexNum]->DeActivate(context);
+	mParticleIndexs[1 - mIndexNum]->DeActivate(context);
+	mParticleDeleteIndex->DeActivate(context);
 
 }
 /****************************開始時に一回だけ出るパーティクルのエミッター******************************/
@@ -525,6 +568,15 @@ void FireworksParticle::SetStartList(const int size)
 
 	}
 }
+/***************************************パーティクルカウントを初期化する*****************************************/
+void FireworksParticle::Clearount(ID3D11DeviceContext* context)
+{
+	context->CSSetShader(mCSClearShader.Get(), nullptr, 0);
+
+	context->Dispatch(1, 1, 1);
+
+	mState = mDefStartState;
+}
 
 /*****************************************************/
 //　　　　　　　　　　描画関数
@@ -541,17 +593,21 @@ void FireworksParticle::Render(ID3D11DeviceContext* context)
 	u_int stride = sizeof(RenderParticle);
 	u_int offset = 0;
 	ID3D11Buffer* buffer = mParticleRender->GetBuffer();
+	ID3D11Buffer* index = mParticleIndexs[mIndexNum]->GetBuffer();
 	context->IASetVertexBuffers(0, 1, &buffer, &stride, &offset);
+	context->IASetIndexBuffer(index, DXGI_FORMAT_R32_UINT, 0);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 
-	context->Draw(mMaxParticle, 0);
+	context->DrawIndexed(mRenderCount, 0,0);
 	//GPUからの解放
 	mShader->Deactivate(context);
 	ID3D11ShaderResourceView* srv = nullptr;
 	context->PSSetShaderResources(0, 1, &srv);
 	buffer = nullptr;
+	index = nullptr;
 	stride = 0;
 	context->IASetVertexBuffers(0, 1, &buffer, &stride, &offset);
+	context->IASetIndexBuffer(index, DXGI_FORMAT_R32_UINT, 0);
 
 }
 /****************************描画(シェーダーを取得する)******************************/
@@ -566,17 +622,21 @@ void FireworksParticle::Render(ID3D11DeviceContext* context, DrowShader* shader)
 	u_int stride = sizeof(RenderParticle);
 	u_int offset = 0;
 	ID3D11Buffer* buffer = mParticleRender->GetBuffer();
+	ID3D11Buffer* index = mParticleIndexs[mIndexNum]->GetBuffer();
 	context->IASetVertexBuffers(0, 1, &buffer, &stride, &offset);
+	context->IASetIndexBuffer(index, DXGI_FORMAT_R32_UINT, 0);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 
-	context->Draw(mMaxParticle, 0);
+	context->DrawIndexed(mRenderCount, 0, 0);
 	//GPUからの解放
 	shader->Deactivate(context);
 	ID3D11ShaderResourceView* srv = nullptr;
 	context->PSSetShaderResources(0, 1, &srv);
 	buffer = nullptr;
+	index = nullptr;
 	stride = 0;
 	context->IASetVertexBuffers(0, 1, &buffer, &stride, &offset);
+	context->IASetIndexBuffer(index, DXGI_FORMAT_R32_UINT, 0);
 
 }
 /*****************************************************/
@@ -651,3 +711,4 @@ void FireworksParticle::Save()
 	fclose(fp);
 
 }
+

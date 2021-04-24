@@ -20,11 +20,11 @@ public:
 	//更新
 	void Update(float elapsd_time);
 	//描画
-	void Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const int stageState,DrowShader*srv=nullptr);
+	void Render(ID3D11DeviceContext* context, const int stageState,DrowShader*srv=nullptr);
 	//速度マップ用
-	void RenderVelocity(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const int stageState);
+	void RenderVelocity(ID3D11DeviceContext* context, const int stageState);
 	//影用
-	void RenderShadow(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection);
+	void RenderShadow(ID3D11DeviceContext* context);
 	//横から見た時のシーン
 	void SidoViewRender(ID3D11DeviceContext* context);
 	//setter

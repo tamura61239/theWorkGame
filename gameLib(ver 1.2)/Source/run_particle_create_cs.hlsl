@@ -1,6 +1,6 @@
 #include"run_particle_cs_function.hlsli"
-#include"rand_function.hlsli"
-
+#include"Lib/Shaders/rand_function.hlsli"
+#include"particle_count_buffer.hlsli"
 /****************************************************************************/
 //　　　アニメーションするモデルのメッシュからパーティクルを生成する
 /****************************************************************************/
@@ -26,8 +26,8 @@ void main(uint3 DTid : SV_DispatchThreadID)
     normal = normalize(normal);
     //死んでるパーティクルの数を1つ減らす
     uint deadCount;
-    particleCount.InterlockedAdd(4 * 2, -1, deadCount);
-    uint newParticleIndex = deleteIndex[deadCount-1];
+    particleCountBuffer.InterlockedAdd(4 * 2, -1, deadCount);
+    uint newParticleIndex = deleteIndexBuffer[deadCount - 1];
     //新しいパーティクルを生成
     Particle p = (Particle) 0;
 
@@ -47,6 +47,6 @@ void main(uint3 DTid : SV_DispatchThreadID)
     particle[newParticleIndex] = p;
     //カウントを増やす
     uint aliveCount;
-    particleCount.InterlockedAdd(0, 1, aliveCount);
-    particleIndex.Store(aliveCount * 4, newParticleIndex);
+    particleCountBuffer.InterlockedAdd(0, 1, aliveCount);
+    particleIndexBuffer.Store(aliveCount * 4, newParticleIndex);
 }

@@ -175,9 +175,11 @@ void SceneSelect::Render(ID3D11DeviceContext* context, float elapsed_time)
 	
 	mColorMap->Clear(context);
 	mColorMap->Activate(context);
+	pCameraManager->GetCamera()->NowActive(context, 0, true, true, true);
 
+	pGpuParticleManager->Render(context);
 
-	pGpuParticleManager->Render(context, pCameraManager->GetCamera()->GetView(), pCameraManager->GetCamera()->GetProjection());
+	pCameraManager->GetCamera()->NowDactive(context);
 	mSelect->Render(context);
 
 	

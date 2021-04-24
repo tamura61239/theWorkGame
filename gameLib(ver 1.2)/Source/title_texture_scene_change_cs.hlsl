@@ -1,6 +1,6 @@
 #include"title_texture_particle.hlsli"
 #include"render_particle_cube.hlsli"
-#include"rand_function.hlsli"
+#include"Lib/Shaders/rand_function.hlsli"
 /****************************************************************************/
 //　　　パーティクルが中央へ吸い込まれていく処理
 /****************************************************************************/

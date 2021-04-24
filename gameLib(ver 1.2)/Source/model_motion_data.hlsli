@@ -11,7 +11,8 @@ struct GS_OUT
 //定数バッファのデータ
 cbuffer CbScene : register(b0)
 {
-    row_major float4x4 viewProjection;
+    row_major float4x4 view;
+    row_major float4x4 projection;
 };
 #define MAX_BONES 128
 cbuffer CbMesh : register(b1)

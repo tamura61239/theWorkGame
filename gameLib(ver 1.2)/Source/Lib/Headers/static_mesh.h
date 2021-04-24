@@ -165,7 +165,7 @@ public:
 	//コンストラクタ
 	MeshRender(ID3D11Device* device);
 	//シャドウマップの描画
-	void ShadowBegin(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection);
+	void ShadowBegin(ID3D11DeviceContext* context);
 	void ShadowRender(ID3D11DeviceContext* context, StaticMesh* obj, const FLOAT4X4& world, const VECTOR4F&color=VECTOR4F(1,1,1,1));
 	void ShadowEnd(ID3D11DeviceContext* context);
 	//描画
@@ -174,7 +174,7 @@ public:
 	void Render(ID3D11DeviceContext* context, DrowShader* shader, StaticMesh* obj, const FLOAT4X4& world, const VECTOR4F color = VECTOR4F(1, 1, 1, 1));
 	void End(ID3D11DeviceContext* context);
 	//速度マップの描画
-	void VelocityBegin(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const bool w = false);
+	void VelocityBegin(ID3D11DeviceContext* context, const bool w = false);
 	void VelocityRender(ID3D11DeviceContext* context, StaticMesh* obj, const FLOAT4X4& world, const FLOAT4X4& beforeWorld, const VECTOR4F color = VECTOR4F(1, 1, 1, 1));
 	void VelocityEnd(ID3D11DeviceContext* context);
 

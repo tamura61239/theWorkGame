@@ -1,5 +1,6 @@
 #include"title_psrticle_compute.hlsli"
-#include"rand_function.hlsli"
+#include"Lib/Shaders/rand_function.hlsli"
+#include"particle_count_buffer.hlsli"
 
 /****************************************************************************/
 //　　　パーティクルを生成する
@@ -9,7 +10,11 @@ void main(uint3 DTid : SV_DispatchThreadID)
 {
 	//index値の取得
 	uint index = startIndex + DTid.x;
-	uint bufferIndex = index * MAX;
+	    //死んでるパーティクルの数を1つ減らす
+    uint deadCount;
+    particleCountBuffer.InterlockedAdd(4 * 2, -1, deadCount);
+    uint newParticleIndex = deleteIndexBuffer[deadCount - 1];
+
 	//データの初期化
 	Particle p = (Particle)0;
 
@@ -38,7 +43,11 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
 	p.moveAngleLength = rand_1_normal(float2(index % 123, index % 581), 1) * randMoveLength + defMoveLength;
 	
-	//更新データの書き出し
-	WriteParticle(p, bufferIndex);
+    //生成したパーティクルをバッファにセットする
+    particleBuffer[newParticleIndex] = p;
+    //カウントを増やす
+    uint aliveCount;
+    particleCountBuffer.InterlockedAdd(0, 1, aliveCount);
+    particleIndexBuffer.Store(aliveCount * 4, newParticleIndex);
 
 }

@@ -44,20 +44,15 @@ SkyMap::SkyMap(ID3D11Device* device, const wchar_t* textureName, MAPTYPE mapType
 /*****************************************************/
 /************************描画する*****************************/
 
-void SkyMap::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const VECTOR4F& color)
+void SkyMap::Render(ID3D11DeviceContext* context, const VECTOR4F& color)
 {
 	//定数バッファのデータを更新
 
-	mCbSceneBuffer->data.view = view;
-	mCbSceneBuffer->data.projection = projection;
 	mCbObjBuffer->data.color = color * mPosData->GetColor();
 	mCbObjBuffer->data.world = mPosData->GetWorld();
 	//GPU側にデータを送る
 
-	mCbSceneBuffer->Activate(context, 0, true, true);
 	mCbObjBuffer->Activate(context, 1, true, true);
-	ID3D11SamplerState* sampler = nullptr;
-	context->PSGetSamplers(0, 1, &sampler);
 	mSampler->Activate(context, 0, false, true);
 	//context->PSSetSamplers(0, 1, mSapmleState.GetAddressOf());
 	context->PSSetShaderResources(0, 1, mSRV.GetAddressOf());
@@ -77,7 +72,6 @@ void SkyMap::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FL
 	ID3D11ShaderResourceView* srv = nullptr;
 	context->PSSetShaderResources(0, 1, &srv);
 	mShader->Deactivate(context);
-	mCbSceneBuffer->DeActivate(context);
 	mCbObjBuffer->DeActivate(context);
 	stride = 0;
 	ID3D11Buffer* vertexBuffer = nullptr;
@@ -85,19 +79,15 @@ void SkyMap::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FL
 	context->IASetIndexBuffer(nullptr, DXGI_FORMAT_R32_UINT, 0);
 	mRasterizer->DeActivate(context);
 	mSampler->DeActivate(context);
-	context->PSSetSamplers(0, 1, &sampler);
 }
 /*************************描画する(シェーダーを取得)****************************/
 
-void SkyMap::Render(ID3D11DeviceContext* context, DrowShader* shader, const FLOAT4X4& view, const FLOAT4X4& projection, const VECTOR4F& color)
+void SkyMap::Render(ID3D11DeviceContext* context, DrowShader* shader, const VECTOR4F& color)
 {
 	//定数バッファのデータを更新
-	mCbSceneBuffer->data.view = view;
-	mCbSceneBuffer->data.projection = projection;
 	mCbObjBuffer->data.color = color * mPosData->GetColor();
 	mCbObjBuffer->data.world = mPosData->GetWorld();
 	//GPU側にデータを送る
-	mCbSceneBuffer->Activate(context, 0, true, true);
 	mCbObjBuffer->Activate(context, 1, true, true);
 	mCbBeforeObjBuffer->Activate(context, 2, true, true);
 	context->PSSetShaderResources(0, 1, mSRV.GetAddressOf());
@@ -112,7 +102,6 @@ void SkyMap::Render(ID3D11DeviceContext* context, DrowShader* shader, const FLOA
 	context->DrawIndexed(mObjData->GetIndexNum(), 0, 0);
 	//GPU側に送ったデータを元に戻す
 	shader->Deactivate(context);
-	mCbSceneBuffer->DeActivate(context);
 	mCbObjBuffer->DeActivate(context);
 	mCbBeforeObjBuffer->DeActivate(context);
 

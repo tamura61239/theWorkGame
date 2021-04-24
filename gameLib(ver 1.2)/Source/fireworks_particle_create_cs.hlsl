@@ -1,5 +1,6 @@
 #include"fireworks_particle.hlsli"
-#include"rand_function.hlsli"
+#include"Lib/Shaders/rand_function.hlsli"
+#include"particle_count_buffer.hlsli"
 /****************************************************************************/
 //　　　花火のパーティクルを生成する
 /****************************************************************************/
@@ -20,6 +21,11 @@ void main( uint3 DTid : SV_DispatchThreadID )
         //割った値が1以上ならカウントを増やす
         count += saturate(anser);
     }
+    //死んでるパーティクルの数を1つ減らす
+    uint deadCount;
+    particleCountBuffer.InterlockedAdd(4 * 2, -1, deadCount);
+    uint newParticleIndex = deleteIndexBuffer[deadCount - 1];
+
      Particle p = (Particle) 0;
     //球体面上の点を取得
 	float angle = (rand_1_normal(float2(index % 28, index % 51), 1) - 1) * 3.14f;
@@ -38,6 +44,10 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	
     p.accel = createData[count].firework.speed * float3(-x * createData[count].firework.parsent, createData[count].firework.gravity, -z * createData[count].firework.parsent);
 	p.endTimer = createData[count].firework.endTimer;
-    //設定した値をパーティクの配列に入れる
-    particleBuffer[startIndex+index] = p;
+    //生成したパーティクルをバッファにセットする
+    particleBuffer[newParticleIndex] = p;
+    //カウントを増やす
+    uint aliveCount;
+    particleCountBuffer.InterlockedAdd(0, 1, aliveCount);
+    particleIndexBuffer.Store(aliveCount * 4, newParticleIndex);
 }

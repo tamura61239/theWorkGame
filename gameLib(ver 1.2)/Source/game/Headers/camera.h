@@ -14,6 +14,9 @@ public:
 	void CalculateMatrix();
 	//view projection行列の計算
 	void CalculateParallelMatrix();
+	//今のフレームのview projection行列をGPUに送る
+	void NowActive(ID3D11DeviceContext* context, const int number, const bool vs = false, const bool ps = false, const bool gs = false) { mNowFrame->Activate(context, number, vs, ps, gs); }
+	void NowDactive(ID3D11DeviceContext* context) { mNowFrame->DeActivate(context); }
 	//前のフレームのview projection行列をGPUに送る
 	void BeforeActive(ID3D11DeviceContext* context, const int number, const bool vs = false, const bool ps = false, const bool gs = false) { mBeforeFrame->Activate(context, number, vs, ps, gs); }
 	void BeforeDactive(ID3D11DeviceContext* context) { mBeforeFrame->DeActivate(context); }
@@ -42,15 +45,13 @@ public:
 	const VECTOR3F& GetUp() { return mUp; }
 	const VECTOR3F& GetFront() { return mFront; }
 	const VECTOR3F& GetRight() { return mRight; }
-	const FLOAT4X4& GetView() { return mView; }
-	const FLOAT4X4& GetProjection() { return mProjection; }
+	const FLOAT4X4& GetView() { return mNowFrame->data.view; }
+	const FLOAT4X4& GetProjection() { return mNowFrame->data.projection; }
 	const float GetFov() { return mFov; }
 	const float GetAspect() { return mAspect; }
 	const float GetNear() { return mNearZ; }
 	const float GetFar() { return mFarZ; }
 private:
-	FLOAT4X4 mView;//ビュー行列
-	FLOAT4X4 mProjection;//プロジェクション行列
 	VECTOR3F mEye;// 視点 
 	VECTOR3F mFocus;//注視点
 	VECTOR3F mUp;//上ベクトル
@@ -69,4 +70,5 @@ private:
 		FLOAT4X4 projection;
 	};
 	std::unique_ptr<ConstantBuffer<Cb>>mBeforeFrame;
+	std::unique_ptr<ConstantBuffer<Cb>>mNowFrame;
 };

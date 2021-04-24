@@ -2,6 +2,8 @@
 #include"render_particle_cube.hlsli"
 #include"curl_noise.hlsli"
 #include"matrix_calculation.hlsli"
+#include"particle_count_buffer.hlsli"
+
 /****************************************************************************/
 //　　　パーティクルの更新をする
 /****************************************************************************/
@@ -14,7 +16,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     if (particleCount > DTid.x)
     { //パーティクルの最大数より小さいとき
         //indexバッファに登録している番号のパーティクルデータを取得する
-        uint particleIndex = indexBuffer.Load(DTid.x * 4);
+        uint particleIndex = particleIndexBuffer.Load(DTid.x * 4);
         Particle particle = particleBuffer[particleIndex];
         if (particle.life > 0)
         { //寿命がまだあるなら

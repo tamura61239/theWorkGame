@@ -155,17 +155,13 @@ void ModelRenderer::End(ID3D11DeviceContext* context)
 /*****************************************************/
 /*************************描画開始***************************/
 
-void ModelRenderer::ShadowBegin(ID3D11DeviceContext* context, const FLOAT4X4& view_projection)
+void ModelRenderer::ShadowBegin(ID3D11DeviceContext* context)
 {
 	//シェーダーを設定する
 
 	mShadowShader->Activate(context);
 
 
-	// シーン用定数バッファ更新
-	mCbScene->data.viewProjection = view_projection;
-
-	mCbScene->Activate(context, 0, true, true);
 
 }
 /**************************** 描画*************************/
@@ -209,23 +205,17 @@ void ModelRenderer::ShadowEnd(ID3D11DeviceContext* context)
 	//GPU側に送ったデータを元に戻す
 
 	mShadowShader->Deactivate(context);
-	mCbScene->DeActivate(context);
 }
 /*****************************************************/
 //　　　　　　　　　　	速度マップの描画関数
 /*****************************************************/
 /*************************描画開始***************************/
 
-void ModelRenderer::VelocityBegin(ID3D11DeviceContext* context, const FLOAT4X4& viewProjection)
+void ModelRenderer::VelocityBegin(ID3D11DeviceContext* context)
 {
 	//シェーダーを設定する
 
 	mShader[2]->Activate(context);
-
-	// シーン用定数バッファ更新
-	mCbScene->data.viewProjection = viewProjection;
-
-	mCbScene->Activate(context, 0, true, true, true);
 
 }
 /**************************** 描画*************************/
@@ -263,7 +253,6 @@ void ModelRenderer::VelocityEnd(ID3D11DeviceContext* context)
 {
 	//GPU側に送ったデータを元に戻す
 	mShader[2]->Deactivate(context);
-	mCbScene->DeActivate(context);
 }
 /*****************************************************/
 //　　　　　　　　　　	定数バッファのデータ更新関数

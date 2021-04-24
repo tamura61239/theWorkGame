@@ -68,7 +68,7 @@ PS_DEPTH_OUT main(VS_OUT pin)
 		LS += BlinnPhongSpcular(pin.worldNormal, -LV, LC, E, Ks, 20) * influence * influence * influence2;
 	}
 	pout.color *= pin.color * float4(A + D + S /*+ LD + LS*/, 1.0);
-	float4 vpPosition = mul(float4(pin.worldPosition, 1), viewProjection);
+    float4 vpPosition = mul(float4(pin.worldPosition, 1), mul(view,projection));
 	float z = pin.position.z / pin.position.w;
 	//z *= 10;
 

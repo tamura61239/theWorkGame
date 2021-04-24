@@ -29,9 +29,3 @@ cbuffer CbUpdate : register(b1)
 }
 //パーティクルのデータ
 RWStructuredBuffer<Particle> particleBuffer : register(u0);
-//パーティクルの数
-RWByteAddressBuffer particleCountBuffer : register(u1);
-//パーティクルのindexデータ
-RWByteAddressBuffer indexBuffer : register(u3);
-RWByteAddressBuffer newIndexBuffer : register(u4);
-RWStructuredBuffer<uint> deleteIndexBuffer : register(u5);

@@ -1,5 +1,6 @@
 #include"run_particle_cs_function.hlsli"
 #include"render_particle_cube.hlsli"
+#include"particle_count_buffer.hlsli"
 /****************************************************************************/
 //　　　パーティクルの更新をする
 /****************************************************************************/
@@ -8,12 +9,12 @@
 void main(uint3 DTid : SV_DispatchThreadID)
 {
     //パーティクルの最大数を取得する
-    uint aliveCount = particleCount.Load(0);
+    uint aliveCount = particleCountBuffer.Load(0);
     if (aliveCount > DTid.x)
     {//パーティクルの最大数より小さいとき
         //indexバッファに登録している番号のパーティクルデータを取得する
         uint index;
-        index=particleIndex.Load(DTid.x * 4);
+        index=particleIndexBuffer.Load(DTid.x * 4);
         Particle p = particle[index];
         if (p.life > 0)
         {//寿命がまだあるなら
@@ -44,16 +45,16 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
             //生きてる分カウントを増やす
             uint newAliveCount;
-            particleCount.InterlockedAdd(4, 1, newAliveCount);
-            particleNewIndex.Store(newAliveCount * 4, index);
+            particleCountBuffer.InterlockedAdd(4, 1, newAliveCount);
+            newIndexBuffer.Store(newAliveCount * 4, index);
 
         }
         else
         {
             //死んでる分のカウントを増やす
             uint deleteCount;
-            particleCount.InterlockedAdd(4 * 2, 1, deleteCount);
-            deleteIndex[deleteCount] = index;
+            particleCountBuffer.InterlockedAdd(4 * 2, 1, deleteCount);
+            deleteIndexBuffer[deleteCount] = index;
 
         }
 

@@ -27,7 +27,7 @@ VS_OUT main(
 
     float4 nowPosition, beforePosition;
     //今のフレームの座標
-    nowPosition = mul(float4(p0, 1), viewProjection);
+    nowPosition = mul(float4(p0, 1), mul(view,projection));
     //前のフレームの座標
     beforePosition = mul(float4(p1, 1), mul(beforeView,beforeProjection));
 

@@ -154,13 +154,12 @@ void StageManager::Update(float elapsd_time)
 //　　　　　　　　　　描画関数
 /*****************************************************/
 /*************************通常描画****************************/
-void StageManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const int stageState, DrowShader* srv)
+void StageManager::Render(ID3D11DeviceContext* context, const int stageState, DrowShader* srv)
 {
 	VECTOR4F color[2];
 	if (srv == nullptr)
 	{	//外部からシェーダーを送られてない時
 
-		mRender->Begin(context, view, projection);
 		//赤色の描画
 		for (auto& stage : mStageObjs)
 		{
@@ -183,12 +182,10 @@ void StageManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, co
 		}
 		//新しく生成するオブジェクトを仮で描画
 		mEditor->EditorCreateObjImageRender(context, mMeshs.at(mEditor->GetCreateData().mObjType).get(), mRender.get(), color[mEditor->GetCreateData().mColorType]);
-		mRender->End(context);
 	}
 	else
 	{	//外部からシェーダーを送られてる時
 
-		mRender->Begin(context, view, projection);
 		//赤色の描画
 		for (auto& stage : mStageObjs)
 		{
@@ -207,14 +204,13 @@ void StageManager::Render(ID3D11DeviceContext* context, const FLOAT4X4& view, co
 			//赤色のタイプの色を取得
 			mRender->Render(context, srv, stage->GetMesh(), stage->GetWorld(), stage->GetColor());
 		}
-		mRender->End(context);
 
 	}
 }
 /***************************速度マップの描画*********************************/
-void StageManager::RenderVelocity(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, const int stageState)
+void StageManager::RenderVelocity(ID3D11DeviceContext* context, const int stageState)
 {
-	mRender->VelocityBegin(context, view, projection);
+	mRender->VelocityBegin(context);
 	for (auto& stage : mStageObjs)
 	{
 		mRender->VelocityRender(context, stage->GetMesh(), stage->GetWorld(), stage->GetBeforeWorld(), stage->GetColor());
@@ -222,13 +218,11 @@ void StageManager::RenderVelocity(ID3D11DeviceContext* context, const FLOAT4X4& 
 		stage->SetBeforeWorld(stage->GetWorld());
 	}
 	mRender->VelocityEnd(context);
-
 }
 /*****************************シャドウマップの描画*******************************/
-void StageManager::RenderShadow(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection)
+void StageManager::RenderShadow(ID3D11DeviceContext* context)
 {
-
-	mRender->ShadowBegin(context, view, projection);
+	mRender->ShadowBegin(context);
 	for (auto& stage : mStageObjs)
 	{
 		mRender->ShadowRender(context, stage->GetMesh(), stage->GetWorld(), stage->GetColor());
@@ -236,7 +230,6 @@ void StageManager::RenderShadow(ID3D11DeviceContext* context, const FLOAT4X4& vi
 		stage->SetBeforeWorld(stage->GetWorld());
 	}
 	mRender->ShadowEnd(context);
-
 }
 /****************************ミニマップの描画************************************/
 void StageManager::SidoViewRender(ID3D11DeviceContext* context)

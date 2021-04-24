@@ -1,5 +1,5 @@
 #include"title_texture_particle.hlsli"
-#include"rand_function.hlsli"
+#include"Lib/Shaders/rand_function.hlsli"
 /****************************************************************************/
 //　　　パーティクルを更新
 /****************************************************************************/

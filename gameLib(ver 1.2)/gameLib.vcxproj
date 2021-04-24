@@ -120,7 +120,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>.\External_Libraries\FBX SDK\2016.1.2\include;.\External_Libraries\cereal-1.2.2\include;.\Source;.\External_Libraries\DirectXTex;.\External_Libraries\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\External_Libraries\FBX SDK\2016.1.2\include;.\External_Libraries\cereal-1.2.2\include;.\Source\game\Headers;.\External_Libraries\DirectXTex;.\External_Libraries\imgui;.\Source\game\Sources;.\Source\Lib\Headers;.\Source\Lib\Sources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;USE_IMGUI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <UseFullPaths>false</UseFullPaths>
@@ -175,7 +175,6 @@
     <ClCompile Include="Source\game\Sources\gpu_particle_manager.cpp" />
     <ClCompile Include="Source\game\Sources\hit_area_render.cpp" />
     <ClCompile Include="Source\game\Sources\Judgment.cpp" />
-    <ClCompile Include="Source\game\Sources\light_view.cpp" />
     <ClCompile Include="Source\game\Sources\player_ai.cpp" />
     <ClCompile Include="Source\game\Sources\player_character.cpp" />
     <ClCompile Include="Source\game\Sources\play_camera_operation.cpp" />
@@ -218,6 +217,7 @@
     <ClCompile Include="Source\Lib\Sources\gamepad.cpp" />
     <ClCompile Include="Source\Lib\Sources\geometric_primitive.cpp" />
     <ClCompile Include="Source\Lib\Sources\light.cpp" />
+    <ClCompile Include="Source\Lib\Sources\light_view.cpp" />
     <ClCompile Include="Source\Lib\Sources\main.cpp" />
     <ClCompile Include="Source\Lib\Sources\model.cpp" />
     <ClCompile Include="Source\Lib\Sources\model_data.cpp" />
@@ -250,15 +250,12 @@
     <ClInclude Include="Source\game\Headers\camera_operation.h" />
     <ClInclude Include="Source\game\Headers\collision.h" />
     <ClInclude Include="Source\game\Headers\cs_buffer.h" />
-    <ClInclude Include="Source\game\Headers\Easing.h" />
     <ClInclude Include="Source\game\Headers\fade.h" />
     <ClInclude Include="Source\game\Headers\fireworks_particle.h" />
     <ClInclude Include="Source\game\Headers\game_ui_move.h" />
     <ClInclude Include="Source\game\Headers\gpu_particle_manager.h" />
     <ClInclude Include="Source\game\Headers\hit_area_render.h" />
     <ClInclude Include="Source\game\Headers\Judgment.h" />
-    <ClInclude Include="Source\game\Headers\light_view.h" />
-    <ClInclude Include="Source\game\Headers\motion_blur_parameter.h" />
     <ClInclude Include="Source\game\Headers\player_ai.h" />
     <ClInclude Include="Source\game\Headers\player_character.h" />
     <ClInclude Include="Source\game\Headers\play_camera_operation.h" />
@@ -274,7 +271,6 @@
     <ClInclude Include="Source\game\Headers\scene_title.h" />
     <ClInclude Include="Source\game\Headers\select_scene_particle.h" />
     <ClInclude Include="Source\game\Headers\select_text.h" />
-    <ClInclude Include="Source\game\Headers\singleton_class.h" />
     <ClInclude Include="Source\game\Headers\stage_borad.h" />
     <ClInclude Include="Source\game\Headers\stage_editor.h" />
     <ClInclude Include="Source\game\Headers\stage_editor_camera_operation.h" />
@@ -287,9 +283,9 @@
     <ClInclude Include="Source\game\Headers\title_particle.h" />
     <ClInclude Include="Source\game\Headers\title_texture_particle.h" />
     <ClInclude Include="Source\game\Headers\title_ui_move.h" />
+    <ClInclude Include="Source\game\Headers\tutorial_state.h" />
     <ClInclude Include="Source\game\Headers\ui.h" />
     <ClInclude Include="Source\game\Headers\ui_manager.h" />
-    <ClInclude Include="Source\game\Headers\zoom_blur_parameter.h" />
     <ClInclude Include="Source\Lib\Headers\blend_state.h" />
     <ClInclude Include="Source\Lib\Headers\bloom.h" />
     <ClInclude Include="Source\Lib\Headers\board.h" />
@@ -298,6 +294,7 @@
     <ClInclude Include="Source\Lib\Headers\cubebuffer.h" />
     <ClInclude Include="Source\Lib\Headers\direct_input.h" />
     <ClInclude Include="Source\Lib\Headers\drow_shader.h" />
+    <ClInclude Include="Source\Lib\Headers\Easing.h" />
     <ClInclude Include="Source\Lib\Headers\fbx_load.h" />
     <ClInclude Include="Source\Lib\Headers\file_function.h" />
     <ClInclude Include="Source\Lib\Headers\framebuffer.h" />
@@ -307,12 +304,14 @@
     <ClInclude Include="Source\Lib\Headers\high_resolution_timer.h" />
     <ClInclude Include="Source\Lib\Headers\key_board.h" />
     <ClInclude Include="Source\Lib\Headers\light.h" />
+    <ClInclude Include="Source\Lib\Headers\light_view.h" />
     <ClInclude Include="Source\Lib\Headers\logger.h" />
     <ClInclude Include="Source\Lib\Headers\misc.h" />
     <ClInclude Include="Source\Lib\Headers\model.h" />
     <ClInclude Include="Source\Lib\Headers\model_data.h" />
     <ClInclude Include="Source\Lib\Headers\model_renderer.h" />
     <ClInclude Include="Source\Lib\Headers\model_resource.h" />
+    <ClInclude Include="Source\Lib\Headers\motion_blur_parameter.h" />
     <ClInclude Include="Source\Lib\Headers\obj3d.h" />
     <ClInclude Include="Source\Lib\Headers\render_effects.h" />
     <ClInclude Include="Source\Lib\Headers\render_state.h" />
@@ -321,6 +320,7 @@
     <ClInclude Include="Source\Lib\Headers\serialize_function.h" />
     <ClInclude Include="Source\Lib\Headers\shader.h" />
     <ClInclude Include="Source\Lib\Headers\shader_type.h" />
+    <ClInclude Include="Source\Lib\Headers\singleton_class.h" />
     <ClInclude Include="Source\Lib\Headers\sky_map.h" />
     <ClInclude Include="Source\Lib\Headers\sound.h" />
     <ClInclude Include="Source\Lib\Headers\sound_buffer.h" />
@@ -332,9 +332,10 @@
     <ClInclude Include="Source\Lib\Headers\vector.h" />
     <ClInclude Include="Source\Lib\Headers\vector_combo.h" />
     <ClInclude Include="Source\Lib\Headers\x_input.h" />
+    <ClInclude Include="Source\Lib\Headers\zoom_blur_parameter.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Source\before_camera_view_data.hlsli" />
+    <None Include="Source\cb_timer.hlsli" />
     <None Include="Source\curl_noise.hlsli" />
     <None Include="Source\fireworks_particle.hlsli" />
     <None Include="Source\Lib\Shaders\bloom.hlsli" />
@@ -346,16 +347,18 @@
     <None Include="Source\Lib\Shaders\model.hlsli" />
     <None Include="Source\Lib\Shaders\model_normal.hlsli" />
     <None Include="Source\Lib\Shaders\ps_function.hlsli" />
+    <None Include="Source\Lib\Shaders\rand_function.hlsli" />
     <None Include="Source\Lib\Shaders\render_effects.hlsli" />
     <None Include="Source\Lib\Shaders\sky_map.hlsli" />
     <None Include="Source\Lib\Shaders\sprite.hlsli" />
     <None Include="Source\Lib\Shaders\static_mesh.hlsli" />
     <None Include="Source\Lib\Shaders\static_mesh_normal.hlsli" />
+    <None Include="Source\Lib\Shaders\zoom_blur.hlsli" />
     <None Include="Source\matrix_calculation.hlsli" />
     <None Include="Source\model_motion_data.hlsli" />
+    <None Include="Source\particle_count_buffer.hlsli" />
     <None Include="Source\particle_motiom_data_render.hlsli" />
     <None Include="Source\particle_render.hlsli" />
-    <None Include="Source\rand_function.hlsli" />
     <None Include="Source\render_particle_cube.hlsli" />
     <None Include="Source\run_particle_cs_function.hlsli" />
     <None Include="Source\select_scene_particle.hlsli" />
@@ -363,7 +366,6 @@
     <None Include="Source\static_mesh_motion_data.hlsli" />
     <None Include="Source\title_psrticle_compute.hlsli" />
     <None Include="Source\title_texture_particle.hlsli" />
-    <None Include="Source\zoom_blur.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\fireworks_particle_create_cs.hlsl">
@@ -636,6 +638,18 @@
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AssemblyCode</AssemblerOutput>
       <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">outputFile\cod\%(Filename).cod</AssemblerOutputFile>
     </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\motion_blur_ps.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">outputFile\cod\%(Filename).cod</AssemblerOutputFile>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">outputFile\cod\%(Filename).cod</AssemblerOutputFile>
+    </FxCompile>
     <FxCompile Include="Source\Lib\Shaders\render_effects_ps.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
@@ -780,6 +794,20 @@
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AssemblyCode</AssemblerOutput>
       <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">outputFile\cod\%(Filename).cod</AssemblerOutputFile>
     </FxCompile>
+    <FxCompile Include="Source\Lib\Shaders\zoom_blur_ps.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">outputFile\cod\%(Filename).cod</AssemblerOutputFile>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">outputFile\cod\%(Filename).cod</AssemblerOutputFile>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </FxCompile>
     <FxCompile Include="Source\model_motion_data_gs.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Geometry</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
@@ -816,11 +844,15 @@
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AssemblyCode</AssemblerOutput>
       <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">outputFile\cod\%(Filename).cod</AssemblerOutputFile>
     </FxCompile>
-    <FxCompile Include="Source\motion_blur_ps.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+    <FxCompile Include="Source\particle_count_clear_cs.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AssemblyCode</AssemblerOutput>
       <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">outputFile\cod\%(Filename).cod</AssemblerOutputFile>
@@ -1239,19 +1271,6 @@
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AssemblyCode</AssemblerOutput>
       <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">outputFile\cod\%(Filename).cod</AssemblerOutputFile>
-    </FxCompile>
-    <FxCompile Include="Source\zoom_blur_ps.hlsl">
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
-      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AssemblyCode</AssemblerOutput>
-      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">outputFile\cod\%(Filename).cod</AssemblerOutputFile>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Data\shader\%(Filename).cso</ObjectFileOutput>
-      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AssemblyCode</AssemblerOutput>
-      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">outputFile\cod\%(Filename).cod</AssemblerOutputFile>
     </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

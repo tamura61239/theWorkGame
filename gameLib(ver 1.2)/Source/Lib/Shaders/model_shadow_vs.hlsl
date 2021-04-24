@@ -17,5 +17,5 @@ float4 main(
     	p += (boneWeights[i] * mul(position, boneTransforms[boneIndices[i]]));
     }
 	p.w = 1.0f;
-	return mul(p, viewProjection);
+    return mul(p, mul(view,projection));
 }

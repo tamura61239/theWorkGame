@@ -1,5 +1,6 @@
 #include"fireworks_particle.hlsli"
-#include"rand_function.hlsli"
+#include"Lib/Shaders/rand_function.hlsli"
+#include"particle_count_buffer.hlsli"
 
 /****************************************************************************/
 //　　　花火を打ち上げてる途中の煙のパーティクルを生成する
@@ -23,6 +24,10 @@ void main( uint3 DTid : SV_DispatchThreadID )
         emitorNumber +=  saturate(anser);
         count = lerp(count, totalIndex-index, saturate(anser+1));
     }
+    //死んでるパーティクルの数を1つ減らす
+    uint deadCount;
+    particleCountBuffer.InterlockedAdd(4 * 2, -1, deadCount);
+    uint newParticleIndex = deleteIndexBuffer[deadCount - 1];
 
     Particle p = (Particle) 0;
     p.position = createData[emitorNumber].position - createData[emitorNumber].velocity * (count / createData[emitorNumber].firework.maxCount);
@@ -30,6 +35,11 @@ void main( uint3 DTid : SV_DispatchThreadID )
     p.endTimer = createData[emitorNumber].firework.endTimer;
     p.scale = createData[emitorNumber].firework.scale;
 
-    particleBuffer[startIndex + index] = p;
+    //生成したパーティクルをバッファにセットする
+    particleBuffer[newParticleIndex] = p;
+    //カウントを増やす
+    uint aliveCount;
+    particleCountBuffer.InterlockedAdd(0, 1, aliveCount);
+    particleIndexBuffer.Store(aliveCount * 4, newParticleIndex);
 
 }

@@ -18,15 +18,19 @@ public:
 	void Render(ID3D11DeviceContext* context);
 	void SetChangeFlag(const bool changeFlag) { mSceneChange = changeFlag; }
 private:
-	//バッファ
+	//パーティクルバッファ
 	std::unique_ptr<CSBuffer>mParticle;
+	std::unique_ptr<CSBuffer>mParticleCount;
+	//描画用バッファ
 	std::unique_ptr<CSBuffer>mParticleRender;
+	std::unique_ptr<CSBuffer>mParticleIndexs[2];
+	std::unique_ptr<CSBuffer>mParticleDeleteIndex;
 	//シェーダー
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCreateShader;
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSShader;
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mSceneChangeCSShader;
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mRenderSetCSShader;
-	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mClearCSShader;
+	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSCountShader;
 	std::unique_ptr<DrowShader>mShader;
 	//srv
 	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>>mParticleSRV;
@@ -57,6 +61,14 @@ private:
 		VECTOR3F velocity;
 		VECTOR3F scale;
 	};
+	struct ParticleCount
+	{
+		UINT aliveParticleCount;
+		UINT aliveNewParticleCount;
+		UINT deActiveParticleCount;
+		UINT dummy;
+	};
+
 	//定数バッファ
 	struct CbStart
 	{
@@ -118,4 +130,8 @@ private:
 	float mNewIndex;
 	//シーンを切り替えるかどうか
 	bool mSceneChange;
+	//描画用データ
+	UINT mRenderCount;
+	int mIndexNum;
+
 };

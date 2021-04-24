@@ -31,8 +31,8 @@ public:
 	//setter
 	void SetState(const int state) { mState = state; }
 	//描画
-	void Render(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection, bool drowMullti=false);
-	void VelocityRender(ID3D11DeviceContext* context, const FLOAT4X4& view, const FLOAT4X4& projection);
+	void Render(ID3D11DeviceContext* context, bool drowMullti=false);
+	void VelocityRender(ID3D11DeviceContext* context);
 	//シーンのステート
 	enum STATE
 	{
@@ -57,12 +57,12 @@ private:
 	std::unique_ptr<SelectSceneParticle>mSelectSceneParticle;
 	std::unique_ptr<FireworksParticle>mFireworksParticle;
 	//定数バッファ
-	Microsoft::WRL::ComPtr<ID3D11Buffer>mCbScene;
-	struct CbScene
+	struct CbTimer
 	{
-		FLOAT4X4 view;
-		FLOAT4X4 projection;
+		float elapsdTime;
+		VECTOR3F dummy;
 	};
+	std::unique_ptr<ConstantBuffer<CbTimer>>mCbTimer;
 	//シェーダー
 	std::unique_ptr<DrowShader>mSSceneShader;
 	std::unique_ptr<DrowShader>mSObjShader;

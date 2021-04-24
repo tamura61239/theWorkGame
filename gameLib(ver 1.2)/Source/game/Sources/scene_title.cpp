@@ -241,11 +241,11 @@ void SceneTitle::Render(ID3D11DeviceContext* context, float elapsed_time)
 	frameBuffer[0]->Clear(context);
 	frameBuffer[0]->Activate(context);
 	//view projection行列の取得
-	FLOAT4X4 view = pCameraManager->GetCamera()->GetView();
-	FLOAT4X4 projection = pCameraManager->GetCamera()->GetProjection();
 	//シーンのオブジェクトの描画
 	mBlend[1]->activate(context);
-	pGpuParticleManager->Render(context, view, projection);
+	pCameraManager->GetCamera()->NowActive(context, 0, true, true, true);
+	pGpuParticleManager->Render(context);
+	pCameraManager->GetCamera()->NowDactive(context);
 	if (!mScreenShot && pGpuParticleManager->GetTitleTextureParticle()->GetTextuteFlag())UIManager::GetInctance()->Render(context);
 	mBlend[1]->deactivate(context);
 	frameBuffer[0]->Deactivate(context);

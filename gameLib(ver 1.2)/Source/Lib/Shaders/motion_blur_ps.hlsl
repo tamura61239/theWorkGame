@@ -1,5 +1,4 @@
-#include "Lib/Shaders/sprite.hlsli"
-#include"rand_function.hlsli"
+#include "sprite.hlsli"
 Texture2D diffuse_map : register(t0);
 Texture2D velocity_map : register(t1);
 SamplerState diffuse_map_sampler_state : register(s0);

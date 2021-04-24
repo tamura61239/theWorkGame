@@ -37,13 +37,7 @@ cbuffer CbUpdate : register(b2)
 }
 //パーティクルのバッファデータ
 RWStructuredBuffer<Particle> particle : register(u0);
-//パーティクルの数
-RWByteAddressBuffer particleCount : register(u1);
 //モデルのメッシュデータ
 StructuredBuffer<Mesh> vertexBuffer : register(t0);
 //モデルのindexデータ
 StructuredBuffer<int> indexBuffer : register(t1);
-//パーティクルのindexデータ
-RWByteAddressBuffer particleIndex : register(u3);
-RWByteAddressBuffer particleNewIndex : register(u4);
-RWStructuredBuffer<uint> deleteIndex : register(u5);
