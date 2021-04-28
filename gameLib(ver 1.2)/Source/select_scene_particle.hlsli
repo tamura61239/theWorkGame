@@ -22,6 +22,7 @@ cbuffer CbStart:register(b0)
 	float3 eye;
 	float range;
 	float3 scope;
+    float life;
 }
 
 cbuffer CbUpdate:register(b1)

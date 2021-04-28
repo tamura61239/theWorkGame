@@ -130,8 +130,10 @@ void StageManager::Editor()
 /*****************************************************/
 //　　　　　　　　　　更新関数
 /*****************************************************/
-void StageManager::Update(float elapsd_time)
+void StageManager::Update(float elapsd_time, const int stageState)
 {
+	mReds.clear();
+	mBlues.clear();
 	//ステージオブジェクトの当たり判定を当たり判定を描画するクラスに渡す
 	for (auto& stage : mStageObjs)
 	{
@@ -148,64 +150,54 @@ void StageManager::Update(float elapsd_time)
 			HitAreaRender::GetInctance()->SetObjData(stage->GetPosition() + VECTOR3F(0, stage->GetScale().y * 3, 0), stage->GetScale() * VECTOR3F(1.5f, 3, 0.5f));
 			break;
 		}
+		//色ごとに描画用の配列にセットする
+		if (stage->GetStageData().mColorType == stageState)
+		{
+			mReds.push_back(stage);
+		}
+		else
+		{
+			mBlues.push_back(stage);
+		}
 	}
 }
 /*****************************************************/
 //　　　　　　　　　　描画関数
 /*****************************************************/
 /*************************通常描画****************************/
-void StageManager::Render(ID3D11DeviceContext* context, const int stageState, DrowShader* srv)
+void StageManager::Render(ID3D11DeviceContext* context)
 {
-	VECTOR4F color[2];
-	if (srv == nullptr)
-	{	//外部からシェーダーを送られてない時
-
-		//赤色の描画
-		for (auto& stage : mStageObjs)
-		{
-			int state = stage->GetStageData().mColorType + stageState;
-			//青色かどうか調べる
-			if (state % 2 == 1)continue;
-			//青色のタイプの色を取得
-			color[0] = stage->GetColor();
-			mRender->Render(context, stage->GetMesh(), stage->GetWorld(), stage->GetColor());
-		}
-		//赤色の描画
-		for (auto& stage : mStageObjs)
-		{
-			int state = stage->GetStageData().mColorType + stageState;
-			//赤色かどうか調べる
-			if (state % 2 == 0)continue;
-			//赤色のタイプの色を取得
-			color[1] = stage->GetColor();
-			mRender->Render(context, stage->GetMesh(), stage->GetWorld(), stage->GetColor());
-		}
-		//新しく生成するオブジェクトを仮で描画
-		mEditor->EditorCreateObjImageRender(context, mMeshs.at(mEditor->GetCreateData().mObjType).get(), mRender.get(), color[mEditor->GetCreateData().mColorType]);
+	VECTOR4F color[2] = { mReds[0]->GetColor(),mBlues[0]->GetColor() };
+	//赤色の描画
+	for (auto& red : mReds)
+	{
+		mRender->Render(context, red->GetMesh(), red->GetWorld(), red->GetColor());
 	}
-	else
-	{	//外部からシェーダーを送られてる時
-
-		//赤色の描画
-		for (auto& stage : mStageObjs)
-		{
-			int state = stage->GetStageData().mColorType + stageState;
-			//青色かどうか調べる
-			if (state % 2 == 1)continue;
-			//青色のタイプの色を取得
-			mRender->Render(context, srv, stage->GetMesh(), stage->GetWorld(), stage->GetColor());
-		}
-		//赤色の描画
-		for (auto& stage : mStageObjs)
-		{
-			int state = stage->GetStageData().mColorType + stageState;
-			//赤色かどうか調べる
-			if (state % 2 == 0)continue;
-			//赤色のタイプの色を取得
-			mRender->Render(context, srv, stage->GetMesh(), stage->GetWorld(), stage->GetColor());
-		}
-
+	//青色の描画
+	for (auto& blur : mBlues)
+	{
+		mRender->Render(context, blur->GetMesh(), blur->GetWorld(), blur->GetColor());
 	}
+	//新しく生成するオブジェクトを仮で描画
+	mEditor->EditorCreateObjImageRender(context, mMeshs.at(mEditor->GetCreateData().mObjType).get(), mRender.get(), color[mEditor->GetCreateData().mColorType]);
+}
+/*************************通常描画(シェーダーが送られてくる)****************************/
+
+void StageManager::Render(ID3D11DeviceContext* context, DrowShader* srv)
+{
+	VECTOR4F color[2] = { mReds[0]->GetColor(),mBlues[0]->GetColor() };
+	//赤色の描画
+	for (auto& red : mReds)
+	{
+		mRender->Render(context, red->GetMesh(), red->GetWorld(), red->GetColor());
+	}
+	//青色の描画
+	for (auto& blur : mBlues)
+	{
+		mRender->Render(context, blur->GetMesh(), blur->GetWorld(), blur->GetColor());
+	}
+	//新しく生成するオブジェクトを仮で描画
+	mEditor->EditorCreateObjImageRender(context, mMeshs.at(mEditor->GetCreateData().mObjType).get(), mRender.get(), color[mEditor->GetCreateData().mColorType]);
 }
 /***************************速度マップの描画*********************************/
 void StageManager::RenderVelocity(ID3D11DeviceContext* context, const int stageState)
@@ -239,21 +231,17 @@ void StageManager::SidoViewRender(ID3D11DeviceContext* context)
 	frame->Clear(context, 0.5f, 0.5f, 0.5f, 1);
 	frame->Activate(context);
 	mRender->Begin(context, mEditor->GetCamera()->GetView(), mEditor->GetCamera()->GetProjection());
-	for (auto& stage : mStageObjs)
+	//赤色の描画
+	for (auto& red : mReds)
 	{
-		int state = stage->GetStageData().mColorType;
-		//青色かどうか調べる
-		if (state % 2 == 1)continue;
-		mRender->Render(context, stage->GetMesh(), stage->GetWorld(), stage->GetColor());
+		mRender->Render(context, red->GetMesh(), red->GetWorld(), red->GetColor());
 	}
-
-	for (auto& stage : mStageObjs)
+	//青色の描画
+	for (auto& blur : mBlues)
 	{
-		int state = stage->GetStageData().mColorType;
-		//赤色かどうか調べる
-		if (state % 2 == 0)continue;
-		mRender->Render(context, stage->GetMesh(), stage->GetWorld(), stage->GetColor());
+		mRender->Render(context, blur->GetMesh(), blur->GetWorld(), blur->GetColor());
 	}
+	mRender->End(context);
 	frame->Deactivate(context);
 	mEditor->SidoViewRender(context);
 }

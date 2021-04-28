@@ -15,7 +15,7 @@
 TitleParticle::TitleParticle(ID3D11Device* device) :mSceneChange(false), mStartIdex(0)
 {
 	::memset(&mEditorData, 0, sizeof(EditorData));
-	mMaxParticle = 30000;
+	mMaxParticle = 1000000;
 	HRESULT hr;
 	{
 		//パーティクルのバッファ
@@ -145,6 +145,7 @@ void TitleParticle::Editor()
 	//セーブ
 	if (ImGui::Button("save"))FileFunction::Save(mEditorData, "Data/file/title_particle_data.bin", "wb");
 	ImGui::Text("%f", mNewIndex);
+
 	ImGui::End();
 #endif
 }

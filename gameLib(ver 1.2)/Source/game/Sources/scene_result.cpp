@@ -52,7 +52,7 @@ void SceneResult::Initialize(ID3D11Device* device)
 			velocityBuffer = std::make_shared<FrameBuffer>(device, 1920, 1080, true, 8, DXGI_FORMAT_R16G16B16A16_FLOAT);
 
 			mBloom = std::make_unique<BloomRender>(device, static_cast<float>(SCREEN_WIDTH), static_cast<float>(SCREEN_HEIGHT), 3);
-			sky = std::make_unique<SkyMap>(device, L"Data/AllSkyFree/Cold Night/ColdNight.dds", MAPTYPE::BOX);
+			sky = std::make_unique<SkyMap>(device, L"Data/image/ColdNight.dds", MAPTYPE::BOX);
 			//スカイマップの値をファイルから読み取る
 			{
 				FILE* fp;

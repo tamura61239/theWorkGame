@@ -15,7 +15,7 @@ SelectSceneParticle::SelectSceneParticle(ID3D11Device* device) :mIndexCount(0), 
 {
 	HRESULT hr;
 
-	mMaxParticle = 60000;
+	mMaxParticle = 1000000;
 	memset(&mEditorData, 0, sizeof(mEditorData));
 
 	{
@@ -105,6 +105,7 @@ SelectSceneParticle::SelectSceneParticle(ID3D11Device* device) :mIndexCount(0), 
 	mEditorData.endPosition = VECTOR3F(0, 0, 1000);
 	mEditorData.defVelocity = VECTOR3F(0, 0, 1);
 	mEditorData.sinLeng = 10;
+	mEditorData.life = 8;
 	FileFunction::Load(mEditorData, "Data/file/selete_scene_particle_data.bin", "rb");
 }
 /*****************************************************/
@@ -134,6 +135,7 @@ void SelectSceneParticle::Editor()
 		}
 		if (i % 4 < 3 && i < static_cast<UINT>(mParticleSRV.size() - 1))ImGui::SameLine();
 	}
+	ImGui::DragFloat("life", &mEditorData.life);
 	//今選択してるテクスチャの表示
 	ImGui::Text(u8"今のテクスチャ");
 	size = ImVec2(150, 150);
@@ -145,6 +147,7 @@ void SelectSceneParticle::Editor()
 
 	}
 	ImGui::Text("%f", newIndex);
+
 	ImGui::End();
 #endif
 
@@ -169,6 +172,7 @@ void SelectSceneParticle::Update(float elapsdTime, ID3D11DeviceContext* context)
 	mCbCreate->data.scope = mEditorData.scope;
 	mCbCreate->data.speed = mEditorData.speed;
 	mCbCreate->data.sinLeng = mEditorData.sinLeng;
+	mCbCreate->data.life = mEditorData.life;
 	mCbUpdate->data.endPosition = mEditorData.endPosition;
 	mCbUpdate->data.defVelocity = mEditorData.defVelocity;
 

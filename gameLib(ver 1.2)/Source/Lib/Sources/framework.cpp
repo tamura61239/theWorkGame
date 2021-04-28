@@ -125,7 +125,6 @@ bool Framework::Initialize(HWND hwnd)
 	ImGui::StyleColorsDark();
 	ImGuiIO& io = ImGui::GetIO(); /*(void)io;*/
 
-	//io.Fonts->AddFontFromFileTTF("Data\\mplus-1p-regular.ttf", 17.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
 	io.Fonts->AddFontFromFileTTF("Data\\ipag.ttf", 17.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
 
 #endif

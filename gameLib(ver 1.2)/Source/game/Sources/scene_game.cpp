@@ -227,6 +227,7 @@ void SceneGame::Editor()
 			UIManager::GetInctance()->GetGameUIMove()->SetStartFlag(false);
 			UIManager::GetInctance()->ResetGameUI();
 			mTutorialState->ResetParameter();
+			mStageOperation->Reset(mSManager.get());
 		}
 
 	}
@@ -412,7 +413,7 @@ void SceneGame::Update(float elapsed_time)
 	//シーンのオブジェクトの更新
 	mSky->GetPosData()->CalculateTransform();
 	player->Update(elapsed_time, mSManager.get(), mStageOperation.get());
-	mSManager->Update(elapsed_time);
+	mSManager->Update(elapsed_time,mStageOperation->GetColorType());
 	pGpuParticleManager->Update(elapsed_time);
 	//カメラの更新
 	pCameraManager->Update(elapsed_time);
@@ -488,6 +489,7 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 		mBlend[0]->deactivate(context);
 		mSampler[samplerType::warp]->DeActivate(context);
 		mSampler[samplerType::border]->DeActivate(context);
+		mSampler[samplerType::clamp]->DeActivate(context);
 
 		mDepth->DeActive(context);
 		mRasterizer->DeActivate(context);
@@ -506,7 +508,7 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	{//ステージエディターの時
 		mModelRenderer->Draw(context, *player->GetCharacter()->GetModel(), VECTOR4F(0.5, 0.5, 0.5, 1));
 
-		mSManager->Render(context, mStageOperation->GetColorType());
+		mSManager->Render(context);
 	}
 	else
 	{//通常時
@@ -514,7 +516,7 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 		pGpuParticleManager->Render(context);
 		mModelRenderer->Draw(context, *player->GetCharacter()->GetModel(), VECTOR4F(0.5, 0.5, 0.5, 1));
 
-		mSManager->Render(context, mStageOperation->GetColorType());
+		mSManager->Render(context);
 	}
 	frameBuffer3->Deactivate(context);
 

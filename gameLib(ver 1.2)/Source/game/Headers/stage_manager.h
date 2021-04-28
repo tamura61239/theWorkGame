@@ -18,9 +18,10 @@ public:
 	//エディタ
 	void Editor();
 	//更新
-	void Update(float elapsd_time);
+	void Update(float elapsd_time, const int stageState);
 	//描画
-	void Render(ID3D11DeviceContext* context, const int stageState,DrowShader*srv=nullptr);
+	void Render(ID3D11DeviceContext* context);
+	void Render(ID3D11DeviceContext* context,DrowShader*srv);
 	//速度マップ用
 	void RenderVelocity(ID3D11DeviceContext* context, const int stageState);
 	//影用
@@ -44,6 +45,8 @@ private:
 	static int mMaxStage;
 	//ステージのオブジェクト
 	std::vector < std::shared_ptr<StageObj>>mStageObjs;
+	std::vector<std::shared_ptr<StageObj>>mReds;
+	std::vector<std::shared_ptr<StageObj>>mBlues;
 	//エディタ
 	std::unique_ptr<StageEditor>mEditor;
 	//ステージ番号

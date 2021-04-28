@@ -32,7 +32,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     particle.angle = (float3) 0;
     particle.angleMovement = angleMovement * rand_1_normal(float2((newParticleIndex + deleteCount) % 652, (newParticleIndex - deleteCount) % 311), 1);
     particle.speed = speed + (rand_1_normal(float2((newParticleIndex + deleteCount) % 652, (newParticleIndex - deleteCount) % 311), 1) * 0.5f * speed);
-    particle.life = 8;
+    particle.life = life;
     particle.color = color * (rand_1_normal(float2((newParticleIndex + deleteCount) % 546, (newParticleIndex - deleteCount) % 825), 1));
     particle.centerPosition = particle.position.xyz;
     particle.sinAngle = (rand_1_normal(float2(newParticleIndex % 712, newParticleIndex % 583), 0.2f) - 1) * 3.14f;

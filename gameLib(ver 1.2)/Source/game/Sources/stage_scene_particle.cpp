@@ -10,7 +10,7 @@
 //　　　　　　　　　　初期化関数(コンストラクタ)
 /*****************************************************/
 
-StageSceneParticle::StageSceneParticle(ID3D11Device* device) :mMaxCount(100000), mIndexCount(0)
+StageSceneParticle::StageSceneParticle(ID3D11Device* device) :mMaxCount(1000000), mIndexCount(0)
 , mCreateCount(0), mRenderCount(0)
 {
 	::memset(&mEditorData, 0, sizeof(mEditorData));

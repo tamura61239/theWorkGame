@@ -70,6 +70,8 @@ private:
 		VECTOR3F eye;
 		float range;
 		VECTOR3F scope;
+		float life;
+		VECTOR3F dummy;
 	};
 	struct CbUpdate
 	{
@@ -89,6 +91,7 @@ private:
 		VECTOR3F endPosition;
 		UINT textureType;
 		float sinLeng;
+		float life;
 	};
 	EditorData mEditorData;
 	std::unique_ptr<ConstantBuffer<CbCreate>> mCbCreate;
