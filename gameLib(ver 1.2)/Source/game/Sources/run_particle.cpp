@@ -164,61 +164,67 @@ void RunParticles::Update(ID3D11DeviceContext* context, float elapsd_time)
 	mParticleIndexs[1 - mIndexNum]->Activate(context, 4, true);
 	mParticleDeleteIndex->Activate(context, 5, true);
 	//パーティクル生成
-	if (mPlayer.lock()->GetPlayFlag() || mTestFlag)mTimer += elapsd_time;
 	mIndexNum++;
 	if (mIndexNum >= 2)mIndexNum = 0;
+	auto& player = mPlayer.lock();
 	//時間が生成するための時間(生成する間隔)以上になったら生成
-	if (mTimer >= mEditorData.mCreateTime)
+	if (player->GetCharacter()->GetPosition().y > -800 && player->GetCharacter()->GetExist())
 	{
-		context->CSSetShader(mCreateCSShader.Get(), nullptr, 0);
-		const ModelResource* resouce = mPlayer.lock()->GetCharacter()->GetModel()->GetModelResource();
-		const std::vector<Model::Node>& nodes = mPlayer.lock()->GetCharacter()->GetModel()->GetNodes();
-		mCbCreateBuffer->data.color = 0;
-		mCbCreateBuffer->data.color |= (static_cast<UINT>(mEditorData.mColor[0] * 255) & 0x00FFFFFF) << 24;
-		mCbCreateBuffer->data.color |= (static_cast<UINT>(mEditorData.mColor[1] * 255) & 0x00FFFFFF) << 16;
-		mCbCreateBuffer->data.color |= (static_cast<UINT>(mEditorData.mColor[2] * 255) & 0x00FFFFFF) << 8;
-		mCbCreateBuffer->data.color |= (static_cast<UINT>(mEditorData.mColor[3] * 255) & 0x00FFFFFF) << 0;
-		if (mEditorData.mCreateCount > 0)
-		{
-			mCbCreateBuffer->data.speed = mEditorData.speed;
-			mCbCreateBuffer->data.life = mEditorData.life;
-			//メッシュデータからパーティクルを生成
-			for (int i = 0; i < static_cast<int>(mMeshs.size()); i++)
-			{
-				const auto& mesh = mMeshs[i];
-				const auto& boneData = resouce->GetMeshes()[i];
-				if (boneData.nodeIndices.size() > 0)
-				{
-					//ボーンのワールド行列の計算
-					for (int j = 0; j < static_cast<int>(boneData.nodeIndices.size()); j++)
-					{
-						DirectX::XMMATRIX inverseTransform = DirectX::XMLoadFloat4x4(boneData.inverseTransforms[j]);
-						DirectX::XMMATRIX worldTransform = DirectX::XMLoadFloat4x4(&nodes[boneData.nodeIndices[j]].worldTransform);
-						DirectX::XMMATRIX boneTransform = inverseTransform * worldTransform;
-						DirectX::XMStoreFloat4x4(&mCbBoneBuffer->data.boneTransForm[j], boneTransform);
-					}
-				}
-				else
-				{
-					mCbBoneBuffer->data.boneTransForm[0] = nodes[boneData.nodeIndex].worldTransform;
-				}
-				//GPUにデータを設定
-				mCbCreateBuffer->data.indexCount = mesh.mMwshSize;
-				mCbCreateBuffer->Activate(context, 1, false, false, false, true);
-				mCbBoneBuffer->Activate(context, 0, false, false, false, true);
-				mesh.mVertex->Activate(context, 0, false, true);
-				mesh.mIndex->Activate(context, 1, false, true);
-				//生成
-				context->Dispatch(mesh.mMwshSize * mEditorData.mCreateCount, 1, 1);
-				//解放
-				mCbCreateBuffer->DeActivate(context);
-				mCbBoneBuffer->DeActivate(context);
-				mesh.mVertex->DeActivate(context);
-				mesh.mIndex->DeActivate(context);
+		if (player->GetPlayFlag() || mTestFlag)mTimer += elapsd_time;
 
+		if (mTimer >= mEditorData.mCreateTime)
+		{
+			context->CSSetShader(mCreateCSShader.Get(), nullptr, 0);
+			const ModelResource* resouce = player->GetCharacter()->GetModel()->GetModelResource();
+			const std::vector<Model::Node>& nodes = player->GetCharacter()->GetModel()->GetNodes();
+			mCbCreateBuffer->data.color = 0;
+			mCbCreateBuffer->data.color |= (static_cast<UINT>(mEditorData.mColor[0] * 255) & 0x00FFFFFF) << 24;
+			mCbCreateBuffer->data.color |= (static_cast<UINT>(mEditorData.mColor[1] * 255) & 0x00FFFFFF) << 16;
+			mCbCreateBuffer->data.color |= (static_cast<UINT>(mEditorData.mColor[2] * 255) & 0x00FFFFFF) << 8;
+			mCbCreateBuffer->data.color |= (static_cast<UINT>(mEditorData.mColor[3] * 255) & 0x00FFFFFF) << 0;
+			if (mEditorData.mCreateCount > 0)
+			{
+				mCbCreateBuffer->data.speed = mEditorData.speed;
+				mCbCreateBuffer->data.life = mEditorData.life;
+				//メッシュデータからパーティクルを生成
+				for (int i = 0; i < static_cast<int>(mMeshs.size()); i++)
+				{
+					const auto& mesh = mMeshs[i];
+					const auto& boneData = resouce->GetMeshes()[i];
+					if (boneData.nodeIndices.size() > 0)
+					{
+						//ボーンのワールド行列の計算
+						for (int j = 0; j < static_cast<int>(boneData.nodeIndices.size()); j++)
+						{
+							DirectX::XMMATRIX inverseTransform = DirectX::XMLoadFloat4x4(boneData.inverseTransforms[j]);
+							DirectX::XMMATRIX worldTransform = DirectX::XMLoadFloat4x4(&nodes[boneData.nodeIndices[j]].worldTransform);
+							DirectX::XMMATRIX boneTransform = inverseTransform * worldTransform;
+							DirectX::XMStoreFloat4x4(&mCbBoneBuffer->data.boneTransForm[j], boneTransform);
+						}
+					}
+					else
+					{
+						mCbBoneBuffer->data.boneTransForm[0] = nodes[boneData.nodeIndex].worldTransform;
+					}
+					//GPUにデータを設定
+					mCbCreateBuffer->data.indexCount = mesh.mMwshSize;
+					mCbCreateBuffer->Activate(context, 1, false, false, false, true);
+					mCbBoneBuffer->Activate(context, 0, false, false, false, true);
+					mesh.mVertex->Activate(context, 0, false, true);
+					mesh.mIndex->Activate(context, 1, false, true);
+					//生成
+					context->Dispatch(mesh.mMwshSize * mEditorData.mCreateCount, 1, 1);
+					//解放
+					mCbCreateBuffer->DeActivate(context);
+					mCbBoneBuffer->DeActivate(context);
+					mesh.mVertex->DeActivate(context);
+					mesh.mIndex->DeActivate(context);
+
+				}
+				mTimer = 0;
 			}
-			mTimer = 0;
 		}
+
 	}
 	//パーティクルの更新
 	context->CSSetShader(mCSShader.Get(), nullptr, 0);

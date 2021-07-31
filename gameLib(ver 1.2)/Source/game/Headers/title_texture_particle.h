@@ -15,7 +15,8 @@ class TitleTextureParticle
 {
 public:
 	//コンストラクタ
-	TitleTextureParticle(ID3D11Device* device); 
+	TitleTextureParticle(ID3D11Device* device);
+	TitleTextureParticle(const TitleTextureParticle&texture){}
 	//エディタ
 	void Editor();
 	//パーティクルを生成するのに使うテクスチャの読み込み

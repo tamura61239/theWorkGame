@@ -13,6 +13,7 @@ class TitleParticle
 {
 public:
 	TitleParticle(ID3D11Device* device);
+	TitleParticle(const TitleParticle&title){}
 	void Editor();
 	void Update(float elapsdTime, ID3D11DeviceContext* context);
 	void Render(ID3D11DeviceContext* context);

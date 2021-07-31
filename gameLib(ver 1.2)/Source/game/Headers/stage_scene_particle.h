@@ -13,6 +13,7 @@ class StageSceneParticle
 public:
 	//コンストラクタ
 	StageSceneParticle(ID3D11Device* device);
+	StageSceneParticle(const StageSceneParticle& stage) {}
 	//エディタ
 	void Editor();
 	//更新

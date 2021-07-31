@@ -10,6 +10,7 @@ class FireworksParticle
 public:
 	//コンストラクタ
 	FireworksParticle(ID3D11Device* device);
+	FireworksParticle(const FireworksParticle&fireworks){}
 	//エディタ
 	void Editor();
 	//更新

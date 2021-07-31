@@ -5,24 +5,24 @@
 #include<vector>
 #include"player_ai.h"
 #include"drow_shader.h"
-#include"static_mesh.h"
 #include"constant_buffer.h"
 #include"cs_buffer.h"
 
 
-class RunParticles
+class RespondParticle
 {
 public:
-	//コンストラクタ
-	RunParticles(ID3D11Device* device, std::shared_ptr<PlayerAI>player);
-	RunParticles(const RunParticles&run) {};
+	RespondParticle(ID3D11Device* device, std::shared_ptr<PlayerAI>player);
+	RespondParticle(const RespondParticle& respond) = default;
 	//エディタ
 	void Editor();
 	//更新
 	void Update(ID3D11DeviceContext* context, float elapsd_time);
 	//描画
 	void Render(ID3D11DeviceContext* context);
-private: 
+private:
+	void Create(ID3D11DeviceContext* context,std::shared_ptr<PlayerAI>player);
+	void Move(ID3D11DeviceContext* context, std::shared_ptr<PlayerAI>player, float elapsd_time);
 	//定数バッファ
 	struct CbBone
 	{
@@ -30,11 +30,13 @@ private:
 	};
 	struct CbCreate
 	{
-		float life;
-		float speed;
 		UINT color;
-		int indexCount;
-		int startIndex;
+		float expansionTime;
+		float respondTime;
+		float expansionspeed;
+		VECTOR3F respondPosition;
+		float centerY;
+		float scale;
 		VECTOR3F dummy;
 	};
 	struct CbUpdate
@@ -48,12 +50,14 @@ private:
 	//パーティクルバッファ
 	struct Particle
 	{
-		VECTOR3F position;
+		VECTOR3F start;
+		VECTOR3F end;
+		float respondTime;
+		float timer;
+		float expansionTime;
 		VECTOR3F velocity;
-		UINT color;
+		VECTOR4F color;
 		float scale;
-		float life;
-		float lifeAmoust;
 	};
 	struct RenderParticle
 	{
@@ -80,36 +84,38 @@ private:
 	{
 		std::unique_ptr<CSBuffer>mIndex;
 		std::unique_ptr<CSBuffer>mVertex;
-		int mMwshSize;
+		CbBone inverse;
+		int mMeshSize;
 	};
 	std::vector<Mesh>mMeshs;
 	//シェーダー
 	std::unique_ptr<DrowShader>mShader;
-	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mStartCSShader;
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCreateCSShader;
 	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mCSShader;
+	Microsoft::WRL::ComPtr<ID3D11ComputeShader>mStartCSShader;
+
 	//SRV
 	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>>mParticleSRV;
 	//エディタデータ
 	struct EditorData
 	{
 		float mColor[4];
-		float life;
-		float speed;
-		float mCreateTime;
-		int mCreateCount;
-		UINT textureType;
+		float expansionSpeed;
+		float respondTime;
+		float expansionTime;
+		float scale;
+		float centerY;
 	};
 	EditorData mEditorData;
 	//プレイヤー情報
 	std::weak_ptr<PlayerAI>mPlayer;
-	//パーティクルの最大数
-	int mMaxParticle;
-	//時間
-	float mTimer;
-	//パラメーター
-	int mIndexNum;
 	//描画する数
 	UINT mRenderCount;
-	bool mTestFlag;
+	//パラメーター
+	int mIndexNum;
+	//パーティクルの最大数
+	int mMaxParticle;
+	//
+	bool mCreateFlag;
+	float mTimer;
 };

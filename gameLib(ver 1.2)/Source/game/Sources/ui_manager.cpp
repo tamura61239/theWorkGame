@@ -4,6 +4,8 @@
 #include"stage_manager.h"
 #include"ranking.h"
 #include"file_function.h"
+#include"title_texture_particle.h"
+
 #ifdef USE_IMGUI
 #include"imgui.h"
 #endif

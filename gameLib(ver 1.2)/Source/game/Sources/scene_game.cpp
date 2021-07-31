@@ -224,6 +224,7 @@ void SceneGame::Editor()
 			player->GetCharacter()->SetVelocity(VECTOR3F(0, 0, 0));
 			player->GetCharacter()->SetGorlFlag(false);
 			player->SetPlayFlag(false);
+			player->GetCharacter()->SetExist(true);
 			UIManager::GetInctance()->GetGameUIMove()->SetStartFlag(false);
 			UIManager::GetInctance()->ResetGameUI();
 			mTutorialState->ResetParameter();
@@ -453,7 +454,11 @@ void SceneGame::FadeMove(float elapsdTime)
 		{
 			if (UIManager::GetInctance()->GetGameUIMove()->GetStartFlag())
 			{
-				if (!player->GetPlayFlag())player->SetPlayFlag(true);
+				if (!player->GetPlayFlag())
+				{
+					player->SetPlayFlag(true);
+					pCameraManager->GetCameraOperation()->GetPlayCamera()->SetStartPosition(player->GetCharacter()->GetPosition());
+				}
 			}
 		}
 
@@ -506,7 +511,7 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	//シーンの描画
 	if (mSManager->GetStageEditor()->GetEditorFlag())
 	{//ステージエディターの時
-		mModelRenderer->Draw(context, *player->GetCharacter()->GetModel(), VECTOR4F(0.5, 0.5, 0.5, 1));
+		if(player->GetCharacter()->GetExist())mModelRenderer->Draw(context, *player->GetCharacter()->GetModel(), VECTOR4F(0.5, 0.5, 0.5, 1));
 
 		mSManager->Render(context);
 	}
@@ -514,7 +519,7 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	{//通常時
 		mSky->Render(context);
 		pGpuParticleManager->Render(context);
-		mModelRenderer->Draw(context, *player->GetCharacter()->GetModel(), VECTOR4F(0.5, 0.5, 0.5, 1));
+		if (player->GetCharacter()->GetExist())mModelRenderer->Draw(context, *player->GetCharacter()->GetModel(), VECTOR4F(0.5, 0.5, 0.5, 1));
 
 		mSManager->Render(context);
 	}
@@ -527,9 +532,12 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	mCbMotionBlur->Activate(context, 6, true, true);
 	pCameraManager->GetCamera()->BeforeActive(context, 5, true, true, true);
 	//シーンのの描画
-	mModelRenderer->VelocityBegin(context);
-	mModelRenderer->VelocityDraw(context, *player->GetCharacter()->GetModel());
-	mModelRenderer->VelocityEnd(context);
+	if (player->GetCharacter()->GetExist())
+	{
+		mModelRenderer->VelocityBegin(context);
+		mModelRenderer->VelocityDraw(context, *player->GetCharacter()->GetModel());
+		mModelRenderer->VelocityEnd(context);
+	}
 	pGpuParticleManager->VelocityRender(context);
 	mSManager->RenderVelocity(context, mStageOperation->GetColorType());
 	//定数バッファの解除
@@ -545,9 +553,12 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	mLightView->Update(player->GetCharacter()->GetPosition(), context);
 	mLightView->GetLightCamera()->NowActive(context, 0, true, true, true);
 	//light視点から見たシーンの描画
-	mModelRenderer->ShadowBegin(context);
-	mModelRenderer->ShadowDraw(context, *player->GetCharacter()->GetModel());
-	mModelRenderer->ShadowEnd(context);
+	if (player->GetCharacter()->GetExist())
+	{
+		mModelRenderer->ShadowBegin(context);
+		mModelRenderer->ShadowDraw(context, *player->GetCharacter()->GetModel());
+		mModelRenderer->ShadowEnd(context);
+	}
 	mSManager->RenderShadow(context);
 	mLightView->GetLightCamera()->NowDactive(context);
 

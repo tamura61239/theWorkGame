@@ -127,6 +127,9 @@
     <Filter Include="gameLib\Sources\描画用データ%28buffer,state,shader%29">
       <UniqueIdentifier>{7a849829-75f0-4589-89c8-25877406bdce}</UniqueIdentifier>
     </Filter>
+    <Filter Include="シェーダー\respond_particle">
+      <UniqueIdentifier>{b93d6fb6-e43c-4a0f-af47-6c4b01e6ca0a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="External_Libraries\imgui\imgui.cpp">
@@ -359,6 +362,9 @@
     </ClCompile>
     <ClCompile Include="Source\Lib\Sources\shader.cpp">
       <Filter>gameLib\Sources\描画用データ%28buffer,state,shader%29</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\respond_particle.cpp">
+      <Filter>ソース ファイル\GPU</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -650,6 +656,9 @@
     <ClInclude Include="Source\Lib\Headers\drow_shader.h">
       <Filter>gameLib\Headers\描画用データ%28buffer,state,shader%29</Filter>
     </ClInclude>
+    <ClInclude Include="Source\game\Headers\respond_particle.h">
+      <Filter>ヘッダー ファイル\GPU</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\curl_noise.hlsli">
@@ -744,6 +753,9 @@
     </None>
     <None Include="Source\cb_timer.hlsli">
       <Filter>シェーダー</Filter>
+    </None>
+    <None Include="Source\respond_particle.hlsli">
+      <Filter>シェーダー\respond_particle</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -950,6 +962,12 @@
     </FxCompile>
     <FxCompile Include="Source\particle_count_clear_cs.hlsl">
       <Filter>シェーダー</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\respond_particle_create_cs.hlsl">
+      <Filter>シェーダー\respond_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\respond_particle_cs.hlsl">
+      <Filter>シェーダー\respond_particle</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

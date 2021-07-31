@@ -10,6 +10,8 @@
 #include"scene_game.h"
 #include"scene_result.h"
 #include"scene_select.h"
+#include"title_particle.h"
+#include"title_texture_particle.h"
 #ifdef USE_IMGUI
 #include<imgui.h>
 #endif

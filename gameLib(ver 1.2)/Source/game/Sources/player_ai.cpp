@@ -17,7 +17,7 @@ PlayerAI::PlayerAI(ID3D11Device* device, const char* fileName) :mPlayFlag(false)
 	std::shared_ptr<ModelResource>resouce = std::make_shared<ModelResource>(device, std::move(data));
 	mCharacter = std::make_unique<PlayerCharacter>(resouce);
 	//初期座標の設定
-	mCharacter->SetPosition(VECTOR3F(0, 1, 0));
+	mCharacter->SetPosition(VECTOR3F(0, 10, 0));
 	mCharacter->SetScale(VECTOR3F(gameObjScale, gameObjScale, gameObjScale));
 	mCharacter->CalculateBoonTransform(0);
 	//パラメーターの設定
@@ -100,16 +100,12 @@ void PlayerAI::Update(float elapsd_time, StageManager* manager, StageOperation* 
 		//一定以上下に落ちたらスタート時点に戻る
 		if (mCharacter->GetPosition().y < -1000)
 		{
-			mCharacter->SetPosition(VECTOR3F(0, 10, 0));
-			mCharacter->SetBeforePosition(VECTOR3F(0, 10, 0));
-			mCharacter->SetVelocity(VECTOR3F(0, 0, 0));
-			mCharacter->SetAngle(VECTOR3F(0, 0, 0));
-			mCharacter->CalculateBoonTransform(0);
-			pCameraManager->GetCameraOperation()->GetPlayCamera()->SetPlayerPosition(mCharacter->GetPosition());
-			operation->Reset(manager);
-			mCharacter->SetAccel(VECTOR3F(0, 0, 0));
-			pCameraManager->Update(elapsd_time);
-			mGravity = mParameter.gravity;
+			if (mCharacter->GetExist())
+			{
+				mCharacter->SetExist(false);
+				operation->Reset(manager);
+
+			}
 			return;
 		}
 		//動けるとき
@@ -181,4 +177,19 @@ void PlayerAI::Move(float elapsd_time)
 	//座標などの更新
 	mCharacter->Move(elapsd_time);
 
+}
+
+void PlayerAI::Respond()
+{
+	auto camera = pCameraManager->GetCameraOperation()->GetPlayCamera();
+
+	mCharacter->SetPosition(VECTOR3F(0, 10, 0));
+	mCharacter->SetBeforePosition(VECTOR3F(0, 10, 0));
+	mCharacter->SetVelocity(VECTOR3F(0, 0, 0));
+	mCharacter->SetAngle(VECTOR3F(0, 0, 0));
+	mCharacter->CalculateBoonTransform(0);
+	mCharacter->SetAccel(VECTOR3F(0, 0, 0));
+	mGravity = mParameter.gravity;
+	camera->Reset();
+	mCharacter->SetExist(true);
 }

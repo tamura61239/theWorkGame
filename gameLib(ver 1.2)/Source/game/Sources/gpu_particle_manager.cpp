@@ -1,7 +1,15 @@
 #include "gpu_particle_manager.h"
 #include"framework.h"
 #include"misc.h"
-
+#if TYPE
+#include"run_particle.h"
+#include"stage_scene_particle.h"
+#include"title_particle.h"
+#include"title_texture_particle.h"
+#include"select_scene_particle.h"
+#include"fireworks_particle.h"
+#include"respond_particle.h"
+#endif
 /*****************************************************/
 //　　　　　　　　　　生成関数
 /*****************************************************/
@@ -49,6 +57,7 @@ void GpuParticleManager::CreateGameBuffer(ID3D11Device* device, std::shared_ptr<
 	CreateBuffer(device);
 	mRunParticle = std::make_unique<RunParticles>(device, player);
 	mStageSceneParticle = std::make_unique<StageSceneParticle>(device);
+	mRespondParticle = std::make_unique<RespondParticle>(device, player);
 }
 /*************************リザルトシーンのパーティクル生成****************************/
 
@@ -93,6 +102,7 @@ void GpuParticleManager::Update(float elapsd_time)
 	case GAME:
 		if (mRunParticle.get() != nullptr)mRunParticle->Update(context, elapsd_time);
 		mStageSceneParticle->Update(context, elapsd_time);
+		mRespondParticle->Update(context, elapsd_time);
 		break;
 	case RESULT:
 #if (RESULT_TYPE==0)
@@ -125,6 +135,22 @@ void GpuParticleManager::Editor()
 		ResultEditor();
 		break;
 	}
+}
+TitleTextureParticle* GpuParticleManager::GetTitleTextureParticle()
+{
+	return mTitleTextureParticle.get();
+}
+TitleParticle* GpuParticleManager::GetTitleParticle()
+{
+	return mTitleParticle.get();
+}
+RunParticles* GpuParticleManager::GetRunParticle()
+{
+	return mRunParticle.get();
+}
+FireworksParticle* GpuParticleManager::GetFireworksParticle()
+{
+	return mFireworksParticle.get();
 }
 /*************************タイトルシーンのパーティクルエディタ****************************/
 
@@ -174,6 +200,7 @@ void GpuParticleManager::GameEditor()
 	ImGui::Begin("game particles");
 	ImGui::Selectable("run particle", &selects[0]);
 	ImGui::Selectable("stage scene particle", &selects[1]);
+	ImGui::Selectable("respond particle", &selects[2]);
 	ImGui::End();
 	if (selects[0])
 	{
@@ -183,7 +210,10 @@ void GpuParticleManager::GameEditor()
 	{
 		mStageSceneParticle->Editor();
      }
-
+	if (selects[2])
+	{
+		mRespondParticle->Editor();
+	}
 #endif
 
 }
@@ -202,6 +232,7 @@ void GpuParticleManager::ResultEditor()
 
 /*************************通常描画****************************/
 
+
 void GpuParticleManager::Render(ID3D11DeviceContext* context, bool drowMullti)
 {
 	switch (mState)
@@ -216,6 +247,7 @@ void GpuParticleManager::Render(ID3D11DeviceContext* context, bool drowMullti)
 	case GAME:
 		if (mRunParticle.get() != nullptr)mRunParticle->Render(context);
 		mStageSceneParticle->Render(context);
+		mRespondParticle->Render(context);
 		break;
 	case RESULT:
 		mFireworksParticle->Render(context);

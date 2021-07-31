@@ -1,14 +1,26 @@
 #pragma once
 #include"stage_obj.h"
+#include"player_ai.h"
+#include"singleton_class.h"
+#include<memory>
+#define TYPE 0
+#if (TYPE)
+class RunParticles;
+class StageSceneParticle;
+class TitleParticle;
+class TitleTextureParticle;
+class SelectSceneParticle;
+class FireworksParticle;
+class RespondParticle;
+#else
 #include"run_particle.h"
 #include"stage_scene_particle.h"
 #include"title_particle.h"
 #include"title_texture_particle.h"
 #include"select_scene_particle.h"
-#include"singleton_class.h"
 #include"fireworks_particle.h"
-#include<memory>
-
+#include"respond_particle.h"
+#endif
 class GpuParticleManager:public Singleton<GpuParticleManager>
 {
 public:
@@ -24,10 +36,10 @@ public:
 	//エディタ
 	void Editor();
 	//getter
-	TitleTextureParticle* GetTitleTextureParticle() { return mTitleTextureParticle.get(); }
-	TitleParticle* GetTitleParticle() { return mTitleParticle.get(); }
-	RunParticles* GetRunParticle() { return mRunParticle.get(); }
-	FireworksParticle* GetFireworksParticle() { return mFireworksParticle.get(); }
+	TitleTextureParticle* GetTitleTextureParticle();
+	TitleParticle* GetTitleParticle();
+	RunParticles* GetRunParticle();
+	FireworksParticle* GetFireworksParticle();
 	//setter
 	void SetState(const int state) { mState = state; }
 	//描画
@@ -56,6 +68,7 @@ private:
 	std::unique_ptr<TitleTextureParticle>mTitleTextureParticle;
 	std::unique_ptr<SelectSceneParticle>mSelectSceneParticle;
 	std::unique_ptr<FireworksParticle>mFireworksParticle;
+	std::unique_ptr<RespondParticle>mRespondParticle;
 	//定数バッファ
 	struct CbTimer
 	{

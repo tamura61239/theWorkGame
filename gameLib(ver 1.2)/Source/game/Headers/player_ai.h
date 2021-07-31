@@ -19,6 +19,8 @@ public:
 	void Update(float elapsd_time,StageManager*manager,StageOperation*operation);
 	//playerを動かす
 	void Move(float elapsd_time);
+	//リスポン
+	void Respond();
 private:
 	//playerオブジェクト変数
 	std::unique_ptr<PlayerCharacter>mCharacter;
