@@ -112,7 +112,7 @@ void FireworksParticle::Editor()
 		memset(&mFireworkDatas.back(), 0, sizeof(FireworksData));
 	}
 	int deleteFireworksNumber = -1, deleteEmitorNumber = -1, startDeleteNumber = -1;
-	ImGui::BeginChild(ImGui::GetID((void*)0), ImVec2(450, 300), ImGuiWindowFlags_NoTitleBar);
+	ImGui::BeginChild(ImGui::GetID((void*)0), ImVec2(0, 300), ImGuiWindowFlags_NoTitleBar);
 
 	for (auto& fireworks : mFireworkDatas)
 	{
