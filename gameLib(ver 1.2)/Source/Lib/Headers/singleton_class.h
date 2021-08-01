@@ -38,3 +38,4 @@ private:
 	Singleton(Singleton&&) = delete;
 	Singleton& operator=(Singleton&&) = delete;
 };
+

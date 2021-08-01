@@ -10,7 +10,7 @@ cbuffer CbCreate : register(b1)
 	float expansionspeed;
 	float3 respondPosition;
 	float centerY;
-	float scale;
+	float defScale;
 }
 cbuffer CbUpdate:register(b3)
 {
@@ -45,10 +45,10 @@ StructuredBuffer<Mesh> vertexBuffer : register(t0);
 StructuredBuffer<int> indexBuffer : register(t1);
 
 //生成関数
-void CreateParticle(float3 pos, float3 modelCenter, float3 normal, uint index, float time, RWStructuredBuffer<Particle> particle, RWByteAddressBuffer countBuffer, RWByteAddressBuffer indexBuffer)
+void CreateParticle(float3 pos, float3 modelCenter, float3 normal, uint index, float time ,float scale, RWStructuredBuffer<Particle> particle, RWByteAddressBuffer countBuffer, RWByteAddressBuffer indexBuffer)
 {
 
-            //パーティクルの初期パラメータを設定
+    //パーティクルの初期パラメータを設定
     Particle p = (Particle) 0;
     p.respondTime = respondTime + time;
     p.expansionTime = expansionTime - time;

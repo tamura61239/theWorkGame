@@ -12,8 +12,9 @@
 class RespondParticle
 {
 public:
+	//コンストラクタ
 	RespondParticle(ID3D11Device* device, std::shared_ptr<PlayerAI>player);
-	RespondParticle(const RespondParticle& respond) = default;
+	RespondParticle(const RespondParticle& respond) {};
 	//エディタ
 	void Editor();
 	//更新

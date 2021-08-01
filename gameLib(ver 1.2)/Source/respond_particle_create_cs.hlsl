@@ -23,24 +23,32 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
     //モデルの中心を求める
     float3 modelCenter = mul(float4(0, centerY, 0, 1), bone[0]).xyz;
-    //パーティクルを生成
-    int count0 = (uint)(length(pos[0] - pos[1]) / (scale * 2.5f));
-    int count1 = (uint) (length(pos[0] - pos[2]) / (scale * 2.5f));
-    int count2 = (uint) (length(pos[1] - pos[2]) / (scale * 2.5f));
-    int allCount = count0 * count1 * count2;
+    //1メッシュのサイズとパーティクルのサイズから何個収まるか計算
+    uint count0 = (uint)(length(pos[0] - pos[1]) / defScale);
+    uint count1 = (uint) (length(pos[0] - pos[2]) / defScale);
+    uint count2 = (uint) (length(pos[1] - pos[2]) / defScale);
+    int allCount = (int)( count0 * count1 * count2);
     if(allCount<=1)
-    {
+    {//1つ以下なら
+        //メッシュの重心を計算する
         float3 center = (pos[0] + pos[1] + pos[2]) / 3;
         //空いてる分のカウントを減らす
         uint deadCount;
         particleCountBuffer.InterlockedAdd(4 * 2, -1, deadCount);
         uint newParticleIndex = deleteIndexBuffer[deadCount - 1];
         float time = rand_1_normal(float2(deadCount % 325, newParticleIndex % 167), 0.1f) * (expansionTime * 0.4f);
+        float scale = defScale;
+        if(allCount==0)
+        {//0なら
+            scale = min(length(pos[0] - pos[1]), length(pos[0] - pos[2]));
+            scale = min(scale, length(pos[1] - pos[2]));
 
-        CreateParticle(center, modelCenter, normal, newParticleIndex, time,particle,particleCountBuffer,particleIndexBuffer);
+        }
+       //パーティクルを生成
+        CreateParticle(center, modelCenter, normal, newParticleIndex, time,scale,particle,particleCountBuffer,particleIndexBuffer);
     }
     else
-    {
+    {//2つ以上なら
         for (int count = 1; count <= allCount;count++)
         {
             //空いてる分のカウントを減らす
@@ -53,13 +61,13 @@ void main(uint3 DTid : SV_DispatchThreadID)
             float3 vec2 = (pos[2] - pos[0]) * saturate(rand_1_normal(float2(newParticleIndex * 3 % 756, (newParticleIndex + deadCount) * DTid.x % 394), 0.5f));
     
             float3 vec3 = vec2 - vec1;
-    
+            
             vec3 *= saturate(rand_1_normal(float2((newParticleIndex + deadCount)*allCount * DTid.x % 567, (newParticleIndex + deadCount)*count * DTid.x % 381), 0.5f));
 
             float3 position = pos[0] + vec1 + vec3;
             float time = rand_1_normal(float2(deadCount % 325, newParticleIndex % 167), 0.1f) * (expansionTime * 0.4f);
-
-            CreateParticle(position, modelCenter, normal, newParticleIndex, time, particle, particleCountBuffer, particleIndexBuffer);
+           //パーティクルを生成
+            CreateParticle(position, modelCenter, normal, newParticleIndex, time,defScale, particle, particleCountBuffer, particleIndexBuffer);
 
         }
 
