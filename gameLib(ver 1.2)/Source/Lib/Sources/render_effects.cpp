@@ -11,7 +11,6 @@
 
 RenderEffects::RenderEffects(ID3D11Device* device, std::string fileName)
 {
-	HRESULT hr;
 	//シェーダーを生成する
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
 	{

@@ -300,7 +300,6 @@ void UIManager::Render(ID3D11DeviceContext* context)
 /***************************ロード**************************/
 void UIManager::Load(const char* scene)
 {
-	FILE* fp;
 	std::string fileName = { "Data/file/" };
 	fileName += scene;
 	fileName += "UI";
@@ -308,7 +307,7 @@ void UIManager::Load(const char* scene)
 	std::vector<UI::UIData>datas;
 	datas.resize(mUIs.size());
 	FileFunction::LoadArray(&datas[0], fileName.c_str(), "rb");
-	for (int i = 0; i < datas.size(); i++)
+	for (int i = 0; i < static_cast<int>(datas.size()); i++)
 	{
 		mUIs[i]->SetUIData(datas[i]);
 	}
@@ -316,7 +315,6 @@ void UIManager::Load(const char* scene)
 /*********************セーブ**********************/
 void UIManager::Save(const char* scene)
 {
-	FILE* fp;
 	std::string fileName = { "Data/file/" };
 	fileName += scene;
 	fileName += "UI";

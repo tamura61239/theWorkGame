@@ -105,7 +105,6 @@ void Sprite::Render(ID3D11DeviceContext* context, const VECTOR2F& position, cons
 {
 	UINT pstrides = sizeof(Vertex);
 	UINT poff = 0;
-	HRESULT hr;
 	//バッファのデータを更新
 	BufferUpdate(context, position, size, texPosition, texSize, angle, color, mTexture2d);
 	//GPU側にデータを送る

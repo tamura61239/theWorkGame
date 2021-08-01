@@ -64,7 +64,6 @@ void StageManager::StageCount()
 /****************************ロード**************************/
 void StageManager::Load()
 {
-	FILE* fp;
 	std::string fileName = { "Data/file/stage" };
 	fileName += std::to_string(mStageNo) + ".bin";
 	std::vector<StageData>data;
@@ -80,7 +79,6 @@ void StageManager::Load()
 /******************************セーブ**************************/
 void StageManager::Save()
 {
-	FILE* fp;
 	std::string fileName = { "Data/file/stage" };
 	fileName += std::to_string(mStageNo) + ".bin";
 	std::vector<StageData>data;

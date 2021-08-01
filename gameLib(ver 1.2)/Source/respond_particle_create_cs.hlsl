@@ -24,10 +24,10 @@ void main(uint3 DTid : SV_DispatchThreadID)
     //モデルの中心を求める
     float3 modelCenter = mul(float4(0, centerY, 0, 1), bone[0]).xyz;
     //パーティクルを生成
-    uint count0 = (uint)(length(pos[0] - pos[1]) / (scale * 2.5f));
-    uint count1 = (uint) (length(pos[0] - pos[2]) / (scale * 2.5f));
-    uint count2 = (uint) (length(pos[1] - pos[2]) / (scale * 2.5f));
-    uint allCount = count0 * count1 * count2;
+    int count0 = (uint)(length(pos[0] - pos[1]) / (scale * 2.5f));
+    int count1 = (uint) (length(pos[0] - pos[2]) / (scale * 2.5f));
+    int count2 = (uint) (length(pos[1] - pos[2]) / (scale * 2.5f));
+    int allCount = count0 * count1 * count2;
     if(allCount<=1)
     {
         float3 center = (pos[0] + pos[1] + pos[2]) / 3;
