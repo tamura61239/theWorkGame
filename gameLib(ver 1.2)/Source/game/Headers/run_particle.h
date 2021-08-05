@@ -3,7 +3,7 @@
 #include<d3d11.h>
 #include<wrl.h>
 #include<vector>
-#include"player_ai.h"
+#include"player_manager.h"
 #include"drow_shader.h"
 #include"static_mesh.h"
 #include"constant_buffer.h"
@@ -14,7 +14,7 @@ class RunParticles
 {
 public:
 	//コンストラクタ
-	RunParticles(ID3D11Device* device, std::shared_ptr<PlayerAI>player);
+	RunParticles(ID3D11Device* device, PlayerManager* player);
 	RunParticles(const RunParticles&run) {};
 	//エディタ
 	void Editor();
@@ -102,7 +102,7 @@ private:
 	};
 	EditorData mEditorData;
 	//プレイヤー情報
-	std::weak_ptr<PlayerAI>mPlayer;
+	PlayerManager*mPlayer;
 	//パーティクルの最大数
 	int mMaxParticle;
 	//時間

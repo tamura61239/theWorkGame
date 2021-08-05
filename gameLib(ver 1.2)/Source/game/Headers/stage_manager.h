@@ -2,6 +2,7 @@
 #include"stage_obj.h"
 #include<vector>
 #include"stage_editor.h"
+#include"stage_operation.h"
 
 class StageManager
 {
@@ -18,12 +19,12 @@ public:
 	//エディタ
 	void Editor();
 	//更新
-	void Update(float elapsd_time, const int stageState);
+	void Update(float elapsd_time, bool playFlag);
 	//描画
 	void Render(ID3D11DeviceContext* context);
 	void Render(ID3D11DeviceContext* context,DrowShader*srv);
 	//速度マップ用
-	void RenderVelocity(ID3D11DeviceContext* context, const int stageState);
+	void RenderVelocity(ID3D11DeviceContext* context);
 	//影用
 	void RenderShadow(ID3D11DeviceContext* context);
 	//横から見た時のシーン
@@ -33,6 +34,7 @@ public:
 	//getter
 	std::vector<std::shared_ptr<StageObj>>GetStages() { return mStageObjs; }
 	StageEditor* GetStageEditor() { return mEditor.get(); }
+	StageOperation* GetStageOperation() { return mOperation.get(); }
 	static const int GetMaxStageCount() { return mMaxStage; }
 	const int GrtStageNo() { return mStageNo; }
 private:
@@ -47,6 +49,7 @@ private:
 	std::vector < std::shared_ptr<StageObj>>mStageObjs;
 	std::vector<std::shared_ptr<StageObj>>mReds;
 	std::vector<std::shared_ptr<StageObj>>mBlues;
+	std::unique_ptr<StageOperation>mOperation;
 	//エディタ
 	std::unique_ptr<StageEditor>mEditor;
 	//ステージ番号

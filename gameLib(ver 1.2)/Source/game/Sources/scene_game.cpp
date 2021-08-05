@@ -23,7 +23,7 @@
 //　　　　　　　　　　初期化関数
 /*****************************************************/
 /**************************コンストラクタ***************************/
-SceneGame::SceneGame(int stageNo) : testGame(false), hitArea(false), mNowLoading(true), mLoadEnd(false), mStageNo(stageNo)
+SceneGame::SceneGame(int stageNo) : mTestGame(false), mHitArea(false), mNowLoading(true), mLoadEnd(false), mStageNo(stageNo)
 {
 
 }
@@ -51,9 +51,9 @@ void SceneGame::Initialize(ID3D11Device* device)
 			mRenderEffects = std::make_unique<RenderEffects>(device, "testShadow");
 			//GPUパーティクルマネージャーを作成
 			GpuParticleManager::Create();
-			player = std::make_shared<PlayerAI>(device, "Data/FBX/new_player_anim.fbx");
+			player = std::make_unique<PlayerManager>(device, "Data/FBX/new_player_anim.fbx");
 			//PUパーティクルマネージャーにプレイヤーのデータをセットする
-			pGpuParticleManager->CreateGameBuffer(device, player);
+			pGpuParticleManager->CreateGameBuffer(device, player.get());
 
 			//ステージの生成
 			mSManager = std::make_unique<StageManager>(device, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -63,15 +63,12 @@ void SceneGame::Initialize(ID3D11Device* device)
 			mModelRenderer = std::make_unique<ModelRenderer>(device);
 			mBloom = std::make_unique<BloomRender>(device, static_cast<float>(SCREEN_WIDTH), static_cast<float>(SCREEN_HEIGHT), 1);
 			mLightView = std::make_unique<LightView>(device, "LightViewData1");
-			mCbZoomBuffer = std::make_unique<ConstantBuffer<CbZoom>>(device);
-			FileFunction::Load(mCbZoomBuffer->data, "Data/file/game_zoom_blur_parameter.bin", "rb");
 			mCbMotionBlur = std::make_unique<ConstantBuffer<MotionBlurParameter>>(device);
 			FileFunction::Load(mCbMotionBlur->data, "Data/file/game_velocity_map_parameter.bin", "rb");
 			mFade = std::make_unique<Fade>(device, Fade::FADE_SCENE::GAME);
 			mFade->StartFadeIn();
 
 			//ステージの操作クラスの生成
-			mStageOperation = std::make_unique<StageOperation>();
 			//ライトクラスの生成
 			pLight.CreateLightBuffer(device);
 			//シェーダーの生成
@@ -83,7 +80,6 @@ void SceneGame::Initialize(ID3D11Device* device)
 					{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 
 				};
-				mBlurShader = std::make_unique<DrowShader>(device, "Data/shader/sprite_vs.cso", "", "Data/shader/zoom_blur_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc));
 				motionBlurShader = std::make_unique<DrowShader>(device, "Data/shader/sprite_vs.cso", "", "Data/shader/motion_blur_ps.cso", input_element_desc, ARRAYSIZE(input_element_desc));
 			}
 			//SkyMapの生成
@@ -97,13 +93,13 @@ void SceneGame::Initialize(ID3D11Device* device)
 			UIManager::Create();
 			UIManager::GetInctance()->GameInitialize(device);
 			//チュートリアルクラスの生成
-			mTutorialState = std::make_unique<TutorialState>(device);
 			mPhotographTargets.resize(6);
+
+			mGameMove = std::make_unique<SceneGameMove>(device, mStageNo);
 		}, device);
 	//NowLoading中に使う変数だけ先に生成
 	test = std::make_unique<Sprite>(device, L"Data/image/操作説明.png");
 	nowLoading = std::make_unique<Sprite>(device, L"Data/image/now.png");
-	siro = std::make_unique<Sprite>(device, L"Data/image/siro.png");
 	pushKey = std::make_unique<Sprite>(device, L"Data/image/push key.png");
 	//描画用のステートの生成
 	mBlend.push_back(std::make_unique<BlendState>(device, BLEND_MODE::ALPHA));
@@ -114,7 +110,7 @@ void SceneGame::Initialize(ID3D11Device* device)
 	mDepth = std::make_unique<DepthStencilState>(device, true, D3D11_DEPTH_WRITE_MASK_ALL, D3D11_COMPARISON_LESS_EQUAL);
 	mRasterizer = std::make_unique<RasterizerState>(device, D3D11_FILL_SOLID, D3D11_CULL_NONE, false, true, false, true, false);
 
-	textureNo = 0;
+	mTextureNo = 0;
 
 }
 /*****************************************************/
@@ -161,22 +157,17 @@ void SceneGame::Editor()
 	}
 	if (!beforeEditorFlag)
 	{
-		player->GetCharacter()->SetBeforePosition(VECTOR3F(0, 10, 0));
-		player->GetCharacter()->SetPosition(VECTOR3F(0, 10, 0));
-		player->GetCharacter()->SetAngle(VECTOR3F(0, 0, 0));
-		player->GetCharacter()->SetVelocity(VECTOR3F(0, 0, 0));
-		player->GetCharacter()->SetGorlFlag(false);
 		player->SetPlayFlag(false);
 		UIManager::GetInctance()->GetGameUIMove()->SetStartFlag(false);
 		UIManager::GetInctance()->ResetGameUI();
-		mTutorialState->ResetParameter();
+		mGameMove->GetTutorial()->ResetParameter();
 	}
 	//前のフレームのeditorNoを保存
 	int beforeEditorNo = mEditorNo;
 	/*******************Editor****************/
 	ImGui::Begin("scene game");
 	ImGui::Checkbox("stop", &mStopTime);
-	ImGui::Checkbox("hitArea", &hitArea);
+	ImGui::Checkbox("hitArea", &mHitArea);
 	ImGui::SliderFloat("time", &mElapsdTimeSpeed, 0, 1);
 	ImVec2 size = ImVec2(250, 250);
 	ImGui::Image(frameBuffer3->GetRenderTargetShaderResourceView().Get(), size);
@@ -190,19 +181,19 @@ void SceneGame::Editor()
 		ImGui::Selectable("ui", &mPhotographTargets[3]);
 		ImGui::Selectable("hitarea", &mPhotographTargets[4]);
 		ImGui::Selectable("sky map", &mPhotographTargets[5]);
-		ImGui::InputInt("No", &textureNo, 1);
+		ImGui::InputInt("No", &mTextureNo, 1);
 		if (ImGui::Button("photograph"))
 		{
 			mScreenShot = true;
 		}
 	}
 #endif
-	if (!testGame)
+	if (!mTestGame)
 	{
 		//テストプレイ開始
 		if (ImGui::Button("testGame"))
 		{
-			testGame = true;
+			mTestGame = true;
 			UIManager::GetInctance()->GetGameUIMove()->Start();
 		}
 		//プレイ開始
@@ -216,19 +207,12 @@ void SceneGame::Editor()
 		//テストプレイを終了する
 		if (ImGui::Button("reset"))
 		{
-			testGame = false;
+			mTestGame = false;
 			//パラメーターのリセット
-			player->GetCharacter()->SetBeforePosition(VECTOR3F(0, 10, 0));
-			player->GetCharacter()->SetPosition(VECTOR3F(0, 10, 0));
-			player->GetCharacter()->SetAngle(VECTOR3F(0, 0, 0));
-			player->GetCharacter()->SetVelocity(VECTOR3F(0, 0, 0));
-			player->GetCharacter()->SetGorlFlag(false);
 			player->SetPlayFlag(false);
-			player->GetCharacter()->SetExist(true);
 			UIManager::GetInctance()->GetGameUIMove()->SetStartFlag(false);
 			UIManager::GetInctance()->ResetGameUI();
-			mTutorialState->ResetParameter();
-			mStageOperation->Reset(mSManager.get());
+			mGameMove->GetTutorial()->ResetParameter();
 		}
 
 	}
@@ -265,7 +249,6 @@ void SceneGame::Editor()
 		pLight.Editor();
 		break;
 	case 3:
-		mStageOperation->Editor();
 		mSManager->Editor();
 		break;
 	case 4:
@@ -294,9 +277,11 @@ void SceneGame::Editor()
 		mLightView->Editor();
 		break;
 	case 13:
-		mTutorialState->Editor();
+		mGameMove->GetTutorial()->Editor();
 		break;
-
+	case 14:
+		mGameMove->ZoomBlurEditor();
+		break;
 	}
 	if (mEditorNo == 10)
 	{
@@ -319,19 +304,6 @@ void SceneGame::Editor()
 		}
 		ImGui::End();
 		return;
-	}
-	if (mEditorNo == 14)
-	{
-		//ズームブラーのパラメーターを操作する
-		ImGui::Begin("zoom blur");
-		ImGui::InputFloat("length", &mCbZoomBuffer->data.lenght, 0.1f);
-		ImGui::InputInt("division", &mCbZoomBuffer->data.division, 1);
-		//セーブ
-		if (ImGui::Button("save"))
-		{
-			FileFunction::Save(mCbZoomBuffer->data, "Data/file/game_zoom_blur_parameter.bin", "wb");
-		}
-		ImGui::End();
 	}
 	if (mEditorNo == 15)
 	{
@@ -384,87 +356,18 @@ void SceneGame::Update(float elapsed_time)
 	//シーンの進行速度を変える
 	elapsed_time *= mElapsdTimeSpeed;
 #endif
-	if (mSManager->GrtStageNo() == 0)
-	{//チュートリアルのステージの時
-		{
-			mStageOperation->Update(elapsed_time, mSManager.get(), player->GetPlayFlag() && (mTutorialState->GetKeyFlag()));
-		}
-		elapsed_time *= mTutorialState->Update(elapsed_time, player->GetCharacter());
-	}
-	else
-	{//通常時
-		mStageOperation->Update(elapsed_time, mSManager.get(), player->GetPlayFlag());
-	}
-	//フェード時の処理
-	FadeMove(elapsed_time);
+	mSManager->Update(elapsed_time, player->GetPlayFlag() && mGameMove->GetTutorial()->GetKeyFlag());
+	elapsed_time = mGameMove->Update(elapsed_time, player.get(), mTestGame, mEditorFlag);
 
-	//プレイ中かどうか
-	if (player->GetPlayFlag())
-	{
-		//プレイ中にタイムが0になるかゴールした時
-		if (UIManager::GetInctance()->GetGameUIMove()->GetTime() <= 0 || player->GetCharacter()->GetGorlFlag())
-		{
-			if (!testGame && mFade->GetFadeScene() == Fade::FADE_MODO::NONE)
-			{
-				mFade->StartFadeOut();
-			}
-			elapsed_time *= 0.3f;
-		}
-	}
+	//フェード時の処理
 	//シーンのオブジェクトの更新
 	mSky->GetPosData()->CalculateTransform();
-	player->Update(elapsed_time, mSManager.get(), mStageOperation.get());
-	mSManager->Update(elapsed_time,mStageOperation->GetColorType());
+	player->Update(elapsed_time, mSManager.get());
 	pGpuParticleManager->Update(elapsed_time);
 	//カメラの更新
 	pCameraManager->Update(elapsed_time);
 }
 
-/*****************フェード時やその前後の処理*********************/
-void SceneGame::FadeMove(float elapsdTime)
-{
-	mFade->Update(elapsdTime);
-	//フェートインの時
-	if (mFade->GetFadeScene() == Fade::FADE_MODO::FADEIN)
-	{
-		if (mFade->GetEndFlag())
-		{
-			mFade->Clear();
-			if (!mEditorFlag)UIManager::GetInctance()->GetGameUIMove()->Start();
-		}
-	}
-	//フェートインの時
-	else if (mFade->GetFadeScene() == Fade::FADE_MODO::FADEOUT)
-	{
-
-		if (mFade->GetEndFlag())
-		{
-			pSceneManager.ChangeScene(new SceneResult(UIManager::GetInctance()->GetGameUIMove()->GetTime(), mStageNo));
-			return;
-		}
-
-	}
-	//フェートインでもフェードアウトでもない時
-	else
-	{
-		UIManager::GetInctance()->Update(elapsdTime);
-
-		//カウントが0かつStartFlagがtrueの時
-		if (UIManager::GetInctance()->GetGameUIMove()->GetCount() <= 0)
-		{
-			if (UIManager::GetInctance()->GetGameUIMove()->GetStartFlag())
-			{
-				if (!player->GetPlayFlag())
-				{
-					player->SetPlayFlag(true);
-					pCameraManager->GetCameraOperation()->GetPlayCamera()->SetStartPosition(player->GetCharacter()->GetPosition());
-				}
-			}
-		}
-
-	}
-
-}
 
 /*****************************************************/
 //　　　　　　　　　　描画関数
@@ -511,15 +414,14 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	//シーンの描画
 	if (mSManager->GetStageEditor()->GetEditorFlag())
 	{//ステージエディターの時
-		if(player->GetCharacter()->GetExist())mModelRenderer->Draw(context, *player->GetCharacter()->GetModel(), VECTOR4F(0.5, 0.5, 0.5, 1));
-
+		player->Render(context, PlayerManager::RENDER_TYPE::COLOR);
 		mSManager->Render(context);
 	}
 	else
 	{//通常時
 		mSky->Render(context);
 		pGpuParticleManager->Render(context);
-		if (player->GetCharacter()->GetExist())mModelRenderer->Draw(context, *player->GetCharacter()->GetModel(), VECTOR4F(0.5, 0.5, 0.5, 1));
+		player->Render(context, PlayerManager::RENDER_TYPE::COLOR);
 
 		mSManager->Render(context);
 	}
@@ -532,14 +434,9 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	mCbMotionBlur->Activate(context, 6, true, true);
 	pCameraManager->GetCamera()->BeforeActive(context, 5, true, true, true);
 	//シーンのの描画
-	if (player->GetCharacter()->GetExist())
-	{
-		mModelRenderer->VelocityBegin(context);
-		mModelRenderer->VelocityDraw(context, *player->GetCharacter()->GetModel());
-		mModelRenderer->VelocityEnd(context);
-	}
+	player->Render(context, PlayerManager::RENDER_TYPE::VELOCITY);
 	pGpuParticleManager->VelocityRender(context);
-	mSManager->RenderVelocity(context, mStageOperation->GetColorType());
+	mSManager->RenderVelocity(context);
 	//定数バッファの解除
 	pCameraManager->GetCamera()->BeforeDactive(context);
 	mCbMotionBlur->DeActivate(context);
@@ -553,12 +450,7 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	mLightView->Update(player->GetCharacter()->GetPosition(), context);
 	mLightView->GetLightCamera()->NowActive(context, 0, true, true, true);
 	//light視点から見たシーンの描画
-	if (player->GetCharacter()->GetExist())
-	{
-		mModelRenderer->ShadowBegin(context);
-		mModelRenderer->ShadowDraw(context, *player->GetCharacter()->GetModel());
-		mModelRenderer->ShadowEnd(context);
-	}
+	player->Render(context, PlayerManager::RENDER_TYPE::SHADOW);
 	mSManager->RenderShadow(context);
 	mLightView->GetLightCamera()->NowDactive(context);
 
@@ -574,12 +466,12 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	frameBuffer->Activate(context);
 
 	velocityMap->SetPsTexture(context, 1);
-	siro->Render(context, motionBlurShader.get(), shadowRenderBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+	test->Render(context, motionBlurShader.get(), shadowRenderBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 	ID3D11ShaderResourceView* srv = nullptr;
 	context->PSSetShaderResources(1, 1, &srv);
 	//シーンにUIを追加
 	UIManager::GetInctance()->Render(context);
-	mTutorialState->RenderButton(context);
+	mGameMove->GetTutorial()->RenderButton(context);
 
 	mBlend[0]->deactivate(context);
 	frameBuffer->Deactivate(context);
@@ -592,35 +484,18 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 	//シーンにブルームをかける
 	frameBuffer2->Clear(context);
 	frameBuffer2->Activate(context);
-	siro->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
+	test->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
 	mBloom->Render(context, frameBuffer->GetRenderTargetShaderResourceView().Get());
 	frameBuffer2->Deactivate(context);
 	mBlend[1]->deactivate(context);
 
 	mBlend[0]->activate(context);
 	/******************************ズームブラー************************/
-	if (player->GetCharacter()->GetGorlFlag())
-	{//ゴール時
-		mCbZoomBuffer->Activate(context, 0, true, true);
-		siro->Render(context, mBlurShader.get(), frameBuffer2->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
-		mCbZoomBuffer->DeActivate(context);
-	}
-	else if (mTutorialState->GetState() == 1 || mTutorialState->GetState() == 3)
-	{//チュートリアル時
-		mTutorialState->GetCbZoom()->Activate(context, 0, true, true);
-		siro->Render(context, mBlurShader.get(), frameBuffer2->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0, mTutorialState->GetBackGroundColor());
-		mTutorialState->GetCbZoom()->DeActivate(context);
-
-	}
-	else
-	{//かけない
-		siro->Render(context, frameBuffer2->GetRenderTargetShaderResourceView().Get(), VECTOR2F(0, 0), VECTOR2F(1920, 1080), VECTOR2F(0, 0), VECTOR2F(1920, 1080), 0);
-
-	}
+	mGameMove->Render(context, frameBuffer2->GetRenderTargetShaderResourceView().Get(), test.get());
 	//描画結果を保存
 	if (mScreenShot)
 	{//通常時
-		std::wstring fileName = L"Data/image/screen_shot/screenShot" + std::to_wstring(textureNo) + L".dds";
+		std::wstring fileName = L"Data/image/screen_shot/screenShot" + std::to_wstring(mTextureNo) + L".dds";
 		frameBuffer2->SaveDDSFile(context, fileName.c_str(), frameBuffer2->GetRenderTargetShaderResourceView().Get());
 	}
 	else if (mSManager->GetStageEditor()->GetEditorFlag())
@@ -634,9 +509,9 @@ void SceneGame::Render(ID3D11DeviceContext* context, float elapsed_time)
 
 
 	if (mEditorNo == 3)mSManager->SidoViewRender(context);
-	mFade->Render(context);
+	//mFade->Render(context);
 	//チュートリアルのテキストの描画
-	mTutorialState->RenderText(context);
+	mGameMove->GetTutorial()->RenderText(context);
 
 	//描画用のステートの解除
 	mBlend[0]->deactivate(context);

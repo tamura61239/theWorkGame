@@ -51,7 +51,7 @@ void GpuParticleManager::CreateSelectBuffer(ID3D11Device* device)
 }
 /*************************ゲームシーンのパーティクル生成****************************/
 
-void GpuParticleManager::CreateGameBuffer(ID3D11Device* device, std::shared_ptr<PlayerAI>player)
+void GpuParticleManager::CreateGameBuffer(ID3D11Device* device, PlayerManager* player)
 {
 	mState = STATE::GAME;
 	CreateBuffer(device);

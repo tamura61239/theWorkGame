@@ -9,9 +9,14 @@
 //　　　　　　　　　　初期化関数(コンストラクタ)
 /*****************************************************/
 
-TutorialState::TutorialState(ID3D11Device* device) :mState(0), mBackGroundColor(1, 1, 1, 1), mTextAlpha(1), mCount(0), mTimer(0), mNextTime(0.2f), mTextPosition(0, 0), mTextSize(230, 36), mEasingTimer(3.f), mLockTime(0.5f)
+TutorialState::TutorialState(ID3D11Device* device, const int stageNo) :mState(0), mBackGroundColor(1, 1, 1, 1), mTextAlpha(1), mCount(0), mTimer(0), mNextTime(0.2f), mTextPosition(0, 0), mTextSize(230, 36), mEasingTimer(3.f), mLockTime(0.5f)
 , mKeyFlag(false)
 {
+	if (stageNo >= 1)
+	{
+		mState = 4;
+		mKeyFlag = true;
+	}
 	//描画用
 	mRender = std::make_unique<Sprite>(device, L"Data/image/siro.png");
 	mTexts.resize(4);

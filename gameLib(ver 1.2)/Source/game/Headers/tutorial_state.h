@@ -9,7 +9,7 @@
 class TutorialState
 {
 public:
-	TutorialState(ID3D11Device*device);
+	TutorialState(ID3D11Device*device,const int stageNo);
 	float Update(float elapsdTime, PlayerCharacter* player);
 	void Editor();
 	void RenderButton(ID3D11DeviceContext* context);

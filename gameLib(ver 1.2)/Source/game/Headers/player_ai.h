@@ -7,23 +7,14 @@ class PlayerAI
 {
 public:
 	//コンストラクタ
-	PlayerAI(ID3D11Device* device, const char* fileName);
+	PlayerAI(PlayerCharacter* character);
 	//エディター
-	void Editor();
-	//setter
-	void SetPlayFlag(const bool flag) { mPlayFlag = flag; }
-	//getter
-	const bool GetPlayFlag() { return mPlayFlag; }
-	PlayerCharacter* GetCharacter() { return mCharacter.get(); }
+	void Editor(PlayerCharacter* character);
 	//更新
-	void Update(float elapsd_time,StageManager*manager,StageOperation*operation);
-	//playerを動かす
-	void Move(float elapsd_time);
+	void Update(float elapsd_time,PlayerCharacter*character);
 	//リスポン
-	void Respond();
+	void Reset();
 private:
-	//playerオブジェクト変数
-	std::unique_ptr<PlayerCharacter>mCharacter;
 	//エディター変数
 	struct PlayerParameter
 	{
@@ -37,6 +28,4 @@ private:
 	PlayerParameter mParameter;
 	//重力
 	float mGravity;
-	//プレイできるかどうか
-	bool mPlayFlag;
 };

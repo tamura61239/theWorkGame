@@ -10,7 +10,7 @@
 /*****************************************************/
 //　　　　　　　　　　初期化関数(コンストラクタ)
 /*****************************************************/
-RespondParticle::RespondParticle(ID3D11Device* device, std::shared_ptr<PlayerAI> player) :mCreateFlag(false), mTimer(0)
+RespondParticle::RespondParticle(ID3D11Device* device, PlayerManager* player) :mCreateFlag(false), mTimer(0)
 {
 	//定数バッファ
 	mCbBoneBuffer = std::make_unique<ConstantBuffer<CbBone>>(device);
@@ -120,7 +120,6 @@ void RespondParticle::Editor()
 void RespondParticle::Update(ID3D11DeviceContext* context, float elapsd_time)
 {
 
-	auto& player = mPlayer.lock();
 	//SRVとUAVをGPUに送る
 	mParticle->Activate(context, 0, true);
 	mParticleCount->Activate(context, 1, true);
@@ -131,9 +130,9 @@ void RespondParticle::Update(ID3D11DeviceContext* context, float elapsd_time)
 	mIndexNum++;
 	if (mIndexNum >= 2)mIndexNum = 0;
 	//生成
-	Create(context, player);
+	Create(context);
 	//更新
-	Move(context, player, elapsd_time);
+	Move(context, elapsd_time);
 	//GPUに送ったデータの解放
 	mParticle->DeActivate(context);
 	mParticleCount->DeActivate(context);
@@ -144,12 +143,12 @@ void RespondParticle::Update(ID3D11DeviceContext* context, float elapsd_time)
 }
 /************************パーティクルの生成関数*****************************/
 
-void RespondParticle::Create(ID3D11DeviceContext* context, std::shared_ptr<PlayerAI>player)
+void RespondParticle::Create(ID3D11DeviceContext* context)
 {
-	if (player->GetCharacter()->GetExist() || mCreateFlag)return;
+	if (mPlayer->GetCharacter()->GetExist() || mCreateFlag)return;
 	mCreateFlag = true;
-	const ModelResource* resouce = player->GetCharacter()->GetModel()->GetModelResource();
-	const std::vector<Model::Node>& nodes = player->GetCharacter()->GetModel()->GetNodes();
+	const ModelResource* resouce = mPlayer->GetCharacter()->GetModel()->GetModelResource();
+	const std::vector<Model::Node>& nodes = mPlayer->GetCharacter()->GetModel()->GetNodes();
 	//生成情報のセット
 	mCbCreateBuffer->data.expansionspeed = mEditorData.expansionSpeed;
 	mCbCreateBuffer->data.expansionTime = mEditorData.expansionTime;
@@ -199,7 +198,7 @@ void RespondParticle::Create(ID3D11DeviceContext* context, std::shared_ptr<Playe
 }
 /*************************パーティクルの更新関数****************************/
 
-void RespondParticle::Move(ID3D11DeviceContext* context, std::shared_ptr<PlayerAI>player, float elapsd_time)
+void RespondParticle::Move(ID3D11DeviceContext* context, float elapsd_time)
 {
 	if (!mCreateFlag)return;
 	context->CSSetShader(mCSShader.Get(), nullptr, 0);
@@ -228,7 +227,7 @@ void RespondParticle::Move(ID3D11DeviceContext* context, std::shared_ptr<PlayerA
 	}
 	if (mRenderCount == 0)
 	{
-		player->Respond();
+		mPlayer->Respond();
 		mCreateFlag = false;
 		mTimer = 0.0f;
 	}

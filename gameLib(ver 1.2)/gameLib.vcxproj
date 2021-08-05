@@ -177,6 +177,7 @@
     <ClCompile Include="Source\game\Sources\Judgment.cpp" />
     <ClCompile Include="Source\game\Sources\player_ai.cpp" />
     <ClCompile Include="Source\game\Sources\player_character.cpp" />
+    <ClCompile Include="Source\game\Sources\player_manager.cpp" />
     <ClCompile Include="Source\game\Sources\play_camera_operation.cpp" />
     <ClCompile Include="Source\game\Sources\ranking.cpp" />
     <ClCompile Include="Source\game\Sources\respond_particle.cpp" />
@@ -184,6 +185,7 @@
     <ClCompile Include="Source\game\Sources\run_particle.cpp" />
     <ClCompile Include="Source\game\Sources\scene_editor.cpp" />
     <ClCompile Include="Source\game\Sources\scene_game.cpp" />
+    <ClCompile Include="Source\game\Sources\scene_game_move.cpp" />
     <ClCompile Include="Source\game\Sources\scene_manager.cpp" />
     <ClCompile Include="Source\game\Sources\scene_result.cpp" />
     <ClCompile Include="Source\game\Sources\scene_select.cpp" />
@@ -259,6 +261,7 @@
     <ClInclude Include="Source\game\Headers\Judgment.h" />
     <ClInclude Include="Source\game\Headers\player_ai.h" />
     <ClInclude Include="Source\game\Headers\player_character.h" />
+    <ClInclude Include="Source\game\Headers\player_manager.h" />
     <ClInclude Include="Source\game\Headers\play_camera_operation.h" />
     <ClInclude Include="Source\game\Headers\ranking.h" />
     <ClInclude Include="Source\game\Headers\respond_particle.h" />
@@ -267,6 +270,7 @@
     <ClInclude Include="Source\game\Headers\scene.h" />
     <ClInclude Include="Source\game\Headers\scene_editor.h" />
     <ClInclude Include="Source\game\Headers\scene_game.h" />
+    <ClInclude Include="Source\game\Headers\scene_game_move.h" />
     <ClInclude Include="Source\game\Headers\scene_manager.h" />
     <ClInclude Include="Source\game\Headers\scene_result.h" />
     <ClInclude Include="Source\game\Headers\scene_select.h" />

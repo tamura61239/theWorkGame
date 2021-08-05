@@ -10,7 +10,7 @@
 //　　　　　　　　　　初期化関数(コンストラクタ)
 /*****************************************************/
 
-RunParticles::RunParticles(ID3D11Device* device, std::shared_ptr<PlayerAI>player) :mMaxParticle(0), mTimer(0), mIndexNum(0), mRenderCount(0), mTestFlag(false)
+RunParticles::RunParticles(ID3D11Device* device, PlayerManager* player) :mMaxParticle(0), mTimer(0), mIndexNum(0), mRenderCount(0), mTestFlag(false)
 {
 	memset(&mEditorData, 0, sizeof(mEditorData));
 	memset(&mEditorData.mColor, 1, sizeof(mEditorData.mColor));
@@ -166,17 +166,16 @@ void RunParticles::Update(ID3D11DeviceContext* context, float elapsd_time)
 	//パーティクル生成
 	mIndexNum++;
 	if (mIndexNum >= 2)mIndexNum = 0;
-	auto& player = mPlayer.lock();
 	//時間が生成するための時間(生成する間隔)以上になったら生成
-	if (player->GetCharacter()->GetPosition().y > -800 && player->GetCharacter()->GetExist())
+	if (mPlayer->GetCharacter()->GetPosition().y > -800 && mPlayer->GetCharacter()->GetExist())
 	{
-		if (player->GetPlayFlag() || mTestFlag)mTimer += elapsd_time;
+		if (mPlayer->GetPlayFlag() || mTestFlag)mTimer += elapsd_time;
 
 		if (mTimer >= mEditorData.mCreateTime)
 		{
 			context->CSSetShader(mCreateCSShader.Get(), nullptr, 0);
-			const ModelResource* resouce = player->GetCharacter()->GetModel()->GetModelResource();
-			const std::vector<Model::Node>& nodes = player->GetCharacter()->GetModel()->GetNodes();
+			const ModelResource* resouce = mPlayer->GetCharacter()->GetModel()->GetModelResource();
+			const std::vector<Model::Node>& nodes = mPlayer->GetCharacter()->GetModel()->GetNodes();
 			mCbCreateBuffer->data.color = 0;
 			mCbCreateBuffer->data.color |= (static_cast<UINT>(mEditorData.mColor[0] * 255) & 0x00FFFFFF) << 24;
 			mCbCreateBuffer->data.color |= (static_cast<UINT>(mEditorData.mColor[1] * 255) & 0x00FFFFFF) << 16;

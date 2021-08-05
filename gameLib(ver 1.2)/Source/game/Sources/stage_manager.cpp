@@ -36,6 +36,7 @@ StageManager::StageManager(ID3D11Device* device, int width, int height) :mStageN
 	};
 	//ステージエディタの生成
 	mEditor = std::make_unique<StageEditor>(device, 1920, 1080);
+	mOperation = std::make_unique<StageOperation>();
 }
 /***********************ステージの最大数を調べる*******************/
 void StageManager::StageCount()
@@ -94,6 +95,7 @@ void StageManager::Save()
 void StageManager::Editor()
 {
 #ifdef USE_IMGUI
+	mOperation->Editor();
 	//エディタクラスの更新
 	mEditor->Editor(mStageObjs);
 	//ファイル操作をする場合はここでする
@@ -128,13 +130,15 @@ void StageManager::Editor()
 /*****************************************************/
 //　　　　　　　　　　更新関数
 /*****************************************************/
-void StageManager::Update(float elapsd_time, const int stageState)
+void StageManager::Update(float elapsd_time, bool playFlag)
 {
+	mOperation->Update(playFlag);
 	mReds.clear();
 	mBlues.clear();
 	//ステージオブジェクトの当たり判定を当たり判定を描画するクラスに渡す
 	for (auto& stage : mStageObjs)
 	{
+		mOperation->SetStageColor(stage.get());
 		stage->CalculateTransform();
 		switch (stage->GetStageData().mObjType)
 		{
@@ -149,7 +153,7 @@ void StageManager::Update(float elapsd_time, const int stageState)
 			break;
 		}
 		//色ごとに描画用の配列にセットする
-		if (stage->GetStageData().mColorType == stageState)
+		if (stage->GetStageData().mColorType == mOperation->GetColorType())
 		{
 			mReds.push_back(stage);
 		}
@@ -198,7 +202,7 @@ void StageManager::Render(ID3D11DeviceContext* context, DrowShader* srv)
 	mEditor->EditorCreateObjImageRender(context, mMeshs.at(mEditor->GetCreateData().mObjType).get(), mRender.get(), color[mEditor->GetCreateData().mColorType]);
 }
 /***************************速度マップの描画*********************************/
-void StageManager::RenderVelocity(ID3D11DeviceContext* context, const int stageState)
+void StageManager::RenderVelocity(ID3D11DeviceContext* context)
 {
 	mRender->VelocityBegin(context);
 	for (auto& stage : mStageObjs)

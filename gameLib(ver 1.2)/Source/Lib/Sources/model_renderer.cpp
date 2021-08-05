@@ -54,12 +54,12 @@ void ModelRenderer::Begin(ID3D11DeviceContext* context, const FLOAT4X4& view_pro
 }
 
 /**************************** 描画*************************/
-void ModelRenderer::Draw(ID3D11DeviceContext* context, Model& model, const VECTOR4F& color)
+void ModelRenderer::Draw(ID3D11DeviceContext* context, Model* model, const VECTOR4F& color)
 {
 	//描画に使うモデルデータの取得
 
-	const ModelResource* model_resource = model.GetModelResource();
-	const std::vector<Model::Node>& nodes = model.GetNodes();
+	const ModelResource* model_resource = model->GetModelResource();
+	const std::vector<Model::Node>& nodes = model->GetNodes();
 
 	SHADER_TYPE shaderType = model_resource->GetShaderType();
 	//シェーダーを設定する
@@ -97,12 +97,12 @@ void ModelRenderer::Draw(ID3D11DeviceContext* context, Model& model, const VECTO
 	mShader[static_cast<int>(shaderType)]->Deactivate(context);
 }
 /***********************************描画(シェーダーを取得する)****************************************/
-void ModelRenderer::Draw(ID3D11DeviceContext* context, DrowShader* shader, Model& model, const VECTOR4F& color)
+void ModelRenderer::Draw(ID3D11DeviceContext* context, DrowShader* shader, Model* model, const VECTOR4F& color)
 {
 	//描画に使うモデルデータの取得
 
-	const ModelResource* model_resource = model.GetModelResource();
-	const std::vector<Model::Node>& nodes = model.GetNodes();
+	const ModelResource* model_resource = model->GetModelResource();
+	const std::vector<Model::Node>& nodes = model->GetNodes();
 
 	SHADER_TYPE shaderType = model_resource->GetShaderType();
 	//シェーダーを設定する
@@ -166,12 +166,12 @@ void ModelRenderer::ShadowBegin(ID3D11DeviceContext* context)
 }
 /**************************** 描画*************************/
 
-void ModelRenderer::ShadowDraw(ID3D11DeviceContext* context, Model& model, const VECTOR4F& color)
+void ModelRenderer::ShadowDraw(ID3D11DeviceContext* context, Model* model, const VECTOR4F& color)
 {
 	//描画に使うモデルデータの取得
 
-	const ModelResource* model_resource = model.GetModelResource();
-	const std::vector<Model::Node>& nodes = model.GetNodes();
+	const ModelResource* model_resource = model->GetModelResource();
+	const std::vector<Model::Node>& nodes = model->GetNodes();
 
 	for (const ModelResource::Mesh& mesh : model_resource->GetMeshes())
 	{
@@ -220,11 +220,11 @@ void ModelRenderer::VelocityBegin(ID3D11DeviceContext* context)
 }
 /**************************** 描画*************************/
 
-void ModelRenderer::VelocityDraw(ID3D11DeviceContext* context, Model& model)
+void ModelRenderer::VelocityDraw(ID3D11DeviceContext* context, Model* model)
 {
 	//描画に使うモデルデータの取得
-	const ModelResource* model_resource = model.GetModelResource();
-	const std::vector<Model::Node>& nodes = model.GetNodes();
+	const ModelResource* model_resource = model->GetModelResource();
+	const std::vector<Model::Node>& nodes = model->GetNodes();
 	for (const ModelResource::Mesh& mesh : model_resource->GetMeshes())
 	{
 		// メッシュ用定数バッファ更新

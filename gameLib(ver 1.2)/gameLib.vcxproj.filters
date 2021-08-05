@@ -366,6 +366,12 @@
     <ClCompile Include="Source\game\Sources\respond_particle.cpp">
       <Filter>ソース ファイル\GPU</Filter>
     </ClCompile>
+    <ClCompile Include="Source\game\Sources\player_manager.cpp">
+      <Filter>ソース ファイル\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\game\Sources\scene_game_move.cpp">
+      <Filter>ソース ファイル\Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="External_Libraries\imgui\imconfig.h">
@@ -658,6 +664,12 @@
     </ClInclude>
     <ClInclude Include="Source\game\Headers\respond_particle.h">
       <Filter>ヘッダー ファイル\GPU</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\player_manager.h">
+      <Filter>ヘッダー ファイル\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\game\Headers\scene_game_move.h">
+      <Filter>ヘッダー ファイル\Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -27,7 +27,7 @@ public:
 	//パーティクルの生成
 	void CreateTitleBuffer(ID3D11Device* device);
 	void CreateSelectBuffer(ID3D11Device* device);
-	void CreateGameBuffer(ID3D11Device* device,std::shared_ptr<PlayerAI>player);
+	void CreateGameBuffer(ID3D11Device* device,PlayerManager*player);
 	void CreateResultBuffer(ID3D11Device* device);
 	//解放
 	void ClearBuffer();

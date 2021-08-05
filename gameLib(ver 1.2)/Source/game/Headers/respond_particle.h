@@ -3,7 +3,7 @@
 #include<d3d11.h>
 #include<wrl.h>
 #include<vector>
-#include"player_ai.h"
+#include"player_manager.h"
 #include"drow_shader.h"
 #include"constant_buffer.h"
 #include"cs_buffer.h"
@@ -13,7 +13,7 @@ class RespondParticle
 {
 public:
 	//コンストラクタ
-	RespondParticle(ID3D11Device* device, std::shared_ptr<PlayerAI>player);
+	RespondParticle(ID3D11Device* device, PlayerManager*player);
 	RespondParticle(const RespondParticle& respond) {};
 	//エディタ
 	void Editor();
@@ -22,8 +22,8 @@ public:
 	//描画
 	void Render(ID3D11DeviceContext* context);
 private:
-	void Create(ID3D11DeviceContext* context,std::shared_ptr<PlayerAI>player);
-	void Move(ID3D11DeviceContext* context, std::shared_ptr<PlayerAI>player, float elapsd_time);
+	void Create(ID3D11DeviceContext* context);
+	void Move(ID3D11DeviceContext* context, float elapsd_time);
 	//定数バッファ
 	struct CbBone
 	{
@@ -109,7 +109,7 @@ private:
 	};
 	EditorData mEditorData;
 	//プレイヤー情報
-	std::weak_ptr<PlayerAI>mPlayer;
+	PlayerManager* mPlayer;
 	//描画する数
 	UINT mRenderCount;
 	//パラメーター

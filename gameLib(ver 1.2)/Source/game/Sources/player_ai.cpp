@@ -1,7 +1,7 @@
 #include "player_ai.h"
-#include"camera_manager.h"
-#include"Judgment.h"
-#include"hit_area_render.h"
+//#include"camera_manager.h"
+//#include"Judgment.h"
+//#include"hit_area_render.h"
 #include"file_function.h"
 
 #ifdef USE_IMGUI
@@ -10,27 +10,27 @@
 /*****************************************************/
 //　　　　　　　　　　初期化関数(コンストラクタ)
 /*****************************************************/
-PlayerAI::PlayerAI(ID3D11Device* device, const char* fileName) :mPlayFlag(false), mGravity(0)
+PlayerAI::PlayerAI(PlayerCharacter* character) : mGravity(0)
 {
-	//playerオブジェクトの生成
-	std::unique_ptr<ModelData>data = std::make_unique<ModelData>(fileName);
-	std::shared_ptr<ModelResource>resouce = std::make_shared<ModelResource>(device, std::move(data));
-	mCharacter = std::make_unique<PlayerCharacter>(resouce);
+	////playerオブジェクトの生成
+	//std::unique_ptr<ModelData>data = std::make_unique<ModelData>(fileName);
+	//std::shared_ptr<ModelResource>resouce = std::make_shared<ModelResource>(device, std::move(data));
+	//mCharacter = std::make_unique<PlayerCharacter>(resouce);
 	//初期座標の設定
-	mCharacter->SetPosition(VECTOR3F(0, 10, 0));
-	mCharacter->SetScale(VECTOR3F(gameObjScale, gameObjScale, gameObjScale));
-	mCharacter->CalculateBoonTransform(0);
+	character->SetPosition(VECTOR3F(0, 10, 0));
+	character->SetScale(VECTOR3F(gameObjScale, gameObjScale, gameObjScale));
+	character->CalculateBoonTransform(0);
 	//パラメーターの設定
 	memset(&mParameter, 0, sizeof(mParameter));
 	FileFunction::Load(mParameter, "Data/file/playerParrameter.bin", "rb");
-	mCharacter->SetMinSpeed(mParameter.minSpeed);
-	mCharacter->SetMaxSpeed(mParameter.maxSpeed);
+	character->SetMinSpeed(mParameter.minSpeed);
+	character->SetMaxSpeed(mParameter.maxSpeed);
 }
 
 /*****************************************************/
 //　　　　　　　　　　エディタ関数
 /*****************************************************/
-void PlayerAI::Editor()
+void PlayerAI::Editor(PlayerCharacter* character)
 {
 #ifdef USE_IMGUI
 	ImGui::Begin("player");
@@ -46,12 +46,12 @@ void PlayerAI::Editor()
 	//最大速度
 	if (ImGui::InputFloat("maxSpeed", &mParameter.maxSpeed, 10))
 	{
-		mCharacter->SetMaxSpeed(mParameter.maxSpeed);
+		character->SetMaxSpeed(mParameter.maxSpeed);
 	}
 	//最小速度
 	if (ImGui::InputFloat("minSpeed", &mParameter.minSpeed, 10))
 	{
-		mCharacter->SetMinSpeed(mParameter.minSpeed);
+		character->SetMinSpeed(mParameter.minSpeed);
 	}
 	//重力値
 	ImGui::InputFloat("gravity", &mParameter.gravity, 10);
@@ -67,22 +67,11 @@ void PlayerAI::Editor()
 		FileFunction::Load(mParameter, "Data/file/playerParrameter.bin", "rb");
 
 	}
-	//player座標などのリセット
-	if (ImGui::Button("replay"))
-	{
-		mCharacter->SetPosition(VECTOR3F(0, 10, 0));
-		mCharacter->SetBeforePosition(VECTOR3F(0, 10, 0));
-		mCharacter->SetVelocity(VECTOR3F(0, 0, 0));
-		mCharacter->SetAngle(VECTOR3F(0, 0, 0));
-		mCharacter->CalculateBoonTransform(0);
-		mCharacter->SetMoveState(PlayerCharacter::MOVESTATE::LANDING);
-
-	}
 	//パラメーターの表示
-	ImGui::Text("position:%f,%f,%f", mCharacter->GetPosition().x, mCharacter->GetPosition().y, mCharacter->GetPosition().z);
-	ImGui::Text("velocity:%f,%f,%f", mCharacter->GetVelocity().x, mCharacter->GetVelocity().y, mCharacter->GetVelocity().z);
-	ImGui::Text("state:%d", mCharacter->GetMoveState());
-	ImGui::Text("changeFlg:%d", mCharacter->GetChangState());
+	ImGui::Text("position:%f,%f,%f", character->GetPosition().x, character->GetPosition().y, character->GetPosition().z);
+	ImGui::Text("velocity:%f,%f,%f", character->GetVelocity().x, character->GetVelocity().y, character->GetVelocity().z);
+	ImGui::Text("state:%d", character->GetMoveState());
+	ImGui::Text("changeFlg:%d", character->GetChangState());
 	ImGui::End();
 #endif
 }
@@ -92,47 +81,13 @@ void PlayerAI::Editor()
 /*****************************************************/
 /********************playerの更新******************/
 
-void PlayerAI::Update(float elapsd_time, StageManager* manager, StageOperation* operation)
-{
-	if (mPlayFlag)
-	{	//プレイ中
-
-		//一定以上下に落ちたらスタート時点に戻る
-		if (mCharacter->GetPosition().y < -1000)
-		{
-			if (mCharacter->GetExist())
-			{
-				mCharacter->SetExist(false);
-				operation->Reset(manager);
-
-			}
-			return;
-		}
-		//動けるとき
-		Move(elapsd_time);
-	}
-	else
-	{//プレイしてない時
-		elapsd_time = 0;
-		mCharacter->SetGorlFlag(false);
-		mCharacter->SetGroundFlag(false);
-		mGravity = mParameter.gravity;
-	}
-	//ステージとの当たり判定
-	Judgment::Judge(mCharacter.get(), manager);
-	//カメラにplayerの位置を設定
-	pCameraManager->GetCameraOperation()->GetPlayCamera()->SetPlayerPosition(mCharacter->GetPosition());
-	//アニメーションの更新
-	mCharacter->AnimUpdate(elapsd_time);
-}
-/********************playerを動かす******************/
-void PlayerAI::Move(float elapsd_time)
+void PlayerAI::Update(float elapsd_time, PlayerCharacter*character)
 {
 	//速度、加速度の取得
-	VECTOR3F accel = mCharacter->GetAccel();
-	VECTOR3F velocity = mCharacter->GetVelocity();
+	VECTOR3F accel = character->GetAccel();
+	VECTOR3F velocity = character->GetVelocity();
 	//状態の取得
-	auto state = mCharacter->GetMoveState();
+	auto state = character->GetMoveState();
 	//加速度を設定
 	accel.z = mParameter.accel.z;
 	//重力値を更新
@@ -140,7 +95,7 @@ void PlayerAI::Move(float elapsd_time)
 	//加速度に重力値を足す
 	accel.y += mGravity * 60 * elapsd_time;
 	//空中にいないかどうかを判定する
-	if (mCharacter->GetGroundFlag())
+	if (character->GetGroundFlag())
 	{
 		mGravity = mParameter.gravity;
 		velocity.y = 0;
@@ -158,38 +113,27 @@ void PlayerAI::Move(float elapsd_time)
 		state = PlayerCharacter::MOVESTATE::LANDING;
 	}
 	//ゴールした時のキャラクターの動き
-	if (mCharacter->GetGorlFlag())
+	if (character->GetGorlFlag())
 	{
-		VECTOR3F angle = mCharacter->GetAngle();
+		VECTOR3F angle = character->GetAngle();
 		if (angle.y < DirectX::XMConvertToRadians(135))
 		{
 			angle.y += 3.14f * elapsd_time * 1.05f;
-			mCharacter->SetAngle(angle);
+			character->SetAngle(angle);
 		}
 		accel.z = -velocity.z * 3.f;
 		accel.y = 0;
 		velocity.y = 0;
 	}
 	//更新したデータのセット
-	mCharacter->SetAccel(accel);
-	mCharacter->SetVelocity(velocity);
-	mCharacter->SetMoveState(state);
-	//座標などの更新
-	mCharacter->Move(elapsd_time);
+	character->SetAccel(accel);
+	character->SetVelocity(velocity);
+	character->SetMoveState(state);
 
 }
 
-void PlayerAI::Respond()
+void PlayerAI::Reset()
 {
-	auto camera = pCameraManager->GetCameraOperation()->GetPlayCamera();
-
-	mCharacter->SetPosition(VECTOR3F(0, 10, 0));
-	mCharacter->SetBeforePosition(VECTOR3F(0, 10, 0));
-	mCharacter->SetVelocity(VECTOR3F(0, 0, 0));
-	mCharacter->SetAngle(VECTOR3F(0, 0, 0));
-	mCharacter->CalculateBoonTransform(0);
-	mCharacter->SetAccel(VECTOR3F(0, 0, 0));
 	mGravity = mParameter.gravity;
-	camera->Reset();
-	mCharacter->SetExist(true);
+
 }
