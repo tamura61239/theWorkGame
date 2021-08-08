@@ -54,7 +54,7 @@ void SceneGameMove::ZoomBlurEditor()
 /*****************************************************/
 float SceneGameMove::Update(float elapsdTime, PlayerManager* player, bool testGame, bool editorFlag)
 {
-	//elapsdTime *= mTutorial->Update(elapsdTime, player->GetCharacter());
+	elapsdTime *= mTutorial->Update(elapsdTime, player->GetCharacter());
 	mFade->Update(elapsdTime);
 	float time = 0.0f;
 	switch (mFade->GetFadeScene())
