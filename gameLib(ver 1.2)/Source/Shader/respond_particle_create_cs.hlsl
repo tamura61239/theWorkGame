@@ -1,6 +1,6 @@
 #include"respond_particle.hlsli"
 #include"particle_count_buffer.hlsli"
-#include"Lib/Shaders/rand_function.hlsli"
+#include"../Lib/Shaders/rand_function.hlsli"
 
 
 [numthreads(1, 1, 1)]

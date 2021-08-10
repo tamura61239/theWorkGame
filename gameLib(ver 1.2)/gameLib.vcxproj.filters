@@ -673,33 +673,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Source\curl_noise.hlsli">
-      <Filter>シェーダー</Filter>
-    </None>
-    <None Include="Source\stage_scene_particle.hlsli">
-      <Filter>シェーダー\stage_scene_particle</Filter>
-    </None>
-    <None Include="Source\title_psrticle_compute.hlsli">
-      <Filter>シェーダー\title_particle</Filter>
-    </None>
-    <None Include="Source\matrix_calculation.hlsli">
-      <Filter>シェーダー</Filter>
-    </None>
-    <None Include="Source\select_scene_particle.hlsli">
-      <Filter>シェーダー\select_scsne_particle</Filter>
-    </None>
-    <None Include="Source\title_texture_particle.hlsli">
-      <Filter>シェーダー\title_texture_particle</Filter>
-    </None>
-    <None Include="Source\particle_render.hlsli">
-      <Filter>シェーダー\particle_render</Filter>
-    </None>
-    <None Include="Source\run_particle_cs_function.hlsli">
-      <Filter>シェーダー\run_particle</Filter>
-    </None>
-    <None Include="Source\fireworks_particle.hlsli">
-      <Filter>シェーダー\fireworks_particle</Filter>
-    </None>
     <None Include="Source\Lib\Shaders\board.hlsli">
       <Filter>gameLib\Shaders</Filter>
     </None>
@@ -733,23 +706,8 @@
     <None Include="Source\Lib\Shaders\static_mesh_normal.hlsli">
       <Filter>gameLib\Shaders</Filter>
     </None>
-    <None Include="Source\static_mesh_motion_data.hlsli">
-      <Filter>シェーダー\速度マップ\速度マップ%28static_mesh%29</Filter>
-    </None>
-    <None Include="Source\particle_motiom_data_render.hlsli">
-      <Filter>シェーダー\速度マップ\速度マップ%28particle%29</Filter>
-    </None>
-    <None Include="Source\model_motion_data.hlsli">
-      <Filter>シェーダー\速度マップ\速度マップ%28model%29</Filter>
-    </None>
     <None Include="Source\Lib\Shaders\depth_of_field_data.hlsli">
       <Filter>gameLib\Shaders</Filter>
-    </None>
-    <None Include="Source\render_particle_cube.hlsli">
-      <Filter>シェーダー</Filter>
-    </None>
-    <None Include="Source\particle_count_buffer.hlsli">
-      <Filter>シェーダー</Filter>
     </None>
     <None Include="Source\Lib\Shaders\bloom.hlsli">
       <Filter>gameLib\Shaders\ポストエフェクト\ブルーム</Filter>
@@ -763,77 +721,62 @@
     <None Include="Source\Lib\Shaders\rand_function.hlsli">
       <Filter>gameLib\Shaders</Filter>
     </None>
-    <None Include="Source\cb_timer.hlsli">
+    <None Include="Source\Shader\fireworks_particle.hlsli">
+      <Filter>シェーダー\fireworks_particle</Filter>
+    </None>
+    <None Include="Source\Shader\static_mesh_motion_data.hlsli">
+      <Filter>シェーダー\速度マップ\速度マップ%28static_mesh%29</Filter>
+    </None>
+    <None Include="Source\Shader\title_texture_particle.hlsli">
+      <Filter>シェーダー\title_texture_particle</Filter>
+    </None>
+    <None Include="Source\Shader\title_psrticle_compute.hlsli">
+      <Filter>シェーダー\title_particle</Filter>
+    </None>
+    <None Include="Source\Shader\stage_scene_particle.hlsli">
+      <Filter>シェーダー\stage_scene_particle</Filter>
+    </None>
+    <None Include="Source\Shader\select_scene_particle.hlsli">
+      <Filter>シェーダー\select_scsne_particle</Filter>
+    </None>
+    <None Include="Source\Shader\run_particle_cs_function.hlsli">
+      <Filter>シェーダー\run_particle</Filter>
+    </None>
+    <None Include="Source\Shader\respond_particle.hlsli">
+      <Filter>シェーダー\respond_particle</Filter>
+    </None>
+    <None Include="Source\Shader\particle_render.hlsli">
+      <Filter>シェーダー\particle_render</Filter>
+    </None>
+    <None Include="Source\Shader\particle_motiom_data_render.hlsli">
+      <Filter>シェーダー\速度マップ\速度マップ%28particle%29</Filter>
+    </None>
+    <None Include="Source\Shader\model_motion_data.hlsli">
+      <Filter>シェーダー\速度マップ\速度マップ%28model%29</Filter>
+    </None>
+    <None Include="Source\Shader\before_camera_view_data.hlsli">
       <Filter>シェーダー</Filter>
     </None>
-    <None Include="Source\respond_particle.hlsli">
-      <Filter>シェーダー\respond_particle</Filter>
+    <None Include="Source\Shader\cb_timer.hlsli">
+      <Filter>シェーダー</Filter>
+    </None>
+    <None Include="Source\Shader\curl_noise.hlsli">
+      <Filter>シェーダー</Filter>
+    </None>
+    <None Include="Source\Shader\matrix_calculation.hlsli">
+      <Filter>シェーダー</Filter>
+    </None>
+    <None Include="Source\Shader\particle_count_buffer.hlsli">
+      <Filter>シェーダー</Filter>
+    </None>
+    <None Include="Source\Shader\render_particle_cube.hlsli">
+      <Filter>シェーダー</Filter>
+    </None>
+    <None Include="Source\Shader\velocity_map_parameter.hlsli">
+      <Filter>シェーダー</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Source\run_particle_cs.hlsl">
-      <Filter>シェーダー\run_particle</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\run_particle_create_cs.hlsl">
-      <Filter>シェーダー\run_particle</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\stage_scene_particle_create_cs.hlsl">
-      <Filter>シェーダー\stage_scene_particle</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\stage_scene_particle_cs.hlsl">
-      <Filter>シェーダー\stage_scene_particle</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\title_particle_create_cs.hlsl">
-      <Filter>シェーダー\title_particle</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\select_scene_create_particle_cs.hlsl">
-      <Filter>シェーダー\select_scsne_particle</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\select_scene_particle_cs.hlsl">
-      <Filter>シェーダー\select_scsne_particle</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\title_scene_change_particle_cs.hlsl">
-      <Filter>シェーダー\title_particle</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\particle_render_cube_mesh_gs.hlsl">
-      <Filter>シェーダー\particle_render</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\particle_render_cube_line_gs.hlsl">
-      <Filter>シェーダー\particle_render</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\particle_render_ps.hlsl">
-      <Filter>シェーダー\particle_render</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\particle_render_vs.hlsl">
-      <Filter>シェーダー\particle_render</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\particle_render_billboard_gs.hlsl">
-      <Filter>シェーダー\particle_render</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\particle_render_text_ps.hlsl">
-      <Filter>シェーダー\particle_render</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\particle_render_point_ps.hlsl">
-      <Filter>シェーダー\particle_render</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\titile_texture_change_creat_cs.hlsl">
-      <Filter>シェーダー\title_texture_particle</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\title_texture_scene_change_cs.hlsl">
-      <Filter>シェーダー\title_texture_particle</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\fireworks_particle_create_cs.hlsl">
-      <Filter>シェーダー\fireworks_particle</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\fireworks_particle_cs.hlsl">
-      <Filter>シェーダー\fireworks_particle</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\fireworks_smoke_particle_create.hlsl">
-      <Filter>シェーダー\fireworks_particle</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\particle_count_cs.hlsl">
-      <Filter>シェーダー</Filter>
-    </FxCompile>
     <FxCompile Include="Source\Lib\Shaders\board_ps.hlsl">
       <Filter>gameLib\Shaders</Filter>
     </FxCompile>
@@ -900,48 +843,6 @@
     <FxCompile Include="Source\Lib\Shaders\static_mesh_vs.hlsl">
       <Filter>gameLib\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Source\static_mesh_motion_data_gs.hlsl">
-      <Filter>シェーダー\速度マップ\速度マップ%28static_mesh%29</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\static_mesh_motion_data_ps.hlsl">
-      <Filter>シェーダー\速度マップ\速度マップ%28static_mesh%29</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\static_mesh_motion_data_vs.hlsl">
-      <Filter>シェーダー\速度マップ\速度マップ%28static_mesh%29</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\particle_motiom_blur_gs.hlsl">
-      <Filter>シェーダー\速度マップ\速度マップ%28particle%29</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\particle_motion_blur_ps.hlsl">
-      <Filter>シェーダー\速度マップ\速度マップ%28particle%29</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\particle_motion_blur_text_ps.hlsl">
-      <Filter>シェーダー\速度マップ\速度マップ%28particle%29</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\particle_motion_data_render_gs.hlsl">
-      <Filter>シェーダー\速度マップ\速度マップ%28particle%29</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\particle_motion_data_render_ps.hlsl">
-      <Filter>シェーダー\速度マップ\速度マップ%28particle%29</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\particle_motion_data_render_text_ps.hlsl">
-      <Filter>シェーダー\速度マップ\速度マップ%28particle%29</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\particle_motion_data_render_vs.hlsl">
-      <Filter>シェーダー\速度マップ\速度マップ%28particle%29</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\model_motion_data_gs.hlsl">
-      <Filter>シェーダー\速度マップ\速度マップ%28model%29</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\model_motion_data_ps.hlsl">
-      <Filter>シェーダー\速度マップ\速度マップ%28model%29</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\model_motion_data_vs.hlsl">
-      <Filter>シェーダー\速度マップ\速度マップ%28model%29</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\title_particle_cs.hlsl">
-      <Filter>シェーダー\title_particle</Filter>
-    </FxCompile>
     <FxCompile Include="Source\Lib\Shaders\bloom_blur01_ps.hlsl">
       <Filter>gameLib\Shaders\ポストエフェクト\ブルーム</Filter>
     </FxCompile>
@@ -972,14 +873,116 @@
     <FxCompile Include="Source\Lib\Shaders\motion_blur_ps.hlsl">
       <Filter>gameLib\Shaders\ポストエフェクト\モーションブラー</Filter>
     </FxCompile>
-    <FxCompile Include="Source\particle_count_clear_cs.hlsl">
+    <FxCompile Include="Source\Shader\fireworks_particle_create_cs.hlsl">
+      <Filter>シェーダー\fireworks_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\fireworks_particle_cs.hlsl">
+      <Filter>シェーダー\fireworks_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\fireworks_smoke_particle_create.hlsl">
+      <Filter>シェーダー\fireworks_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\static_mesh_motion_data_vs.hlsl">
+      <Filter>シェーダー\速度マップ\速度マップ%28static_mesh%29</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\static_mesh_motion_data_ps.hlsl">
+      <Filter>シェーダー\速度マップ\速度マップ%28static_mesh%29</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\static_mesh_motion_data_gs.hlsl">
+      <Filter>シェーダー\速度マップ\速度マップ%28static_mesh%29</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\title_texture_scene_change_cs.hlsl">
+      <Filter>シェーダー\title_texture_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\titile_texture_change_creat_cs.hlsl">
+      <Filter>シェーダー\title_texture_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\title_scene_change_particle_cs.hlsl">
+      <Filter>シェーダー\title_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\title_particle_cs.hlsl">
+      <Filter>シェーダー\title_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\title_particle_create_cs.hlsl">
+      <Filter>シェーダー\title_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\stage_scene_particle_cs.hlsl">
+      <Filter>シェーダー\stage_scene_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\stage_scene_particle_create_cs.hlsl">
+      <Filter>シェーダー\stage_scene_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\select_scene_particle_cs.hlsl">
+      <Filter>シェーダー\select_scsne_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\select_scene_create_particle_cs.hlsl">
+      <Filter>シェーダー\select_scsne_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\run_particle_create_cs.hlsl">
+      <Filter>シェーダー\run_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\run_particle_cs.hlsl">
+      <Filter>シェーダー\run_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\respond_particle_create_cs.hlsl">
+      <Filter>シェーダー\respond_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\respond_particle_cs.hlsl">
+      <Filter>シェーダー\respond_particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\particle_render_billboard_gs.hlsl">
+      <Filter>シェーダー\particle_render</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\particle_render_cube_line_gs.hlsl">
+      <Filter>シェーダー\particle_render</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\particle_render_cube_mesh_gs.hlsl">
+      <Filter>シェーダー\particle_render</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\particle_render_ps.hlsl">
+      <Filter>シェーダー\particle_render</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\particle_render_text_ps.hlsl">
+      <Filter>シェーダー\particle_render</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\particle_render_vs.hlsl">
+      <Filter>シェーダー\particle_render</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\particle_motiom_blur_gs.hlsl">
+      <Filter>シェーダー\速度マップ\速度マップ%28particle%29</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\particle_motion_blur_ps.hlsl">
+      <Filter>シェーダー\速度マップ\速度マップ%28particle%29</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\particle_motion_blur_text_ps.hlsl">
+      <Filter>シェーダー\速度マップ\速度マップ%28particle%29</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\particle_motion_data_render_gs.hlsl">
+      <Filter>シェーダー\速度マップ\速度マップ%28particle%29</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\particle_motion_data_render_ps.hlsl">
+      <Filter>シェーダー\速度マップ\速度マップ%28particle%29</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\particle_motion_data_render_text_ps.hlsl">
+      <Filter>シェーダー\速度マップ\速度マップ%28particle%29</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\particle_motion_data_render_vs.hlsl">
+      <Filter>シェーダー\速度マップ\速度マップ%28particle%29</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\model_motion_data_gs.hlsl">
+      <Filter>シェーダー\速度マップ\速度マップ%28model%29</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\model_motion_data_ps.hlsl">
+      <Filter>シェーダー\速度マップ\速度マップ%28model%29</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\model_motion_data_vs.hlsl">
+      <Filter>シェーダー\速度マップ\速度マップ%28model%29</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\particle_count_clear_cs.hlsl">
       <Filter>シェーダー</Filter>
     </FxCompile>
-    <FxCompile Include="Source\respond_particle_create_cs.hlsl">
-      <Filter>シェーダー\respond_particle</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\respond_particle_cs.hlsl">
-      <Filter>シェーダー\respond_particle</Filter>
+    <FxCompile Include="Source\Shader\particle_count_cs.hlsl">
+      <Filter>シェーダー</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

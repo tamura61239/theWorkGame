@@ -1,5 +1,5 @@
 #include"select_scene_particle.hlsli"
-#include"Lib/Shaders/rand_function.hlsli"
+#include"../Lib/Shaders/rand_function.hlsli"
 #include"particle_count_buffer.hlsli"
 
 /****************************************************************************/

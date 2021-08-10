@@ -1,5 +1,5 @@
 #include"fireworks_particle.hlsli"
-#include"Lib/Shaders/rand_function.hlsli"
+#include"../Lib/Shaders/rand_function.hlsli"
 #include"particle_count_buffer.hlsli"
 /****************************************************************************/
 //　　　花火のパーティクルを生成する
